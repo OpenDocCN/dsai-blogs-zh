@@ -1,17 +1,25 @@
 - en: From Autoencoder to Beta-VAE
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 从自编码器到Beta-VAE
 - en: 原文：[https://lilianweng.github.io/posts/2018-08-12-vae/](https://lilianweng.github.io/posts/2018-08-12-vae/)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://lilianweng.github.io/posts/2018-08-12-vae/](https://lilianweng.github.io/posts/2018-08-12-vae/)
 - en: '[Updated on 2019-07-18: add a section on [VQ-VAE & VQ-VAE-2](#vq-vae-and-vq-vae-2).]'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2019-07-18更新：添加关于[VQ-VAE & VQ-VAE-2](#vq-vae-and-vq-vae-2)的部分。]'
 - en: '[Updated on 2019-07-26: add a section on [TD-VAE](#td-vae).]'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2019-07-26更新：添加关于[TD-VAE](#td-vae)的部分。]'
 - en: 'Autocoder is invented to reconstruct high-dimensional data using a neural network
     model with a narrow bottleneck layer in the middle (oops, this is probably not
     true for [Variational Autoencoder](#vae-variational-autoencoder), and we will
@@ -19,216 +27,324 @@
     the bottleneck layer captures a compressed latent encoding. Such a low-dimensional
     representation can be used as en embedding vector in various applications (i.e.
     search), help data compression, or reveal the underlying data generative factors.'
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: 自编码器被发明用于使用神经网络模型重构高维数据，中间有一个窄的瓶颈层（哎呀，这对于[变分自编码器](#vae-variational-autoencoder)可能不正确，我们将在后续章节中详细研究）。一个很好的副产品是维度缩减：瓶颈层捕获了一个压缩的潜在编码。这样的低维表示可以用作各种应用中的嵌入向量（即搜索），帮助数据压缩，或揭示潜在的数据生成因素。
 - en: Notation
+  id: totrans-5
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 符号
 - en: '| Symbol | Mean |'
+  id: totrans-6
   prefs: []
   type: TYPE_TB
+  zh: '| 符号 | 意义 |'
 - en: '| --- | --- |'
+  id: totrans-7
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- |'
 - en: '| $\mathcal{D}$ | The dataset, $\mathcal{D} = \{ \mathbf{x}^{(1)}, \mathbf{x}^{(2)},
     \dots, \mathbf{x}^{(n)} \}$, contains $n$ data samples; $\vert\mathcal{D}\vert
     =n $. |'
+  id: totrans-8
   prefs: []
   type: TYPE_TB
+  zh: '| $\mathcal{D}$ | 数据集，$\mathcal{D} = \{ \mathbf{x}^{(1)}, \mathbf{x}^{(2)},
+    \dots, \mathbf{x}^{(n)} \}$，包含$n$个数据样本；$\vert\mathcal{D}\vert =n $。'
 - en: '| $\mathbf{x}^{(i)}$ | Each data point is a vector of $d$ dimensions, $\mathbf{x}^{(i)}
     = [x^{(i)}_1, x^{(i)}_2, \dots, x^{(i)}_d]$. |'
+  id: totrans-9
   prefs: []
   type: TYPE_TB
+  zh: '| $\mathbf{x}^{(i)}$ | 每个数据点是一个$d$维向量，$\mathbf{x}^{(i)} = [x^{(i)}_1, x^{(i)}_2,
+    \dots, x^{(i)}_d]$。'
 - en: '| $\mathbf{x}$ | One data sample from the dataset, $\mathbf{x} \in \mathcal{D}$.
     |'
+  id: totrans-10
   prefs: []
   type: TYPE_TB
+  zh: '| $\mathbf{x}$ | 数据集中的一个数据样本，$\mathbf{x} \in \mathcal{D}$。'
 - en: '| $\mathbf{x}’$ | The reconstructed version of $\mathbf{x}$. |'
+  id: totrans-11
   prefs: []
   type: TYPE_TB
+  zh: '| $\mathbf{x}’$ | $\mathbf{x}$的重构版本。 |'
 - en: '| $\tilde{\mathbf{x}}$ | The corrupted version of $\mathbf{x}$. |'
+  id: totrans-12
   prefs: []
   type: TYPE_TB
+  zh: '| $\tilde{\mathbf{x}}$ | $\mathbf{x}$的损坏版本。'
 - en: '| $\mathbf{z}$ | The compressed code learned in the bottleneck layer. |'
+  id: totrans-13
   prefs: []
   type: TYPE_TB
+  zh: '| $\mathbf{z}$ | 在瓶颈层学习到的压缩编码。 |'
 - en: '| $a_j^{(l)}$ | The activation function for the $j$-th neuron in the $l$-th
     hidden layer. |'
+  id: totrans-14
   prefs: []
   type: TYPE_TB
+  zh: '| $a_j^{(l)}$ | 第$l$隐藏层中第$j$个神经元的激活函数。'
 - en: '| $g_{\phi}(.)$ | The **encoding** function parameterized by $\phi$. |'
+  id: totrans-15
   prefs: []
   type: TYPE_TB
+  zh: '| $g_{\phi}(.)$ | 由$\phi$参数化的**编码**函数。'
 - en: '| $f_{\theta}(.)$ | The **decoding** function parameterized by $\theta$. |'
+  id: totrans-16
   prefs: []
   type: TYPE_TB
+  zh: '| $f_{\theta}(.)$ | 由$\theta$参数化的**解码**函数。'
 - en: '| $q_{\phi}(\mathbf{z}\vert\mathbf{x})$ | Estimated posterior probability function,
     also known as **probabilistic encoder**. |'
+  id: totrans-17
   prefs: []
   type: TYPE_TB
+  zh: '| $q_{\phi}(\mathbf{z}\vert\mathbf{x})$ | 估计后验概率函数，也称为**概率编码器**。'
 - en: '| $p_{\theta}(\mathbf{x}\vert\mathbf{z})$ | Likelihood of generating true data
     sample given the latent code, also known as **probabilistic decoder**. |'
+  id: totrans-18
   prefs: []
   type: TYPE_TB
+  zh: '| $p_{\theta}(\mathbf{x}\vert\mathbf{z})$ | 给定潜在编码的真实数据样本生成的可能性，也称为**概率解码器**。'
 - en: Autoencoder
+  id: totrans-19
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 自编码器
 - en: '**Autoencoder** is a neural network designed to learn an identity function
     in an unsupervised way to reconstruct the original input while compressing the
     data in the process so as to discover a more efficient and compressed representation.
     The idea was originated in [the 1980s](https://en.wikipedia.org/wiki/Autoencoder),
     and later promoted by the seminal paper by [Hinton & Salakhutdinov, 2006](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.459.3788&rep=rep1&type=pdf).'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: '**自编码器**是一个神经网络，旨在以无监督的方式学习一个恒等函数，以在重构原始输入的同时压缩数据，从而发现更高效和压缩的表示。这个想法起源于[1980年代](https://en.wikipedia.org/wiki/Autoencoder)，后来由[Hinton
+    & Salakhutdinov, 2006](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.459.3788&rep=rep1&type=pdf)的开创性论文推广。'
 - en: 'It consists of two networks:'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 它由两个网络组成：
 - en: '*Encoder* network: It translates the original high-dimension input into the
     latent low-dimensional code. The input size is larger than the output size.'
+  id: totrans-22
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*编码器*网络：它将原始的高维输入转换为潜在的低维编码。输入大小大于输出大小。'
 - en: '*Decoder* network: The decoder network recovers the data from the code, likely
     with larger and larger output layers.'
+  id: totrans-23
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*解码器*网络：解码器网络从编码中恢复数据，可能具有越来越大的输出层。'
 - en: '![](../Images/fbaa850ba69a2c444ce906ada3e057b5.png)'
+  id: totrans-24
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/fbaa850ba69a2c444ce906ada3e057b5.png)'
 - en: Fig. 1\. Illustration of autoencoder model architecture.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 图1。自编码器模型架构示意图。
 - en: The encoder network essentially accomplishes the [dimensionality reduction](https://en.wikipedia.org/wiki/Dimensionality_reduction),
     just like how we would use Principal Component Analysis (PCA) or Matrix Factorization
     (MF) for. In addition, the autoencoder is explicitly optimized for the data reconstruction
     from the code. A good intermediate representation not only can capture latent
     variables, but also benefits a full [decompression](https://ai.googleblog.com/2016/09/image-compression-with-neural-networks.html)
     process.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 编码器网络本质上实现了[降维](https://en.wikipedia.org/wiki/Dimensionality_reduction)，就像我们使用主成分分析（PCA）或矩阵分解（MF）一样。此外，自动编码器明确优化了从代码到数据重构的过程。一个良好的中间表示不仅可以捕捉潜在变量，还有助于完整的[解压缩](https://ai.googleblog.com/2016/09/image-compression-with-neural-networks.html)过程。
 - en: The model contains an encoder function $g(.)$ parameterized by $\phi$ and a
     decoder function $f(.)$ parameterized by $\theta$. The low-dimensional code learned
     for input $\mathbf{x}$ in the bottleneck layer is $\mathbf{z} = g_\phi(\mathbf{x})$
     and the reconstructed input is $\mathbf{x}’ = f_\theta(g_\phi(\mathbf{x}))$.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型包含由$\phi$参数化的编码器函数$g(.)$和由$\theta$参数化的解码器函数$f(.)$。在瓶颈层学习的输入$\mathbf{x}$的低维代码是$\mathbf{z}
+    = g_\phi(\mathbf{x})$，重构的输入是$\mathbf{x}’ = f_\theta(g_\phi(\mathbf{x}))$。
 - en: 'The parameters $(\theta, \phi)$ are learned together to output a reconstructed
     data sample same as the original input, $\mathbf{x} \approx f_\theta(g_\phi(\mathbf{x}))$,
     or in other words, to learn an identity function. There are various metrics to
     quantify the difference between two vectors, such as cross entropy when the activation
     function is sigmoid, or as simple as MSE loss:'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 参数$(\theta, \phi)$一起学习以输出一个重构的数据样本，与原始输入相同，$\mathbf{x} \approx f_\theta(g_\phi(\mathbf{x}))$，或者换句话说，学习一个恒等函数。有各种度量标准来量化两个向量之间的差异，例如当激活函数是sigmoid时的交叉熵，或者简单的均方误差损失：
 - en: $$ L_\text{AE}(\theta, \phi) = \frac{1}{n}\sum_{i=1}^n (\mathbf{x}^{(i)} - f_\theta(g_\phi(\mathbf{x}^{(i)})))^2
     $$
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ L_\text{AE}(\theta, \phi) = \frac{1}{n}\sum_{i=1}^n (\mathbf{x}^{(i)} - f_\theta(g_\phi(\mathbf{x}^{(i)})))^2
+    $$
 - en: Denoising Autoencoder
+  id: totrans-30
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 去噪自动编码器
 - en: Since the autoencoder learns the identity function, we are facing the risk of
     “overfitting” when there are more network parameters than the number of data points.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于自动编码器学习了恒等函数，当网络参数多于数据点数量时，我们面临“过拟合”的风险。
 - en: 'To avoid overfitting and improve the robustness, **Denoising Autoencoder**
     (Vincent et al. 2008) proposed a modification to the basic autoencoder. The input
     is partially corrupted by adding noises to or masking some values of the input
     vector in a stochastic manner, $\tilde{\mathbf{x}} \sim \mathcal{M}_\mathcal{D}(\tilde{\mathbf{x}}
     \vert \mathbf{x})$. Then the model is trained to recover the original input (note:
     not the corrupt one).'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了避免过拟合并提高鲁棒性，**去噪自动编码器**（Vincent等人，2008）对基本自动编码器提出了修改。输入通过以随机方式向输入向量添加噪声或屏蔽一些值来部分损坏，$\tilde{\mathbf{x}}
+    \sim \mathcal{M}_\mathcal{D}(\tilde{\mathbf{x}} \vert \mathbf{x})$。然后模型被训练以恢复原始输入（注意：不是损坏的输入）。
 - en: $$ \begin{aligned} \tilde{\mathbf{x}}^{(i)} &\sim \mathcal{M}_\mathcal{D}(\tilde{\mathbf{x}}^{(i)}
     \vert \mathbf{x}^{(i)})\\ L_\text{DAE}(\theta, \phi) &= \frac{1}{n} \sum_{i=1}^n
     (\mathbf{x}^{(i)} - f_\theta(g_\phi(\tilde{\mathbf{x}}^{(i)})))^2 \end{aligned}
     $$
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \tilde{\mathbf{x}}^{(i)} &\sim \mathcal{M}_\mathcal{D}(\tilde{\mathbf{x}}^{(i)}
+    \vert \mathbf{x}^{(i)})\\ L_\text{DAE}(\theta, \phi) &= \frac{1}{n} \sum_{i=1}^n
+    (\mathbf{x}^{(i)} - f_\theta(g_\phi(\tilde{\mathbf{x}}^{(i)})))^2 \end{aligned}
+    $$
 - en: where $\mathcal{M}_\mathcal{D}$ defines the mapping from the true data samples
     to the noisy or corrupted ones.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$\mathcal{M}_\mathcal{D}$定义了从真实数据样本到嘈杂或损坏数据样本的映射。
 - en: '![](../Images/663dd6fdf5647420331a0f6ea92f1659.png)'
+  id: totrans-35
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/663dd6fdf5647420331a0f6ea92f1659.png)'
 - en: Fig. 2\. Illustration of denoising autoencoder model architecture.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 图2。去噪自动编码器模型架构示意图。
 - en: This design is motivated by the fact that humans can easily recognize an object
     or a scene even the view is partially occluded or corrupted. To “repair” the partially
     destroyed input, the denoising autoencoder has to discover and capture relationship
     between dimensions of input in order to infer missing pieces.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个设计的灵感来自于人类可以轻松识别一个物体或场景，即使视图部分被遮挡或损坏。为了“修复”部分破坏的输入，去噪自动编码器必须发现并捕捉输入维度之间的关系，以推断缺失的部分。
 - en: For high dimensional input with high redundancy, like images, the model is likely
     to depend on evidence gathered from a combination of many input dimensions to
     recover the denoised version rather than to overfit one dimension. This builds
     up a good foundation for learning *robust* latent representation.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于高维输入具有高冗余性的情况，如图像，模型很可能依赖于从许多输入维度的组合中收集的证据来恢复去噪版本，而不是过度拟合一个维度。这为学习*稳健*的潜在表示打下了良好的基础。
 - en: The noise is controlled by a stochastic mapping $\mathcal{M}_\mathcal{D}(\tilde{\mathbf{x}}
     \vert \mathbf{x})$, and it is not specific to a particular type of corruption
     process (i.e. masking noise, Gaussian noise, salt-and-pepper noise, etc.). Naturally
     the corruption process can be equipped with prior knowledge
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 噪声由随机映射 $\mathcal{M}_\mathcal{D}(\tilde{\mathbf{x}} \vert \mathbf{x})$ 控制，不特定于特定类型的破坏过程（即掩蔽噪声、高斯噪声、椒盐噪声等）。自然地，破坏过程可以配备先验知识。
 - en: 'In the experiment of the original DAE paper, the noise is applied in this way:
     a fixed proportion of input dimensions are selected at random and their values
     are forced to 0\. Sounds a lot like dropout, right? Well, the denoising autoencoder
     was proposed in 2008, 4 years before the dropout paper ([Hinton, et al. 2012](https://www.cs.toronto.edu/~hinton/absps/JMLRdropout.pdf))
     ;)'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 在原始DAE论文的实验中，噪声是这样应用的：随机选择固定比例的输入维度，并强制它们的值为0。听起来很像dropout，对吧？嗯，去噪自编码器是在2012年的dropout论文之前提出的，提前了4年（[Hinton等人，2012](https://www.cs.toronto.edu/~hinton/absps/JMLRdropout.pdf)）;)
 - en: Sparse Autoencoder
+  id: totrans-41
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 稀疏自编码器
 - en: '**Sparse Autoencoder** applies a “sparse” constraint on the hidden unit activation
     to avoid overfitting and improve robustness. It forces the model to only have
     a small number of hidden units being activated at the same time, or in other words,
     one hidden neuron should be inactivate most of time.'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: '**稀疏自编码器**对隐藏单元激活施加“稀疏”约束，以避免过拟合并提高鲁棒性。它迫使模型一次只有少量隐藏单元被激活，或者换句话说，一个隐藏神经元大部分时间应该是停用的。'
 - en: Recall that common [activation functions](http://cs231n.github.io/neural-networks-1/#actfun)
     include sigmoid, tanh, relu, leaky relu, etc. A neuron is activated when the value
     is close to 1 and inactivate with a value close to 0.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 请记住常见的[激活函数](http://cs231n.github.io/neural-networks-1/#actfun)包括sigmoid、tanh、relu、leaky
+    relu等。当值接近1时神经元被激活，接近0时被停用。
 - en: Let’s say there are $s_l$ neurons in the $l$-th hidden layer and the activation
     function for the $j$-th neuron in this layer is labelled as $a^{(l)}_j(.)$, $j=1,
     \dots, s_l$. The fraction of activation of this neuron $\hat{\rho}_j$ is expected
     to be a small number $\rho$, known as *sparsity parameter*; a common config is
     $\rho = 0.05$.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设第 $l$ 个隐藏层中有 $s_l$ 个神经元，该层中第 $j$ 个神经元的激活函数标记为 $a^{(l)}_j(.)$，$j=1, \dots,
+    s_l$。该神经元的激活比例 $\hat{\rho}_j$ 预计是一个小数 $\rho$，称为*稀疏参数*；一个常见的配置是 $\rho = 0.05$。
 - en: $$ \hat{\rho}_j^{(l)} = \frac{1}{n} \sum_{i=1}^n [a_j^{(l)}(\mathbf{x}^{(i)})]
     \approx \rho $$
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \hat{\rho}_j^{(l)} = \frac{1}{n} \sum_{i=1}^n [a_j^{(l)}(\mathbf{x}^{(i)})]
+    \approx \rho $$
 - en: This constraint is achieved by adding a penalty term into the loss function.
     The KL-divergence $D_\text{KL}$ measures the difference between two Bernoulli
     distributions, one with mean $\rho$ and the other with mean $\hat{\rho}_j^{(l)}$.
     The hyperparameter $\beta$ controls how strong the penalty we want to apply on
     the sparsity loss.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过将惩罚项添加到损失函数中来实现这一约束。KL散度 $D_\text{KL}$ 用于衡量两个伯努利分布之间的差异，一个具有均值 $\rho$，另一个具有均值
+    $\hat{\rho}_j^{(l)}$。超参数 $\beta$ 控制我们希望对稀疏损失施加多强的惩罚。
 - en: $$ \begin{aligned} L_\text{SAE}(\theta) &= L(\theta) + \beta \sum_{l=1}^L \sum_{j=1}^{s_l}
     D_\text{KL}(\rho \| \hat{\rho}_j^{(l)}) \\ &= L(\theta) + \beta \sum_{l=1}^L \sum_{j=1}^{s_l}
     \rho\log\frac{\rho}{\hat{\rho}_j^{(l)}} + (1-\rho)\log\frac{1-\rho}{1-\hat{\rho}_j^{(l)}}
     \end{aligned} $$![](../Images/45b50efe9198dbf95325bd5aaf88e80f.png)
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} L_\text{SAE}(\theta) &= L(\theta) + \beta \sum_{l=1}^L \sum_{j=1}^{s_l}
+    D_\text{KL}(\rho \| \hat{\rho}_j^{(l)}) \\ &= L(\theta) + \beta \sum_{l=1}^L \sum_{j=1}^{s_l}
+    \rho\log\frac{\rho}{\hat{\rho}_j^{(l)}} + (1-\rho)\log\frac{1-\rho}{1-\hat{\rho}_j^{(l)}}
+    \end{aligned} $$![](../Images/45b50efe9198dbf95325bd5aaf88e80f.png)
 - en: Fig. 4\. The KL divergence between a Bernoulli distribution with mean $\rho=0.25$
     and a Bernoulli distribution with mean $0 \leq \hat{\rho} \leq 1$.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 图4\. 伯努利分布之间的KL散度，一个均值为 $\rho=0.25$，另一个均值为 $0 \leq \hat{\rho} \leq 1$。
 - en: '**$k$-Sparse Autoencoder**'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: '**$k$-稀疏自编码器**'
 - en: 'In $k$-Sparse Autoencoder ([Makhzani and Frey, 2013](https://arxiv.org/abs/1312.5663)),
     the sparsity is enforced by only keeping the top k highest activations in the
     bottleneck layer with linear activation function. First we run feedforward through
@@ -239,182 +355,271 @@
     Compute the output and the loss from the sparsified code, $L = |\mathbf{x} - f(\mathbf{z}’)
     |_2^2$. And, the back-propagation only goes through the top k activated hidden
     units!'
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 在$k$-稀疏自编码器（[Makhzani and Frey, 2013](https://arxiv.org/abs/1312.5663)）中，稀疏性是通过仅保留瓶颈层中前k个最高激活来实现的，使用线性激活函数。首先，我们通过编码器网络进行前馈运算以获得压缩编码：$\mathbf{z}
+    = g(\mathbf{x})$。对编码向量$\mathbf{z}$中的值进行排序。仅保留最大的k个值，而其他神经元设为0。这也可以在具有可调阈值的ReLU层中完成。现在我们有了一个稀疏编码：$\mathbf{z}’
+    = \text{Sparsify}(\mathbf{z})$。从稀疏编码计算输出和损失，$L = |\mathbf{x} - f(\mathbf{z}’)
+    |_2^2$。反向传播仅通过前k个激活的隐藏单元进行！
 - en: '![](../Images/94f1dbc940d432694638ccd177fbc65b.png)'
+  id: totrans-51
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/94f1dbc940d432694638ccd177fbc65b.png)'
 - en: 'Fig. 5\. Filters of the k-sparse autoencoder for different sparsity levels
     k, learnt from MNIST with 1000 hidden units.. (Image source: [Makhzani and Frey,
     2013](https://arxiv.org/abs/1312.5663))'
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 图5\. 来自MNIST学习的具有1000个隐藏单元的k-稀疏自编码器的不同稀疏级别k的滤波器。（图片来源：[Makhzani and Frey, 2013](https://arxiv.org/abs/1312.5663)）
 - en: Contractive Autoencoder
+  id: totrans-53
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 压缩自编码器
 - en: Similar to sparse autoencoder, **Contractive Autoencoder** ([Rifai, et al, 2011](http://www.icml-2011.org/papers/455_icmlpaper.pdf))
     encourages the learned representation to stay in a contractive space for better
     robustness.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 类似于稀疏自编码器，**压缩自编码器**（[Rifai, et al, 2011](http://www.icml-2011.org/papers/455_icmlpaper.pdf)）鼓励学习到的表示保持在一个压缩空间中，以获得更好的鲁棒性。
 - en: 'It adds a term in the loss function to penalize the representation being too
     sensitive to the input, and thus improve the robustness to small perturbations
     around the training data points. The sensitivity is measured by the Frobenius
     norm of the Jacobian matrix of the encoder activations with respect to the input:'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 它在损失函数中添加了一个项，以惩罚表示对输入过于敏感，从而提高对训练数据点周围小扰动的鲁棒性。敏感性由编码器激活的雅可比矩阵的Frobenius范数来衡量：
 - en: $$ \|J_f(\mathbf{x})\|_F^2 = \sum_{ij} \Big( \frac{\partial h_j(\mathbf{x})}{\partial
     x_i} \Big)^2 $$
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \|J_f(\mathbf{x})\|_F^2 = \sum_{ij} \Big( \frac{\partial h_j(\mathbf{x})}{\partial
+    x_i} \Big)^2 $$
 - en: where $h_j$ is one unit output in the compressed code $\mathbf{z} = f(x)$.
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$h_j$是压缩编码$\mathbf{z} = f(x)$中的一个单元输出。
 - en: This penalty term is the sum of squares of all partial derivatives of the learned
     encoding with respect to input dimensions. The authors claimed that empirically
     this penalty was found to carve a representation that corresponds to a lower-dimensional
     non-linear manifold, while staying more invariant to majority directions orthogonal
     to the manifold.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个惩罚项是学习编码与输入维度的所有偏导数的平方和。作者声称，经验上发现这种惩罚能够塑造一个对应于低维非线性流形的表示，同时对流形正交方向更具不变性。
 - en: 'VAE: Variational Autoencoder'
+  id: totrans-59
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: VAE：变分自编码器
 - en: The idea of **Variational Autoencoder** ([Kingma & Welling, 2014](https://arxiv.org/abs/1312.6114)),
     short for **VAE**, is actually less similar to all the autoencoder models above,
     but deeply rooted in the methods of variational bayesian and graphical model.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: '**变分自编码器**（[Kingma & Welling, 2014](https://arxiv.org/abs/1312.6114)）的思想实际上与上述所有自编码器模型不太相似，而是深深植根于变分贝叶斯和图模型的方法。'
 - en: 'Instead of mapping the input into a *fixed* vector, we want to map it into
     a distribution. Let’s label this distribution as $p_\theta$, parameterized by
     $\theta$. The relationship between the data input $\mathbf{x}$ and the latent
     encoding vector $\mathbf{z}$ can be fully defined by:'
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们不是将输入映射到一个*固定*向量，而是希望将其映射到一个分布。让我们将这个分布标记为$p_\theta$，由参数$\theta$参数化。数据输入$\mathbf{x}$和潜在编码向量$\mathbf{z}$之间的关系可以完全由以下公式定义：
 - en: Prior $p_\theta(\mathbf{z})$
+  id: totrans-62
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 先验分布 $p_\theta(\mathbf{z})$
 - en: Likelihood $p_\theta(\mathbf{x}\vert\mathbf{z})$
+  id: totrans-63
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 似然函数 $p_\theta(\mathbf{x}\vert\mathbf{z})$
 - en: Posterior $p_\theta(\mathbf{z}\vert\mathbf{x})$
+  id: totrans-64
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 后验分布 $p_\theta(\mathbf{z}\vert\mathbf{x})$
 - en: 'Assuming that we know the real parameter $\theta^{*}$ for this distribution.
     In order to generate a sample that looks like a real data point $\mathbf{x}^{(i)}$,
     we follow these steps:'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设我们知道这个分布的真实参数$\theta^{*}$。为了生成一个看起来像真实数据点$\mathbf{x}^{(i)}$的样本，我们按照以下步骤进行：
 - en: First, sample a $\mathbf{z}^{(i)}$ from a prior distribution $p_{\theta^*}(\mathbf{z})$.
+  id: totrans-66
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 首先，从先验分布$p_{\theta^*}(\mathbf{z})$中抽样一个$\mathbf{z}^{(i)}$。
 - en: Then a value $\mathbf{x}^{(i)}$ is generated from a conditional distribution
     $p_{\theta^*}(\mathbf{x} \vert \mathbf{z} = \mathbf{z}^{(i)})$.
+  id: totrans-67
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 然后从条件分布$p_{\theta^*}(\mathbf{x} \vert \mathbf{z} = \mathbf{z}^{(i)})$生成一个值$\mathbf{x}^{(i)}$。
 - en: 'The optimal parameter $\theta^{*}$ is the one that maximizes the probability
     of generating real data samples:'
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 最优参数$\theta^{*}$是最大化生成真实数据样本概率的参数：
 - en: $$ \theta^{*} = \arg\max_\theta \prod_{i=1}^n p_\theta(\mathbf{x}^{(i)}) $$
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \theta^{*} = \arg\max_\theta \prod_{i=1}^n p_\theta(\mathbf{x}^{(i)}) $$
 - en: 'Commonly we use the log probabilities to convert the product on RHS to a sum:'
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 通常我们使用对数概率将右侧的乘积转换为求和：
 - en: $$ \theta^{*} = \arg\max_\theta \sum_{i=1}^n \log p_\theta(\mathbf{x}^{(i)})
     $$
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \theta^{*} = \arg\max_\theta \sum_{i=1}^n \log p_\theta(\mathbf{x}^{(i)})
+    $$
 - en: 'Now let’s update the equation to better demonstrate the data generation process
     so as to involve the encoding vector:'
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们更新方程以更好地展示数据生成过程，以涉及编码向量：
 - en: $$ p_\theta(\mathbf{x}^{(i)}) = \int p_\theta(\mathbf{x}^{(i)}\vert\mathbf{z})
     p_\theta(\mathbf{z}) d\mathbf{z} $$
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ p_\theta(\mathbf{x}^{(i)}) = \int p_\theta(\mathbf{x}^{(i)}\vert\mathbf{z})
+    p_\theta(\mathbf{z}) d\mathbf{z} $$
 - en: Unfortunately it is not easy to compute $p_\theta(\mathbf{x}^{(i)})$ in this
     way, as it is very expensive to check all the possible values of $\mathbf{z}$
     and sum them up. To narrow down the value space to facilitate faster search, we
     would like to introduce a new approximation function to output what is a likely
     code given an input $\mathbf{x}$, $q_\phi(\mathbf{z}\vert\mathbf{x})$, parameterized
     by $\phi$.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 不幸的是，以这种方式计算$p_\theta(\mathbf{x}^{(i)})$并不容易，因为检查所有可能的$\mathbf{z}$值并将它们相加非常昂贵。为了缩小值空间以便加快搜索，我们希望引入一个新的近似函数来输出给定输入$\mathbf{x}$时可能的代码，$q_\phi(\mathbf{z}\vert\mathbf{x})$，由$\phi$参数化。
 - en: '![](../Images/d5c9b2ea68c45318c9953d6a0b324b21.png)'
+  id: totrans-75
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d5c9b2ea68c45318c9953d6a0b324b21.png)'
 - en: Fig. 6\. The graphical model involved in Variational Autoencoder. Solid lines
     denote the generative distribution $p\_\theta(.)$ and dashed lines denote the
     distribution $q\_\phi (\mathbf{z}\vert\mathbf{x})$ to approximate the intractable
     posterior $p\_\theta (\mathbf{z}\vert\mathbf{x})$.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 图6。变分自动编码器中涉及的图形模型。实线表示生成分布$p\_\theta(.)$，虚线表示用于近似难以处理的后验$p\_\theta (\mathbf{z}\vert\mathbf{x})$的分布$q\_\phi
+    (\mathbf{z}\vert\mathbf{x})$。
 - en: 'Now the structure looks a lot like an autoencoder:'
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在结构看起来很像一个自动编码器：
 - en: The conditional probability $p_\theta(\mathbf{x} \vert \mathbf{z})$ defines
     a generative model, similar to the decoder $f_\theta(\mathbf{x} \vert \mathbf{z})$
     introduced above. $p_\theta(\mathbf{x} \vert \mathbf{z})$ is also known as *probabilistic
     decoder*.
+  id: totrans-78
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 条件概率$p_\theta(\mathbf{x} \vert \mathbf{z})$定义了一个生成模型，类似于上面介绍的解码器$f_\theta(\mathbf{x}
+    \vert \mathbf{z})$。$p_\theta(\mathbf{x} \vert \mathbf{z})$也被称为*概率解码器*。
 - en: The approximation function $q_\phi(\mathbf{z} \vert \mathbf{x})$ is the *probabilistic
     encoder*, playing a similar role as $g_\phi(\mathbf{z} \vert \mathbf{x})$ above.
+  id: totrans-79
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 近似函数$q_\phi(\mathbf{z} \vert \mathbf{x})$是*概率编码器*，扮演与上面的$g_\phi(\mathbf{z} \vert
+    \mathbf{x})$类似的角色。
 - en: 'Loss Function: ELBO'
+  id: totrans-80
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 损失函数：ELBO
 - en: The estimated posterior $q_\phi(\mathbf{z}\vert\mathbf{x})$ should be very close
     to the real one $p_\theta(\mathbf{z}\vert\mathbf{x})$. We can use [Kullback-Leibler
     divergence](https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence)
     to quantify the distance between these two distributions. KL divergence $D_\text{KL}(X|Y)$
     measures how much information is lost if the distribution Y is used to represent
     X.
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 估计后验$q_\phi(\mathbf{z}\vert\mathbf{x})$应该非常接近真实后验$p_\theta(\mathbf{z}\vert\mathbf{x})$。我们可以使用[Kullback-Leibler散度](https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence)来量化这两个分布之间的距离。KL散度$D_\text{KL}(X|Y)$衡量了如果使用分布Y来表示X会丢失多少信息。
 - en: In our case we want to minimize $D_\text{KL}( q_\phi(\mathbf{z}\vert\mathbf{x})
     | p_\theta(\mathbf{z}\vert\mathbf{x}) )$ with respect to $\phi$.
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们的情况下，我们希望最小化$D_\text{KL}( q_\phi(\mathbf{z}\vert\mathbf{x}) | p_\theta(\mathbf{z}\vert\mathbf{x})
+    )$关于$\phi$的值。
 - en: 'But why use $D_\text{KL}(q_\phi | p_\theta)$ (reversed KL) instead of $D_\text{KL}(p_\theta
     | q_\phi)$ (forward KL)? Eric Jang has a great explanation in his [post](https://blog.evjang.com/2016/08/variational-bayes.html)
     on Bayesian Variational methods. As a quick recap:'
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 但为什么使用$D_\text{KL}(q_\phi | p_\theta)$（反向KL）而不是$D_\text{KL}(p_\theta | q_\phi)$（正向KL）？Eric
+    Jang在他的[文章](https://blog.evjang.com/2016/08/variational-bayes.html)中对贝叶斯变分方法进行了很好的解释。简要回顾一下：
 - en: '![](../Images/7749354d0701a2463de5fd31e37aaba7.png)'
+  id: totrans-84
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/7749354d0701a2463de5fd31e37aaba7.png)'
 - en: 'Fig. 7\. Forward and reversed KL divergence have different demands on how to
     match two distributions. (Image source: [blog.evjang.com/2016/08/variational-bayes.html](https://blog.evjang.com/2016/08/variational-bayes.html))'
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 图7。正向和反向KL散度对如何匹配两个分布有不同的要求。（图片来源：[blog.evjang.com/2016/08/variational-bayes.html](https://blog.evjang.com/2016/08/variational-bayes.html))
 - en: 'Forward KL divergence: $D_\text{KL}(P|Q) = \mathbb{E}_{z\sim P(z)} \log\frac{P(z)}{Q(z)}$;
     we have to ensure that Q(z)>0 wherever P(z)>0\. The optimized variational distribution
     $q(z)$ has to cover over the entire $p(z)$.'
+  id: totrans-86
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 正向KL散度：$D_\text{KL}(P|Q) = \mathbb{E}_{z\sim P(z)} \log\frac{P(z)}{Q(z)}$；我们必须确保在P(z)>0的地方Q(z)>0。优化的变分分布$q(z)$必须覆盖整个$p(z)$。
 - en: 'Reversed KL divergence: $D_\text{KL}(Q|P) = \mathbb{E}_{z\sim Q(z)} \log\frac{Q(z)}{P(z)}$;
     minimizing the reversed KL divergence squeezes the $Q(z)$ under $P(z)$.'
+  id: totrans-87
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 反向KL散度：$D_\text{KL}(Q|P) = \mathbb{E}_{z\sim Q(z)} \log\frac{Q(z)}{P(z)}$；最小化反向KL散度会将$Q(z)$挤压在$P(z)$下方。
 - en: 'Let’s now expand the equation:'
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们展开这个方程：
 - en: $$ \begin{aligned} & D_\text{KL}( q_\phi(\mathbf{z}\vert\mathbf{x}) \| p_\theta(\mathbf{z}\vert\mathbf{x})
     ) & \\ &=\int q_\phi(\mathbf{z} \vert \mathbf{x}) \log\frac{q_\phi(\mathbf{z}
     \vert \mathbf{x})}{p_\theta(\mathbf{z} \vert \mathbf{x})} d\mathbf{z} & \\ &=\int
@@ -433,61 +638,115 @@
     &\\ &=\log p_\theta(\mathbf{x}) + D_\text{KL}(q_\phi(\mathbf{z}\vert\mathbf{x})
     \| p_\theta(\mathbf{z})) - \mathbb{E}_{\mathbf{z}\sim q_\phi(\mathbf{z}\vert\mathbf{x})}\log
     p_\theta(\mathbf{x}\vert\mathbf{z}) & \end{aligned} $$
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} & D_\text{KL}( q_\phi(\mathbf{z}\vert\mathbf{x}) \| p_\theta(\mathbf{z}\vert\mathbf{x})
+    ) & \\ &=\int q_\phi(\mathbf{z} \vert \mathbf{x}) \log\frac{q_\phi(\mathbf{z}
+    \vert \mathbf{x})}{p_\theta(\mathbf{z} \vert \mathbf{x})} d\mathbf{z} & \\ &=\int
+    q_\phi(\mathbf{z} \vert \mathbf{x}) \log\frac{q_\phi(\mathbf{z} \vert \mathbf{x})p_\theta(\mathbf{x})}{p_\theta(\mathbf{z},
+    \mathbf{x})} d\mathbf{z} & \scriptstyle{\text{; 因为}p(z \vert x) = p(z, x) / p(x)}
+    \\ &=\int q_\phi(\mathbf{z} \vert \mathbf{x}) \big( \log p_\theta(\mathbf{x})
+    + \log\frac{q_\phi(\mathbf{z} \vert \mathbf{x})}{p_\theta(\mathbf{z}, \mathbf{x})}
+    \big) d\mathbf{z} & \\ &=\log p_\theta(\mathbf{x}) + \int q_\phi(\mathbf{z} \vert
+    \mathbf{x})\log\frac{q_\phi(\mathbf{z} \vert \mathbf{x})}{p_\theta(\mathbf{z},
+    \mathbf{x})} d\mathbf{z} & \scriptstyle{\text{; 因为}\int q(z \vert x) dz = 1}\\
+    &=\log p_\theta(\mathbf{x}) + \int q_\phi(\mathbf{z} \vert \mathbf{x})\log\frac{q_\phi(\mathbf{z}
+    \vert \mathbf{x})}{p_\theta(\mathbf{z}, \mathbf{x})} d\mathbf{z} & \scriptstyle{\text{;
+    因为}p(z, x) = p(x \vert z) p(z)} \\ &=\log p_\theta(\mathbf{x}) + \mathbb{E}_{\mathbf{z}\sim
+    q_\phi(\mathbf{z} \vert \mathbf{x})}[\log \frac{q_\phi(\mathbf{z} \vert \mathbf{x})}{p_\theta(\mathbf{z})}
+    - \log p_\theta(\mathbf{x} \vert \mathbf{z})] &\\ &=\log p_\theta(\mathbf{x})
+    + D_\text{KL}(q_\phi(\mathbf{z}\vert\mathbf{x}) \| p_\theta(\mathbf{z})) - \mathbb{E}_{\mathbf{z}\sim
+    q_\phi(\mathbf{z}\vert\mathbf{x})}\log p_\theta(\mathbf{x}\vert\mathbf{z}) & \end{aligned}
+    $$
 - en: 'So we have:'
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以我们有：
 - en: $$ D_\text{KL}( q_\phi(\mathbf{z}\vert\mathbf{x}) \| p_\theta(\mathbf{z}\vert\mathbf{x})
     ) =\log p_\theta(\mathbf{x}) + D_\text{KL}(q_\phi(\mathbf{z}\vert\mathbf{x}) \|
     p_\theta(\mathbf{z})) - \mathbb{E}_{\mathbf{z}\sim q_\phi(\mathbf{z}\vert\mathbf{x})}\log
     p_\theta(\mathbf{x}\vert\mathbf{z}) $$
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ D_\text{KL}( q_\phi(\mathbf{z}\vert\mathbf{x}) \| p_\theta(\mathbf{z}\vert\mathbf{x})
+    ) =\log p_\theta(\mathbf{x}) + D_\text{KL}(q_\phi(\mathbf{z}\vert\mathbf{x}) \|
+    p_\theta(\mathbf{z})) - \mathbb{E}_{\mathbf{z}\sim q_\phi(\mathbf{z}\vert\mathbf{x})}\log
+    p_\theta(\mathbf{x}\vert\mathbf{z}) $$
 - en: Once rearrange the left and right hand side of the equation,
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦重新排列方程的左右两侧，
 - en: $$ \log p_\theta(\mathbf{x}) - D_\text{KL}( q_\phi(\mathbf{z}\vert\mathbf{x})
     \| p_\theta(\mathbf{z}\vert\mathbf{x}) ) = \mathbb{E}_{\mathbf{z}\sim q_\phi(\mathbf{z}\vert\mathbf{x})}\log
     p_\theta(\mathbf{x}\vert\mathbf{z}) - D_\text{KL}(q_\phi(\mathbf{z}\vert\mathbf{x})
     \| p_\theta(\mathbf{z})) $$
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \log p_\theta(\mathbf{x}) - D_\text{KL}( q_\phi(\mathbf{z}\vert\mathbf{x})
+    \| p_\theta(\mathbf{z}\vert\mathbf{x}) ) = \mathbb{E}_{\mathbf{z}\sim q_\phi(\mathbf{z}\vert\mathbf{x})}\log
+    p_\theta(\mathbf{x}\vert\mathbf{z}) - D_\text{KL}(q_\phi(\mathbf{z}\vert\mathbf{x})
+    \| p_\theta(\mathbf{z})) $$
 - en: 'The LHS of the equation is exactly what we want to maximize when learning the
     true distributions: we want to maximize the (log-)likelihood of generating real
     data (that is $\log p_\theta(\mathbf{x})$) and also minimize the difference between
     the real and estimated posterior distributions (the term $D_\text{KL}$ works like
     a regularizer). Note that $p_\theta(\mathbf{x})$ is fixed with respect to $q_\phi$.'
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 方程的左侧正是我们在学习真实分布时要最大化的内容：我们希望最大化生成真实数据的（对数）似然（即 $\log p_\theta(\mathbf{x})$），同时最小化真实和估计后验分布之间的差异（项
+    $D_\text{KL}$ 的作用类似于正则化器）。请注意，$p_\theta(\mathbf{x})$ 是关于 $q_\phi$ 固定的。
 - en: 'The negation of the above defines our loss function:'
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 上述的否定定义了我们的损失函数：
 - en: $$ \begin{aligned} L_\text{VAE}(\theta, \phi) &= -\log p_\theta(\mathbf{x})
     + D_\text{KL}( q_\phi(\mathbf{z}\vert\mathbf{x}) \| p_\theta(\mathbf{z}\vert\mathbf{x})
     )\\ &= - \mathbb{E}_{\mathbf{z} \sim q_\phi(\mathbf{z}\vert\mathbf{x})} \log p_\theta(\mathbf{x}\vert\mathbf{z})
     + D_\text{KL}( q_\phi(\mathbf{z}\vert\mathbf{x}) \| p_\theta(\mathbf{z}) ) \\
     \theta^{*}, \phi^{*} &= \arg\min_{\theta, \phi} L_\text{VAE} \end{aligned} $$
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} L_\text{VAE}(\theta, \phi) &= -\log p_\theta(\mathbf{x})
+    + D_\text{KL}( q_\phi(\mathbf{z}\vert\mathbf{x}) \| p_\theta(\mathbf{z}\vert\mathbf{x})
+    )\\ &= - \mathbb{E}_{\mathbf{z} \sim q_\phi(\mathbf{z}\vert\mathbf{x})} \log p_\theta(\mathbf{x}\vert\mathbf{z})
+    + D_\text{KL}( q_\phi(\mathbf{z}\vert\mathbf{x}) \| p_\theta(\mathbf{z}) ) \\
+    \theta^{*}, \phi^{*} &= \arg\min_{\theta, \phi} L_\text{VAE} \end{aligned} $$
 - en: In Variational Bayesian methods, this loss function is known as the *variational
     lower bound*, or *evidence lower bound*. The “lower bound” part in the name comes
     from the fact that KL divergence is always non-negative and thus $-L_\text{VAE}$
     is the lower bound of $\log p_\theta (\mathbf{x})$.
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 在变分贝叶斯方法中，这个损失函数被称为*变分下限*或*证据下限*。名称中的“下限”部分来自于 KL 散度始终为非负，因此 $-L_\text{VAE}$
+    是 $\log p_\theta (\mathbf{x})$ 的下限。
 - en: $$ -L_\text{VAE} = \log p_\theta(\mathbf{x}) - D_\text{KL}( q_\phi(\mathbf{z}\vert\mathbf{x})
     \| p_\theta(\mathbf{z}\vert\mathbf{x}) ) \leq \log p_\theta(\mathbf{x}) $$
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ -L_\text{VAE} = \log p_\theta(\mathbf{x}) - D_\text{KL}( q_\phi(\mathbf{z}\vert\mathbf{x})
+    \| p_\theta(\mathbf{z}\vert\mathbf{x}) ) \leq \log p_\theta(\mathbf{x}) $$
 - en: Therefore by minimizing the loss, we are maximizing the lower bound of the probability
     of generating real data samples.
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，通过最小化损失，我们正在最大化生成真实数据样本的概率的下限。
 - en: Reparameterization Trick
+  id: totrans-100
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 重新参数化技巧
 - en: 'The expectation term in the loss function invokes generating samples from $\mathbf{z}
     \sim q_\phi(\mathbf{z}\vert\mathbf{x})$. Sampling is a stochastic process and
     therefore we cannot backpropagate the gradient. To make it trainable, the reparameterization
@@ -496,81 +755,123 @@
     where $\boldsymbol{\epsilon}$ is an auxiliary independent random variable, and
     the transformation function $\mathcal{T}_\phi$ parameterized by $\phi$ converts
     $\boldsymbol{\epsilon}$ to $\mathbf{z}$.'
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 损失函数中的期望项调用从 $\mathbf{z} \sim q_\phi(\mathbf{z}\vert\mathbf{x})$ 生成样本。抽样是一个随机过程，因此我们无法反向传播梯度。为了使其可训练，引入了重新参数化技巧：通常可以将随机变量
+    $\mathbf{z}$ 表示为确定性变量 $\mathbf{z} = \mathcal{T}_\phi(\mathbf{x}, \boldsymbol{\epsilon})$，其中
+    $\boldsymbol{\epsilon}$ 是一个辅助独立随机变量，而由参数 $\phi$ 参数化的转换函数 $\mathcal{T}_\phi$ 将
+    $\boldsymbol{\epsilon}$ 转换为 $\mathbf{z}$。
 - en: 'For example, a common choice of the form of $q_\phi(\mathbf{z}\vert\mathbf{x})$
     is a multivariate Gaussian with a diagonal covariance structure:'
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，$q_\phi(\mathbf{z}\vert\mathbf{x})$ 的常见选择形式是具有对角协方差结构的多元高斯分布：
 - en: $$ \begin{aligned} \mathbf{z} &\sim q_\phi(\mathbf{z}\vert\mathbf{x}^{(i)})
     = \mathcal{N}(\mathbf{z}; \boldsymbol{\mu}^{(i)}, \boldsymbol{\sigma}^{2(i)}\boldsymbol{I})
     & \\ \mathbf{z} &= \boldsymbol{\mu} + \boldsymbol{\sigma} \odot \boldsymbol{\epsilon}
     \text{, where } \boldsymbol{\epsilon} \sim \mathcal{N}(0, \boldsymbol{I}) & \scriptstyle{\text{;
     Reparameterization trick.}} \end{aligned} $$
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \mathbf{z} &\sim q_\phi(\mathbf{z}\vert\mathbf{x}^{(i)})
+    = \mathcal{N}(\mathbf{z}; \boldsymbol{\mu}^{(i)}, \boldsymbol{\sigma}^{2(i)}\boldsymbol{I})
+    & \\ \mathbf{z} &= \boldsymbol{\mu} + \boldsymbol{\sigma} \odot \boldsymbol{\epsilon}
+    \text{，其中 } \boldsymbol{\epsilon} \sim \mathcal{N}(0, \boldsymbol{I}) & \scriptstyle{\text{；重新参数化技巧。}}
+    \end{aligned} $$
 - en: where $\odot$ refers to element-wise product.
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 $\odot$ 表示逐元素乘积。
 - en: '![](../Images/41855f7d735adddd93cd89aa2f9cf8d5.png)'
+  id: totrans-105
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/41855f7d735adddd93cd89aa2f9cf8d5.png)'
 - en: 'Fig. 8\. Illustration of how the reparameterization trick makes the $\mathbf{z}$
     sampling process trainable.(Image source: Slide 12 in Kingma’s NIPS 2015 workshop
     [talk](http://dpkingma.com/wordpress/wp-content/uploads/2015/12/talk_nips_workshop_2015.pdf))'
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 图8\. 说明了重参数化技巧如何使$\mathbf{z}$的采样过程可训练。（图片来源：Kingma在NIPS 2015研讨会的幻灯片12中的[演讲](http://dpkingma.com/wordpress/wp-content/uploads/2015/12/talk_nips_workshop_2015.pdf)）
 - en: The reparameterization trick works for other types of distributions too, not
     only Gaussian. In the multivariate Gaussian case, we make the model trainable
     by learning the mean and variance of the distribution, $\mu$ and $\sigma$, explicitly
     using the reparameterization trick, while the stochasticity remains in the random
     variable $\boldsymbol{\epsilon} \sim \mathcal{N}(0, \boldsymbol{I})$.
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 重参数化技巧也适用于其他类型的分布，不仅仅是高斯分布。在多变量高斯情况下，我们通过学习分布的均值和方差$\mu$和$\sigma$来使模型可训练，明确地使用重参数化技巧，而随机性仍然存在于随机变量$\boldsymbol{\epsilon}
+    \sim \mathcal{N}(0, \boldsymbol{I})$中。
 - en: '![](../Images/eb5cf06531f510b6d53f21193762025f.png)'
+  id: totrans-108
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/eb5cf06531f510b6d53f21193762025f.png)'
 - en: Fig. 9\. Illustration of variational autoencoder model with the multivariate
     Gaussian assumption.
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 图9\. 变分自动编码器模型的多变量高斯假设说明。
 - en: Beta-VAE
+  id: totrans-110
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Beta-VAE
 - en: If each variable in the inferred latent representation $\mathbf{z}$ is only
     sensitive to one single generative factor and relatively invariant to other factors,
     we will say this representation is disentangled or factorized. One benefit that
     often comes with disentangled representation is *good interpretability* and easy
     generalization to a variety of tasks.
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果推断出的潜在表示中的每个变量$\mathbf{z}$只对一个单一的生成因子敏感，并且相对于其他因子是不变的，我们将称这种表示为解耦或因子化。解耦表示经常带来的一个好处是*良好的可解释性*，并且容易推广到各种任务。
 - en: For example, a model trained on photos of human faces might capture the gentle,
     skin color, hair color, hair length, emotion, whether wearing a pair of glasses
     and many other relatively independent factors in separate dimensions. Such a disentangled
     representation is very beneficial to facial image generation.
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，一个训练于人脸照片的模型可能会在不同维度中捕捉到温和、肤色、发色、发长、情绪、是否戴眼镜等许多相对独立的因素。这样的解耦表示对于面部图像生成非常有益。
 - en: 'β-VAE ([Higgins et al., 2017](https://openreview.net/forum?id=Sy2fzU9gl)) is
     a modification of Variational Autoencoder with a special emphasis to discover
     disentangled latent factors. Following the same incentive in VAE, we want to maximize
     the probability of generating real data, while keeping the distance between the
     real and estimated posterior distributions small (say, under a small constant
     $\delta$):'
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: β-VAE（[Higgins等人，2017](https://openreview.net/forum?id=Sy2fzU9gl)）是变分自动编码器的修改版本，特别强调发现解耦潜在因子。在VAE中遵循相同的激励，我们希望最大化生成真实数据的概率，同时保持真实和估计后验分布之间的距离小（比如，在一个小常数$\delta$下）：
 - en: $$ \begin{aligned} &\max_{\phi, \theta} \mathbb{E}_{\mathbf{x}\sim\mathcal{D}}[\mathbb{E}_{\mathbf{z}
     \sim q_\phi(\mathbf{z}\vert\mathbf{x})} \log p_\theta(\mathbf{x}\vert\mathbf{z})]\\
     &\text{subject to } D_\text{KL}(q_\phi(\mathbf{z}\vert\mathbf{x})\|p_\theta(\mathbf{z}))
     < \delta \end{aligned} $$
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} &\max_{\phi, \theta} \mathbb{E}_{\mathbf{x}\sim\mathcal{D}}[\mathbb{E}_{\mathbf{z}
+    \sim q_\phi(\mathbf{z}\vert\mathbf{x})} \log p_\theta(\mathbf{x}\vert\mathbf{z})]\\
+    &\text{subject to } D_\text{KL}(q_\phi(\mathbf{z}\vert\mathbf{x})\|p_\theta(\mathbf{z}))
+    < \delta \end{aligned} $$
 - en: 'We can rewrite it as a Lagrangian with a Lagrangian multiplier $\beta$ under
     the [KKT condition](https://www.cs.cmu.edu/~ggordon/10725-F12/slides/16-kkt.pdf).
     The above optimization problem with only one inequality constraint is equivalent
     to maximizing the following equation $\mathcal{F}(\theta, \phi, \beta)$:'
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以将其重写为带有拉格朗日乘子$\beta$的拉格朗日形式，在[KKT条件](https://www.cs.cmu.edu/~ggordon/10725-F12/slides/16-kkt.pdf)下。只有一个不等式约束的上述优化问题等价于最大化以下方程$\mathcal{F}(\theta,
+    \phi, \beta)$：
 - en: $$ \begin{aligned} \mathcal{F}(\theta, \phi, \beta) &= \mathbb{E}_{\mathbf{z}
     \sim q_\phi(\mathbf{z}\vert\mathbf{x})} \log p_\theta(\mathbf{x}\vert\mathbf{z})
     - \beta(D_\text{KL}(q_\phi(\mathbf{z}\vert\mathbf{x})\|p_\theta(\mathbf{z})) -
@@ -579,24 +880,44 @@
     + \beta \delta & \\ & \geq \mathbb{E}_{\mathbf{z} \sim q_\phi(\mathbf{z}\vert\mathbf{x})}
     \log p_\theta(\mathbf{x}\vert\mathbf{z}) - \beta D_\text{KL}(q_\phi(\mathbf{z}\vert\mathbf{x})\|p_\theta(\mathbf{z}))
     & \scriptstyle{\text{; Because }\beta,\delta\geq 0} \end{aligned} $$
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \mathcal{F}(\theta, \phi, \beta) &= \mathbb{E}_{\mathbf{z}
+    \sim q_\phi(\mathbf{z}\vert\mathbf{x})} \log p_\theta(\mathbf{x}\vert\mathbf{z})
+    - \beta(D_\text{KL}(q_\phi(\mathbf{z}\vert\mathbf{x})\|p_\theta(\mathbf{z})) -
+    \delta) & \\ & = \mathbb{E}_{\mathbf{z} \sim q_\phi(\mathbf{z}\vert\mathbf{x})}
+    \log p_\theta(\mathbf{x}\vert\mathbf{z}) - \beta D_\text{KL}(q_\phi(\mathbf{z}\vert\mathbf{x})\|p_\theta(\mathbf{z}))
+    + \beta \delta & \\ & \geq \mathbb{E}_{\mathbf{z} \sim q_\phi(\mathbf{z}\vert\mathbf{x})}
+    \log p_\theta(\mathbf{x}\vert\mathbf{z}) - \beta D_\text{KL}(q_\phi(\mathbf{z}\vert\mathbf{x})\|p_\theta(\mathbf{z}))
+    & \scriptstyle{\text{; 因为 }\beta,\delta\geq 0} \end{aligned} $$
 - en: 'The loss function of $\beta$-VAE is defined as:'
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: $\beta$-VAE 的损失函数定义如下：
 - en: $$ L_\text{BETA}(\phi, \beta) = - \mathbb{E}_{\mathbf{z} \sim q_\phi(\mathbf{z}\vert\mathbf{x})}
     \log p_\theta(\mathbf{x}\vert\mathbf{z}) + \beta D_\text{KL}(q_\phi(\mathbf{z}\vert\mathbf{x})\|p_\theta(\mathbf{z}))
     $$
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ L_\text{BETA}(\phi, \beta) = - \mathbb{E}_{\mathbf{z} \sim q_\phi(\mathbf{z}\vert\mathbf{x})}
+    \log p_\theta(\mathbf{x}\vert\mathbf{z}) + \beta D_\text{KL}(q_\phi(\mathbf{z}\vert\mathbf{x})\|p_\theta(\mathbf{z}))
+    $$
 - en: where the Lagrangian multiplier $\beta$ is considered as a hyperparameter.
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: 拉格朗日乘子 $\beta$ 被视为一个超参数。
 - en: Since the negation of $L_\text{BETA}(\phi, \beta)$ is the lower bound of the
     Lagrangian $\mathcal{F}(\theta, \phi, \beta)$. Minimizing the loss is equivalent
     to maximizing the Lagrangian and thus works for our initial optimization problem.
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于 $L_\text{BETA}(\phi, \beta)$ 的否定是拉格朗日 $\mathcal{F}(\theta, \phi, \beta)$
+    的下界。最小化损失等价于最大化拉格朗日，因此适用于我们的初始优化问题。
 - en: When $\beta=1$, it is same as VAE. When $\beta > 1$, it applies a stronger constraint
     on the latent bottleneck and limits the representation capacity of $\mathbf{z}$.
     For some conditionally independent generative factors, keeping them disentangled
@@ -604,399 +925,625 @@
     efficient latent encoding and further encourages the disentanglement. Meanwhile,
     a higher $\beta$ may create a trade-off between reconstruction quality and the
     extent of disentanglement.
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: 当 $\beta=1$ 时，与 VAE 相同。当 $\beta > 1$ 时，对潜在瓶颈施加更强的约束，限制 $\mathbf{z}$ 的表示容量。对于一些条件独立的生成因素，保持它们解缠是最有效的表示。因此，更高的
+    $\beta$ 鼓励更有效的潜在编码，并进一步鼓励解缠。同时，更高的 $\beta$ 可能在重构质量和解缠程度之间产生权衡。
 - en: '[Burgess, et al. (2017)](https://arxiv.org/pdf/1804.03599.pdf) discussed the
     distentangling in $\beta$-VAE in depth with an inspiration by the [information
     bottleneck theory](https://lilianweng.github.io/posts/2017-09-28-information-bottleneck/)
     and further proposed a modification to $\beta$-VAE to better control the encoding
     representation capacity.'
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Burgess, et al. (2017)](https://arxiv.org/pdf/1804.03599.pdf) 深入讨论了 $\beta$-VAE
+    中的解缠绕，受到[信息瓶颈理论](https://lilianweng.github.io/posts/2017-09-28-information-bottleneck/)的启发，并进一步提出了对
+    $\beta$-VAE 的修改，以更好地控制编码表示容量。'
 - en: VQ-VAE and VQ-VAE-2
+  id: totrans-123
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: VQ-VAE 和 VQ-VAE-2
 - en: The **VQ-VAE** (“Vector Quantised-Variational AutoEncoder”; [van den Oord, et
     al. 2017](http://papers.nips.cc/paper/7210-neural-discrete-representation-learning.pdf))
     model learns a discrete latent variable by the encoder, since discrete representations
     may be a more natural fit for problems like language, speech, reasoning, etc.
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: '**VQ-VAE**（“矢量量化变分自动编码器”；[van den Oord, et al. 2017](http://papers.nips.cc/paper/7210-neural-discrete-representation-learning.pdf)）模型通过编码器学习离散潜变量，因为离散表示可能更适合语言、语音、推理等问题。'
 - en: Vector quantisation (VQ) is a method to map $K$-dimensional vectors into a finite
     set of “code” vectors. The process is very much similar to [KNN](https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm)
     algorithm. The optimal centroid code vector that a sample should be mapped to
     is the one with minimum euclidean distance.
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: 矢量量化（VQ）是一种将 $K$ 维向量映射到有限集合“码”向量的方法。这个过程非常类似于[KNN](https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm)算法。样本应映射到的最佳质心码向量是与之的欧几里德距离最小的向量。
 - en: Let $\mathbf{e} \in \mathbb{R}^{K \times D}, i=1, \dots, K$ be the latent embedding
     space (also known as “codebook”) in VQ-VAE, where $K$ is the number of latent
     variable categories and $D$ is the embedding size. An individual embedding vector
     is $\mathbf{e}_i \in \mathbb{R}^{D}, i=1, \dots, K$.
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: 让$\mathbf{e} \in \mathbb{R}^{K \times D}, i=1, \dots, K$成为VQ-VAE中的潜在嵌入空间（也称为“码书”），其中$K$是潜变量类别数，$D$是嵌入大小。单个嵌入向量为$\mathbf{e}_i
+    \in \mathbb{R}^{D}, i=1, \dots, K$。
 - en: 'The encoder output $E(\mathbf{x}) = \mathbf{z}_e$ goes through a nearest-neighbor
     lookup to match to one of $K$ embedding vectors and then this matched code vector
     becomes the input for the decoder $D(.)$:'
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: 编码器输出$E(\mathbf{x}) = \mathbf{z}_e$经过最近邻查找匹配到$K$个嵌入向量中的一个，然后这个匹配的码向量成为解码器$D(.)$的输入：
 - en: $$ \mathbf{z}_q(\mathbf{x}) = \text{Quantize}(E(\mathbf{x})) = \mathbf{e}_k
     \text{ where } k = \arg\min_i \|E(\mathbf{x}) - \mathbf{e}_i \|_2 $$
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathbf{z}_q(\mathbf{x}) = \text{Quantize}(E(\mathbf{x})) = \mathbf{e}_k
+    \text{ where } k = \arg\min_i \|E(\mathbf{x}) - \mathbf{e}_i \|_2 $$
 - en: Note that the discrete latent variables can have different shapes in differnet
     applications; for example, 1D for speech, 2D for image and 3D for video.
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
+  zh: 请注意，离散潜变量在不同应用中可以具有不同的形状；例如，语音为1D，图像为2D，视频为3D。
 - en: '![](../Images/1211731c716acf903f4a02920d8114f3.png)'
+  id: totrans-130
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/1211731c716acf903f4a02920d8114f3.png)'
 - en: 'Fig. 10\. The architecture of VQ-VAE (Image source: [van den Oord, et al. 2017](http://papers.nips.cc/paper/7210-neural-discrete-representation-learning.pdf))'
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
+  zh: 图10。VQ-VAE的架构（图片来源：[van den Oord等人，2017](http://papers.nips.cc/paper/7210-neural-discrete-representation-learning.pdf)）
 - en: 'Because argmin() is non-differentiable on a discrete space, the gradients $\nabla_z
     L$ from decoder input $\mathbf{z}_q$ is copied to the encoder output $\mathbf{z}_e$.
     Other than reconstruction loss, VQ-VAE also optimizes:'
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于argmin()在离散空间上不可微分，来自解码器输入$\mathbf{z}_q$的梯度$\nabla_z L$被复制到编码器输出$\mathbf{z}_e$。除了重构损失外，VQ-VAE还优化：
 - en: '*VQ loss*: The L2 error between the embedding space and the encoder outputs.'
+  id: totrans-133
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*VQ损失*：嵌入空间与编码器输出之间的L2误差。'
 - en: '*Commitment loss*: A measure to encourage the encoder output to stay close
     to the embedding space and to prevent it from fluctuating too frequently from
     one code vector to another.'
+  id: totrans-134
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*承诺损失*：一种鼓励编码器输出保持接近嵌入空间并防止其从一个码向量频繁波动到另一个码向量的度量。'
 - en: $$ L = \underbrace{\|\mathbf{x} - D(\mathbf{e}_k)\|_2^2}_{\textrm{reconstruction
     loss}} + \underbrace{\|\text{sg}[E(\mathbf{x})] - \mathbf{e}_k\|_2^2}_{\textrm{VQ
     loss}} + \underbrace{\beta \|E(\mathbf{x}) - \text{sg}[\mathbf{e}_k]\|_2^2}_{\textrm{commitment
     loss}} $$
+  id: totrans-135
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ L = \underbrace{\|\mathbf{x} - D(\mathbf{e}_k)\|_2^2}_{\textrm{重构损失}} + \underbrace{\|\text{sg}[E(\mathbf{x})]
+    - \mathbf{e}_k\|_2^2}_{\textrm{VQ损失}} + \underbrace{\beta \|E(\mathbf{x}) - \text{sg}[\mathbf{e}_k]\|_2^2}_{\textrm{承诺损失}}
+    $$
 - en: where $\text{sq}[.]$ is the `stop_gradient` operator.
+  id: totrans-136
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$\text{sq}[.]$是`stop_gradient`运算符。
 - en: 'The embedding vectors in the codebook is updated through EMA (exponential moving
     average). Given a code vector $\mathbf{e}_i$, say we have $n_i$ encoder output
     vectors, $\{\mathbf{z}_{i,j}\}_{j=1}^{n_i}$, that are quantized to $\mathbf{e}_i$:'
+  id: totrans-137
   prefs: []
   type: TYPE_NORMAL
+  zh: 码书中的嵌入向量通过EMA（指数移动平均）进行更新。给定一个码向量$\mathbf{e}_i$，假设我们有$n_i$个编码器输出向量$\{\mathbf{z}_{i,j}\}_{j=1}^{n_i}$，这些向量被量化为$\mathbf{e}_i$：
 - en: $$ N_i^{(t)} = \gamma N_i^{(t-1)} + (1-\gamma)n_i^{(t)}\;\;\; \mathbf{m}_i^{(t)}
     = \gamma \mathbf{m}_i^{(t-1)} + (1-\gamma)\sum_{j=1}^{n_i^{(t)}}\mathbf{z}_{i,j}^{(t)}\;\;\;
     \mathbf{e}_i^{(t)} = \mathbf{m}_i^{(t)} / N_i^{(t)} $$
+  id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ N_i^{(t)} = \gamma N_i^{(t-1)} + (1-\gamma)n_i^{(t)}\;\;\; \mathbf{m}_i^{(t)}
+    = \gamma \mathbf{m}_i^{(t-1)} + (1-\gamma)\sum_{j=1}^{n_i^{(t)}}\mathbf{z}_{i,j}^{(t)}\;\;\;
+    \mathbf{e}_i^{(t)} = \mathbf{m}_i^{(t)} / N_i^{(t)} $$
 - en: where $(t)$ refers to batch sequence in time. $N_i$ and $\mathbf{m}_i$ are accumulated
     vector count and volume, respectively.
+  id: totrans-139
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$(t)$表示时间中的批次序列。$N_i$和$\mathbf{m}_i$分别是累积向量计数和体积。
 - en: VQ-VAE-2 ([Ali Razavi, et al. 2019](https://arxiv.org/abs/1906.00446)) is a
     two-level hierarchical VQ-VAE combined with self-attention autoregressive model.
+  id: totrans-140
   prefs: []
   type: TYPE_NORMAL
+  zh: VQ-VAE-2（[Ali Razavi等人，2019](https://arxiv.org/abs/1906.00446)）是一个两级分层VQ-VAE，结合了自注意力自回归模型。
 - en: 'Stage 1 is to **train a hierarchical VQ-VAE**: The design of hierarchical latent
     variables intends to separate local patterns (i.e., texture) from global information
     (i.e., object shapes). The training of the larger bottom level codebook is conditioned
     on the smaller top level code too, so that it does not have to learn everything
     from scratch.'
+  id: totrans-141
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 阶段1是**训练分层VQ-VAE**：分层潜变量的设计旨在将局部模式（即纹理）与全局信息（即物体形状）分离开来。较大底层码书的训练也受到较小顶层码的条件约束，因此不必从头开始学习。
 - en: Stage 2 is to **learn a prior over the latent discrete codebook** so that we
     sample from it and generate images. In this way, the decoder can receive input
     vectors sampled from a similar distribution as the one in training. A powerful
     autoregressive model enhanced with multi-headed self-attention layers is used
     to capture the prior distribution (like [PixelSNAIL; Chen et al 2017](https://arxiv.org/abs/1712.09763)).
+  id: totrans-142
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 第2阶段是**学习潜在离散码书上的先验**，以便我们从中采样并生成图像。通过这种方式，解码器可以接收从训练中采样的输入向量。使用增强了多头自注意力层的强大自回归模型来捕获先验分布（例如[PixelSNAIL；Chen等人，2017](https://arxiv.org/abs/1712.09763)）。
 - en: Considering that VQ-VAE-2 depends on discrete latent variables configured in
     a simple hierarchical setting, the quality of its generated images are pretty
     amazing.
+  id: totrans-143
   prefs: []
   type: TYPE_NORMAL
+  zh: 考虑到VQ-VAE-2依赖于在简单的分层设置中配置的离散潜在变量，其生成的图像质量非常惊人。
 - en: '![](../Images/6e8e56d6998931c779239492d44de09c.png)'
+  id: totrans-144
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6e8e56d6998931c779239492d44de09c.png)'
 - en: 'Fig. 11\. Architecture of hierarchical VQ-VAE and multi-stage image generation.
     (Image source: [Ali Razavi, et al. 2019](https://arxiv.org/abs/1906.00446))'
+  id: totrans-145
   prefs: []
   type: TYPE_NORMAL
+  zh: 图11。分层VQ-VAE和多阶段图像生成的架构。（图片来源：[Ali Razavi等人，2019](https://arxiv.org/abs/1906.00446)）
 - en: '![](../Images/390c6de721e8e7327f408c84d666689f.png)'
+  id: totrans-146
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/390c6de721e8e7327f408c84d666689f.png)'
 - en: 'Fig. 12\. The VQ-VAE-2 algorithm. (Image source: [Ali Razavi, et al. 2019](https://arxiv.org/abs/1906.00446))'
+  id: totrans-147
   prefs: []
   type: TYPE_NORMAL
+  zh: 图12。VQ-VAE-2算法。（图片来源：[Ali Razavi等人，2019](https://arxiv.org/abs/1906.00446)）
 - en: TD-VAE
+  id: totrans-148
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: TD-VAE
 - en: '**TD-VAE** (“Temporal Difference VAE”; [Gregor et al., 2019](https://arxiv.org/abs/1806.03107))
     works with sequential data. It relies on three main ideas, described below.'
+  id: totrans-149
   prefs: []
   type: TYPE_NORMAL
+  zh: '**TD-VAE**（“时间差分VAE”；[Gregor等人，2019](https://arxiv.org/abs/1806.03107)）适用于序列数据。它依赖于以下三个主要思想。'
 - en: '![](../Images/b4646845891ff2e79d7125fc7d66bc11.png)'
+  id: totrans-150
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/b4646845891ff2e79d7125fc7d66bc11.png)'
 - en: Fig. 13\. State-space model as a Markov Chain model.
+  id: totrans-151
   prefs: []
   type: TYPE_NORMAL
+  zh: 图13。状态空间模型作为马尔可夫链模型。
 - en: '**1\. State-Space Models**'
+  id: totrans-152
   prefs: []
   type: TYPE_NORMAL
+  zh: '**1\. 状态空间模型**'
 - en: In (latent) state-space models, a sequence of unobserved hidden states $\mathbf{z}
     = (z_1, \dots, z_T)$ determine the observation states $\mathbf{x} = (x_1, \dots,
     x_T)$. Each time step in the Markov chain model in Fig. 13 can be trained in a
     similar manner as in Fig. 6, where the intractable posterior $p(z \vert x)$ is
     approximated by a function $q(z \vert x)$.
+  id: totrans-153
   prefs: []
   type: TYPE_NORMAL
+  zh: 在（潜在）状态空间模型中，一系列未观察到的隐藏状态 $\mathbf{z} = (z_1, \dots, z_T)$ 决定了观察状态 $\mathbf{x}
+    = (x_1, \dots, x_T)$。图13中马尔可夫链模型中的每个时间步可以像图6中一样进行训练，其中不可计算的后验概率 $p(z \vert x)$
+    被函数 $q(z \vert x)$ 近似。
 - en: '**2\. Belief State**'
+  id: totrans-154
   prefs: []
   type: TYPE_NORMAL
+  zh: '**2\. 信念状态**'
 - en: An agent should learn to encode all the past states to reason about the future,
     named as *belief state*, $b_t = belief(x_1, \dots, x_t) = belief(b_{t-1}, x_t)$.
     Given this, the distribution of future states conditioned on the past can be written
     as $p(x_{t+1}, \dots, x_T \vert x_1, \dots, x_t) \approx p(x_{t+1}, \dots, x_T
     \vert b_t)$. The hidden states in a recurrent policy are used as the agent’s belief
     state in TD-VAE. Thus we have $b_t = \text{RNN}(b_{t-1}, x_t)$.
+  id: totrans-155
   prefs: []
   type: TYPE_NORMAL
+  zh: 智能体应该学会对所有过去的状态进行编码以推理未来，称为*信念状态*，$b_t = belief(x_1, \dots, x_t) = belief(b_{t-1},
+    x_t)$。基于此，给定过去的条件下未来状态的分布可以写为 $p(x_{t+1}, \dots, x_T \vert x_1, \dots, x_t) \approx
+    p(x_{t+1}, \dots, x_T \vert b_t)$。在TD-VAE中，递归策略中的隐藏状态被用作智能体的信念状态。因此，我们有 $b_t =
+    \text{RNN}(b_{t-1}, x_t)$。
 - en: '**3\. Jumpy Prediction**'
+  id: totrans-156
   prefs: []
   type: TYPE_NORMAL
+  zh: '**3\. 跳跃预测**'
 - en: Further, an agent is expected to imagine distant futures based on all the information
     gathered so far, suggesting the capability of making jumpy predictions, that is,
     predicting states several steps further into the future.
+  id: totrans-157
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，一个智能体应该根据迄今收集的所有信息来想象遥远的未来，表明其具有进行跳跃预测的能力，即预测未来几步的状态。
 - en: 'Recall what we have learned from the variance lower bound [above](#loss-function-elbo):'
+  id: totrans-158
   prefs: []
   type: TYPE_NORMAL
+  zh: 回顾我们从上述方差下界中学到的内容：
 - en: $$ \begin{aligned} \log p(x) &\geq \log p(x) - D_\text{KL}(q(z|x)\|p(z|x)) \\
     &= \mathbb{E}_{z\sim q} \log p(x|z) - D_\text{KL}(q(z|x)\|p(z)) \\ &= \mathbb{E}_{z
     \sim q} \log p(x|z) - \mathbb{E}_{z \sim q} \log \frac{q(z|x)}{p(z)} \\ &= \mathbb{E}_{z
     \sim q}[\log p(x|z) -\log q(z|x) + \log p(z)] \\ &= \mathbb{E}_{z \sim q}[\log
     p(x, z) -\log q(z|x)] \\ \log p(x) &\geq \mathbb{E}_{z \sim q}[\log p(x, z) -\log
     q(z|x)] \end{aligned} $$
+  id: totrans-159
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \log p(x) &\geq \log p(x) - D_\text{KL}(q(z|x)\|p(z|x)) \\
+    &= \mathbb{E}_{z\sim q} \log p(x|z) - D_\text{KL}(q(z|x)\|p(z)) \\ &= \mathbb{E}_{z
+    \sim q} \log p(x|z) - \mathbb{E}_{z \sim q} \log \frac{q(z|x)}{p(z)} \\ &= \mathbb{E}_{z
+    \sim q}[\log p(x|z) -\log q(z|x) + \log p(z)] \\ &= \mathbb{E}_{z \sim q}[\log
+    p(x, z) -\log q(z|x)] \\ \log p(x) &\geq \mathbb{E}_{z \sim q}[\log p(x, z) -\log
+    q(z|x)] \end{aligned} $$
 - en: 'Now let’s model the distribution of the state $x_t$ as a probability function
     conditioned on all the past states $x_{<t}$ and two latent variables, $z_t$ and
     $z_{t-1}$, at current time step and one step back:'
+  id: totrans-160
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们将状态 $x_t$ 的分布建模为一个概率函数，条件是所有过去状态 $x_{<t}$ 和当前时间步和一步回退的两个潜变量 $z_t$ 和 $z_{t-1}$：
 - en: $$ \log p(x_t|x_{
+  id: totrans-161
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \log p(x_t|x_{
 - en: 'Continue expanding the equation:'
+  id: totrans-162
   prefs: []
   type: TYPE_NORMAL
+  zh: 继续扩展方程式：
 - en: $$ \begin{aligned} & \log p(x_t|x_{
+  id: totrans-163
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} & \log p(x_t|x_{
 - en: 'Notice two things:'
+  id: totrans-164
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意两件事：
 - en: The red terms can be ignored according to Markov assumptions.
+  id: totrans-165
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 根据马尔可夫假设，红色项可以被忽略。
 - en: The blue term is expanded according to Markov assumptions.
+  id: totrans-166
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 蓝色项根据马尔可夫假设进行了扩展。
 - en: The green term is expanded to include an one-step prediction back to the past
     as a smoothing distribution.
+  id: totrans-167
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 绿色项被扩展以包括向过去进行一步预测作为平滑分布。
 - en: 'Precisely, there are four types of distributions to learn:'
+  id: totrans-168
   prefs: []
   type: TYPE_NORMAL
+  zh: 具体来说，有四种类型的分布需要学习：
 - en: '$p_D(.)$ is the **decoder** distribution:'
+  id: totrans-169
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: $p_D(.)$ 是**解码器**分布：
 - en: $p(x_t \mid z_t)$ is the encoder by the common definition;
+  id: totrans-170
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $p(x_t \mid z_t)$ 是按照通用定义的编码器；
 - en: $p(x_t \mid z_t) \to p_D(x_t \mid z_t)$;
+  id: totrans-171
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $p(x_t \mid z_t) \to p_D(x_t \mid z_t)$;
 - en: '$p_T(.)$ is the **transition** distribution:'
+  id: totrans-172
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: $p_T(.)$ 是**转移**分布：
 - en: $p(z_t \mid z_{t-1})$ captures the sequential dependency between latent variables;
+  id: totrans-173
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $p(z_t \mid z_{t-1})$ 捕捉潜变量之间的顺序依赖关系；
 - en: $p(z_t \mid z_{t-1}) \to p_T(z_t \mid z_{t-1})$;
+  id: totrans-174
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $p(z_t \mid z_{t-1}) \to p_T(z_t \mid z_{t-1})$;
 - en: '$p_B(.)$ is the **belief** distribution:'
+  id: totrans-175
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: $p_B(.)$ 是**信念**分布：
 - en: Both $p(z_{t-1} \mid x_{<t})$ and $q(z_t \mid x_{\leq t})$ can use the belief
     states to predict the latent variables;
+  id: totrans-176
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $p(z_{t-1} \mid x_{<t})$ 和 $q(z_t \mid x_{\leq t})$ 都可以使用信念状态来预测潜变量；
 - en: $p(z_{t-1} \mid x_{<t}) \to p_B(z_{t-1} \mid b_{t-1})$;
+  id: totrans-177
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $p(z_{t-1} \mid x_{<t}) \to p_B(z_{t-1} \mid b_{t-1})$;
 - en: $q(z_{t} \mid x_{\leq t}) \to p_B(z_t \mid b_t)$;
+  id: totrans-178
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $q(z_{t} \mid x_{\leq t}) \to p_B(z_t \mid b_t)$;
 - en: '$p_S(.)$ is the **smoothing** distribution:'
+  id: totrans-179
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: $p_S(.)$ 是**平滑**分布：
 - en: The back-to-past smoothing term $q(z_{t-1} \mid z_t, x_{\leq t})$ can be rewritten
     to be dependent of belief states too;
+  id: totrans-180
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 回到过去的平滑项 $q(z_{t-1} \mid z_t, x_{\leq t})$ 可以重写为依赖于信念状态；
 - en: $q(z_{t-1} \mid z_t, x_{\leq t}) \to p_S(z_{t-1} \mid z_t, b_{t-1}, b_t)$;
+  id: totrans-181
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $q(z_{t-1} \mid z_t, x_{\leq t}) \to p_S(z_{t-1} \mid z_t, b_{t-1}, b_t)$;
 - en: 'To incorporate the idea of jumpy prediction, the sequential ELBO has to not
     only work on $t, t+1$, but also two distant timestamp $t_1 < t_2$. Here is the
     final TD-VAE objective function to maximize:'
+  id: totrans-182
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了融入跳跃预测的概念，顺序ELBO不仅需要在 $t, t+1$ 上工作，还需要在两个不同的时间戳 $t_1 < t_2$ 上工作。这是最终的TD-VAE目标函数以最大化：
 - en: $$ J_{t_1, t_2} = \mathbb{E}[ \log p_D(x_{t_2}|z_{t_2}) + \log p_B(z_{t_1}|b_{t_1})
     + \log p_T(z_{t_2}|z_{t_1}) - \log p_B(z_{t_2}|b_{t_2}) - \log p_S(z_{t_1}|z_{t_2},
     b_{t_1}, b_{t_2})] $$![](../Images/9774b76a16c22bfb088fb2fb9004368e.png)
+  id: totrans-183
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ J_{t_1, t_2} = \mathbb{E}[ \log p_D(x_{t_2}|z_{t_2}) + \log p_B(z_{t_1}|b_{t_1})
+    + \log p_T(z_{t_2}|z_{t_1}) - \log p_B(z_{t_2}|b_{t_2}) - \log p_S(z_{t_1}|z_{t_2},
+    b_{t_1}, b_{t_2})] $$![](../Images/9774b76a16c22bfb088fb2fb9004368e.png)
 - en: 'Fig. 14\. A detailed overview of TD-VAE architecture, very nicely done. (Image
     source: [TD-VAE paper](https://arxiv.org/abs/1806.03107))'
+  id: totrans-184
   prefs: []
   type: TYPE_NORMAL
+  zh: 图14。TD-VAE架构的详细概述，非常出色。 (图片来源：[TD-VAE论文](https://arxiv.org/abs/1806.03107))
 - en: '* * *'
+  id: totrans-185
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'Cited as:'
+  id: totrans-186
   prefs: []
   type: TYPE_NORMAL
+  zh: 引用为：
 - en: '[PRE0]'
+  id: totrans-187
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: References
+  id: totrans-188
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: '[1] Geoffrey E. Hinton, and Ruslan R. Salakhutdinov. [“Reducing the dimensionality
     of data with neural networks.”](https://pdfs.semanticscholar.org/c50d/ca78e97e335d362d6b991ae0e1448914e9a3.pdf)
     Science 313.5786 (2006): 504-507.'
+  id: totrans-189
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] Geoffrey E. Hinton, 和 Ruslan R. Salakhutdinov。[“使用神经网络降低数据的维度。”](https://pdfs.semanticscholar.org/c50d/ca78e97e335d362d6b991ae0e1448914e9a3.pdf)
+    科学 313.5786 (2006): 504-507.'
 - en: '[2] Pascal Vincent, et al. [“Extracting and composing robust features with
     denoising autoencoders.”](http://www.cs.toronto.edu/~larocheh/publications/icml-2008-denoising-autoencoders.pdf)
     ICML, 2008.'
+  id: totrans-190
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] Pascal Vincent, 等人。[“使用去噪自动编码器提取和组合稳健特征。”](http://www.cs.toronto.edu/~larocheh/publications/icml-2008-denoising-autoencoders.pdf)
+    ICML, 2008.'
 - en: '[3] Pascal Vincent, et al. [“Stacked denoising autoencoders: Learning useful
     representations in a deep network with a local denoising criterion.”](http://www.jmlr.org/papers/volume11/vincent10a/vincent10a.pdf).
     Journal of machine learning research 11.Dec (2010): 3371-3408.'
+  id: totrans-191
   prefs: []
   type: TYPE_NORMAL
+  zh: '[3] Pascal Vincent, 等人。[“堆叠去噪自动编码器：通过局部去噪标准在深度网络中学习有用的表示。”](http://www.jmlr.org/papers/volume11/vincent10a/vincent10a.pdf)
+    机器学习研究杂志 11.Dec (2010): 3371-3408.'
 - en: '[4] Geoffrey E. Hinton, Nitish Srivastava, Alex Krizhevsky, Ilya Sutskever,
     and Ruslan R. Salakhutdinov. “Improving neural networks by preventing co-adaptation
     of feature detectors.” arXiv preprint arXiv:1207.0580 (2012).'
+  id: totrans-192
   prefs: []
   type: TYPE_NORMAL
+  zh: '[4] Geoffrey E. Hinton, Nitish Srivastava, Alex Krizhevsky, Ilya Sutskever,
+    and Ruslan R. Salakhutdinov. “通过防止特征探测器的共适应性来改进神经网络。” arXiv预印本 arXiv:1207.0580
+    (2012).'
 - en: '[5] [Sparse Autoencoder](https://web.stanford.edu/class/cs294a/sparseAutoencoder.pdf)
     by Andrew Ng.'
+  id: totrans-193
   prefs: []
   type: TYPE_NORMAL
+  zh: '[5] [稀疏自动编码器](https://web.stanford.edu/class/cs294a/sparseAutoencoder.pdf)
+    由 Andrew Ng。'
 - en: '[6] Alireza Makhzani, Brendan Frey (2013). [“k-sparse autoencoder”](https://arxiv.org/abs/1312.5663).
     ICLR 2014.'
+  id: totrans-194
   prefs: []
   type: TYPE_NORMAL
+  zh: '[6] Alireza Makhzani, Brendan Frey (2013)。[“k-稀疏自动编码器”](https://arxiv.org/abs/1312.5663)。ICLR
+    2014。'
 - en: '[7] Salah Rifai, et al. [“Contractive auto-encoders: Explicit invariance during
     feature extraction.”](http://www.icml-2011.org/papers/455_icmlpaper.pdf) ICML,
     2011.'
+  id: totrans-195
   prefs: []
   type: TYPE_NORMAL
+  zh: '[7] Salah Rifai 等人 [“收缩自动编码器：特征提取过程中的显式不变性。”](http://www.icml-2011.org/papers/455_icmlpaper.pdf)
+    ICML, 2011。'
 - en: '[8] Diederik P. Kingma, and Max Welling. [“Auto-encoding variational bayes.”](https://arxiv.org/abs/1312.6114)
     ICLR 2014.'
+  id: totrans-196
   prefs: []
   type: TYPE_NORMAL
+  zh: '[8] Diederik P. Kingma 和 Max Welling。[“自动编码变分贝叶斯。”](https://arxiv.org/abs/1312.6114)
+    ICLR 2014。'
 - en: '[9] [Tutorial - What is a variational autoencoder?](https://jaan.io/what-is-variational-autoencoder-vae-tutorial/)
     on jaan.io'
+  id: totrans-197
   prefs: []
   type: TYPE_NORMAL
+  zh: '[9] [教程 - 什么是变分自动编码器？](https://jaan.io/what-is-variational-autoencoder-vae-tutorial/)
+    在 jaan.io 上'
 - en: '[10] Youtube tutorial: [Variational Autoencoders](https://www.youtube.com/watch?v=9zKuYvjFFS8)
     by Arxiv Insights'
+  id: totrans-198
   prefs: []
   type: TYPE_NORMAL
+  zh: '[10] Youtube 教程：[变分自动编码器](https://www.youtube.com/watch?v=9zKuYvjFFS8) 由 Arxiv
+    Insights'
 - en: '[11] [“A Beginner’s Guide to Variational Methods: Mean-Field Approximation”](https://blog.evjang.com/2016/08/variational-bayes.html)
     by Eric Jang.'
+  id: totrans-199
   prefs: []
   type: TYPE_NORMAL
+  zh: '[11] [“初学者指南：均场近似的变分方法”](https://blog.evjang.com/2016/08/variational-bayes.html)
+    由 Eric Jang。'
 - en: '[12] Carl Doersch. [“Tutorial on variational autoencoders.”](https://arxiv.org/abs/1606.05908)
     arXiv:1606.05908, 2016.'
+  id: totrans-200
   prefs: []
   type: TYPE_NORMAL
+  zh: '[12] Carl Doersch。[“变分自动编码器教程。”](https://arxiv.org/abs/1606.05908) arXiv:1606.05908,
+    2016。'
 - en: '[13] Irina Higgins, et al. ["$\beta$-VAE: Learning basic visual concepts with
     a constrained variational framework."](https://openreview.net/forum?id=Sy2fzU9gl)
     ICLR 2017.'
+  id: totrans-201
   prefs: []
   type: TYPE_NORMAL
+  zh: '[13] Irina Higgins 等人 [“$\beta$-VAE：使用受限变分框架学习基本视觉概念。”](https://openreview.net/forum?id=Sy2fzU9gl)
+    ICLR 2017。'
 - en: '[14] Christopher P. Burgess, et al. [“Understanding disentangling in beta-VAE.”](https://arxiv.org/abs/1804.03599)
     NIPS 2017.'
+  id: totrans-202
   prefs: []
   type: TYPE_NORMAL
+  zh: '[14] Christopher P. Burgess 等人 [“理解 beta-VAE 中的解缠。”](https://arxiv.org/abs/1804.03599)
+    NIPS 2017。'
 - en: '[15] Aaron van den Oord, et al. [“Neural Discrete Representation Learning”](https://arxiv.org/abs/1711.00937)
     NIPS 2017.'
+  id: totrans-203
   prefs: []
   type: TYPE_NORMAL
+  zh: '[15] Aaron van den Oord 等人 [“神经离散表示学习”](https://arxiv.org/abs/1711.00937) NIPS
+    2017。'
 - en: '[16] Ali Razavi, et al. [“Generating Diverse High-Fidelity Images with VQ-VAE-2”](https://arxiv.org/abs/1906.00446).
     arXiv preprint arXiv:1906.00446 (2019).'
+  id: totrans-204
   prefs: []
   type: TYPE_NORMAL
+  zh: '[16] Ali Razavi 等人 [“使用 VQ-VAE-2 生成多样化高保真图像”](https://arxiv.org/abs/1906.00446)。arXiv
+    预印本 arXiv:1906.00446 (2019)。'
 - en: '[17] Xi Chen, et al. [“PixelSNAIL: An Improved Autoregressive Generative Model.”](https://arxiv.org/abs/1712.09763)
     arXiv preprint arXiv:1712.09763 (2017).'
+  id: totrans-205
   prefs: []
   type: TYPE_NORMAL
+  zh: '[17] Xi Chen 等人 [“PixelSNAIL：改进的自回归生成模型。”](https://arxiv.org/abs/1712.09763)
+    arXiv 预印本 arXiv:1712.09763 (2017)。'
 - en: '[18] Karol Gregor, et al. [“Temporal Difference Variational Auto-Encoder.”](https://arxiv.org/abs/1806.03107)
     ICLR 2019.'
+  id: totrans-206
   prefs: []
   type: TYPE_NORMAL
+  zh: '[18] Karol Gregor 等人 [“时序差分变分自动编码器。”](https://arxiv.org/abs/1806.03107) ICLR
+    2019。'
 - en: '[autoencoder](https://lilianweng.github.io/tags/autoencoder/)'
+  id: totrans-207
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[自动编码器](https://lilianweng.github.io/tags/autoencoder/)'
 - en: '[generative-model](https://lilianweng.github.io/tags/generative-model/)'
+  id: totrans-208
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[生成模型](https://lilianweng.github.io/tags/generative-model/)'
 - en: '[image-generation](https://lilianweng.github.io/tags/image-generation/)'
+  id: totrans-209
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[图像生成](https://lilianweng.github.io/tags/image-generation/)'
 - en: '[«'
+  id: totrans-210
   prefs: []
   type: TYPE_NORMAL
+  zh: '[«'
 - en: Flow-based Deep Generative Models](https://lilianweng.github.io/posts/2018-10-13-flow-models/)
     [»
+  id: totrans-211
   prefs: []
   type: TYPE_NORMAL
+  zh: '[基于流的深度生成模型](https://lilianweng.github.io/posts/2018-10-13-flow-models/) [»'
 - en: Attention? Attention!](https://lilianweng.github.io/posts/2018-06-24-attention/)[](https://twitter.com/intent/tweet/?text=From%20Autoencoder%20to%20Beta-VAE&url=https%3a%2f%2flilianweng.github.io%2fposts%2f2018-08-12-vae%2f&hashtags=autoencoder%2cgenerative-model%2cimage-generation)[](https://www.linkedin.com/shareArticle?mini=true&url=https%3a%2f%2flilianweng.github.io%2fposts%2f2018-08-12-vae%2f&title=From%20Autoencoder%20to%20Beta-VAE&summary=From%20Autoencoder%20to%20Beta-VAE&source=https%3a%2f%2flilianweng.github.io%2fposts%2f2018-08-12-vae%2f)[](https://reddit.com/submit?url=https%3a%2f%2flilianweng.github.io%2fposts%2f2018-08-12-vae%2f&title=From%20Autoencoder%20to%20Beta-VAE)[](https://facebook.com/sharer/sharer.php?u=https%3a%2f%2flilianweng.github.io%2fposts%2f2018-08-12-vae%2f)[](https://api.whatsapp.com/send?text=From%20Autoencoder%20to%20Beta-VAE%20-%20https%3a%2f%2flilianweng.github.io%2fposts%2f2018-08-12-vae%2f)[](https://telegram.me/share/url?text=From%20Autoencoder%20to%20Beta-VAE&url=https%3a%2f%2flilianweng.github.io%2fposts%2f2018-08-12-vae%2f)©
     2024 [Lil'Log](https://lilianweng.github.io/) Powered by [Hugo](https://gohugo.io/)
     & [PaperMod](https://git.io/hugopapermod)[](#top "Go to Top (Alt + G)")
+  id: totrans-212
   prefs: []
   type: TYPE_NORMAL
+  zh: '[注意力？注意力！](https://lilianweng.github.io/posts/2018-06-24-attention/)© 2024
+    [Lil''Log](https://lilianweng.github.io/) 由[Hugo](https://gohugo.io/) & [PaperMod](https://git.io/hugopapermod)提供[](#top
+    "返回顶部（Alt + G)")'

@@ -1,68 +1,106 @@
 - en: 'Learning with not Enough Data Part 2: Active Learning'
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 缺乏数据的学习第2部分：主动学习
 - en: 原文：[https://lilianweng.github.io/posts/2022-02-20-active-learning/](https://lilianweng.github.io/posts/2022-02-20-active-learning/)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://lilianweng.github.io/posts/2022-02-20-active-learning/](https://lilianweng.github.io/posts/2022-02-20-active-learning/)
 - en: This is part 2 of what to do when facing a limited amount of labeled data for
     supervised learning tasks. This time we will get some amount of human labeling
     work involved, but within a budget limit, and therefore we need to be smart when
     selecting which samples to label.
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是面对有限数量标记数据的监督学习任务时要做的第二部分。这次我们将涉及一定量的人工标记工作，但在预算限制内，因此在选择要标记的样本时需要聪明。
 - en: Notations
+  id: totrans-3
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 符号
 - en: '| Symbol | Meaning |'
+  id: totrans-4
   prefs: []
   type: TYPE_TB
+  zh: '| 符号 | 含义 |'
 - en: '| --- | --- |'
+  id: totrans-5
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- |'
 - en: '| $K$ | Number of unique class labels. |'
+  id: totrans-6
   prefs: []
   type: TYPE_TB
+  zh: '| $K$ | 唯一类别标签的数量。 |'
 - en: '| $(\mathbf{x}^l, y) \sim \mathcal{X}, y \in \{0, 1\}^K$ | Labeled dataset.
     $y$ is a one-hot representation of the true label. |'
+  id: totrans-7
   prefs: []
   type: TYPE_TB
+  zh: '| $(\mathbf{x}^l, y) \sim \mathcal{X}, y \in \{0, 1\}^K$ | 已标记数据集。 $y$ 是真实标签的独热表示。
+    |'
 - en: '| $\mathbf{u} \sim \mathcal{U}$ | Unlabeled dataset. |'
+  id: totrans-8
   prefs: []
   type: TYPE_TB
+  zh: '| $\mathbf{u} \sim \mathcal{U}$ | 未标记数据集。 |'
 - en: '| $\mathcal{D} = \mathcal{X} \cup \mathcal{U}$ | The entire dataset, including
     both labeled and unlabeled examples. |'
+  id: totrans-9
   prefs: []
   type: TYPE_TB
+  zh: '| $\mathcal{D} = \mathcal{X} \cup \mathcal{U}$ | 整个数据集，包括已标记和未标记的示例。 |'
 - en: '| $\mathbf{x}$ | Any sample which can be either labeled or unlabeled. |'
+  id: totrans-10
   prefs: []
   type: TYPE_TB
+  zh: '| $\mathbf{x}$ | 任何可以被标记或未标记的样本。 |'
 - en: '| $\mathbf{x}_i$ | The $i$-th sample. |'
+  id: totrans-11
   prefs: []
   type: TYPE_TB
+  zh: '| $\mathbf{x}_i$ | 第 $i$ 个样本。 |'
 - en: '| $U(\mathbf{x})$ | Scoring function for active learning selection. |'
+  id: totrans-12
   prefs: []
   type: TYPE_TB
+  zh: '| $U(\mathbf{x})$ | 用于主动学习选择的评分函数。 |'
 - en: '| $P_\theta(y \vert \mathbf{x})$ | A softmax classifier parameterized by $\theta$.
     |'
+  id: totrans-13
   prefs: []
   type: TYPE_TB
+  zh: '| $P_\theta(y \vert \mathbf{x})$ | 由 $\theta$ 参数化的 softmax 分类器。 |'
 - en: '| $\hat{y} = \arg\max_{y \in \mathcal{Y}} P_\theta(y \vert \mathbf{x})$ | The
     most confident prediction by the classifier. |'
+  id: totrans-14
   prefs: []
   type: TYPE_TB
+  zh: '| $\hat{y} = \arg\max_{y \in \mathcal{Y}} P_\theta(y \vert \mathbf{x})$ | 分类器的最自信预测。
+    |'
 - en: '| $B$ | Labeling budget (the maximum number of samples to label). |'
+  id: totrans-15
   prefs: []
   type: TYPE_TB
+  zh: '| $B$ | 标记预算（要标记的最大样本数）。 |'
 - en: '| $b$ | Batch size. |'
+  id: totrans-16
   prefs: []
   type: TYPE_TB
+  zh: '| $b$ | 批处理大小。 |'
 - en: What is Active Learning?
+  id: totrans-17
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 什么是主动学习？
 - en: Given an unlabeled dataset $\mathcal{U}$ and a fixed amount of labeling cost
     $B$, active learning aims to select a subset of $B$ examples from $\mathcal{U}$
     to be labeled such that they can result in maximized improvement in model performance.
@@ -71,145 +109,208 @@
     in 2010 lists many key concepts. While some conventional approaches may not apply
     to deep learning, discussion in this post mainly focuses on deep neural models
     and training in batch mode.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 给定一个未标记的数据集 $\mathcal{U}$ 和固定的标记成本 $B$，主动学习旨在从 $\mathcal{U}$ 中选择一个包含 $B$ 个示例的子集进行标记，以便最大化改善模型性能。这是一种有效的学习方法，特别适用于数据标记困难且昂贵的情况，例如医学图像。这篇经典的[调查论文](https://burrsettles.com/pub/settles.activelearning.pdf)于2010年列出了许多关键概念。虽然一些传统方法可能不适用于深度学习，但本文讨论主要集中在深度神经模型和批处理模式训练上。
 - en: '![](../Images/6c17b59e39659a84de8959e28d2f5846.png)'
+  id: totrans-19
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6c17b59e39659a84de8959e28d2f5846.png)'
 - en: Fig. 1\. Illustration of a cyclic workflow of active learning, producing better
     models more efficiently by smartly choosing which samples to label.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 图1. 主动学习的循环工作流程示意图，通过智能选择要标记的样本，更高效地生成更好的模型。
 - en: To simplify the discussion, we assume that the task is a $K$-class classification
     problem in all the following sections. The model with parameters $\theta$ outputs
     a probability distribution over the label candidates, which may or may not be
     calibrated, $P_\theta(y \vert \mathbf{x})$ and the most likely prediction is $\hat{y}
     = \arg\max_{y \in \mathcal{Y}} P_\theta(y \vert \mathbf{x})$.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 为简化讨论，我们假设任务是一个 $K$ 类分类问题，在接下来的所有部分中。具有参数 $\theta$ 的模型输出标签候选的概率分布，可能经过校准，$P_\theta(y
+    \vert \mathbf{x})$，最可能的预测是 $\hat{y} = \arg\max_{y \in \mathcal{Y}} P_\theta(y
+    \vert \mathbf{x})$。
 - en: Acquisition Function
+  id: totrans-22
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 获取函数
 - en: The process of identifying the most valuable examples to label next is referred
     to as “sampling strategy” or “query strategy”. The scoring function in the sampling
     process is named “acquisition function”, denoted as $U(\mathbf{x})$. Data points
     with higher scores are expected to produce higher value for model training if
     they get labeled.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 确定下一个最有价值的示例进行标记的过程称为“采样策略”或“查询策略”。采样过程中的评分函数称为“获取函数”，表示为 $U(\mathbf{x})$。具有较高分数的数据点预计在进行标记后会为模型训练带来更高的价值。
 - en: Here is a list of basic sampling strategies.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里是一些基本的采样策略列表。
 - en: Uncertainty Sampling
+  id: totrans-25
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 不确定性采样
 - en: '**Uncertainty sampling** selects examples for which the model produces most
     uncertain predictions. Given a single model, uncertainty can be estimated by the
     predicted probabilities, although one common complaint is that deep learning model
     predictions are often not calibrated and not correlated with true uncertainty
     well. In fact, deep learning models are often overconfident.'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: '**不确定性采样**选择模型产生最不确定预测的示例。在给定单个模型的情况下，可以通过预测概率来估计不确定性，尽管一个常见的抱怨是深度学习模型的预测通常不经校准，与真实不确定性关联不好。事实上，深度学习模型通常过于自信。'
 - en: '*Least confident score*, also known as *variation ratio*: $U(\mathbf{x}) =
     1 - P_\theta(\hat{y} \vert \mathbf{x})$.'
+  id: totrans-27
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*最不确定得分*，也称为*变异比率*: $U(\mathbf{x}) = 1 - P_\theta(\hat{y} \vert \mathbf{x})$。'
 - en: '*Margin score*: $U(\mathbf{x}) = P_\theta(\hat{y}_1 \vert \mathbf{x}) - P_\theta(\hat{y}_2
     \vert \mathbf{x})$, where $\hat{y}_1$ and $\hat{y}_2$ are the most likely and
     the second likely predicted labels.'
+  id: totrans-28
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*边际得分*: $U(\mathbf{x}) = P_\theta(\hat{y}_1 \vert \mathbf{x}) - P_\theta(\hat{y}_2
+    \vert \mathbf{x})$，其中$\hat{y}_1$和$\hat{y}_2$是最可能和次可能的预测标签。'
 - en: '*Entropy*: $U(\mathbf{x}) = \mathcal{H}(P_\theta(y \vert \mathbf{x})) = - \sum_{y
     \in \mathcal{Y}} P_\theta(y \vert \mathbf{x}) \log P_\theta(y \vert \mathbf{x})$.'
+  id: totrans-29
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*熵*: $U(\mathbf{x}) = \mathcal{H}(P_\theta(y \vert \mathbf{x})) = - \sum_{y
+    \in \mathcal{Y}} P_\theta(y \vert \mathbf{x}) \log P_\theta(y \vert \mathbf{x})$。'
 - en: Another way to quantify uncertainty is to rely on a committee of expert models,
     known as Query-By-Committee (QBC). QBC measures uncertainty based on a pool of
     opinions and thus it is critical to keep a level of disagreement among committee
     members. Given $C$ models in the committee pool, each parameterized by $\theta_1,
     \dots, \theta_C$.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一种量化不确定性的方法是依赖于一组专家模型的委员会，称为委员会查询（QBC）。QBC根据一组意见来衡量不确定性，因此保持委员会成员之间的分歧是至关重要的。给定委员会池中的$C$个模型，每个模型由$\theta_1,
+    \dots, \theta_C$参数化。
 - en: '*Voter entropy*: $U(\mathbf{x}) = \mathcal{H}(\frac{V(y)}{C})$, where $V(y)$
     counts the number of votes from the committee on the label $y$.'
+  id: totrans-31
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*选票熵*: $U(\mathbf{x}) = \mathcal{H}(\frac{V(y)}{C})$，其中$V(y)$计算委员会对标签$y$的投票数。'
 - en: '*Consensus entropy*: $U(\mathbf{x}) = \mathcal{H}(P_\mathcal{C})$, where $P_\mathcal{C}$
     is the prediction averaging across the committee.'
+  id: totrans-32
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*共识熵*: $U(\mathbf{x}) = \mathcal{H}(P_\mathcal{C})$，其中$P_\mathcal{C}$是委员会预测的平均值。'
 - en: '*KL divergence*: $U(\mathbf{x}) = \frac{1}{C} \sum_{c=1}^C D_\text{KL} (P_{\theta_c}
     | P_\mathcal{C})$'
+  id: totrans-33
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*KL散度*: $U(\mathbf{x}) = \frac{1}{C} \sum_{c=1}^C D_\text{KL} (P_{\theta_c}
+    | P_\mathcal{C})$'
 - en: Diversity Sampling
+  id: totrans-34
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 多样性采样
 - en: '**Diversity sampling** intend to find a collection of samples that can well
     represent the entire data distribution. Diversity is important because the model
     is expected to work well on any data in the wild, just not on a narrow subset.
     Selected samples should be representative of the underlying distribution. Common
     approaches often rely on quantifying the similarity between samples.'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: '**多样性采样**旨在找到一组能够很好代表整个数据分布的样本。多样性很重要，因为期望模型在野外的任何数据上都能很好地工作，而不仅仅是在一个狭窄的子集上。所选样本应该代表潜在分布。常见方法通常依赖于量化样本之间的相似性。'
 - en: Expected Model Change
+  id: totrans-36
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 预期模型变化
 - en: '**Expected model change** refers to the impact that a sample brings onto the
     model training. The impact can be the influence on the model weights or the improvement
     over the training loss. A [later section](#measuring-training-effects) reviews
     several works on how to measure model impact triggered by selected data samples.'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: '**预期模型变化**指的是样本对模型训练带来的影响。这种影响可以是对模型权重的影响，也可以是对训练损失的改进。[后续章节](#measuring-training-effects)将回顾几项关于如何衡量由选定数据样本触发的模型影响的工作。'
 - en: Hybrid Strategy
+  id: totrans-38
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 混合策略
 - en: Many methods above are not mutually exclusive. A **hybrid** sampling strategy
     values different attributes of data points, combining different sampling preferences
     into one. Often we want to select uncertain but also highly representative samples.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 上述许多方法并不是相互排斥的。**混合**采样策略重视数据点的不同属性，将不同的采样偏好结合在一起。通常我们希望选择不确定但也高度代表性的样本。
 - en: Deep Acquisition Function
+  id: totrans-40
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 深度获取函数
 - en: Measuring Uncertainty
+  id: totrans-41
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 测量不确定性
 - en: 'The model uncertainty is commonly categorized into two buckets ([Der Kiureghian
     & Ditlevsen 2009](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.455.9057&rep=rep1&type=pdf),
     [Kendall & Gal 2017](https://arxiv.org/abs/1703.04977)):'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型不确定性通常分为两个类别（[Der Kiureghian & Ditlevsen 2009](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.455.9057&rep=rep1&type=pdf)，[Kendall
+    & Gal 2017](https://arxiv.org/abs/1703.04977)）：
 - en: '*Aleatoric uncertainty* is introduced by noise in the data (e.g. sensor data,
     noise in the measurement process) and it can be input-dependent or input-independent.
     It is generally considered as irreducible since there is missing information about
     the ground truth.'
+  id: totrans-43
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*偶然不确定性*是由数据中的噪声引入的（例如传感器数据、测量过程中的噪声），它可以是依赖于输入的或独立于输入的。由于对真实情况缺乏信息，它通常被认为是不可减少的。'
 - en: '*Epistemic uncertainty* refers to the uncertainty within the model parameters
     and therefore we do not know whether the model can best explain the data. This
     type of uncertainty is theoretically reducible given more data'
+  id: totrans-44
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*认知不确定性*指的是模型参数内部的不确定性，因此我们不知道模型是否能最好地解释数据。这种类型的不确定性在理论上是可减少的，只要有更多数据。'
 - en: Ensemble and Approximated Ensemble
+  id: totrans-45
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 集成和近似集成
 - en: There is a long tradition in machine learning of using ensembles to improve
     model performance. When there is a significant diversity among models, ensembles
     are expected to yield better results. This ensemble theory is proved to be correct
@@ -219,8 +320,10 @@
     ensembles multiple trials of resampling to achieve more accurate estimation of
     metrics. Random forests or [GBM](https://en.wikipedia.org/wiki/Gradient_boosting)
     is also a good example for the effectiveness of ensembling.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 在机器学习中，使用集成来提高模型性能有着悠久的传统。当模型之间存在显著的差异时，预期集成会产生更好的结果。这种集成理论已被许多ML算法证明是正确的；例如，[AdaBoost](https://en.wikipedia.org/wiki/AdaBoost)聚合了许多弱学习器，表现出与单个强学习器相似甚至更好的性能。[自助法](https://en.wikipedia.org/wiki/Bootstrapping_(statistics))对多次重新采样进行集成，以获得更准确的指标估计。随机森林或[GBM](https://en.wikipedia.org/wiki/Gradient_boosting)也是集成有效性的良好示例。
 - en: To get better uncertainty estimation, it is intuitive to aggregate a collection
     of independently trained models. However, it is expensive to train a single deep
     neural network model, let alone many of them. In reinforcement learning, Bootstrapped
@@ -228,8 +331,11 @@
     multiple value heads and relies on the uncertainty among an ensemble of Q value
     approximation to guide [exploration](https://lilianweng.github.io/posts/2020-06-07-exploration-drl/#q-value-exploration)
     in RL.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了获得更好的不确定性估计，将一组独立训练的模型聚合起来是直观的。然而，训练单个深度神经网络模型就很昂贵，更不用说训练多个了。在强化学习中，Bootstrapped
+    DQN（[Osband等人，2016](https://arxiv.org/abs/1602.04621)）配备了多个值头，并依赖于Q值近似集合中的不确定性来引导RL中的[探索](https://lilianweng.github.io/posts/2020-06-07-exploration-drl/#q-value-exploration)。
 - en: In active learning, a commoner approach is to use *dropout* to “simulate” a
     probabilistic Gaussian process ([Gal & Ghahramani 2016](https://arxiv.org/abs/1506.02142)).
     We thus ensemble multiple samples collected from the same model but with different
@@ -240,56 +346,80 @@
     & Ghahramani 2016](https://arxiv.org/abs/1506.02157)). This simple idea has been
     shown to be effective for classification with small datasets and widely adopted
     in scenarios when efficient model uncertainty estimation is needed.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 在主动学习中，一种常见的方法是使用*dropout*来“模拟”概率高斯过程（[Gal＆Ghahramani，2016](https://arxiv.org/abs/1506.02142)）。因此，我们从同一模型收集的多个样本进行集成，但在前向传递过程中应用不同的dropout掩码来估计模型的不确定性（认知不确定性）。这个过程被称为**MC
+    dropout**（蒙特卡洛dropout），其中在每个权重层之前应用dropout，被证明在需要有效模型不确定性估计的场景中对小数据集的分类非常有效，并被广泛采用。
 - en: '**DBAL** (Deep Bayesian active learning; [Gal et al. 2017](https://arxiv.org/abs/1703.02910))
     approximates Bayesian neural networks with MC dropout such that it learns a distribution
     over model weights. In their experiment, MC dropout performed better than random
     baseline and mean standard deviation (Mean STD), similarly to variation ratios
     and entropy measurement.'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: '**DBAL**（深度贝叶斯主动学习；[Gal等人，2017](https://arxiv.org/abs/1703.02910)）使用MC dropout近似贝叶斯神经网络，从而学习模型权重的分布。在他们的实验中，MC
+    dropout表现优于随机基线和均值标准差（Mean STD），类似于变化率和熵测量。'
 - en: '![](../Images/9b4ec7e59edea2e705e052aa6e86a5de.png)'
+  id: totrans-50
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9b4ec7e59edea2e705e052aa6e86a5de.png)'
 - en: 'Fig. 2\. Active learning results of DBAL on MNIST. (Image source: [Gal et al.
     2017](https://arxiv.org/abs/1703.02910)).'
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 图2\. DBAL在MNIST上的主动学习结果。（图片来源：[Gal等人2017](https://arxiv.org/abs/1703.02910)）。
 - en: '[Beluch et al. (2018)](https://openaccess.thecvf.com/content_cvpr_2018/papers/Beluch_The_Power_of_CVPR_2018_paper.pdf)
     compared ensemble-based models with MC dropout and found that the combination
     of naive ensemble (i.e. train multiple models separately and independently) and
     variation ratio yields better calibrated predictions than others. However, naive
     ensembles are *very* expensive, so they explored a few alternative cheaper options:'
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Beluch等人（2018）](https://openaccess.thecvf.com/content_cvpr_2018/papers/Beluch_The_Power_of_CVPR_2018_paper.pdf)比较了基于集成的模型与MC
+    dropout，并发现天真集成（即分别独立训练多个模型）与变化率的组合产生比其他方法更好校准的预测。然而，天真集成非常昂贵，因此他们探索了一些替代更便宜的选项：'
 - en: 'Snapshot ensemble: Use a cyclic learning rate schedule to train an implicit
     ensemble such that it converges to different local minima.'
+  id: totrans-53
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 快照集成：使用循环学习率计划训练隐式集成，使其收敛到不同的局部最小值。
 - en: 'Diversity encouraging ensemble (DEE): Use a base network trained for a small
     number of epochs as initialization for $n$ different networks, each trained with
     dropout to encourage diversity.'
+  id: totrans-54
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 鼓励多样性的集成（DEE）：使用一个训练了少量时代的基础网络作为$n$个不同网络的初始化，每个网络都使用dropout进行训练以鼓励多样性。
 - en: 'Split head approach: One base model has multiple heads, each corresponding
     to one classifier.'
+  id: totrans-55
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 分头方法：一个基础模型有多个头部，每个对应一个分类器。
 - en: Unfortunately all the cheap implicit ensemble options above perform worse than
     naive ensembles. Considering the limit on computational resources, MC dropout
     is still a pretty good and economical choice. Naturally, people also try to combine
     ensemble and MC dropout ([Pop & Fulop 2018](https://arxiv.org/abs/1811.03897))
     to get a bit of additional performance gain by stochastic ensemble.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 不幸的是，上述所有便宜的隐式集成选项都表现不如天真集成。考虑到计算资源的限制，MC dropout仍然是一个相当不错且经济的选择。自然地，人们也尝试结合集成和MC
+    dropout（[Pop＆Fulop 2018](https://arxiv.org/abs/1811.03897)）通过随机集成获得额外的性能提升。
 - en: Uncertainty in Parameter Space
+  id: totrans-57
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 参数空间中的不确定性
 - en: '**Bayes-by-backprop** ([Blundell et al. 2015](https://arxiv.org/abs/1505.05424))
     measures weight uncertainty in neural networks directly. The method maintains
     a probability distribution over the weights $\mathbf{w}$, which is modeled as
@@ -297,8 +427,12 @@
     $p(\mathbf{w} \vert \mathcal{D})$ is not tractable directly. The loss is to minimize
     the KL divergence between $q(\mathbf{w} \vert \theta)$ and $p(\mathbf{w} \vert
     \mathcal{D})$,'
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: '**贝叶斯后验推断**（[Blundell等人2015](https://arxiv.org/abs/1505.05424)）直接测量神经网络中的权重不确定性。该方法维护了对权重$\mathbf{w}$的概率分布，该分布被建模为变分分布$q(\mathbf{w}
+    \vert \theta)$，因为真实后验$p(\mathbf{w} \vert \mathcal{D})$不能直接计算。损失函数是最小化$q(\mathbf{w}
+    \vert \theta)$和$p(\mathbf{w} \vert \mathcal{D})$之间的KL散度，'
 - en: $$ \begin{aligned} \mathcal{L}(\theta) &= \text{KL}[q(\mathbf{w}\vert\theta)
     \| p(\mathbf{w} \vert \mathcal{D})] \\ &= \int q(\mathbf{w}\vert\theta) \log \frac{q(\mathbf{w}\vert\theta)}{p(\mathbf{w})
     p(\mathcal{D}\vert \mathbf{w})} d\mathbf{w} \\ &= \text{KL}[q(\mathbf{w}\vert\theta)
@@ -306,47 +440,75 @@
     \\ &\approx \log q(\mathbf{w} \vert \theta) - \log p(\mathbf{w}) p(\mathcal{D}\vert
     \mathbf{w}) & \text{; monte carlo sampling; }q(\mathbf{w} \vert \theta)\text{
     & }p(\mathbf{w})\text{ are close.} \end{aligned} $$
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \mathcal{L}(\theta) &= \text{KL}[q(\mathbf{w}\vert\theta)
+    \| p(\mathbf{w} \vert \mathcal{D})] \\ &= \int q(\mathbf{w}\vert\theta) \log \frac{q(\mathbf{w}\vert\theta)}{p(\mathbf{w})
+    p(\mathcal{D}\vert \mathbf{w})} d\mathbf{w} \\ &= \text{KL}[q(\mathbf{w}\vert\theta)
+    \| p(w)] - \mathbb{E}_{q(\mathbf{w}\vert\theta)} [\log p(\mathcal{D} \vert \mathbf{w})]
+    \\ &\approx \log q(\mathbf{w} \vert \theta) - \log p(\mathbf{w}) p(\mathcal{D}\vert
+    \mathbf{w}) & \text{；蒙特卡洛采样；}q(\mathbf{w} \vert \theta)\text{和}p(\mathbf{w})\text{接近。}
+    \end{aligned} $$
 - en: The variational distribution $q$ is typically a Gaussian with diagonal covariance
     and each weight is sampled from $\mathcal{N}(\mu_i, \sigma_i^2)$. To ensure non-negativity
     of $\sigma_i$, it is further parameterized via softplus, $\sigma_i = \log(1 +
     \exp(\rho_i))$ where the variational parameters are $\theta = \{\mu_i , \rho_i\}^d_{i=1}$.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 变分分布$q$通常是一个具有对角协方差的高斯分布，每个权重从$\mathcal{N}(\mu_i, \sigma_i^2)$中采样。为了确保$\sigma_i$的非负性，进一步通过softplus参数化，$\sigma_i
+    = \log(1 + \exp(\rho_i))$，其中变分参数为$\theta = \{\mu_i , \rho_i\}^d_{i=1}$。
 - en: 'The process of Bayes-by-backprop can be summarized as:'
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 贝叶斯后验推断的过程可以总结为：
 - en: Sample $\epsilon \sim \mathcal{N}(0, I)$
+  id: totrans-62
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 采样$\epsilon \sim \mathcal{N}(0, I)$
 - en: Let $\mathbf{w} = \mu + \log(1+ \exp(\rho)) \circ \epsilon$
+  id: totrans-63
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 令$\mathbf{w} = \mu + \log(1+ \exp(\rho)) \circ \epsilon`
 - en: Let $\theta = (\mu, \rho)$
+  id: totrans-64
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 让$\theta = (\mu, \rho)$
 - en: Let $f(\mathbf{w}, \theta) = \log q(\mathbf{w} \vert \theta) - \log p(\mathbf{w})p(\mathcal{D}\vert
     \mathbf{w})$
+  id: totrans-65
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 让$f(\mathbf{w}, \theta) = \log q(\mathbf{w} \vert \theta) - \log p(\mathbf{w})p(\mathcal{D}\vert
+    \mathbf{w})$
 - en: Calculate the gradient of $f(\mathbf{w}, \theta)$ w.r.t. to $\mu$ and $\rho$
     and then update $\theta$.
+  id: totrans-66
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 计算$f(\mathbf{w}, \theta)$关于$\mu$和$\rho$的梯度，然后更新$\theta$。
 - en: Uncertainty is measured by sampling different model weights during inference.
+  id: totrans-67
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 不确定性通过在推断过程中对不同模型权重进行采样来衡量。
 - en: Loss Prediction
+  id: totrans-68
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 损失预测
 - en: The loss objective guides model training. A low loss value indicates that a
     model can make good and accurate predictions. [Yoo & Kweon (2019)](https://arxiv.org/abs/1905.03677)
     designed a **loss prediction module** to predict the loss value for unlabeled
@@ -355,15 +517,21 @@
     (high loss value) for them. The loss prediction module is a simple MLP with dropout,
     that takes several intermediate layer features as inputs and concatenates them
     after a global average pooling.
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 损失目标指导模型训练。低损失值表示模型可以做出良好和准确的预测。[Yoo & Kweon (2019)](https://arxiv.org/abs/1905.03677)设计了一个**损失预测模块**，用于预测未标记输入的损失值，作为模型在给定数据上的预测有多好的估计。如果损失预测模块对数据样本做出不确定的预测（高损失值），则选择这些数据样本。损失预测模块是一个简单的带有dropout的MLP，它以几个中间层特征作为输入，并在全局平均池化后连接它们。
 - en: '![](../Images/5147044e3a845049b0a7813414ad5588.png)'
+  id: totrans-70
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/5147044e3a845049b0a7813414ad5588.png)'
 - en: 'Fig. 3\. Use the model with a loss prediction module to do active learning
     selection. (Image source: [Yoo & Kweon 2019](https://arxiv.org/abs/1905.03677))'
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 图3\. 使用带有损失预测模块的模型进行主动学习选择。（图片来源：[Yoo & Kweon 2019](https://arxiv.org/abs/1905.03677)）
 - en: Let $\hat{l}$ be the output of the loss prediction module and $l$ be the true
     loss. When training the loss prediction module, a simple MSE loss $=(l - \hat{l})^2$
     is not a good choice, because the loss decreases in time as the model learns to
@@ -372,65 +540,97 @@
     each batch of size $b$, there are $b/2$ pairs of samples $(\mathbf{x}_i, \mathbf{x}_j)$
     and the loss prediction model is expected to correctly predict which sample has
     a larger loss.
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 让$\hat{l}$为损失预测模块的输出，$l$为真实损失。在训练损失预测模块时，简单的MSE损失$=(l - \hat{l})^2$不是一个好选择，因为随着模型学会更好地行为，损失会随时间减少。一个好的学习目标应该独立于目标损失的尺度变化。他们依赖于样本对的比较。在每个大小为$b$的批次中，有$b/2$对样本$(\mathbf{x}_i,
+    \mathbf{x}_j)$，损失预测模型应该正确预测哪个样本具有更大的损失。
 - en: $$ \begin{aligned} \mathcal{L}_\text{loss}(\mathbf{x}_i, \mathbf{x}_j) &= \max\big(
     0, -\mathbb{1}(l(\mathbf{x}_i), l(\mathbf{x}_j)) \cdot (\hat{l}(\mathbf{x}_i)
     - \hat{l}(\mathbf{x}_j)) + \epsilon \big) \\ \text{where } \mathbb{1}(l_i, l_j)
     &= \begin{cases} +1 & \text{if }l_i > l_j \\ -1 & \text{otherwise} \end{cases}
     \end{aligned} $$
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \mathcal{L}_\text{loss}(\mathbf{x}_i, \mathbf{x}_j) &= \max\big(
+    0, -\mathbb{1}(l(\mathbf{x}_i), l(\mathbf{x}_j)) \cdot (\hat{l}(\mathbf{x}_i)
+    - \hat{l}(\mathbf{x}_j)) + \epsilon \big) \\ \text{where } \mathbb{1}(l_i, l_j)
+    &= \begin{cases} +1 & \text{if }l_i > l_j \\ -1 & \text{otherwise} \end{cases}
+    \end{aligned} $$
 - en: where $\epsilon$ is a predefined positive margin constant.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$\epsilon$是预定义的正边距常数。
 - en: In experiments on three vision tasks, active learning selection based on the
     loss prediction performs better than random baseline, entropy based acquisition
     and [core-set](#core-sets-approach).
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 在三个视觉任务的实验中，基于损失预测的主动学习选择表现优于随机基线、基于熵的获取和[核心集](#core-sets-approach)。
 - en: '![](../Images/4a148147ea7132e267fcbf14844b8417.png)'
+  id: totrans-76
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/4a148147ea7132e267fcbf14844b8417.png)'
 - en: 'Fig. 4\. Active learning results of loss prediction module based selection,
     in comparison with other approaches. (Image source: [Yoo & Kweon 2019](https://arxiv.org/abs/1905.03677))'
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 图4\. 基于损失预测模块的主动学习结果，与其他方法进行比较。（图片来源：[Yoo & Kweon 2019](https://arxiv.org/abs/1905.03677)）
 - en: Adversarial Setup
+  id: totrans-78
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 对抗设置
 - en: '[Sinha et al. (2019)](https://arxiv.org/abs/1904.00370) proposed a GAN-like
     setup, named **VAAL** (Variational Adversarial Active Learning), where a discriminator
     is trained to distinguish unlabeled data from labeled data. Interestingly, active
     learning acquisition criteria does not depend on the task performance in VAAL.'
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Sinha et al. (2019)](https://arxiv.org/abs/1904.00370)提出了一个类似GAN的设置，名为**VAAL**（变分对抗主动学习），其中鉴别器被训练来区分未标记数据和标记数据。有趣的是，在VAAL中，主动学习获取标准不依赖于任务性能。'
 - en: '![](../Images/2c14073edc6ed0490516a22938310634.png)'
+  id: totrans-80
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/2c14073edc6ed0490516a22938310634.png)'
 - en: 'Fig. 5\. Illustration of VAAL (Variational adversarial active learning). (Image
     source: [Sinha et al. 2019](https://arxiv.org/abs/1904.00370))'
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: '图5\. VAAL（变分对抗主动学习）的示意图。 (图片来源: [Sinha et al. 2019](https://arxiv.org/abs/1904.00370))'
 - en: The $\beta$-VAE learns a latent feature space $\mathbf{z}^l \cup \mathbf{z}^u$,
     for labeled and unlabeled data respectively, aiming to *trick* the discriminator
     $D(.)$ that all the data points are from the labeled pool;
+  id: totrans-82
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $\beta$-VAE学习一个潜在特征空间 $\mathbf{z}^l \cup \mathbf{z}^u$，分别用于标记和未标记数据，旨在*欺骗*鉴别器
+    $D(.)$，使其认为所有数据点都来自标记池;
 - en: The discriminator $D(.)$ predicts whether a sample is labeled (1) or not (0)
     based on a latent representation $\mathbf{z}$. VAAL selects unlabeled samples
     with low discriminator scores, which indicates that those samples are sufficiently
     different from previously labeled ones.
+  id: totrans-83
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 鉴别器 $D(.)$ 根据潜在表示 $\mathbf{z}$ 预测样本是否被标记为（1）或未被标记为（0）。VAAL选择具有低鉴别器分数的未标记样本，这表明这些样本与先前标记的样本足够不同。
 - en: 'The loss for VAE representation learning in VAAL contains both a reconstruction
     part (minimizing the ELBO of given samples) and an adversarial part (labeled and
     unlabeled data is drawn from the same probability distribution $q_\phi$):'
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 'VAAL中VAE表示学习的损失包含重构部分（最小化给定样本的ELBO）和对抗部分（标记和未标记数据都是从相同的概率分布 $q_\phi$ 中抽取的）:'
 - en: $$ \begin{aligned} \mathcal{L}_\text{VAE} &= \lambda_1 \mathcal{L}^\text{rec}_\text{VAE}
     + \lambda_2 \mathcal{L}^\text{adv}_\text{VAE} \\ \mathcal{L}^\text{rec}_\text{VAE}
     &= \mathbb{E}[\log p_\theta(\mathbf{x}^l \vert \mathbf{z}^l)] - \beta \text{KL}(q_\phi(\mathbf{z}^l
@@ -439,156 +639,244 @@
     p(\mathbf{\tilde{z}})) \\ \mathcal{L}^\text{adv}_\text{VAE} &= - \mathbb{E}[\log
     D(q_\phi (\mathbf{z}^l \vert \mathbf{x}^l))] - \mathbb{E}[\log D(q_\phi(\mathbf{z}^u
     \vert \mathbf{u}))] \end{aligned} $$
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \mathcal{L}_\text{VAE} &= \lambda_1 \mathcal{L}^\text{rec}_\text{VAE}
+    + \lambda_2 \mathcal{L}^\text{adv}_\text{VAE} \\ \mathcal{L}^\text{rec}_\text{VAE}
+    &= \mathbb{E}[\log p_\theta(\mathbf{x}^l \vert \mathbf{z}^l)] - \beta \text{KL}(q_\phi(\mathbf{z}^l
+    \vert \mathbf{x}^l) \| p(\mathbf{\tilde{z}})) + \mathbb{E}[\log p_\theta(\mathbf{u}
+    \vert \mathbf{z}^u)] - \beta \text{KL}(q_\phi(\mathbf{z}^u \vert \mathbf{u}) \|
+    p(\mathbf{\tilde{z}})) \\ \mathcal{L}^\text{adv}_\text{VAE} &= - \mathbb{E}[\log
+    D(q_\phi (\mathbf{z}^l \vert \mathbf{x}^l))] - \mathbb{E}[\log D(q_\phi(\mathbf{z}^u
+    \vert \mathbf{u}))] \end{aligned} $$
 - en: where $p(\mathbf{\tilde{z}})$ is a unit Gaussian as a predefined prior and $\beta$
     is the Lagrangian parameter.
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 $p(\mathbf{\tilde{z}})$ 是预定义的单位高斯先验，$\beta$ 是拉格朗日参数。
 - en: 'The discriminator loss is:'
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: '鉴别器损失为:'
 - en: $$ \mathcal{L}_D = -\mathbb{E}[\log D(q_\phi (\mathbf{z}^l \vert \mathbf{x}^l))]
     - \mathbb{E}[\log (1 - D(q_\phi (\mathbf{z}^u \vert \mathbf{u})))] $$![](../Images/1c8b9b30b39bb5a2a156c8e310461876.png)
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathcal{L}_D = -\mathbb{E}[\log D(q_\phi (\mathbf{z}^l \vert \mathbf{x}^l))]
+    - \mathbb{E}[\log (1 - D(q_\phi (\mathbf{z}^u \vert \mathbf{u})))] $$![](../Images/1c8b9b30b39bb5a2a156c8e310461876.png)
 - en: 'Fig. 6\. Experiment results of VAAL (variational adversarial active learning)
     on several image classification tasks. (Image source: [Sinha et al. 2019](https://arxiv.org/abs/1904.00370)'
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: '图6\. VAAL（变分对抗主动学习）在几个图像分类任务上的实验结果。 (图片来源: [Sinha et al. 2019](https://arxiv.org/abs/1904.00370))'
 - en: Ablation studies showed that jointly training VAE and discriminator is critical.
     Their results are robust to the biased initial labeled pool, different labeling
     budgets and noisy oracle.
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 消融研究表明，联合训练VAE和鉴别器至关重要。他们的结果对初始有偏的标记池、不同的标记预算和有噪声的预言都很稳健。
 - en: '**MAL** (Minimax Active Learning; [Ebrahimiet al. 2021](https://arxiv.org/abs/2012.10467))
     is an extension of VAAL. The MAL framework consists of an entropy minimizing feature
     encoding network $F$ followed by an entropy maximizing classifier $C$. This minimax
     setup reduces the distribution gap between labeled and unlabeled data.'
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: '**MAL**（极小极大主动学习; [Ebrahimiet al. 2021](https://arxiv.org/abs/2012.10467)）是VAAL的扩展。MAL框架由一个熵最小化的特征编码网络
+    $F$ 和一个熵最大化的分类器 $C$ 组成。这种极小极大设置减小了标记和未标记数据之间的分布差异。'
 - en: '![](../Images/01f999023b8b364f99c950362021113f.png)'
+  id: totrans-92
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/01f999023b8b364f99c950362021113f.png)'
 - en: 'Fig. 7\. Illustration of the MAL (minimax active learning) framework. (Image
     source: [Ebrahimiet al. 2021](https://arxiv.org/abs/2012.10467))'
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: '图7\. MAL（极小极大主动学习）框架的示意图。 (图片来源: [Ebrahimiet al. 2021](https://arxiv.org/abs/2012.10467))'
 - en: A feature encoder $F$ encodes a sample into a $\ell_2$-normalized $d$-dimensional
     latent vector. Assuming there are $K$ classes, a classifier $C$ is parameterized
     by $\mathbf{W} \in \mathbb{R}^{d \times K}$.
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 特征编码器 $F$ 将样本编码为一个 $\ell_2$-归一化的 $d$ 维潜在向量。假设有 $K$ 个类别，分类器 $C$ 的参数化为 $\mathbf{W}
+    \in \mathbb{R}^{d \times K}$。
 - en: (1) First $F$ and $C$ are trained on labeled samples by a simple cross entropy
     loss to achieve good classification results,
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: (1) 首先，$F$ 和 $C$ 通过简单的交叉熵损失在标记样本上进行训练，以获得良好的分类结果，
 - en: $$ \mathcal{L}_\text{CE} = -\mathbb{E}_{(\mathbf{x}^l, y) \sim \mathcal{X}}
     \sum_{k=1}^K \mathbb{1}[k=y] \log\Big( \sigma(\frac{1}{T} \frac{\mathbf{W}^\top
     F\big(\mathbf{x}^l)}{\|F(\mathbf{x}^l)\|}\big) \Big) $$
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathcal{L}_\text{CE} = -\mathbb{E}_{(\mathbf{x}^l, y) \sim \mathcal{X}}
+    \sum_{k=1}^K \mathbb{1}[k=y] \log\Big( \sigma(\frac{1}{T} \frac{\mathbf{W}^\top
+    F\big(\mathbf{x}^l)}{\|F(\mathbf{x}^l)\|}\big) \Big) $$
 - en: (2) When training on the unlabeled examples, MAL relies on a *minimax* game
     setup
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: (2) 在未标记样本上训练时，MAL 依赖于 *minimax* 游戏设置
 - en: $$ \begin{aligned} \mathcal{L}_\text{Ent} &= -\sum^K_{k=1} p(y=k \vert \mathbf{u})
     \log p(y=k\vert \mathbf{u}) \\ \theta^*_F, \theta^*_C &= \min_F\max_C \mathcal{L}_\text{Ent}
     \\ \theta_F &\gets \theta_F - \alpha_1 \nabla \mathcal{L}_\text{Ent} \\ \theta_C
     &\gets \theta_C + \alpha_2 \nabla \mathcal{L}_\text{Ent} \end{aligned} $$
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \mathcal{L}_\text{Ent} &= -\sum^K_{k=1} p(y=k \vert \mathbf{u})
+    \log p(y=k\vert \mathbf{u}) \\ \theta^*_F, \theta^*_C &= \min_F\max_C \mathcal{L}_\text{Ent}
+    \\ \theta_F &\gets \theta_F - \alpha_1 \nabla \mathcal{L}_\text{Ent} \\ \theta_C
+    &\gets \theta_C + \alpha_2 \nabla \mathcal{L}_\text{Ent} \end{aligned} $$
 - en: where,
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中，
 - en: First, minimizing the entropy in $F$ encourages unlabeled samples associated
     with similar predicted labels to have similar features.
+  id: totrans-100
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 首先，最小化 $F$ 中的熵鼓励与相似预测标签相关的未标记样本具有相似的特征。
 - en: Maximizing the entropy in $C$ adversarially makes the prediction to follow a
     more uniform class distribution. (My understanding here is that because the true
     label of an unlabeled sample is unknown, we should not optimize the classifier
     to maximize the predicted labels just yet.)
+  id: totrans-101
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在 $C$ 中最大化熵对抗性地使预测遵循更均匀的类分布。（我在这里的理解是，因为未标记样本的真实标签未知，所以我们不应该立即优化分类器以最大化预测标签。）
 - en: The discriminator is trained in the same way as in VAAL.
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 判别器的训练方式与 VAAL 中相同。
 - en: 'Sampling strategy in MAL considers both diversity and uncertainty:'
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: MAL 中的采样策略考虑了多样性和不确定性：
 - en: 'Diversity: the score of $D$ indicates how similar a sample is to previously
     seen examples. A score closer to 0 is better to select unfamiliar data points.'
+  id: totrans-104
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 多样性：$D$ 的分数表示样本与先前看到的样本有多相似。 分数越接近 0，选择不熟悉的数据点就越好。
 - en: 'Uncertainty: use the entropy obtained by $C$. A higher entropy score indicates
     that the model cannot make a confident prediction yet.'
+  id: totrans-105
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 不确定性：使用 $C$ 获得的熵。 更高的熵分数表示模型尚不能做出自信的预测。
 - en: The experiments compared MAL to random, entropy, core-set, BALD and VAAL baselines,
     on image classification and segmentation tasks. The results look pretty strong.
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 实验将 MAL 与随机、熵、核心集、BALD 和 VAAL 基线进行了比较，涉及图像分类和分割任务。 结果看起来相当强大。
 - en: '![](../Images/c881fe6a9bdfae360496e7462b8da938.png)'
+  id: totrans-107
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c881fe6a9bdfae360496e7462b8da938.png)'
 - en: 'Fig. 8\. Performance of MAL on ImageNet. (Table source: [Ebrahimiet al. 2021](https://arxiv.org/abs/2012.10467))'
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 8\. MAL 在 ImageNet 上的表现。 (表格来源：[Ebrahimiet al. 2021](https://arxiv.org/abs/2012.10467))
 - en: '**CAL** (Contrastive Active Learning; [Margatina et al. 2021](https://arxiv.org/abs/2109.03764))
     intends to select [contrastive](https://lilianweng.github.io/posts/2021-05-31-contrastive/)
     examples. If two data points with different labels share similar network representations
     $\Phi(.)$, they are considered as contrastive examples in CAL. Given a pair of
     contrastive examples $(\mathbf{x}_i, \mathbf{x}_j)$, they should'
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: '**CAL**（对比主动学习；[Margatina et al. 2021](https://arxiv.org/abs/2109.03764)）旨在选择[对比](https://lilianweng.github.io/posts/2021-05-31-contrastive/)样本。
+    如果具有不同标签的两个数据点在网络表示 $\Phi(.)$ 中具有相似性，则在 CAL 中它们被视为对比样本。 给定一对对比样本 $(\mathbf{x}_i,
+    \mathbf{x}_j)$，它们应该'
 - en: $$ d(\Phi(\mathbf{x}_i), \Phi(\mathbf{x}_j)) < \epsilon \quad\text{and}\quad
     \text{KL}(p(y\vert \mathbf{x}_i) \| p(y\vert \mathbf{x}_j)) \rightarrow \infty
     $$
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ d(\Phi(\mathbf{x}_i), \Phi(\mathbf{x}_j)) < \epsilon \quad\text{and}\quad
+    \text{KL}(p(y\vert \mathbf{x}_i) \| p(y\vert \mathbf{x}_j)) \rightarrow \infty
+    $$
 - en: 'Given an unlabeled sample $\mathbf{x}$, CAL runs the following process:'
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 给定一个未标记样本 $\mathbf{x}$，CAL 运行以下过程：
 - en: Select the top $k$ nearest neighbors in the model feature space among the labeled
     samples, $\{(\mathbf{x}^l_i, y_i\}_{i=1}^M \subset \mathcal{X}$.
+  id: totrans-112
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在模型特征空间中选择前 $k$ 个最近邻的标记样本，$\{(\mathbf{x}^l_i, y_i\}_{i=1}^M \subset \mathcal{X}$。
 - en: 'Compute the KL divergence between the model output probabilities of $\mathbf{x}$
     and each in $\{\mathbf{x}^l\}$. The contrastive score of $\mathbf{x}$ is the average
     of these KL divergence values: $s(\mathbf{x}) = \frac{1}{M} \sum_{i=1}^M \text{KL}(p(y
     \vert \mathbf{x}^l_i | p(y \vert \mathbf{x}))$.'
+  id: totrans-113
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 计算$\mathbf{x}$的模型输出概率与$\{\mathbf{x}^l\}$中每个的KL散度。$\mathbf{x}$的对比分数是这些KL散度值的平均值：$s(\mathbf{x})
+    = \frac{1}{M} \sum_{i=1}^M \text{KL}(p(y \vert \mathbf{x}^l_i | p(y \vert \mathbf{x}))$。
 - en: Samples with *high contrastive scores* are selected for active learning.
+  id: totrans-114
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 选择具有*高对比分数*的样本进行主动学习。
 - en: On a variety of classification tasks, the experiment results of CAL look similar
     to the entropy baseline.
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: 在各种分类任务上，CAL的实验结果与熵基线相似。
 - en: Measuring Representativeness
+  id: totrans-116
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 衡量代表性
 - en: Core-sets Approach
+  id: totrans-117
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 核心集方法
 - en: A **core-set** is a concept in computational geometry, referring to a small
     set of points that approximates the shape of a larger point set. Approximation
     can be captured by some geometric measure. In the active learning, we expect a
     model that is trained over the core-set to behave comparably with the model on
     the entire data points.
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: '**核心集**是计算几何学中的一个概念，指的是近似表示较大点集的小点集。近似可以通过某些几何度量来捕捉。在主动学习中，我们期望经过核心集训练的模型表现与整个数据点上的模型相当。'
 - en: '[Sener & Savarese (2018)](https://arxiv.org/abs/1708.00489) treats active learning
     as a core-set selection problem. Let’s say, there are $N$ samples in total accessible
     during training. During active learning, a small set of data points get labeled
@@ -596,8 +884,10 @@
     learning objective can be written as follows, where the *core-set loss* is defined
     as the difference between average empirical loss over the labeled samples and
     the loss over the entire dataset including unlabelled ones.'
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Sener & Savarese (2018)](https://arxiv.org/abs/1708.00489)将主动学习视为核心集选择问题。假设在训练期间总共可以访问$N$个样本。在主动学习过程中，每个时间步$t$都会对一小部分数据点进行标记，表示为$\mathcal{S}^{(t)}$。学习目标的上限可以写成以下形式，其中*核心集损失*定义为标记样本上的平均经验损失与包括未标记样本在内的整个数据集上的损失之间的差异。'
 - en: $$ \begin{aligned} \mathbb{E}_{(\mathbf{x}, y) \sim p} [\mathcal{L}(\mathbf{x},
     y)] \leq& \bigg\vert \mathbb{E}_{(\mathbf{x}, y) \sim p} [\mathcal{L}(\mathbf{x},
     y)] - \frac{1}{N} \sum_{i=1}^N \mathcal{L}(\mathbf{x}_i, y_i) \bigg\vert & \text{;
@@ -606,154 +896,230 @@
     +& \bigg\vert \frac{1}{N} \sum_{i=1}^N \mathcal{L}(\mathbf{x}_i, y_i) - \frac{1}{\vert
     \mathcal{S}^{(t)} \vert} \sum_{j=1}^{\vert \mathcal{S}^{(t)} \vert} \mathcal{L}(\mathbf{x}^l_j,
     y_j) \bigg\vert & \text{; Core-set error} \end{aligned} $$
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \mathbb{E}_{(\mathbf{x}, y) \sim p} [\mathcal{L}(\mathbf{x},
+    y)] \leq& \bigg\vert \mathbb{E}_{(\mathbf{x}, y) \sim p} [\mathcal{L}(\mathbf{x},
+    y)] - \frac{1}{N} \sum_{i=1}^N \mathcal{L}(\mathbf{x}_i, y_i) \bigg\vert & \text{;
+    泛化误差}\\ +& \frac{1}{\vert \mathcal{S}^{(t)} \vert} \sum_{j=1}^{\vert \mathcal{S}^{(t)}
+    \vert} \mathcal{L}(\mathbf{x}^l_j, y_j) & \text{; 训练误差}\\ +& \bigg\vert \frac{1}{N}
+    \sum_{i=1}^N \mathcal{L}(\mathbf{x}_i, y_i) - \frac{1}{\vert \mathcal{S}^{(t)}
+    \vert} \sum_{j=1}^{\vert \mathcal{S}^{(t)} \vert} \mathcal{L}(\mathbf{x}^l_j,
+    y_j) \bigg\vert & \text{; 核心集误差} \end{aligned} $$
 - en: 'Then the active learning problem can be redefined as:'
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，主动学习问题可以重新定义为：
 - en: '$$ \min_{\mathcal{S}^{(t+1)} : \vert \mathcal{S}^{(t+1)} \vert \leq b} \bigg\vert
     \frac{1}{N}\sum_{i=1}^N \mathcal{L}(\mathbf{x}_i, y_i) - \frac{1}{\vert \mathcal{S}^{(t)}
     \cup \mathcal{S}^{(t+1)} \vert} \sum_{j=1}^{\vert \mathcal{S}^{(t)} \cup \mathcal{S}^{(t+1)}
     \vert} \mathcal{L}(\mathbf{x}^l_j, y_j) \bigg\vert $$'
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: '$$ \min_{\mathcal{S}^{(t+1)} : \vert \mathcal{S}^{(t+1)} \vert \leq b} \bigg\vert
+    \frac{1}{N}\sum_{i=1}^N \mathcal{L}(\mathbf{x}_i, y_i) - \frac{1}{\vert \mathcal{S}^{(t)}
+    \cup \mathcal{S}^{(t+1)} \vert} \sum_{j=1}^{\vert \mathcal{S}^{(t)} \cup \mathcal{S}^{(t+1)}
+    \vert} \mathcal{L}(\mathbf{x}^l_j, y_j) \bigg\vert $$'
 - en: 'It is equivalent to [the $k$-Center problem](https://en.wikipedia.org/wiki/Metric_k-center):
     choose $b$ center points such that the largest distance between a data point and
     its nearest center is minimized. This problem is NP-hard. An approximate solution
     depends on the greedy algorithm.'
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: 这等同于[**k-Center问题**](https://en.wikipedia.org/wiki/Metric_k-center)：选择$b$个中心点，使数据点与其最近中心点之间的最大距离最小化。这个问题是NP难的。近似解取决于贪婪算法。
 - en: '![](../Images/45c1eedf2be18238da5b17ae6539aa90.png)'
+  id: totrans-124
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/45c1eedf2be18238da5b17ae6539aa90.png)'
 - en: 'Fig. 9\. Active learning results of core-sets algorithm in comparison with
     several common baselines on CIFAR-10, CIFAR-100, SVHN. (Image source: [Sener &
     Savarese 2018](https://arxiv.org/abs/1708.00489))'
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: 图9. 在CIFAR-10、CIFAR-100、SVHN上，核心集算法的主动学习结果与几种常见基线的比较。 (图片来源：[Sener & Savarese
+    2018](https://arxiv.org/abs/1708.00489))
 - en: It works well on image classification tasks when there is a small number of
     classes. When the number of classes grows to be large or the data dimensionality
     increases (“curse of dimensionality”), the core-set method becomes less effective
     ([Sinha et al. 2019](https://arxiv.org/abs/1904.00370)).
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: 当类别数量较少时，核心集方法在图像分类任务上表现良好。当类别数量增多或数据维度增加（“维度诅咒”）时，核心集方法变得不那么有效（[Sinha等人，2019](https://arxiv.org/abs/1904.00370)）。
 - en: Because the core-set selection is expensive, [Coleman et al. (2020)](https://arxiv.org/abs/1906.11829)
     experimented with a weaker model (e.g. smaller, weaker architecture, not fully
     trained) and found that empirically using a weaker model as a proxy can significantly
     shorten each repeated data selection cycle of training models and selecting samples,
     without hurting the final error much. Their method is referred to as **SVP** (Selection
     via Proxy).
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于核心集选择很昂贵，[Coleman等人（2020）](https://arxiv.org/abs/1906.11829)尝试使用一个较弱的模型（例如较小、较弱的架构，未完全训练）进行实验，并发现经验上使用一个较弱的模型作为代理可以显著缩短每个重复数据选择周期的训练模型和选择样本，而不会对最终错误造成太大影响。他们的方法被称为**SVP**（通过代理进行选择）。
 - en: Diverse Gradient Embedding
+  id: totrans-128
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 多样化梯度嵌入
 - en: '**BADGE** (Batch Active learning by Diverse Gradient Embeddings; [Ash et al.
     2020](https://arxiv.org/abs/1906.03671)) tracks both model uncertainty and data
     diversity in the gradient space. Uncertainty is measured by the gradient magnitude
     w.r.t. the final layer of the network and diversity is captured by a diverse set
     of samples that span in the gradient space.'
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
+  zh: '**BADGE**（通过多样化梯度嵌入进行批量主动学习；[Ash等人，2020](https://arxiv.org/abs/1906.03671)）在梯度空间中跟踪模型不确定性和数据多样性。不确定性是通过相对于网络最后一层的梯度大小来衡量的，而多样性则由涵盖梯度空间中的多样样本集合来捕获。'
 - en: Uncertainty. Given an unlabeled sample $\mathbf{x}$, BADGE first computes the
     prediction $\hat{y}$ and the gradient $g_\mathbf{x}$ of the loss on $(\mathbf{x},
     \hat{y})$ w.r.t. the last layer’s parameters. They observed that the norm of $g_\mathbf{x}$
     conservatively estimates the example’s influence on the model learning and high-confidence
     samples tend to have gradient embeddings of small magnitude.
+  id: totrans-130
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 不确定性。给定一个未标记的样本$\mathbf{x}$，BADGE首先计算预测$\hat{y}$以及关于最后一层参数的损失在$(\mathbf{x},
+    \hat{y})$上的梯度$g_\mathbf{x}$。他们观察到$g_\mathbf{x}$的范数保守地估计了样本对模型学习的影响，高置信度样本往往具有较小幅度的梯度嵌入。
 - en: Diversity. Given many gradient embeddings of many samples, $g_\mathbf{x}$, BADGE
     runs [$k$-means++](https://en.wikipedia.org/wiki/K-means%2B%2B) to sample data
     points accordingly.
+  id: totrans-131
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 多样性。给定许多样本的许多梯度嵌入$g_\mathbf{x}$，BADGE运行[$k$-means++](https://en.wikipedia.org/wiki/K-means%2B%2B)来相应地对数据点进行采样。
 - en: '![](../Images/d09ede2b96d76526a59ae5908aae4e35.png)'
+  id: totrans-132
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d09ede2b96d76526a59ae5908aae4e35.png)'
 - en: 'Fig. 10\. Algorithm of BADGE (batch active learning by diverse gradient embeddings).
     (Image source: [Ash et al. 2020](https://arxiv.org/abs/1906.03671))'
+  id: totrans-133
   prefs: []
   type: TYPE_NORMAL
+  zh: 图10. BADGE算法（通过多样化梯度嵌入进行批量主动学习）。（图片来源：[Ash等人，2020](https://arxiv.org/abs/1906.03671)）
 - en: Measuring Training Effects
+  id: totrans-134
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 测量训练效果
 - en: Quantify Model Changes
+  id: totrans-135
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 量化模型变化
 - en: '[Settles et al. (2008)](https://papers.nips.cc/paper/2007/hash/a1519de5b5d44b31a01de013b9b51a80-Abstract.html)
     introduced an active learning query strategy, named **EGL** (Expected Gradient
     Length). The motivation is to find samples that can trigger the greatest update
     on the model if their labels are known.'
+  id: totrans-136
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Settles等人（2008）](https://papers.nips.cc/paper/2007/hash/a1519de5b5d44b31a01de013b9b51a80-Abstract.html)引入了一种主动学习查询策略，名为**EGL**（预期梯度长度）。其动机是找到一些样本，如果它们的标签已知，可以在模型上触发最大的更新。'
 - en: 'Let $\nabla \mathcal{L}(\theta)$ be the gradient of the loss function with
     respect to the model parameters. Specifically, given an unlabeled sample $\mathbf{x}_i$,
     we need to calculate the gradient assuming the label is $y \in \mathcal{Y}$, $\nabla
     \mathcal{L}^{(y)}(\theta)$. Because the true label $y_i$ is unknown, EGL relies
     on the current model belief to compute the expected gradient change:'
+  id: totrans-137
   prefs: []
   type: TYPE_NORMAL
+  zh: 让$\nabla \mathcal{L}(\theta)$表示损失函数相对于模型参数的梯度。具体来说，给定一个未标记的样本$\mathbf{x}_i$，我们需要计算假设标签为$y
+    \in \mathcal{Y}$时的梯度，$\nabla \mathcal{L}^{(y)}(\theta)$。由于真实标签$y_i$是未知的，EGL依赖于当前模型信念来计算预期梯度变化：
 - en: $$ \text{EGL}(\mathbf{x}_i) = \sum_{y_i \in \mathcal{Y}} p(y=y_i \vert \mathbf{x})
     \|\nabla \mathcal{L}^{(y_i)}(\theta)\| $$
+  id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \text{EGL}(\mathbf{x}_i) = \sum_{y_i \in \mathcal{Y}} p(y=y_i \vert \mathbf{x})
+    \|\nabla \mathcal{L}^{(y_i)}(\theta)\| $$
 - en: '**BALD** (Bayesian Active Learning by Disagreement; [Houlsby et al. 2011](https://arxiv.org/abs/1112.5745))
     aims to identify samples to maximize the information gain about the model weights,
     that is equivalent to maximize the decrease in expected posterior entropy.'
+  id: totrans-139
   prefs: []
   type: TYPE_NORMAL
+  zh: '**BALD**（贝叶斯主动学习通过分歧；[Houlsby等人2011](https://arxiv.org/abs/1112.5745)）旨在识别最大化关于模型权重的信息增益的样本，这等同于最大化期望后验熵的减少。'
 - en: $$ \begin{aligned} I[\boldsymbol{\theta}, y \vert x,\mathcal{D}] &= H(\boldsymbol{\theta}
     \vert \mathcal{D}) - \mathbb{E}_{y \sim p(y \vert \boldsymbol{x}, \mathcal{D})}
     \big[ H(\boldsymbol{\theta} \vert y, \boldsymbol{x}, \mathcal{D}) \big] & \text{;
     Decrease in expected posterior entropy}\\ &= H(y \vert \boldsymbol{x}, \mathcal{D})
     - \mathbb{E}_{\boldsymbol{\theta} \sim p(\boldsymbol{\theta} \vert \mathcal{D})}
     \big[ H(y \vert \boldsymbol{x}, \mathcal{\theta}) \big] \end{aligned} $$
+  id: totrans-140
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} I[\boldsymbol{\theta}, y \vert x,\mathcal{D}] &= H(\boldsymbol{\theta}
+    \vert \mathcal{D}) - \mathbb{E}_{y \sim p(y \vert \boldsymbol{x}, \mathcal{D})}
+    \big[ H(\boldsymbol{\theta} \vert y, \boldsymbol{x}, \mathcal{D}) \big] & \text{;
+    期望后验熵的减少}\\ &= H(y \vert \boldsymbol{x}, \mathcal{D}) - \mathbb{E}_{\boldsymbol{\theta}
+    \sim p(\boldsymbol{\theta} \vert \mathcal{D})} \big[ H(y \vert \boldsymbol{x},
+    \mathcal{\theta}) \big] \end{aligned} $$
 - en: The underlying interpretation is to “seek $\mathbf{x}$ for which the model is
     marginally most uncertain about $y$ (high $H(y \vert \mathbf{x}, \mathcal{D})$),
     but for which individual settings of the parameters are confident (low $H(y \vert
     \mathbf{x}, \boldsymbol{\theta})$).” In other words, each individual posterior
     draw is confident but a collection of draws carry diverse opinions.
+  id: totrans-141
   prefs: []
   type: TYPE_NORMAL
+  zh: 其基本解释是“寻找$\mathbf{x}$，使得模型对$y$的不确定性最大（高$H(y \vert \mathbf{x}, \mathcal{D})$），但参数的个别设置是自信的（低$H(y
+    \vert \mathbf{x}, \boldsymbol{\theta})$）。换句话说，每个个别的后验抽样是自信的，但一系列抽样具有不同的观点。
 - en: BALD was originally proposed for an individual sample and [Kirsch et al. (2019)](https://arxiv.org/abs/1906.08158)
     extended it to work in batch mode.
+  id: totrans-142
   prefs: []
   type: TYPE_NORMAL
+  zh: BALD最初是针对单个样本提出的，[Kirsch等人（2019）](https://arxiv.org/abs/1906.08158)将其扩展为批处理模式。
 - en: Forgetting Events
+  id: totrans-143
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 遗忘事件
 - en: 'To investigate whether neural networks have a tendency to **forget** previously
     learned information, [Mariya Toneva et al. (2019)](https://arxiv.org/abs/1812.05159)
     designed an experiment: They track the model prediction for each sample during
     the training process and count the transitions for each sample from being classified
     correctly to incorrectly or vice-versa. Then samples can be categorized accordingly,'
+  id: totrans-144
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了调查神经网络是否有遗忘先前学到的信息的倾向，[Mariya Toneva等人（2019）](https://arxiv.org/abs/1812.05159)设计了一个实验：他们在训练过程中跟踪每个样本的模型预测，并计算每个样本从被正确分类到错误分类或反之的转换次数。然后可以相应地对样本进行分类，
 - en: '*Forgettable* (redundant) samples: If the class label changes across training
     epochs.'
+  id: totrans-145
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*易忘记*（冗余）的样本：如果类别标签在训练周期内发生变化。'
 - en: '*Unforgettable* samples: If the class label assignment is consistent across
     training epochs. Those samples are never forgotten once learned.'
+  id: totrans-146
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*难以忘怀*的样本：如果类别标签分配在训练周期内保持一致。一旦学会，这些样本就永远不会被遗忘。'
 - en: They found that there are a large number of unforgettable examples that are
     never forgotten once learnt. Examples with noisy labels or images with “uncommon”
     features (visually complicated to classify) are among the most forgotten examples.
     The experiments empirically validated that unforgettable examples can be safely
     removed without compromising model performance.
+  id: totrans-147
   prefs: []
   type: TYPE_NORMAL
+  zh: 他们发现有大量的难以忘怀的例子一旦学会就永远不会被遗忘。具有嘈杂标签或具有“不寻常”特征的图像（在视觉上难以分类的复杂图像）是最容易被遗忘的例子之一。实验证明，可以安全地删除难以忘怀的例子而不会影响模型性能。
 - en: In the implementation, the forgetting event is only counted when a sample is
     included in the current training batch; that is, they compute forgetting across
     presentations of the same example in subsequent mini-batches. The number of forgetting
@@ -761,8 +1127,10 @@
     have a small tendency to be first-time learned later in the training. The forgetting
     events are also found to be transferable throughout the training period and between
     architectures.
+  id: totrans-148
   prefs: []
   type: TYPE_NORMAL
+  zh: 在实现中，遗忘事件仅在样本包含在当前训练批次中时计算；也就是说，他们跨后续小批次的呈现计算遗忘。每个样本的遗忘事件数量在不同种子之间非常稳定，易忘记的例子有一定倾向在训练后期首次学习。遗忘事件还发现在整个训练期间和不同架构之间是可转移的。
 - en: 'Forgetting events can be used as a signal for active learning acquisition if
     we hypothesize a model changing predictions during training is an indicator of
     model uncertainty. However, ground truth is unknown for unlabeled samples. [Bengar
@@ -771,218 +1139,340 @@
     is the most commonly predicted label for the input $\mathbf{x}$ and the label
     dispersion measures the fraction of training steps when the model does not assign
     $c^**$ to this sample:'
+  id: totrans-149
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们假设模型在训练过程中改变预测是模型不确定性的指标，则遗忘事件可以用作主动学习获取的信号。然而，未标记样本的地面真相是未知的。[Bengar等人（2021）](https://arxiv.org/abs/2107.14707)提出了一个名为**标签离散度**的新度量指标。让我们看看在训练时间内，$c^*$
+    是输入 $\mathbf{x}$ 最常预测的标签，而标签离散度衡量模型在这个样本上不分配 $c^*$ 的训练步骤的比例：
 - en: $$ \text{Dispersion}(\mathbf{x}) = 1 - \frac{f_\mathbf{x}}{T} \text{ where }
     f_\mathbf{x} = \sum_{t=1}^T \mathbb{1}[\hat{y}_t = c^*], c^* = \arg\max_{c=1,\dots,C}\sum_{t=1}^T
     \mathbb{1}[\hat{y}_t = c] $$
+  id: totrans-150
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \text{离散度}(\mathbf{x}) = 1 - \frac{f_\mathbf{x}}{T} \text{ 其中 } f_\mathbf{x}
+    = \sum_{t=1}^T \mathbb{1}[\hat{y}_t = c^*], c^* = \arg\max_{c=1,\dots,C}\sum_{t=1}^T
+    \mathbb{1}[\hat{y}_t = c] $$
 - en: In their implementation, dispersion is computed at every epoch. Label dispersion
     is low if the model consistently assigns the same label to the same sample but
     high if the prediction changes often. Label dispersion is correlated with network
     uncertainty, as shown in Fig. 11.
+  id: totrans-151
   prefs: []
   type: TYPE_NORMAL
+  zh: 在他们的实现中，每个时期都计算离散度。如果模型一直将相同的标签分配给相同的样本，则标签离散度低，但如果预测经常变化，则标签离散度高。如图11所示，标签离散度与网络不确定性相关。
 - en: '![](../Images/4f2288023c70117de2dfa581abf46d4d.png)'
+  id: totrans-152
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/4f2288023c70117de2dfa581abf46d4d.png)'
 - en: 'Fig. 11\. Label dispersion is correlated with network uncertainty. On the x-axis,
     data points are sorted by label dispersion scores. The y-axis is the model prediction
     accuracy when the model trys to infer the labels for those samples. (Image source:
     [Bengar et al. 2021](https://arxiv.org/abs/2107.14707))'
+  id: totrans-153
   prefs: []
   type: TYPE_NORMAL
+  zh: 图11\. 标签离散度与网络不确定性相关。在x轴上，数据点按照标签离散度得分排序。y轴是模型在尝试推断这些样本的标签时的预测准确性。（图片来源：[Bengar等人，2021](https://arxiv.org/abs/2107.14707)）
 - en: Hybrid
+  id: totrans-154
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 混合
 - en: When running active learning in batch mode, it is important to control diversity
     within a batch. **Suggestive Annotation** (**SA**; [Yang et al. 2017](https://arxiv.org/abs/1706.04737))
     is a two-step hybrid strategy, aiming to select both high uncertainty & highly
     representative labeled samples. It uses uncertainty obtained from an ensemble
     of models trained on the labeled data and core-sets for choosing representative
     data samples.
+  id: totrans-155
   prefs: []
   type: TYPE_NORMAL
+  zh: 在批量模式下运行主动学习时，控制批次内的多样性非常重要。**建议性注释**（**SA**；[Yang等人，2017](https://arxiv.org/abs/1706.04737)）是一种两步混合策略，旨在选择既具有高不确定性又高度代表性的标记样本。它利用从在标记数据上训练的模型集成中获得的不确定性和核心集来选择代表性数据样本。
 - en: First, SA selects top $K$ images with high uncertainty scores to form a candidate
     pool $\mathcal{S}_c \subseteq \mathcal{S}_U$. The uncertainty is measured as disagreement
     between multiple models training with bootstrapping.
+  id: totrans-156
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 首先，SA选择具有高不确定性得分的前 $K$ 个图像，形成候选池 $\mathcal{S}_c \subseteq \mathcal{S}_U$。不确定性是通过多个使用自举法训练的模型之间的不一致性来衡量的。
 - en: 'The next step is to find a subset $\mathcal{S}_a \subseteq \mathcal{S}_c$ with
     highest representativeness. The cosine similarity between feature vectors of two
     inputs approximates how similar they are. The representativeness of $\mathcal{S}_a$
     for $\mathcal{S}_U$ reflects how well $\mathcal{S}_a$ can represent all the samples
     in $\mathcal{S}_u$, defined as:'
+  id: totrans-157
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 下一步是找到具有最高代表性的子集 $\mathcal{S}_a \subseteq \mathcal{S}_c$。两个输入的特征向量之间的余弦相似度近似了它们的相似程度。$\mathcal{S}_a$
+    对于 $\mathcal{S}_U$ 的代表性反映了 $\mathcal{S}_a$ 能多好地代表 $\mathcal{S}_u$ 中的所有样本，定义为：
 - en: $$ F(\mathcal{S}_a, \mathcal{S}_u) = \sum_{\mathbf{x}_j \in \mathcal{S}_u} f(\mathcal{S}_a,
     \mathbf{x}_j) = \sum_{\mathbf{x}_j \in \mathcal{S}_u} \max_{\mathbf{x}_i \in \mathcal{S}_a}
     \text{sim}(\mathbf{x}_i, \mathbf{x}_j) $$
+  id: totrans-158
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ F(\mathcal{S}_a, \mathcal{S}_u) = \sum_{\mathbf{x}_j \in \mathcal{S}_u} f(\mathcal{S}_a,
+    \mathbf{x}_j) = \sum_{\mathbf{x}_j \in \mathcal{S}_u} \max_{\mathbf{x}_i \in \mathcal{S}_a}
+    \text{sim}(\mathbf{x}_i, \mathbf{x}_j) $$
 - en: Formulating $\mathcal{S}_a \subseteq \mathcal{S}_c$ with $k$ data points that
     maximizes $F(\mathcal{S}_a, \mathcal{S}_u)$ is a generalized version of the maximum
     set cover problem. It is NP-hard and its best possible polynomial time approximation
     algorithm is a simple greedy method.
+  id: totrans-159
   prefs: []
   type: TYPE_NORMAL
+  zh: 将 $\mathcal{S}_a \subseteq \mathcal{S}_c$ 与 $k$ 个数据点形成的 $F(\mathcal{S}_a, \mathcal{S}_u)$
+    最大化是最大集合覆盖问题的一个泛化版本。这是NP难题，其最佳多项式时间近似算法是一个简单的贪心方法。
 - en: Initially, $\mathcal{S}_a = \emptyset$ and $F(\mathcal{S}_a, \mathcal{S}_u)
     = 0$.
+  id: totrans-160
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 最初，$\mathcal{S}_a = \emptyset$，$F(\mathcal{S}_a, \mathcal{S}_u) = 0$。
 - en: Then, iteratively add $\mathbf{x}_i \in \mathcal{S}_c$ that maximizes $F(\mathcal{S}_a
     \cup I_i, \mathcal{S}_u)$ over $\mathcal{S}_a$, until $\mathcal{S}_s$ contains
     $k$ images.
+  id: totrans-161
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 然后，迭代地添加 $\mathbf{x}_i \in \mathcal{S}_c$，使得 $F(\mathcal{S}_a \cup I_i, \mathcal{S}_u)$
+    在 $\mathcal{S}_a$ 上最大化，直到 $\mathcal{S}_s$ 包含 $k$ 张图片。
 - en: '[Zhdanov (2019)](https://arxiv.org/abs/1901.05954) runs a similar process as
     SA, but at step 2, it relies on $k$-means instead of core-set, where the size
     of the candidate pool is configured relative to the batch size. Given batch size
     $b$ and a constant $beta$ (between 10 and 50), it follows these steps:'
+  id: totrans-162
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Zhdanov (2019)](https://arxiv.org/abs/1901.05954) 运行与SA类似的过程，但在第2步中，它依赖于 $k$-means
+    而不是核心集，其中候选池的大小相对于批量大小进行配置。给定批量大小 $b$ 和一个常数 $beta$（在10和50之间），它遵循以下步骤：'
 - en: Train a classifier on the labeled data;
+  id: totrans-163
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在有标签数据上训练分类器；
 - en: Measure informativeness of every unlabeled example (e.g. using uncertainty metrics);
+  id: totrans-164
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 测量每个未标记示例的信息量（例如使用不确定性度量）；
 - en: Prefilter top $\beta b \geq b$ most informative examples;
+  id: totrans-165
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 预过滤前 $\beta b \geq b$ 个最具信息量的示例；
 - en: Cluster $\beta b$ examples into $B$ clusters;
+  id: totrans-166
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将 $\beta b$ 个示例聚类成 $B$ 个簇；
 - en: Select $b$ different examples closest to the cluster centers for this round
     of active learning.
+  id: totrans-167
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 选择本轮主动学习中距离聚类中心最近的 $b$ 个不同示例。
 - en: 'Active learning can be further combined with [semi-supervised learning](https://lilianweng.github.io/posts/2021-12-05-semi-supervised/)
     to save the budget. **CEAL** (Cost-Effective Active Learning; [Yang et al. 2017](https://arxiv.org/abs/1701.03551))
     runs two things in parallel:'
+  id: totrans-168
   prefs: []
   type: TYPE_NORMAL
+  zh: 主动学习可以进一步与[半监督学习](https://lilianweng.github.io/posts/2021-12-05-semi-supervised/)结合以节省预算。**CEAL**（成本效益主动学习；[杨等人
+    2017](https://arxiv.org/abs/1701.03551)）同时运行两个任务：
 - en: Select uncertain samples via active learning and get them labeled;
+  id: totrans-169
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 通过主动学习选择不确定样本并对其进行标记；
 - en: Select samples with the most confident prediction and assign them [pseudo labels](https://lilianweng.github.io/posts/2021-12-05-semi-supervised/#pseudo-labeling).
     The confidence prediction is judged by whether the prediction entropy is below
     a threshold $\delta$. As the model is getting better in time, the threshold $\delta$
     decays in time as well.
+  id: totrans-170
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 选择具有最自信预测的样本并为其分配[伪标签](https://lilianweng.github.io/posts/2021-12-05-semi-supervised/#pseudo-labeling)。自信预测是通过预测熵是否低于阈值
+    $\delta$ 来判断的。随着模型的不断改进，阈值 $\delta$ 也会随时间衰减。
 - en: '![](../Images/18438dcef12f538d76ddead987a41b7b.png)'
+  id: totrans-171
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/18438dcef12f538d76ddead987a41b7b.png)'
 - en: 'Fig. 12\. Illustration of CEAL (cost-effective active learning). (Image source:
     [Yang et al. 2017](https://arxiv.org/abs/1701.03551))'
+  id: totrans-172
   prefs: []
   type: TYPE_NORMAL
+  zh: 图12。CEAL（成本效益主动学习）的示意图。 (图片来源：[杨等人 2017](https://arxiv.org/abs/1701.03551))
 - en: Citation
+  id: totrans-173
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 引用
 - en: 'Cited as:'
+  id: totrans-174
   prefs: []
   type: TYPE_NORMAL
+  zh: 被引用为：
 - en: 'Weng, Lilian. (Feb 2022). Learning with not enough data part 2: active learning.
     Lil’Log. https://lilianweng.github.io/posts/2022-02-20-active-learning/.'
+  id: totrans-175
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 翁，莉莲。 (2022年2月)。不足数据学习第2部分：主动学习。Lil’Log。https://lilianweng.github.io/posts/2022-02-20-active-learning/。
 - en: Or
+  id: totrans-176
   prefs: []
   type: TYPE_NORMAL
+  zh: 或
 - en: '[PRE0]'
+  id: totrans-177
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: References
+  id: totrans-178
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: '[1] Burr Settles. [Active learning literature survey.](https://burrsettles.com/pub/settles.activelearning.pdf)
     University of Wisconsin, Madison, 52(55-66):11, 2010.'
+  id: totrans-179
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] 布尔·塞特尔斯。[主动学习文献综述。](https://burrsettles.com/pub/settles.activelearning.pdf)
+    威斯康星大学麦迪逊分校，52(55-66):11，2010年。'
 - en: '[2] [https://jacobgil.github.io/deeplearning/activelearning](https://jacobgil.github.io/deeplearning/activelearning)'
+  id: totrans-180
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] [https://jacobgil.github.io/deeplearning/activelearning](https://jacobgil.github.io/deeplearning/activelearning)'
 - en: '[3] Yang et al. [“Cost-effective active learning for deep image classification”](https://arxiv.org/abs/1701.03551)
     TCSVT 2016.'
+  id: totrans-181
   prefs: []
   type: TYPE_NORMAL
+  zh: '[3] 杨等人。[“深度图像分类的成本效益主动学习”](https://arxiv.org/abs/1701.03551) TCSVT 2016。'
 - en: '[4] Yarin Gal et al. [“Dropout as a Bayesian Approximation: representing model
     uncertainty in deep learning.”](https://arxiv.org/abs/1506.02142) ICML 2016.'
+  id: totrans-182
   prefs: []
   type: TYPE_NORMAL
+  zh: '[4] Yarin Gal等人。[“Dropout作为贝叶斯近似：在深度学习中表示模型不确定性。”](https://arxiv.org/abs/1506.02142)
+    ICML 2016。'
 - en: '[5] Blundell et al. [“Weight uncertainty in neural networks (Bayes-by-Backprop)”](https://arxiv.org/abs/1505.05424)
     ICML 2015.'
+  id: totrans-183
   prefs: []
   type: TYPE_NORMAL
+  zh: '[5] Blundell等人。[“神经网络中的权重不确定性（贝叶斯逆向传播）。”](https://arxiv.org/abs/1505.05424)
+    ICML 2015。'
 - en: '[6] Settles et al. [“Multiple-Instance Active Learning.”](https://papers.nips.cc/paper/2007/hash/a1519de5b5d44b31a01de013b9b51a80-Abstract.html)
     NIPS 2007.'
+  id: totrans-184
   prefs: []
   type: TYPE_NORMAL
+  zh: '[6] 塞特尔斯等人。[“多实例主动学习。”](https://papers.nips.cc/paper/2007/hash/a1519de5b5d44b31a01de013b9b51a80-Abstract.html)
+    NIPS 2007。'
 - en: '[7] Houlsby et al. [Bayesian Active Learning for Classification and Preference
     Learning."](https://arxiv.org/abs/1112.5745) arXiv preprint arXiv:1112.5745 (2020).'
+  id: totrans-185
   prefs: []
   type: TYPE_NORMAL
+  zh: '[7] 霍尔斯比等人。[用于分类和偏好学习的贝叶斯主动学习。](https://arxiv.org/abs/1112.5745) arXiv预印本 arXiv:1112.5745
+    (2020)。'
 - en: '[8] Kirsch et al. [“BatchBALD: Efficient and Diverse Batch Acquisition for
     Deep Bayesian Active Learning.”](https://arxiv.org/abs/1906.08158) NeurIPS 2019.'
+  id: totrans-186
   prefs: []
   type: TYPE_NORMAL
+  zh: '[8] Kirsch et al. [“BatchBALD：深度贝叶斯主动学习的高效和多样化批量获取。”](https://arxiv.org/abs/1906.08158)
+    NeurIPS 2019.'
 - en: '[9] Beluch et al. [“The power of ensembles for active learning in image classification.”](https://openaccess.thecvf.com/content_cvpr_2018/papers/Beluch_The_Power_of_CVPR_2018_paper.pdf)
     CVPR 2018.'
+  id: totrans-187
   prefs: []
   type: TYPE_NORMAL
+  zh: '[9] Beluch et al. [“集成在图像分类中的主动学习的力量。”](https://openaccess.thecvf.com/content_cvpr_2018/papers/Beluch_The_Power_of_CVPR_2018_paper.pdf)
+    CVPR 2018.'
 - en: '[10] Sener & Savarese. [“Active learning for convolutional neural networks:
     A core-set approach.”](https://arxiv.org/abs/1708.00489) ICLR 2018.'
+  id: totrans-188
   prefs: []
   type: TYPE_NORMAL
+  zh: '[10] Sener & Savarese. [“卷积神经网络的主动学习：核心集方法。”](https://arxiv.org/abs/1708.00489)
+    ICLR 2018.'
 - en: '[11] Donggeun Yoo & In So Kweon. [“Learning Loss for Active Learning.”](https://arxiv.org/abs/1905.03677)
     CVPR 2019.'
+  id: totrans-189
   prefs: []
   type: TYPE_NORMAL
+  zh: '[11] Donggeun Yoo & In So Kweon. [“主动学习的学习损失。”](https://arxiv.org/abs/1905.03677)
+    CVPR 2019.'
 - en: '[12] Margatina et al. [“Active Learning by Acquiring Contrastive Examples.”](https://arxiv.org/abs/2109.03764)
     EMNLP 2021.'
+  id: totrans-190
   prefs: []
   type: TYPE_NORMAL
+  zh: '[12] Margatina et al. [“通过获取对比示例进行主动学习。”](https://arxiv.org/abs/2109.03764)
+    EMNLP 2021.'
 - en: '[13] Sinha et al. [“Variational Adversarial Active Learning”](https://arxiv.org/abs/1904.00370)
     ICCV 2019'
+  id: totrans-191
   prefs: []
   type: TYPE_NORMAL
+  zh: '[13] Sinha et al. [“变分对抗主动学习”](https://arxiv.org/abs/1904.00370) ICCV 2019'
 - en: '[14] Ebrahimiet al. [“Minmax Active Learning”](https://arxiv.org/abs/2012.10467)
     arXiv preprint arXiv:2012.10467 (2021).'
+  id: totrans-192
   prefs: []
   type: TYPE_NORMAL
+  zh: '[14] Ebrahimiet al. [“Minmax主动学习”](https://arxiv.org/abs/2012.10467) arXiv预印本
+    arXiv:2012.10467 (2021).'
 - en: '[15] Mariya Toneva et al. [“An empirical study of example forgetting during
     deep neural network learning.”](https://arxiv.org/abs/1812.05159) ICLR 2019.'
+  id: totrans-193
   prefs: []
   type: TYPE_NORMAL
+  zh: '[15] Mariya Toneva et al. [“深度神经网络学习过程中的示例遗忘的实证研究。”](https://arxiv.org/abs/1812.05159)
+    ICLR 2019.'
 - en: '[16] Javad Zolfaghari Bengar et al. [“When Deep Learners Change Their Mind:
     Learning Dynamics for Active Learning.”](https://arxiv.org/abs/2107.14707) CAIP
     2021.'
+  id: totrans-194
   prefs: []
   type: TYPE_NORMAL
+  zh: '[16] Javad Zolfaghari Bengar et al. [“当深度学习者改变主意：主动学习的学习动态。”](https://arxiv.org/abs/2107.14707)
+    CAIP 2021.'
 - en: '[17] Yang et al. [“Suggestive annotation: A deep active learning framework
     for biomedical image segmentation.”](https://arxiv.org/abs/1706.04737) MICCAI
     2017.'
+  id: totrans-195
   prefs: []
   type: TYPE_NORMAL
+  zh: '[17] Yang et al. [“建议性注释：生物医学图像分割的深度主动学习框架。”](https://arxiv.org/abs/1706.04737)
+    MICCAI 2017.'
 - en: '[18] Fedor Zhdanov. [“Diverse mini-batch Active Learning”](https://arxiv.org/abs/1901.05954)
     arXiv preprint arXiv:1901.05954 (2019).'
+  id: totrans-196
   prefs: []
   type: TYPE_NORMAL
+  zh: '[18] Fedor Zhdanov. [“多样化小批量主动学习”](https://arxiv.org/abs/1901.05954) arXiv预印本
+    arXiv:1901.05954 (2019).'

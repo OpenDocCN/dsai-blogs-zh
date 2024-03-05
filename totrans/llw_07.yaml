@@ -1,19 +1,25 @@
 - en: Some Math behind Neural Tangent Kernel
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 一些神经切向核背后的数学知识
 - en: 原文：[https://lilianweng.github.io/posts/2022-09-08-ntk/](https://lilianweng.github.io/posts/2022-09-08-ntk/)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://lilianweng.github.io/posts/2022-09-08-ntk/](https://lilianweng.github.io/posts/2022-09-08-ntk/)
 - en: Neural networks are [well known](https://lilianweng.github.io/posts/2019-03-14-overfit/)
     to be over-parameterized and can often easily fit data with near-zero training
     loss with decent generalization performance on test dataset. Although all these
     parameters are initialized at random, the optimization process can consistently
     lead to similarly good outcomes. And this is true even when the number of model
     parameters exceeds the number of training data points.
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 众所周知，神经网络是过度参数化的，通常可以轻松拟合具有接近零训练损失的数据，并在测试数据集上具有良好的泛化性能。尽管所有这些参数都是随机初始化的，但优化过程可以始终导致类似的良好结果。即使模型参数的数量超过训练数据点的数量，这也是正确的。
 - en: '**Neural tangent kernel (NTK)** ([Jacot et al. 2018](https://arxiv.org/abs/1806.07572))
     is a kernel to explain the evolution of neural networks during training via gradient
     descent. It leads to great insights into why neural networks with enough width
@@ -21,8 +27,10 @@
     loss. In the post, we will do a deep dive into the motivation and definition of
     NTK, as well as the proof of a deterministic convergence at different initializations
     of neural networks with infinite width by characterizing NTK in such a setting.'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '**神经切向核（NTK）**（[Jacot et al. 2018](https://arxiv.org/abs/1806.07572)）是一个核，用于通过梯度下降解释神经网络在训练过程中的演变。它深入探讨了为什么具有足够宽度的神经网络在被训练以最小化经验损失时可以始终收敛到全局最小值。在本文中，我们将深入探讨NTK的动机和定义，以及在不同初始化条件下对具有无限宽度的神经网络的确定性收敛的证明，通过在这种设置中对NTK进行表征。'
 - en: 🤓 Different from my previous posts, this one mainly focuses on a small number
     of core papers, less on the breadth of the literature review in the field. There
     are many interesting works after NTK, with modification or expansion of the theory
@@ -30,143 +38,215 @@
     The goal is to show all the math behind NTK in a clear and easy-to-follow format,
     so the post is quite math-intensive. If you notice any mistakes, please let me
     know and I will be happy to correct them quickly. Thanks in advance!
+  id: totrans-4
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 🤓 与我之前的文章不同，这篇主要关注少量核心论文，而不是广泛涵盖该领域的文献综述。NTK之后有许多有趣的工作，对理解神经网络学习动态进行了修改或扩展，但它们不会在这里涵盖。目标是以清晰易懂的格式展示NTK背后的所有数学知识，因此本文具有相当高的数学密度。如果您发现任何错误，请告诉我，我将很乐意快速更正。提前感谢！
 - en: Basics
+  id: totrans-5
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 基础知识
 - en: This section contains reviews of several very basic concepts which are core
     to understanding of neural tangent kernel. Feel free to skip.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 本节包含对几个非常基本概念的回顾，这些概念是理解神经切向核的核心。随意跳过。
 - en: Vector-to-vector Derivative
+  id: totrans-7
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 向量对向量的导数
 - en: 'Given an input vector $\mathbf{x} \in \mathbb{R}^n$ (as a column vector) and
     a function $f: \mathbb{R}^n \to \mathbb{R}^m$, the derivative of $f$ with respective
     to $\mathbf{x}$ is a $m\times n$ matrix, also known as [*Jacobian matrix*](https://en.wikipedia.org/wiki/Jacobian_matrix_and_determinant):'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: '给定输入向量 $\mathbf{x} \in \mathbb{R}^n$（作为列向量）和函数 $f: \mathbb{R}^n \to \mathbb{R}^m$，关于
+    $\mathbf{x}$ 的导数是一个 $m\times n$ 矩阵，也称为[*雅可比矩阵*](https://en.wikipedia.org/wiki/Jacobian_matrix_and_determinant)：'
 - en: $$ J = \frac{\partial f}{\partial \mathbf{x}} = \begin{bmatrix} \frac{\partial
     f_1}{\partial x_1} & \dots &\frac{\partial f_1}{\partial x_n} \\ \vdots & & \\
     \frac{\partial f_m}{\partial x_1} & \dots &\frac{\partial f_m}{\partial x_n} \\
     \end{bmatrix} \in \mathbb{R}^{m \times n} $$
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ J = \frac{\partial f}{\partial \mathbf{x}} = \begin{bmatrix} \frac{\partial
+    f_1}{\partial x_1} & \dots &\frac{\partial f_1}{\partial x_n} \\ \vdots & & \\
+    \frac{\partial f_m}{\partial x_1} & \dots &\frac{\partial f_m}{\partial x_n} \\
+    \end{bmatrix} \in \mathbb{R}^{m \times n} $$
 - en: Throughout the post, I use integer subscript(s) to refer to a single entry out
     of a vector or matrix value; i.e. $x_i$ indicates the $i$-th value in the vector
     $\mathbf{x}$ and $f_i(.)$ is the $i$-th entry in the output of the function.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本文中，我使用整数下标来指代向量或矩阵值中的单个条目；即 $x_i$ 表示向量 $\mathbf{x}$ 中的第 $i$ 个值，$f_i(.)$ 是函数输出中的第
+    $i$ 个条目。
 - en: The gradient of a vector with respect to a vector is defined as $\nabla_\mathbf{x}
     f = J^\top \in \mathbb{R}^{n \times m}$ and this formation is also valid when
     $m=1$ (i.e., scalar output).
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于向量关于向量的梯度定义为 $\nabla_\mathbf{x} f = J^\top \in \mathbb{R}^{n \times m}$，当
+    $m=1$（即，标量输出）时，这种形式也是有效的。
 - en: Differential Equations
+  id: totrans-12
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 微分方程
 - en: Differential equations describe the relationship between one or multiple functions
     and their derivatives. There are two main types of differential equations.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 微分方程描述一个或多个函数及其导数之间的关系。有两种主要类型的微分方程。
 - en: (1) *ODE (Ordinary differential equation)* contains only an unknown function
     of one random variable. ODEs are the main form of differential equations used
     in this post. A general form of ODE looks like $(x, y, \frac{dy}{dx}, \dots, \frac{d^ny}{dx^n})
     = 0$.
+  id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: (1) *ODE（常微分方程）*只包含一个未知函数的一个随机变量。ODEs是本文中使用的微分方程的主要形式。ODE的一般形式如$(x, y, \frac{dy}{dx},
+    \dots, \frac{d^ny}{dx^n}) = 0$。
 - en: (2) *PDE (Partial differential equation)* contains unknown multivariable functions
     and their partial derivatives.
+  id: totrans-15
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: (2) *PDE（偏微分方程）*包含未知的多变量函数及其偏导数。
 - en: Let’s review the simplest case of differential equations and its solution. *Separation
     of variables* (Fourier method) can be used when all the terms containing one variable
     can be moved to one side, while the other terms are all moved to the other side.
     For example,
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们回顾一下微分方程及其解的最简单情况。*变量分离*（傅立叶方法）可用于当所有包含一个变量的项都移到一边时，而其他项都移到另一边。例如，
 - en: $$ \begin{aligned} \text{Given }a\text{ is a constant scalar:}\quad\frac{dy}{dx}
     &= ay \\ \text{Move same variables to the same side:}\quad\frac{dy}{y} &= adx
     \\ \text{Put integral on both sides:}\quad\int \frac{dy}{y} &= \int adx \\ \ln
     (y) &= ax + C' \\ \text{Finally}\quad y &= e^{ax + C'} = C e^{ax} \end{aligned}
     $$
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \text{给定}a\text{是一个常数标量：}\quad\frac{dy}{dx} &= ay \\ \text{将相同变量移到同一侧：}\quad\frac{dy}{y}
+    &= adx \\ \text{两侧加上积分：}\quad\int \frac{dy}{y} &= \int adx \\ \ln (y) &= ax +
+    C' \\ \text{最终}\quad y &= e^{ax + C'} = C e^{ax} \end{aligned} $$
 - en: Central Limit Theorem
+  id: totrans-18
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 中心极限定理
 - en: Given a collection of i.i.d. random variables, $x_1, \dots, x_N$ with mean $\mu$
     and variance $\sigma^2$, the *Central Limit Theorem (CTL)* states that the expectation
     would be Gaussian distributed when $N$ becomes really large.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 给定一组独立同分布的随机变量，$x_1, \dots, x_N$，均值为$\mu$，方差为$\sigma^2$，*中心极限定理（CTL）*表明当$N$变得非常大时，期望值将呈高斯分布。
 - en: $$ \bar{x} = \frac{1}{N}\sum_{i=1}^N x_i \sim \mathcal{N}(\mu, \frac{\sigma^2}{n})\quad\text{when
     }N \to \infty $$
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \bar{x} = \frac{1}{N}\sum_{i=1}^N x_i \sim \mathcal{N}(\mu, \frac{\sigma^2}{n})\quad\text{当}N
+    \to \infty $$
 - en: CTL can also apply to multidimensional vectors, and then instead of a single
     scale $\sigma^2$ we need to compute the covariance matrix of random variable $\Sigma$.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: CTL也可以应用于多维向量，然后我们需要计算随机变量$\Sigma$的协方差矩阵，而不是单一尺度$\sigma^2$。
 - en: Taylor Expansion
+  id: totrans-22
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 泰勒展开
 - en: 'The [*Taylor expansion*](https://en.wikipedia.org/wiki/Taylor_series) is to
     express a function as an infinite sum of components, each represented in terms
     of this function’s derivatives. The Tayler expansion of a function $f(x)$ at $x=a$
     can be written as: $$ f(x) = f(a) + \sum_{k=1}^\infty \frac{1}{k!} (x - a)^k\nabla^k_xf(x)\vert_{x=a}
     $$ where $\nabla^k$ denotes the $k$-th derivative.'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: '[*泰勒展开*](https://en.wikipedia.org/wiki/Taylor_series)是将一个函数表示为无限项的组成部分之和，每个部分都用该函数的导数表示。函数$f(x)$在$x=a$处的泰勒展开可以写成：$$
+    f(x) = f(a) + \sum_{k=1}^\infty \frac{1}{k!} (x - a)^k\nabla^k_xf(x)\vert_{x=a}
+    $$其中$\nabla^k$表示第$k$阶导数。'
 - en: 'The first-order Taylor expansion is often used as a linear approximation of
     the function value:'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 第一阶泰勒展开通常用作函数值的线性近似：
 - en: $$ f(x) \approx f(a) + (x - a)\nabla_x f(x)\vert_{x=a} $$
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ f(x) \approx f(a) + (x - a)\nabla_x f(x)\vert_{x=a} $$
 - en: Kernel & Kernel Methods
+  id: totrans-26
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 核函数和核方法
 - en: 'A [*kernel*](https://en.wikipedia.org/wiki/Kernel_method) is essentially a
     similarity function between two data points, $K: \mathcal{X} \times \mathcal{X}
     \to \mathbb{R}$. It describes how sensitive the prediction for one data sample
     is to the prediction for the other; or in other words, how similar two data points
     are. The kernel should be symmetric, $K(x, x’) = K(x’, x)$.'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: '一个[*核函数*](https://en.wikipedia.org/wiki/Kernel_method)本质上是两个数据点之间的相似性函数，$K:
+    \mathcal{X} \times \mathcal{X} \to \mathbb{R$。它描述了对一个数据样本的预测对另一个数据样本的预测的敏感程度；或者换句话说，两个数据点有多相似。核函数应该是对称的，$K(x,
+    x’) = K(x’, x)$。'
 - en: 'Depending on the problem structure, some kernels can be decomposed into two
     feature maps, one corresponding to one data point, and the kernel value is an
     inner product of these two features: $K(x, x’) = \langle \varphi(x), \varphi(x’)
     \rangle$.'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 根据问题结构，一些核函数可以分解为两个特征映射，一个对应一个数据点，核值是这两个特征的内积：$K(x, x’) = \langle \varphi(x),
+    \varphi(x’) \rangle$。
 - en: '*Kernel methods* are a type of non-parametric, instance-based machine learning
     algorithms. Assuming we have known all the labels of training samples $\{x^{(i)},
     y^{(i)}\}$, the label for a new input $x$ is predicted by a weighted sum $\sum_{i}
     K(x^{(i)}, x)y^{(i)}$.'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: '*核方法*是一种非参数、基于实例的机器学习算法。假设我们已知所有训练样本$\{x^{(i)}, y^{(i)}\}$的标签，那么新输入$x$的标签通过加权和$\sum_{i}
+    K(x^{(i)}, x)y^{(i)}$来预测。'
 - en: Gaussian Processes
+  id: totrans-30
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 高斯过程
 - en: '*Gaussian process (GP)* is a non-parametric method by modeling a multivariate
     Gaussian probability distribution over a collection of random variables. GP assumes
     a prior over functions and then updates the posterior over functions based on
     what data points are observed.'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: '*高斯过程（GP）*是一种通过对一组随机变量建模多元高斯概率分布的非参数方法。GP假设函数的先验，然后根据观察到的数据点更新函数的后验。'
 - en: Given a collection of data points $\{x^{(1)}, \dots, x^{(N)}\}$, GP assumes
     that they follow a jointly multivariate Gaussian distribution, defined by a mean
     $\mu(x)$ and a covariance matrix $\Sigma(x)$. Each entry at location $(i,j)$ in
@@ -176,172 +256,271 @@
     too. Making predictions with GP for unknown data points is equivalent to drawing
     samples from this distribution, via a conditional distribution of unknown data
     points given observed ones.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 给定数据点集合$\{x^{(1)}, \dots, x^{(N)}\}$，高斯过程假设它们遵循一个联合多元高斯分布，由均值$\mu(x)$和协方差矩阵$\Sigma(x)$定义。协方差矩阵$\Sigma(x)$中位置$(i,j)$处的每个条目由一个核$\Sigma_{i,j}
+    = K(x^{(i)}, x^{(j)})$定义，也称为*协方差函数*。核心思想是 - 如果两个数据点被核视为相似，那么函数输出也应该接近。使用高斯过程对未知数据点进行预测等同于从该分布中抽取样本，通过给定观察到的数据点的未知数据点的条件分布。
 - en: Check [this post](https://distill.pub/2019/visual-exploration-gaussian-processes/)
     for a high-quality and highly visualization tutorial on what Gaussian Processes
     are.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 查看[这篇文章](https://distill.pub/2019/visual-exploration-gaussian-processes/)，了解高质量且高度可视化的关于高斯过程的教程。
 - en: Notation
+  id: totrans-34
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 符号
 - en: 'Let us consider a fully-connected neural networks with parameter $\theta$,
     $f(.;\theta): \mathbb{R}^{n_0} \to \mathbb{R}^{n_L}$. Layers are indexed from
     0 (input) to $L$ (output), each containing $n_0, \dots, n_L$ neurons, including
     the input of size $n_0$ and the output of size $n_L$. There are $P = \sum_{l=0}^{L-1}
     (n_l + 1) n_{l+1}$ parameters in total and thus we have $\theta \in \mathbb{R}^P$.'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: '让我们考虑一个具有参数$\theta$的全连接神经网络，$f(.;\theta): \mathbb{R}^{n_0} \to \mathbb{R}^{n_L}$。层从0（输入）到$L$（输出）进行索引，每一层包含$n_0,
+    \dots, n_L$个神经元，包括大小为$n_0$的输入和大小为$n_L$的输出。总共有$P = \sum_{l=0}^{L-1} (n_l + 1) n_{l+1}$个参数，因此我们有$\theta
+    \in \mathbb{R}^P$。'
 - en: The training dataset contains $N$ data points, $\mathcal{D}=\{\mathbf{x}^{(i)},
     y^{(i)}\}_{i=1}^N$. All the inputs are denoted as $\mathcal{X}=\{\mathbf{x}^{(i)}\}_{i=1}^N$
     and all the labels are denoted as $\mathcal{Y}=\{y^{(i)}\}_{i=1}^N$.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 训练数据集包含$N$个数据点，$\mathcal{D}=\{\mathbf{x}^{(i)}, y^{(i)}\}_{i=1}^N$。所有输入被表示为$\mathcal{X}=\{\mathbf{x}^{(i)}\}_{i=1}^N$，所有标签被表示为$\mathcal{Y}=\{y^{(i)}\}_{i=1}^N$。
 - en: Now let’s look into the forward pass computation in every layer in detail. For
     $l=0, \dots, L-1$, each layer $l$ defines an affine transformation $A^{(l)}$ with
     a weight matrix $\mathbf{w}^{(l)} \in \mathbb{R}^{n_{l} \times n_{l+1}}$ and a
     bias term $\mathbf{b}^{(l)} \in \mathbb{R}^{n_{l+1}}$, as well as a pointwise
     nonlinearity function $\sigma(.)$ which is [Lipschitz continuous](https://en.wikipedia.org/wiki/Lipschitz_continuity).
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们详细看一下每一层中的前向传播计算。对于$l=0, \dots, L-1$，每一层$l$定义一个带有权重矩阵$\mathbf{w}^{(l)}
+    \in \mathbb{R}^{n_{l} \times n_{l+1}}$和偏置项$\mathbf{b}^{(l)} \in \mathbb{R}^{n_{l+1}}$的仿射变换$A^{(l)}$，以及一个逐点非线性函数$\sigma(.)$，它是[Lipschitz连续的](https://en.wikipedia.org/wiki/Lipschitz_continuity)。
 - en: $$ \begin{aligned} A^{(0)} &= \mathbf{x} \\ \tilde{A}^{(l+1)}(\mathbf{x}) &=
     \frac{1}{\sqrt{n_l}} {\mathbf{w}^{(l)}}^\top A^{(l)} + \beta\mathbf{b}^{(l)}\quad\in\mathbb{R}^{n_{l+1}}
     & \text{; pre-activations}\\ A^{(l+1)}(\mathbf{x}) &= \sigma(\tilde{A}^{(l+1)}(\mathbf{x}))\quad\in\mathbb{R}^{n_{l+1}}
     & \text{; post-activations} \end{aligned} $$
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} A^{(0)} &= \mathbf{x} \\ \tilde{A}^{(l+1)}(\mathbf{x}) &=
+    \frac{1}{\sqrt{n_l}} {\mathbf{w}^{(l)}}^\top A^{(l)} + \beta\mathbf{b}^{(l)}\quad\in\mathbb{R}^{n_{l+1}}
+    & \text{; 预激活}\\ A^{(l+1)}(\mathbf{x}) &= \sigma(\tilde{A}^{(l+1)}(\mathbf{x}))\quad\in\mathbb{R}^{n_{l+1}}
+    & \text{; 后激活} \end{aligned} $$
 - en: Note that the *NTK parameterization* applies a rescale weight $1/\sqrt{n_l}$
     on the transformation to avoid divergence with infinite-width networks. The constant
     scalar $\beta \geq 0$ controls how much effort the bias terms have.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意，*NTK 参数化* 在转换上应用了一个重新缩放权重 $1/\sqrt{n_l}$，以避免与无限宽度网络的发散。常数标量 $\beta \geq 0$
+    控制偏置项的影响程度。
 - en: All the network parameters are initialized as an i.i.d Gaussian $\mathcal{N}(0,
     1)$ in the following analysis.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 所有网络参数在以下分析中都初始化为独立同分布的高斯分布 $\mathcal{N}(0, 1)$。
 - en: Neural Tangent Kernel
+  id: totrans-41
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 神经切向核
 - en: '**Neural tangent kernel (NTK)** ([Jacot et al. 2018](https://arxiv.org/abs/1806.07572))
     is an important concept for understanding neural network training via gradient
     descent. At its core, it explains how updating the model parameters on one data
     sample affects the predictions for other samples.'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: '**神经切向核 (NTK)** ([Jacot 等人，2018](https://arxiv.org/abs/1806.07572)) 是通过梯度下降理解神经网络训练的重要概念。在其核心，它解释了更新模型参数对一个数据样本的预测如何影响其他样本。'
 - en: Let’s start with the intuition behind NTK, step by step.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们逐步了解 NTK 背后的直觉。
 - en: 'The empirical loss function $\mathcal{L}: \mathbb{R}^P \to \mathbb{R}_+$ to
     minimize during training is defined as follows, using a per-sample cost function
     $\ell: \mathbb{R}^{n_0} \times \mathbb{R}^{n_L} \to \mathbb{R}_+$:'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: '要在训练期间最小化的经验损失函数 $\mathcal{L}: \mathbb{R}^P \to \mathbb{R}_+$ 定义如下，使用每个样本的成本函数
+    $\ell: \mathbb{R}^{n_0} \times \mathbb{R}^{n_L} \to \mathbb{R}_+$：'
 - en: $$ \mathcal{L}(\theta) =\frac{1}{N} \sum_{i=1}^N \ell(f(\mathbf{x}^{(i)}; \theta),
     y^{(i)}) $$
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathcal{L}(\theta) =\frac{1}{N} \sum_{i=1}^N \ell(f(\mathbf{x}^{(i)}; \theta),
+    y^{(i)}) $$
 - en: 'and according to the chain rule. the gradient of the loss is:'
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 根据链式法则，损失的梯度是：
 - en: $$ \nabla_\theta \mathcal{L}(\theta)= \frac{1}{N} \sum_{i=1}^N \underbrace{\nabla_\theta
     f(\mathbf{x}^{(i)}; \theta)}_{\text{size }P \times n_L} \underbrace{\nabla_f \ell(f,
     y^{(i)})}_{\text{size } n_L \times 1} $$
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \nabla_\theta \mathcal{L}(\theta)= \frac{1}{N} \sum_{i=1}^N \underbrace{\nabla_\theta
+    f(\mathbf{x}^{(i)}; \theta)}_{\text{大小为 }P \times n_L} \underbrace{\nabla_f \ell(f,
+    y^{(i)})}_{\text{大小为 } n_L \times 1} $$
 - en: 'When tracking how the network parameter $\theta$ evolves in time, each gradient
     descent update introduces a small incremental change of an infinitesimal step
     size. Because of the update step is small enough, it can be approximately viewed
     as a derivative on the time dimension:'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 当跟踪网络参数 $\theta$ 在时间上的演变时，每次梯度下降更新都引入了一个微小步长的微小增量变化。由于更新步长足够小，可以近似看作是时间维度上的导数：
 - en: $$ \frac{d\theta}{d t} = - \nabla_\theta\mathcal{L}(\theta) = -\frac{1}{N} \sum_{i=1}^N
     \nabla_\theta f(\mathbf{x}^{(i)}; \theta) \nabla_f \ell(f, y^{(i)}) $$
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \frac{d\theta}{d t} = - \nabla_\theta\mathcal{L}(\theta) = -\frac{1}{N} \sum_{i=1}^N
+    \nabla_\theta f(\mathbf{x}^{(i)}; \theta) \nabla_f \ell(f, y^{(i)}) $$
 - en: 'Again, by the chain rule, the network output evolves according to the derivative:'
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 再次，根据链式法则，网络输出根据导数的演变如下：
 - en: $$ \frac{df(\mathbf{x};\theta)}{dt} = \frac{df(\mathbf{x};\theta)}{d\theta}\frac{d\theta}{dt}
     = -\frac{1}{N} \sum_{i=1}^N \color{blue}{\underbrace{\nabla_\theta f(\mathbf{x};\theta)^\top
     \nabla_\theta f(\mathbf{x}^{(i)}; \theta)}_\text{Neural tangent kernel}} \color{black}{\nabla_f
     \ell(f, y^{(i)})} $$
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \frac{df(\mathbf{x};\theta)}{dt} = \frac{df(\mathbf{x};\theta)}{d\theta}\frac{d\theta}{dt}
+    = -\frac{1}{N} \sum_{i=1}^N \color{blue}{\underbrace{\nabla_\theta f(\mathbf{x};\theta)^\top
+    \nabla_\theta f(\mathbf{x}^{(i)}; \theta)}_\text{神经切向核}} \color{black}{\nabla_f
+    \ell(f, y^{(i)})} $$
 - en: 'Here we find the **Neural Tangent Kernel (NTK)**, as defined in the blue part
     in the above formula, $K: \mathbb{R}^{n_0}\times\mathbb{R}^{n_0} \to \mathbb{R}^{n_L
     \times n_L}$ :'
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: '在这里，我们找到了上述公式中蓝色部分定义的 **神经切向核 (NTK)**，$K: \mathbb{R}^{n_0}\times\mathbb{R}^{n_0}
+    \to \mathbb{R}^{n_L \times n_L}$：'
 - en: $$ K(\mathbf{x}, \mathbf{x}'; \theta) = \nabla_\theta f(\mathbf{x};\theta)^\top
     \nabla_\theta f(\mathbf{x}'; \theta) $$
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ K(\mathbf{x}, \mathbf{x}'; \theta) = \nabla_\theta f(\mathbf{x};\theta)^\top
+    \nabla_\theta f(\mathbf{x}'; \theta) $$
 - en: 'where each entry in the output matrix at location $(m, n), 1 \leq m, n \leq
     n_L$ is:'
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 输出矩阵中每个位置 $(m, n), 1 \leq m, n \leq n_L$ 的每个条目是：
 - en: $$ K_{m,n}(\mathbf{x}, \mathbf{x}'; \theta) = \sum_{p=1}^P \frac{\partial f_m(\mathbf{x};\theta)}{\partial
     \theta_p} \frac{\partial f_n(\mathbf{x}';\theta)}{\partial \theta_p} $$
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ K_{m,n}(\mathbf{x}, \mathbf{x}'; \theta) = \sum_{p=1}^P \frac{\partial f_m(\mathbf{x};\theta)}{\partial
+    \theta_p} \frac{\partial f_n(\mathbf{x}';\theta)}{\partial \theta_p} $$
 - en: The “feature map” form of one input $\mathbf{x}$ is $\varphi(\mathbf{x}) = \nabla_\theta
     f(\mathbf{x};\theta)$.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个输入 $\mathbf{x}$ 的“特征映射”形式是 $\varphi(\mathbf{x}) = \nabla_\theta f(\mathbf{x};\theta)$。
 - en: Infinite Width Networks
+  id: totrans-57
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 无限宽度网络
 - en: To understand why the effect of one gradient descent is so similar for different
     initializations of network parameters, several pioneering theoretical work starts
     with infinite width networks. We will look into detailed proof using NTK of how
     it guarantees that infinite width networks can converge to a global minimum when
     trained to minimize an empirical loss.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 要理解为什么一个梯度下降的效果对于网络参数的不同初始化如此相似，一些开创性的理论工作从无限宽度的网络开始。我们将通过使用 NTK 来详细证明，无限宽度的网络在训练以最小化经验损失时可以收敛到全局最小值。
 - en: Connection with Gaussian Processes
+  id: totrans-59
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 与高斯过程的连接
 - en: 'Deep neural networks have deep connection with gaussian processes ([Neal 1994](https://www.cs.toronto.edu/~radford/ftp/pin.pdf)).
     The output functions of a $L$-layer network, $f_i(\mathbf{x}; \theta)$ for $i=1,
     \dots, n_L$ , are i.i.d. centered Gaussian process of covariance $\Sigma^{(L)}$,
     defined recursively as:'
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 深度神经网络与高斯过程有深刻的联系（[Neal 1994](https://www.cs.toronto.edu/~radford/ftp/pin.pdf)）。$L$
+    层网络的输出函数 $f_i(\mathbf{x}; \theta)$ 对于 $i=1, \dots, n_L$，是具有协方差 $\Sigma^{(L)}$
+    的独立同分布的中心化高斯过程，递归定义如下：
 - en: $$ \begin{aligned} \Sigma^{(1)}(\mathbf{x}, \mathbf{x}') &= \frac{1}{n_0}\mathbf{x}^\top{\mathbf{x}'}
     + \beta^2 \\ \lambda^{(l+1)}(\mathbf{x}, \mathbf{x}') &= \begin{bmatrix} \Sigma^{(l)}(\mathbf{x},
     \mathbf{x}) & \Sigma^{(l)}(\mathbf{x}, \mathbf{x}') \\ \Sigma^{(l)}(\mathbf{x}',
     \mathbf{x}) & \Sigma^{(l)}(\mathbf{x}', \mathbf{x}') \end{bmatrix} \\ \Sigma^{(l+1)}(\mathbf{x},
     \mathbf{x}') &= \mathbb{E}_{f \sim \mathcal{N}(0, \lambda^{(l)})}[\sigma(f(\mathbf{x}))
     \sigma(f(\mathbf{x}'))] + \beta^2 \end{aligned} $$
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \Sigma^{(1)}(\mathbf{x}, \mathbf{x}') &= \frac{1}{n_0}\mathbf{x}^\top{\mathbf{x}'}
+    + \beta^2 \\ \lambda^{(l+1)}(\mathbf{x}, \mathbf{x}') &= \begin{bmatrix} \Sigma^{(l)}(\mathbf{x},
+    \mathbf{x}) & \Sigma^{(l)}(\mathbf{x}, \mathbf{x}') \\ \Sigma^{(l)}(\mathbf{x}',
+    \mathbf{x}) & \Sigma^{(l)}(\mathbf{x}', \mathbf{x}') \end{bmatrix} \\ \Sigma^{(l+1)}(\mathbf{x},
+    \mathbf{x}') &= \mathbb{E}_{f \sim \mathcal{N}(0, \lambda^{(l)})}[\sigma(f(\mathbf{x}))
+    \sigma(f(\mathbf{x}'))] + \beta^2 \end{aligned} $$
 - en: '[Lee & Bahri et al. (2018)](https://arxiv.org/abs/1711.00165) showed a proof
     by mathematical induction:'
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Lee & Bahri 等人 (2018)](https://arxiv.org/abs/1711.00165) 通过数学归纳法展示了一个证明：'
 - en: '(1) Let’s start with $L=1$, when there is no nonlinearity function and the
     input is only processed by a simple affine transformation:'
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: (1) 让我们从 $L=1$ 开始，当没有非线性函数且输入仅通过简单的仿射变换处理时：
 - en: $$ \begin{aligned} f(\mathbf{x};\theta) = \tilde{A}^{(1)}(\mathbf{x}) &= \frac{1}{\sqrt{n_0}}{\mathbf{w}^{(0)}}^\top\mathbf{x}
     + \beta\mathbf{b}^{(0)} \\ \text{where }\tilde{A}_m^{(1)}(\mathbf{x}) &= \frac{1}{\sqrt{n_0}}\sum_{i=1}^{n_0}
     w^{(0)}_{im}x_i + \beta b^{(0)}_m\quad \text{for }1 \leq m \leq n_1 \end{aligned}
     $$
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} f(\mathbf{x};\theta) = \tilde{A}^{(1)}(\mathbf{x}) &= \frac{1}{\sqrt{n_0}}{\mathbf{w}^{(0)}}^\top\mathbf{x}
+    + \beta\mathbf{b}^{(0)} \\ \text{其中 }\tilde{A}_m^{(1)}(\mathbf{x}) &= \frac{1}{\sqrt{n_0}}\sum_{i=1}^{n_0}
+    w^{(0)}_{im}x_i + \beta b^{(0)}_m\quad \text{对于 }1 \leq m \leq n_1 \end{aligned}
+    $$
 - en: Since the weights and biases are initialized i.i.d., all the output dimensions
     of this network ${\tilde{A}^{(1)}_1(\mathbf{x}), \dots, \tilde{A}^{(1)}_{n_1}(\mathbf{x})}$
     are also i.i.d. Given different inputs, the $m$-th network outputs $\tilde{A}^{(1)}_m(.)$
     have a joint multivariate Gaussian distribution, equivalent to a Gaussian process
     with covariance function (We know that mean $\mu_w=\mu_b=0$ and variance $\sigma^2_w
     = \sigma^2_b=1$)
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于权重和偏置是独立同分布初始化的，这个网络的所有输出维度 ${\tilde{A}^{(1)}_1(\mathbf{x}), \dots, \tilde{A}^{(1)}_{n_1}(\mathbf{x})}$
+    也是独立同分布的。给定不同的输入，第 $m$ 个网络输出 $\tilde{A}^{(1)}_m(.)$ 具有联合多元高斯分布，相当于具有协方差函数的高斯过程（我们知道均值
+    $\mu_w=\mu_b=0$ 和方差 $\sigma^2_w = \sigma^2_b=1$）
 - en: $$ \begin{aligned} \Sigma^{(1)}(\mathbf{x}, \mathbf{x}') &= \mathbb{E}[\tilde{A}_m^{(1)}(\mathbf{x})\tilde{A}_m^{(1)}(\mathbf{x}')]
     \\ &= \mathbb{E}\Big[\Big( \frac{1}{\sqrt{n_0}}\sum_{i=1}^{n_0} w^{(0)}_{i,m}x_i
     + \beta b^{(0)}_m \Big) \Big( \frac{1}{\sqrt{n_0}}\sum_{i=1}^{n_0} w^{(0)}_{i,m}x'_i
@@ -349,91 +528,150 @@
     x_i{x'}_j + \frac{\beta \mu_b}{\sqrt{n_0}} \sum_{i=1}^{n_0} w_{im}(x_i + x'_i)
     + \sigma^2_b \beta^2 \\ &= \frac{1}{n_0}\mathbf{x}^\top{\mathbf{x}'} + \beta^2
     \end{aligned} $$
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \Sigma^{(1)}(\mathbf{x}, \mathbf{x}') &= \mathbb{E}[\tilde{A}_m^{(1)}(\mathbf{x})\tilde{A}_m^{(1)}(\mathbf{x}')]
+    \\ &= \mathbb{E}\Big[\Big( \frac{1}{\sqrt{n_0}}\sum_{i=1}^{n_0} w^{(0)}_{i,m}x_i
+    + \beta b^{(0)}_m \Big) \Big( \frac{1}{\sqrt{n_0}}\sum_{i=1}^{n_0} w^{(0)}_{i,m}x'_i
+    + \beta b^{(0)}_m \Big)\Big] \\ &= \frac{1}{n_0} \sigma^2_w \sum_{i=1}^{n_0} \sum_{j=1}^{n_0}
+    x_i{x'}_j + \frac{\beta \mu_b}{\sqrt{n_0}} \sum_{i=1}^{n_0} w_{im}(x_i + x'_i)
+    + \sigma^2_b \beta^2 \\ &= \frac{1}{n_0}\mathbf{x}^\top{\mathbf{x}'} + \beta^2
+    \end{aligned} $$
 - en: (2) Using induction, we first assume the proposition is true for $L=l$, a $l$-layer
     network, and thus $\tilde{A}^{(l)}_m(.)$ is a Gaussian process with covariance
     $\Sigma^{(l)}$ and $\{\tilde{A}^{(l)}_i\}_{i=1}^{n_l}$ are i.i.d.
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: (2) 使用归纳法，我们首先假设命题对于 $L=l$，一个 $l$ 层网络成立，因此 $\tilde{A}^{(l)}_m(.)$ 是一个具有协方差 $\Sigma^{(l)}$
+    的高斯过程，且 $\{\tilde{A}^{(l)}_i\}_{i=1}^{n_l}$ 是独立同分布的。
 - en: 'Then we need to prove the proposition is also true for $L=l+1$. We compute
     the outputs by:'
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后我们需要证明对于 $L=l+1$ 时命题也成立。我们通过计算输出来：
 - en: $$ \begin{aligned} f(\mathbf{x};\theta) = \tilde{A}^{(l+1)}(\mathbf{x}) &= \frac{1}{\sqrt{n_l}}{\mathbf{w}^{(l)}}^\top
     \sigma(\tilde{A}^{(l)}(\mathbf{x})) + \beta\mathbf{b}^{(l)} \\ \text{where }\tilde{A}^{(l+1)}_m(\mathbf{x})
     &= \frac{1}{\sqrt{n_l}}\sum_{i=1}^{n_l} w^{(l)}_{im}\sigma(\tilde{A}^{(l)}_i(\mathbf{x}))
     + \beta b^{(l)}_m \quad \text{for }1 \leq m \leq n_{l+1} \end{aligned} $$
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} f(\mathbf{x};\theta) = \tilde{A}^{(l+1)}(\mathbf{x}) &= \frac{1}{\sqrt{n_l}}{\mathbf{w}^{(l)}}^\top
+    \sigma(\tilde{A}^{(l)}(\mathbf{x})) + \beta\mathbf{b}^{(l)} \\ \text{其中 }\tilde{A}^{(l+1)}_m(\mathbf{x})
+    &= \frac{1}{\sqrt{n_l}}\sum_{i=1}^{n_l} w^{(l)}_{im}\sigma(\tilde{A}^{(l)}_i(\mathbf{x}))
+    + \beta b^{(l)}_m \quad \text{对于 }1 \leq m \leq n_{l+1} \end{aligned} $$
 - en: 'We can infer that the expectation of the sum of contributions of the previous
     hidden layers is zero:'
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以推断前几个隐藏层贡献的期望为零：
 - en: $$ \begin{aligned} \mathbb{E}[w^{(l)}_{im}\sigma(\tilde{A}^{(l)}_i(\mathbf{x}))]
     &= \mathbb{E}[w^{(l)}_{im}]\mathbb{E}[\sigma(\tilde{A}^{(l)}_i(\mathbf{x}))] =
     \mu_w \mathbb{E}[\sigma(\tilde{A}^{(l)}_i(\mathbf{x}))] = 0 \\ \mathbb{E}[\big(w^{(l)}_{im}\sigma(\tilde{A}^{(l)}_i(\mathbf{x}))\big)^2]
     &= \mathbb{E}[{w^{(l)}_{im}}^2]\mathbb{E}[\sigma(\tilde{A}^{(l)}_i(\mathbf{x}))^2]
     = \sigma_w^2 \Sigma^{(l)}(\mathbf{x}, \mathbf{x}) = \Sigma^{(l)}(\mathbf{x}, \mathbf{x})
     \end{aligned} $$
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \mathbb{E}[w^{(l)}_{im}\sigma(\tilde{A}^{(l)}_i(\mathbf{x}))]
+    &= \mathbb{E}[w^{(l)}_{im}]\mathbb{E}[\sigma(\tilde{A}^{(l)}_i(\mathbf{x}))] =
+    \mu_w \mathbb{E}[\sigma(\tilde{A}^{(l)}_i(\mathbf{x}))] = 0 \\ \mathbb{E}[\big(w^{(l)}_{im}\sigma(\tilde{A}^{(l)}_i(\mathbf{x}))\big)^2]
+    &= \mathbb{E}[{w^{(l)}_{im}}^2]\mathbb{E}[\sigma(\tilde{A}^{(l)}_i(\mathbf{x}))^2]
+    = \sigma_w^2 \Sigma^{(l)}(\mathbf{x}, \mathbf{x}) = \Sigma^{(l)}(\mathbf{x}, \mathbf{x})
+    \end{aligned} $$
 - en: Since $\{\tilde{A}^{(l)}_i(\mathbf{x})\}_{i=1}^{n_l}$ are i.i.d., according
     to central limit theorem, when the hidden layer gets infinitely wide $n_l \to
     \infty$, $\tilde{A}^{(l+1)}_m(\mathbf{x})$ is Gaussian distributed with variance
     $\beta^2 + \text{Var}(\tilde{A}_i^{(l)}(\mathbf{x}))$. Note that ${\tilde{A}^{(l+1)}_1(\mathbf{x}),
     \dots, \tilde{A}^{(l+1)}_{n_{l+1}}(\mathbf{x})}$ are still i.i.d.
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于 $\{\tilde{A}^{(l)}_i(\mathbf{x})\}_{i=1}^{n_l}$ 是独立同分布的，根据中心极限定理，当隐藏层变得无限宽时
+    $n_l \to \infty$，$\tilde{A}^{(l+1)}_m(\mathbf{x})$ 服从高斯分布，方差为 $\beta^2 + \text{Var}(\tilde{A}_i^{(l)}(\mathbf{x}))$。注意
+    ${\tilde{A}^{(l+1)}_1(\mathbf{x}), \dots, \tilde{A}^{(l+1)}_{n_{l+1}}(\mathbf{x})}$
+    仍然是独立同分布的。
 - en: '$\tilde{A}^{(l+1)}_m(.)$ is equivalent to a Gaussian process with covariance
     function:'
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: $\tilde{A}^{(l+1)}_m(.)$ 等价于具有协方差函数的高斯过程：
 - en: $$ \begin{aligned} \Sigma^{(l+1)}(\mathbf{x}, \mathbf{x}') &= \mathbb{E}[\tilde{A}^{(l+1)}_m(\mathbf{x})\tilde{A}^{(l+1)}_m(\mathbf{x}')]
     \\ &= \frac{1}{n_l} \sigma\big(\tilde{A}^{(l)}_i(\mathbf{x})\big)^\top \sigma\big(\tilde{A}^{(l)}_i(\mathbf{x}')\big)
     + \beta^2 \quad\text{;similar to how we get }\Sigma^{(1)} \end{aligned} $$
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \Sigma^{(l+1)}(\mathbf{x}, \mathbf{x}') &= \mathbb{E}[\tilde{A}^{(l+1)}_m(\mathbf{x})\tilde{A}^{(l+1)}_m(\mathbf{x}')]
+    \\ &= \frac{1}{n_l} \sigma\big(\tilde{A}^{(l)}_i(\mathbf{x})\big)^\top \sigma\big(\tilde{A}^{(l)}_i(\mathbf{x}')\big)
+    + \beta^2 \quad\text{；类似于我们得到的 }\Sigma^{(1)} \end{aligned} $$
 - en: When $n_l \to \infty$, according to central limit theorem,
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 当 $n_l \to \infty$ 时，根据中心极限定理，
 - en: $$ \Sigma^{(l+1)}(\mathbf{x}, \mathbf{x}') \to \mathbb{E}_{f \sim \mathcal{N}(0,
     \Lambda^{(l)})}[\sigma(f(\mathbf{x}))^\top \sigma(f(\mathbf{x}'))] + \beta^2 $$
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \Sigma^{(l+1)}(\mathbf{x}, \mathbf{x}') \to \mathbb{E}_{f \sim \mathcal{N}(0,
+    \Lambda^{(l)})}[\sigma(f(\mathbf{x}))^\top \sigma(f(\mathbf{x}'))] + \beta^2 $$
 - en: The form of Gaussian processes in the above process is referred to as the *Neural
     Network Gaussian Process (NNGP)* ([Lee & Bahri et al. (2018)](https://arxiv.org/abs/1711.00165)).
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 上述过程中的高斯过程形式被称为*神经网络高斯过程（NNGP）*（[Lee & Bahri et al. (2018)](https://arxiv.org/abs/1711.00165)）。
 - en: Deterministic Neural Tangent Kernel
+  id: totrans-78
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 确定性神经切向核
 - en: 'Finally we are now prepared enough to look into the most critical proposition
     from the NTK paper:'
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，我们现在准备好深入研究NTK论文中最关键的命题：
 - en: '**When $n_1, \dots, n_L \to \infty$ (network with infinite width), the NTK
     converges to be:**'
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: '**当 $n_1, \dots, n_L \to \infty$（无限宽度的网络）时，NTK 收敛为：**'
 - en: '**(1) deterministic at initialization, meaning that the kernel is irrelevant
     to the initialization values and only determined by the model architecture; and**'
+  id: totrans-81
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**(1) 在初始化时是确定性的，意味着核与初始化值无关，仅由模型架构决定；以及**'
 - en: '**(2) stays constant during training.**'
+  id: totrans-82
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**(2) 在训练过程中保持不变。**'
 - en: 'The proof depends on mathematical induction as well:'
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 证明依赖于数学归纳法：
 - en: (1) First of all, we always have $K^{(0)} = 0$. When $L=1$, we can get the representation
     of NTK directly. It is deterministic and does not depend on the network initialization.
     There is no hidden layer, so there is nothing to take on infinite width.
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: (1) 首先，我们总是有 $K^{(0)} = 0$。当 $L=1$ 时，我们可以直接得到 NTK 的表示。它是确定性的，不依赖于网络初始化。没有隐藏层，因此没有无限宽度可取。
 - en: $$ \begin{aligned} f(\mathbf{x};\theta) &= \tilde{A}^{(1)}(\mathbf{x}) = \frac{1}{\sqrt{n_0}}
     {\mathbf{w}^{(0)}}^\top\mathbf{x} + \beta\mathbf{b}^{(0)} \\ K^{(1)}(\mathbf{x},
     \mathbf{x}';\theta) &= \Big(\frac{\partial f(\mathbf{x}';\theta)}{\partial \mathbf{w}^{(0)}}\Big)^\top
@@ -441,41 +679,71 @@
     f(\mathbf{x}';\theta)}{\partial \mathbf{b}^{(0)}}\Big)^\top \frac{\partial f(\mathbf{x};\theta)}{\partial
     \mathbf{b}^{(0)}} \\ &= \frac{1}{n_0} \mathbf{x}^\top{\mathbf{x}'} + \beta^2 =
     \Sigma^{(1)}(\mathbf{x}, \mathbf{x}') \end{aligned} $$
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} f(\mathbf{x};\theta) &= \tilde{A}^{(1)}(\mathbf{x}) = \frac{1}{\sqrt{n_0}}
+    {\mathbf{w}^{(0)}}^\top\mathbf{x} + \beta\mathbf{b}^{(0)} \\ K^{(1)}(\mathbf{x},
+    \mathbf{x}';\theta) &= \Big(\frac{\partial f(\mathbf{x}';\theta)}{\partial \mathbf{w}^{(0)}}\Big)^\top
+    \frac{\partial f(\mathbf{x};\theta)}{\partial \mathbf{w}^{(0)}} + \Big(\frac{\partial
+    f(\mathbf{x}';\theta)}{\partial \mathbf{b}^{(0)}}\Big)^\top \frac{\partial f(\mathbf{x};\theta)}{\partial
+    \mathbf{b}^{(0)}} \\ &= \frac{1}{n_0} \mathbf{x}^\top{\mathbf{x}'} + \beta^2 =
+    \Sigma^{(1)}(\mathbf{x}, \mathbf{x}') \end{aligned} $$
 - en: (2) Now when $L=l$, we assume that a $l$-layer network with $\tilde{P}$ parameters
     in total, $\tilde{\theta} = (\mathbf{w}^{(0)}, \dots, \mathbf{w}^{(l-1)}, \mathbf{b}^{(0)},
     \dots, \mathbf{b}^{(l-1)}) \in \mathbb{R}^\tilde{P}$, has a NTK converging to
     a deterministic limit when $n_1, \dots, n_{l-1} \to \infty$.
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: (2) 现在当 $L=l$ 时，我们假设一个总共有 $\tilde{P}$ 个参数的 $l$ 层网络，$\tilde{\theta} = (\mathbf{w}^{(0)},
+    \dots, \mathbf{w}^{(l-1)}, \mathbf{b}^{(0)}, \dots, \mathbf{b}^{(l-1)}) \in \mathbb{R}^\tilde{P}$，在
+    $n_1, \dots, n_{l-1} \to \infty$ 时收敛到确定性极限。
 - en: $$ K^{(l)}(\mathbf{x}, \mathbf{x}';\tilde{\theta}) = \nabla_{\tilde{\theta}}
     \tilde{A}^{(l)}(\mathbf{x})^\top \nabla_{\tilde{\theta}} \tilde{A}^{(l)}(\mathbf{x}')
     \to K^{(l)}_{\infty}(\mathbf{x}, \mathbf{x}') $$
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ K^{(l)}(\mathbf{x}, \mathbf{x}';\tilde{\theta}) = \nabla_{\tilde{\theta}}
+    \tilde{A}^{(l)}(\mathbf{x})^\top \nabla_{\tilde{\theta}} \tilde{A}^{(l)}(\mathbf{x}')
+    \to K^{(l)}_{\infty}(\mathbf{x}, \mathbf{x}') $$
 - en: Note that $K_\infty^{(l)}$ has no dependency on $\theta$.
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意 $K_\infty^{(l)}$ 不依赖于 $\theta$。
 - en: Next let’s check the case $L=l+1$. Compared to a $l$-layer network, a $(l+1)$-layer
     network has additional weight matrix $\mathbf{w}^{(l)}$ and bias $\mathbf{b}^{(l)}$
     and thus the total parameters contain $\theta = (\tilde{\theta}, \mathbf{w}^{(l)},
     \mathbf{b}^{(l)})$.
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来让我们来看看 $L=l+1$ 的情况。与 $l$ 层网络相比，一个 $(l+1)$ 层网络有额外的权重矩阵 $\mathbf{w}^{(l)}$
+    和偏置 $\mathbf{b}^{(l)}$，因此总参数包含 $\theta = (\tilde{\theta}, \mathbf{w}^{(l)}, \mathbf{b}^{(l)})$。
 - en: 'The output function of this $(l+1)$-layer network is:'
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个 $(l+1)$ 层网络的输出函数是：
 - en: $$ f(\mathbf{x};\theta) = \tilde{A}^{(l+1)}(\mathbf{x};\theta) = \frac{1}{\sqrt{n_l}}
     {\mathbf{w}^{(l)}}^\top \sigma\big(\tilde{A}^{(l)}(\mathbf{x})\big) + \beta \mathbf{b}^{(l)}
     $$
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ f(\mathbf{x};\theta) = \tilde{A}^{(l+1)}(\mathbf{x};\theta) = \frac{1}{\sqrt{n_l}}
+    {\mathbf{w}^{(l)}}^\top \sigma\big(\tilde{A}^{(l)}(\mathbf{x})\big) + \beta \mathbf{b}^{(l)}
+    $$
 - en: 'And we know its derivative with respect to different sets of parameters; let
     denote $\tilde{A}^{(l)} = \tilde{A}^{(l)}(\mathbf{x})$ for brevity in the following
     equation:'
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们知道它对不同参数集的导数；为了简便起见，在以下方程中用 $\tilde{A}^{(l)} = \tilde{A}^{(l)}(\mathbf{x})$
+    表示：
 - en: $$ \begin{aligned} \nabla_{\color{blue}{\mathbf{w}^{(l)}}} f(\mathbf{x};\theta)
     &= \color{blue}{ \frac{1}{\sqrt{n_l}} \sigma\big(\tilde{A}^{(l)}\big)^\top } \color{black}{\quad
     \in \mathbb{R}^{1 \times n_l}} \\ \nabla_{\color{green}{\mathbf{b}^{(l)}}} f(\mathbf{x};\theta)
@@ -488,21 +756,43 @@
     \tilde{A}_{n_l}^{(l)}}{\partial \tilde{\theta}_\tilde{P}}\\ \end{bmatrix} \mathbf{w}^{(l)}
     \color{black}{\quad \in \mathbb{R}^{\tilde{P} \times n_{l+1}}} } \end{aligned}
     $$
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \nabla_{\color{blue}{\mathbf{w}^{(l)}}} f(\mathbf{x};\theta)
+    &= \color{blue}{ \frac{1}{\sqrt{n_l}} \sigma\big(\tilde{A}^{(l)}\big)^\top } \color{black}{\quad
+    \in \mathbb{R}^{1 \times n_l}} \\ \nabla_{\color{green}{\mathbf{b}^{(l)}}} f(\mathbf{x};\theta)
+    &= \color{green}{ \beta } \\ \nabla_{\color{red}{\tilde{\theta}}} f(\mathbf{x};\theta)
+    &= \frac{1}{\sqrt{n_l}} \nabla_\tilde{\theta}\sigma(\tilde{A}^{(l)}) \mathbf{w}^{(l)}
+    \\ &= \color{red}{ \frac{1}{\sqrt{n_l}} \begin{bmatrix} \dot{\sigma}(\tilde{A}_1^{(l)})\frac{\partial
+    \tilde{A}_1^{(l)}}{\partial \tilde{\theta}_1} & \dots & \dot{\sigma}(\tilde{A}_{n_l}^{(l)})\frac{\partial
+    \tilde{A}_{n_l}^{(l)}}{\partial \tilde{\theta}_1} \\ \vdots \\ \dot{\sigma}(\tilde{A}_1^{(l)})\frac{\partial
+    \tilde{A}_1^{(l)}}{\partial \tilde{\theta}_\tilde{P}} & \dots & \dot{\sigma}(\tilde{A}_{n_l}^{(l)})\frac{\partial
+    \tilde{A}_{n_l}^{(l)}}{\partial \tilde{\theta}_\tilde{P}}\\ \end{bmatrix} \mathbf{w}^{(l)}
+    \color{black}{\quad \in \mathbb{R}^{\tilde{P} \times n_{l+1}}} } \end{aligned}
+    $$
 - en: where $\dot{\sigma}$ is the derivative of $\sigma$ and each entry at location
     $(p, m), 1 \leq p \leq \tilde{P}, 1 \leq m \leq n_{l+1}$ in the matrix $\nabla_{\tilde{\theta}}
     f(\mathbf{x};\theta)$ can be written as
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$\dot{\sigma}$是$\sigma$的导数，矩阵$\nabla_{\tilde{\theta}} f(\mathbf{x};\theta)$中位置$(p,
+    m), 1 \leq p \leq \tilde{P}, 1 \leq m \leq n_{l+1}$的每个条目可以写成
 - en: $$ \frac{\partial f_m(\mathbf{x};\theta)}{\partial \tilde{\theta}_p} = \sum_{i=1}^{n_l}
     w^{(l)}_{im} \dot{\sigma}\big(\tilde{A}_i^{(l)} \big) \nabla_{\tilde{\theta}_p}
     \tilde{A}_i^{(l)} $$
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \frac{\partial f_m(\mathbf{x};\theta)}{\partial \tilde{\theta}_p} = \sum_{i=1}^{n_l}
+    w^{(l)}_{im} \dot{\sigma}\big(\tilde{A}_i^{(l)} \big) \nabla_{\tilde{\theta}_p}
+    \tilde{A}_i^{(l)} $$
 - en: 'The NTK for this $(l+1)$-layer network can be defined accordingly:'
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个$(l+1)$层网络的NTK可以相应地定义为：
 - en: $$ \begin{aligned} & K^{(l+1)}(\mathbf{x}, \mathbf{x}'; \theta) \\ =& \nabla_{\theta}
     f(\mathbf{x};\theta)^\top \nabla_{\theta} f(\mathbf{x};\theta) \\ =& \color{blue}{\nabla_{\mathbf{w}^{(l)}}
     f(\mathbf{x};\theta)^\top \nabla_{\mathbf{w}^{(l)}} f(\mathbf{x};\theta)} + \color{green}{\nabla_{\mathbf{b}^{(l)}}
@@ -526,131 +816,217 @@
     \\ \vdots \\ \dot{\sigma}(\tilde{A}_{n_l}^{(l)})\dot{\sigma}(\tilde{A}_1^{(l)})K^{(l)}_{n_l1}
     & \dots & \dot{\sigma}(\tilde{A}_{n_l}^{(l)})\dot{\sigma}(\tilde{A}_{n_l}^{(l)})K^{(l)}_{n_ln_l}
     \\ \end{bmatrix} \mathbf{w}^{(l)} } \color{black}{\Big]} \end{aligned} $$
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} & K^{(l+1)}(\mathbf{x}, \mathbf{x}'; \theta) \\ =& \nabla_{\theta}
+    f(\mathbf{x};\theta)^\top \nabla_{\theta} f(\mathbf{x};\theta) \\ =& \color{blue}{\nabla_{\mathbf{w}^{(l)}}
+    f(\mathbf{x};\theta)^\top \nabla_{\mathbf{w}^{(l)}} f(\mathbf{x};\theta)} + \color{green}{\nabla_{\mathbf{b}^{(l)}}
+    f(\mathbf{x};\theta)^\top \nabla_{\mathbf{b}^{(l)}} f(\mathbf{x};\theta)} + \color{red}{\nabla_{\tilde{\theta}}
+    f(\mathbf{x};\theta)^\top \nabla_{\tilde{\theta}} f(\mathbf{x};\theta)} \\ =&
+    \frac{1}{n_l} \Big[ \color{blue}{\sigma(\tilde{A}^{(l)})\sigma(\tilde{A}^{(l)})^\top}
+    + \color{green}{\beta^2} \\ &+ \color{red}{ {\mathbf{w}^{(l)}}^\top \begin{bmatrix}
+    \dot{\sigma}(\tilde{A}_1^{(l)})\dot{\sigma}(\tilde{A}_1^{(l)})\sum_{p=1}^\tilde{P}
+    \frac{\partial \tilde{A}_1^{(l)}}{\partial \tilde{\theta}_p}\frac{\partial \tilde{A}_1^{(l)}}{\partial
+    \tilde{\theta}_p} & \dots & \dot{\sigma}(\tilde{A}_1^{(l)})\dot{\sigma}(\tilde{A}_{n_l}^{(l)})\sum_{p=1}^\tilde{P}
+    \frac{\partial \tilde{A}_1^{(l)}...
 - en: 'where each individual entry at location $(m, n), 1 \leq m, n \leq n_{l+1}$
     of the matrix $K^{(l+1)}$ can be written as:'
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 矩阵 $K^{(l+1)}$ 中位置 $(m, n), 1 \leq m, n \leq n_{l+1}$ 处的每个单独条目可写为：
 - en: $$ \begin{aligned} K^{(l+1)}_{mn} =& \frac{1}{n_l}\Big[ \color{blue}{\sigma(\tilde{A}_m^{(l)})\sigma(\tilde{A}_n^{(l)})}
     + \color{green}{\beta^2} + \color{red}{ \sum_{i=1}^{n_l} \sum_{j=1}^{n_l} w^{(l)}_{im}
     w^{(l)}_{in} \dot{\sigma}(\tilde{A}_i^{(l)}) \dot{\sigma}(\tilde{A}_{j}^{(l)})
     K_{ij}^{(l)} } \Big] \end{aligned} $$
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} K^{(l+1)}_{mn} =& \frac{1}{n_l}\Big[ \color{blue}{\sigma(\tilde{A}_m^{(l)})\sigma(\tilde{A}_n^{(l)})}
+    + \color{green}{\beta^2} + \color{red}{ \sum_{i=1}^{n_l} \sum_{j=1}^{n_l} w^{(l)}_{im}
+    w^{(l)}_{in} \dot{\sigma}(\tilde{A}_i^{(l)}) \dot{\sigma}(\tilde{A}_{j}^{(l)})
+    K_{ij}^{(l)} } \Big] \end{aligned} $$
 - en: 'When $n_l \to \infty$, the section in blue and green has the limit (See the
     proof in the [previous section](#connection-with-gaussian-processes)):'
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 当 $n_l \to \infty$ 时，蓝色和绿色部分的极限为（请参见[前一节](#connection-with-gaussian-processes)中的证明）：
 - en: $$ \frac{1}{n_l}\sigma(\tilde{A}^{(l)})\sigma(\tilde{A}^{(l)}) + \beta^2\to
     \Sigma^{(l+1)} $$
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \frac{1}{n_l}\sigma(\tilde{A}^{(l)})\sigma(\tilde{A}^{(l)}) + \beta^2\to
+    \Sigma^{(l+1)} $$
 - en: 'and the red section has the limit:'
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 红色部分的极限为：
 - en: $$ \sum_{i=1}^{n_l} \sum_{j=1}^{n_l} w^{(l)}_{im} w^{(l)}_{in} \dot{\sigma}(\tilde{A}_i^{(l)})
     \dot{\sigma}(\tilde{A}_{j}^{(l)}) K_{ij}^{(l)} \to \sum_{i=1}^{n_l} \sum_{j=1}^{n_l}
     w^{(l)}_{im} w^{(l)}_{in} \dot{\sigma}(\tilde{A}_i^{(l)}) \dot{\sigma}(\tilde{A}_{j}^{(l)})
     K_{\infty,ij}^{(l)} $$
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \sum_{i=1}^{n_l} \sum_{j=1}^{n_l} w^{(l)}_{im} w^{(l)}_{in} \dot{\sigma}(\tilde{A}_i^{(l)})
+    \dot{\sigma}(\tilde{A}_{j}^{(l)}) K_{ij}^{(l)} \to \sum_{i=1}^{n_l} \sum_{j=1}^{n_l}
+    w^{(l)}_{im} w^{(l)}_{in} \dot{\sigma}(\tilde{A}_i^{(l)}) \dot{\sigma}(\tilde{A}_{j}^{(l)})
+    K_{\infty,ij}^{(l)} $$
 - en: Later, [Arora et al. (2019)](https://arxiv.org/abs/1904.11955) provided a proof
     with a weaker limit, that does not require all the hidden layers to be infinitely
     wide, but only requires the minimum width to be sufficiently large.
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 后来，[Arora等人（2019）](https://arxiv.org/abs/1904.11955)提供了一个证明，具有更弱的极限，不需要所有隐藏层都是无限宽的，只需要最小宽度足够大。
 - en: Linearized Models
+  id: totrans-105
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 线性化模型
 - en: 'From the [previous section](#neural-tangent-kernel), according to the derivative
     chain rule, we have known that the gradient update on the output of an infinite
     width network is as follows; For brevity, we omit the inputs in the following
     analysis:'
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 根据[前一节](#neural-tangent-kernel)，根据导数链规则，我们已经知道宽度无限网络输出的梯度更新如下；为简洁起见，我们在以下分析中省略输入：
 - en: $$ \begin{aligned} \frac{df(\theta)}{dt} &= -\eta\nabla_\theta f(\theta)^\top
     \nabla_\theta f(\theta) \nabla_f \mathcal{L} & \\ &= -\eta\nabla_\theta f(\theta)^\top
     \nabla_\theta f(\theta) \nabla_f \mathcal{L} & \\ &= -\eta K(\theta) \nabla_f
     \mathcal{L} \\ &= \color{cyan}{-\eta K_\infty \nabla_f \mathcal{L}} & \text{;
     for infinite width network}\\ \end{aligned} $$
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \frac{df(\theta)}{dt} &= -\eta\nabla_\theta f(\theta)^\top
+    \nabla_\theta f(\theta) \nabla_f \mathcal{L} & \\ &= -\eta\nabla_\theta f(\theta)^\top
+    \nabla_\theta f(\theta) \nabla_f \mathcal{L} & \\ &= -\eta K(\theta) \nabla_f
+    \mathcal{L} \\ &= \color{cyan}{-\eta K_\infty \nabla_f \mathcal{L}} & \text{；对于宽度无限的网络}\\
+    \end{aligned} $$
 - en: 'To track the evolution of $\theta$ in time, let’s consider it as a function
     of time step $t$. With Taylor expansion, the network learning dynamics can be
     simplified as:'
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了追踪$\theta$随时间的演变，让我们将其视为时间步长$t$的函数。通过泰勒展开，网络学习动态可以简化为：
 - en: $$ f(\theta(t)) \approx f^\text{lin}(\theta(t)) = f(\theta(0)) + \underbrace{\nabla_\theta
     f(\theta(0))}_{\text{formally }\nabla_\theta f(\mathbf{x}; \theta) \vert_{\theta=\theta(0)}}
     (\theta(t) - \theta(0)) $$
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ f(\theta(t)) \approx f^\text{lin}(\theta(t)) = f(\theta(0)) + \underbrace{\nabla_\theta
+    f(\theta(0))}_{\text{形式上 }\nabla_\theta f(\mathbf{x}; \theta) \vert_{\theta=\theta(0)}}
+    (\theta(t) - \theta(0)) $$
 - en: 'Such formation is commonly referred to as the *linearized* model, given $\theta(0)$,
     $f(\theta(0))$, and $\nabla_\theta f(\theta(0))$ are all constants. Assuming that
     the incremental time step $t$ is extremely small and the parameter is updated
     by gradient descent:'
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种形式通常被称为*线性化*模型，假设$\theta(0)$，$f(\theta(0))$和$\nabla_\theta f(\theta(0))$都是常数。假设增量时间步$t$非常小，参数通过梯度下降更新：
 - en: $$ \begin{aligned} \theta(t) - \theta(0) &= - \eta \nabla_\theta \mathcal{L}(\theta)
     = - \eta \nabla_\theta f(\theta)^\top \nabla_f \mathcal{L} \\ f^\text{lin}(\theta(t))
     - f(\theta(0)) &= - \eta\nabla_\theta f(\theta(0))^\top \nabla_\theta f(\mathcal{X};\theta(0))
     \nabla_f \mathcal{L} \\ \frac{df(\theta(t))}{dt} &= - \eta K(\theta(0)) \nabla_f
     \mathcal{L} \\ \frac{df(\theta(t))}{dt} &= \color{cyan}{- \eta K_\infty \nabla_f
     \mathcal{L}} & \text{; for infinite width network}\\ \end{aligned} $$
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \theta(t) - \theta(0) &= - \eta \nabla_\theta \mathcal{L}(\theta)
+    = - \eta \nabla_\theta f(\theta)^\top \nabla_f \mathcal{L} \\ f^\text{lin}(\theta(t))
+    - f(\theta(0)) &= - \eta\nabla_\theta f(\theta(0))^\top \nabla_\theta f(\mathcal{X};\theta(0))
+    \nabla_f \mathcal{L} \\ \frac{df(\theta(t))}{dt} &= - \eta K(\theta(0)) \nabla_f
+    \mathcal{L} \\ \frac{df(\theta(t))}{dt} &= \color{cyan}{- \eta K_\infty \nabla_f
+    \mathcal{L}} & \text{；对于宽度无限的网络}\\ \end{aligned} $$
 - en: Eventually we get the same learning dynamics, which implies that a neural network
     with infinite width can be considerably simplified as governed by the above linearized
     model ([Lee & Xiao, et al. 2019](https://arxiv.org/abs/1902.06720)).
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 最终我们得到了相同的学习动态，这意味着一个宽度无限的神经网络可以被大大简化为上述线性化模型（[Lee & Xiao, et al. 2019](https://arxiv.org/abs/1902.06720)）所控制。
 - en: 'In a simple case when the empirical loss is an MSE loss, $\nabla_\theta \mathcal{L}(\theta)
     = f(\mathcal{X}; \theta) - \mathcal{Y}$, the dynamics of the network becomes a
     simple linear ODE and it can be solved in a closed form:'
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: 在一个简单的情况下，当经验损失是均方误差损失时，$\nabla_\theta \mathcal{L}(\theta) = f(\mathcal{X};
+    \theta) - \mathcal{Y}$，网络的动态变为简单的线性ODE，并且可以以封闭形式解决：
 - en: $$ \begin{aligned} \frac{df(\theta)}{dt} =& -\eta K_\infty (f(\theta) - \mathcal{Y})
     & \\ \frac{dg(\theta)}{dt} =& -\eta K_\infty g(\theta) & \text{; let }g(\theta)=f(\theta)
     - \mathcal{Y} \\ \int \frac{dg(\theta)}{g(\theta)} =& -\eta \int K_\infty dt &
     \\ g(\theta) &= C e^{-\eta K_\infty t} & \end{aligned} $$
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \frac{df(\theta)}{dt} =& -\eta K_\infty (f(\theta) - \mathcal{Y})
+    & \\ \frac{dg(\theta)}{dt} =& -\eta K_\infty g(\theta) & \text{；让}g(\theta)=f(\theta)
+    - \mathcal{Y} \\ \int \frac{dg(\theta)}{g(\theta)} =& -\eta \int K_\infty dt &
+    \\ g(\theta) &= C e^{-\eta K_\infty t} & \end{aligned} $$
 - en: When $t=0$, we have $C=f(\theta(0)) - \mathcal{Y}$ and therefore,
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: 当$t=0$时，我们有$C=f(\theta(0)) - \mathcal{Y}$，因此，
 - en: $$ f(\theta) = (f(\theta(0)) - \mathcal{Y})e^{-\eta K_\infty t} + \mathcal{Y}
     \\ = f(\theta(0))e^{-K_\infty t} + (I - e^{-\eta K_\infty t})\mathcal{Y} $$
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ f(\theta) = (f(\theta(0)) - \mathcal{Y})e^{-\eta K_\infty t} + \mathcal{Y}
+    \\ = f(\theta(0))e^{-K_\infty t} + (I - e^{-\eta K_\infty t})\mathcal{Y} $$
 - en: Lazy Training
+  id: totrans-117
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 懒惰训练
 - en: People observe that when a neural network is heavily over-parameterized, the
     model is able to learn with the training loss quickly converging to zero but the
     network parameters hardly change. *Lazy training* refers to the phenomenon. In
     other words, when the loss $\mathcal{L}$ has a decent amount of reduction, the
     change in the differential of the network $f$ (aka the Jacobian matrix) is still
     very small.
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: 人们观察到，当神经网络过度参数化时，模型能够快速收敛到零的训练损失，但网络参数几乎不会改变。*懒惰训练*指的就是这种现象。换句话说，当损失$\mathcal{L}$有相当大的减少时，网络$f$的微分（也称为雅可比矩阵）的变化仍然非常小。
 - en: 'Let $\theta(0)$ be the initial network parameters and $\theta(T)$ be the final
     network parameters when the loss has been minimized to zero. The delta change
     in parameter space can be approximated with first-order Taylor expansion:'
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: 让$\theta(0)$为初始网络参数，$\theta(T)$为损失最小化为零时的最终网络参数。参数空间的变化可以用一阶泰勒展开来近似：
 - en: $$ \begin{aligned} \hat{y} = f(\theta(T)) &\approx f(\theta(0)) + \nabla_\theta
     f(\theta(0)) (\theta(T) - \theta(0)) \\ \text{Thus }\Delta \theta &= \theta(T)
     - \theta(0) \approx \frac{\|\hat{y} - f(\theta(0))\|}{\| \nabla_\theta f(\theta(0))
     \|} \end{aligned} $$
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \hat{y} = f(\theta(T)) &\approx f(\theta(0)) + \nabla_\theta
+    f(\theta(0)) (\theta(T) - \theta(0)) \\ \text{因此 }\Delta \theta &= \theta(T) -
+    \theta(0) \approx \frac{\|\hat{y} - f(\theta(0))\|}{\| \nabla_\theta f(\theta(0))
+    \|} \end{aligned} $$
 - en: 'Still following the first-order Taylor expansion, we can track the change in
     the differential of $f$:'
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: 仍然遵循一阶泰勒展开，我们可以跟踪$f$的微分的变化：
 - en: $$ \begin{aligned} \nabla_\theta f(\theta(T)) &\approx \nabla_\theta f(\theta(0))
     + \nabla^2_\theta f(\theta(0)) \Delta\theta \\ &= \nabla_\theta f(\theta(0)) +
     \nabla^2_\theta f(\theta(0)) \frac{\|\hat{y} - f(\mathbf{x};\theta(0))\|}{\| \nabla_\theta
@@ -658,87 +1034,144 @@
     f(\theta(T)) - \nabla_\theta f(\theta(0)) = \|\hat{y} - f(\mathbf{x};\theta(0))\|
     \frac{\nabla^2_\theta f(\theta(0))}{\| \nabla_\theta f(\theta(0)) \|} \end{aligned}
     $$
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \nabla_\theta f(\theta(T)) &\approx \nabla_\theta f(\theta(0))
+    + \nabla^2_\theta f(\theta(0)) \Delta\theta \\ &= \nabla_\theta f(\theta(0)) +
+    \nabla^2_\theta f(\theta(0)) \frac{\|\hat{y} - f(\mathbf{x};\theta(0))\|}{\| \nabla_\theta
+    f(\theta(0)) \|} \\ \text{因此 }\Delta\big(\nabla_\theta f\big) &= \nabla_\theta
+    f(\theta(T)) - \nabla_\theta f(\theta(0)) = \|\hat{y} - f(\mathbf{x};\theta(0))\|
+    \frac{\nabla^2_\theta f(\theta(0))}{\| \nabla_\theta f(\theta(0)) \|} \end{aligned}
+    $$
 - en: 'Let $\kappa(\theta)$ be the relative change of the differential of $f$ to the
     change in the parameter space:'
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: 让$\kappa(\theta)$表示$f$的微分相对于参数空间变化的相对变化：
 - en: $$ \kappa(\theta = \frac{\Delta\big(\nabla_\theta f\big)}{\| \nabla_\theta f(\theta(0))
     \|} = \|\hat{y} - f(\theta(0))\| \frac{\nabla^2_\theta f(\theta(0))}{\| \nabla_\theta
     f(\theta(0)) \|^2} $$
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \kappa(\theta) = \frac{\Delta\big(\nabla_\theta f\big)}{\| \nabla_\theta
+    f(\theta(0)) \|} = \|\hat{y} - f(\theta(0))\| \frac{\nabla^2_\theta f(\theta(0))}{\|
+    \nabla_\theta f(\theta(0)) \|^2} $$
 - en: '[Chizat et al. (2019)](https://arxiv.org/abs/1812.07956) showed the proof for
     a two-layer neural network that $\mathbb{E}[\kappa(\theta_0)] \to 0$ (getting
     into the lazy regime) when the number of hidden neurons $\to \infty$. Also, recommend
     [this post](https://rajatvd.github.io/NTK/) for more discussion on linearized
     models and lazy training.'
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Chizat et al. (2019)](https://arxiv.org/abs/1812.07956)证明了对于一个两层神经网络，当隐藏神经元的数量$\to
+    \infty$时，$\mathbb{E}[\kappa(\theta_0)] \to 0$（进入懒惰状态）。此外，推荐阅读[这篇文章](https://rajatvd.github.io/NTK/)以获取更多关于线性化模型和懒惰训练的讨论。'
 - en: Citation
+  id: totrans-126
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 引用
 - en: 'Cited as:'
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: 引用为：
 - en: Weng, Lilian. (Sep 2022). Some math behind neural tangent kernel. Lil’Log. https://lilianweng.github.io/posts/2022-09-08-ntk/.
+  id: totrans-128
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: Weng, Lilian. (Sep 2022). Some math behind neural tangent kernel. Lil’Log. https://lilianweng.github.io/posts/2022-09-08-ntk/.
 - en: Or
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
+  zh: 或者
 - en: '[PRE0]'
+  id: totrans-130
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: References
+  id: totrans-131
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: '[1] Jacot et al. [“Neural Tangent Kernel: Convergence and Generalization in
     Neural Networks.”](https://arxiv.org/abs/1806.07572) NeuriPS 2018.'
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] Jacot等人 [“神经切向核：神经网络中的收敛和泛化。”](https://arxiv.org/abs/1806.07572) NeuriPS
+    2018.'
 - en: '[2]Radford M. Neal. “Priors for Infinite Networks.” Bayesian Learning for Neural
     Networks. Springer, New York, NY, 1996\. 29-53.'
+  id: totrans-133
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] Radford M. Neal. “无限网络的先验。” 神经网络的贝叶斯学习。Springer, 纽约, 纽约, 1996. 29-53.'
 - en: '[3] Lee & Bahri et al. [“Deep Neural Networks as Gaussian Processes.”](https://arxiv.org/abs/1711.00165)
     ICLR 2018.'
+  id: totrans-134
   prefs: []
   type: TYPE_NORMAL
+  zh: '[3] 李和巴里等人 [“深度神经网络作为高斯过程。”](https://arxiv.org/abs/1711.00165) ICLR 2018.'
 - en: '[4] Chizat et al. [“On Lazy Training in Differentiable Programming”](https://arxiv.org/abs/1812.07956)
     NeuriPS 2019.'
+  id: totrans-135
   prefs: []
   type: TYPE_NORMAL
+  zh: '[4] Chizat等人 [“关于可微编程中的懒惰训练”](https://arxiv.org/abs/1812.07956) NeuriPS 2019.'
 - en: '[5] Lee & Xiao, et al. [“Wide Neural Networks of Any Depth Evolve as Linear
     Models Under Gradient Descent.”](https://arxiv.org/abs/1902.06720) NeuriPS 2019.'
+  id: totrans-136
   prefs: []
   type: TYPE_NORMAL
+  zh: '[5] 李和肖等人 [“任意深度的宽神经网络在梯度下降下演变为线性模型。”](https://arxiv.org/abs/1902.06720) NeuriPS
+    2019.'
 - en: '[6] Arora, et al. [“On Exact Computation with an Infinitely Wide Neural Net.”](https://arxiv.org/abs/1904.11955)
     NeurIPS 2019.'
+  id: totrans-137
   prefs: []
   type: TYPE_NORMAL
+  zh: '[6] Arora等人 [“关于无限宽神经网络的精确计算。”](https://arxiv.org/abs/1904.11955) NeurIPS 2019.'
 - en: '[7] (YouTube video) [“Neural Tangent Kernel: Convergence and Generalization
     in Neural Networks”](https://www.youtube.com/watch?v=raT2ECrvbag) by Arthur Jacot,
     Nov 2018.'
+  id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: '[7] (YouTube视频) [“神经切向核：神经网络中的收敛和泛化”](https://www.youtube.com/watch?v=raT2ECrvbag)
+    由Arthur Jacot, 2018年11月.'
 - en: '[8] (YouTube video) [“Lecture 7 - Deep Learning Foundations: Neural Tangent
     Kernels”](https://www.youtube.com/watch?v=DObobAnELkU) by Soheil Feizi, Sep 2020.'
+  id: totrans-139
   prefs: []
   type: TYPE_NORMAL
+  zh: '[8] (YouTube视频) [“讲座7 - 深度学习基础：神经切向核”](https://www.youtube.com/watch?v=DObobAnELkU)
+    由Soheil Feizi, 2020年9月.'
 - en: '[9] [“Understanding the Neural Tangent Kernel.”](https://rajatvd.github.io/NTK/)
     Rajat’s Blog.'
+  id: totrans-140
   prefs: []
   type: TYPE_NORMAL
+  zh: '[9] [“理解神经切向核。”](https://rajatvd.github.io/NTK/) Rajat的博客.'
 - en: '[10] [“Neural Tangent Kernel.”](https://appliedprobability.blog/2021/03/10/neural-tangent-kernel/)Applied
     Probability Notes, Mar 2021.'
+  id: totrans-141
   prefs: []
   type: TYPE_NORMAL
+  zh: '[10] [“神经切向核。”](https://appliedprobability.blog/2021/03/10/neural-tangent-kernel/)
+    应用概率笔记, 2021年3月.'
 - en: '[11] [“Some Intuition on the Neural Tangent Kernel.”](https://www.inference.vc/neural-tangent-kernels-some-intuition-for-kernel-gradient-descent/)
     inFERENCe, Nov 2020.'
+  id: totrans-142
   prefs: []
   type: TYPE_NORMAL
+  zh: '[11] [“关于神经切向核的一些直觉。”](https://www.inference.vc/neural-tangent-kernels-some-intuition-for-kernel-gradient-descent/)
+    inFERENCe, 2020年11月.'

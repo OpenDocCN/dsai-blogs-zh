@@ -1,114 +1,160 @@
 - en: Large Transformer Model Inference Optimization
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 大型变压器模型推断优化
 - en: 原文：[https://lilianweng.github.io/posts/2023-01-10-inference-optimization/](https://lilianweng.github.io/posts/2023-01-10-inference-optimization/)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://lilianweng.github.io/posts/2023-01-10-inference-optimization/](https://lilianweng.github.io/posts/2023-01-10-inference-optimization/)
 - en: '[Updated on 2023-01-24: add a small section on [Distillation](#distillation).]'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2023-01-24更新：在[蒸馏](#distillation)上添加一个小节。]'
 - en: Large transformer models are mainstream nowadays, creating SoTA results for
     a variety of tasks. They are powerful but very expensive to train and use. The
     extremely high inference cost, in both time and memory, is a big bottleneck for
     adopting a powerful transformer for solving real-world tasks at scale.
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: 大型变压器模型如今已成为主流，为各种任务创造了SoTA结果。它们强大但训练和使用成本非常昂贵。在时间和内存方面极高的推断成本是采用强大变压器解决规模化真实世界任务的一个重要瓶颈。
 - en: '**Why is it hard to run inference for large transformer models?** Besides the
     increasing size of SoTA models, there are two main factors contributing to the
     inference challenge ([Pope et al. 2022](https://arxiv.org/abs/2211.05102)):'
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: '**为什么运行大型变压器模型的推断很困难？** 除了SoTA模型尺寸不断增加外，还有两个主要因素导致推断挑战（[Pope等人，2022](https://arxiv.org/abs/2211.05102)）：'
 - en: '*Large memory footprint*. Both model parameters and intermediate states are
     needed in memory at inference time. For example,'
+  id: totrans-5
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*大内存占用*。在推断时需要模型参数和中间状态都保存在内存中。例如，'
 - en: The KV cache should be stored in memory during decoding time; E.g. For a batch
     size of 512 and context length of 2048, the KV cache totals 3TB, that is 3x the
     model size (!).
+  id: totrans-6
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在解码时应将KV缓存存储在内存中；例如，对于批量大小为512和上下文长度为2048，KV缓存总共为3TB，即模型大小的3倍（！）。
 - en: Inference cost from the attention mechanism scales quadratically with input
     sequence length.
+  id: totrans-7
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 注意机制的推断成本随输入序列长度呈二次方增长。
 - en: '*Low parallelizability.* Inference generation is executed in an autoregressive
     fashion, making the decoding process hard to parallel.'
+  id: totrans-8
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*低并行性*。推断生成以自回归方式执行，使得解码过程难以并行化。'
 - en: In this post, we will look into several approaches for making transformer inference
     more efficient. Some are general network compression methods, while others are
     specific to transformer architecture.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本文中，我们将探讨几种使变压器推断更高效的方法。有些是通用网络压缩方法，而另一些是特定于变压器架构的。
 - en: Methods Overview
+  id: totrans-10
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 方法概述
 - en: 'We in general consider the following as goals for model inference optimization:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们通常将以下作为模型推断优化的目标：
 - en: Reduce the memory footprint of the model by using fewer GPU devices and less
     GPU memory;
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 通过使用更少的GPU设备和更少的GPU内存来减少模型的内存占用；
 - en: Reduce the desired computation complexity by lowering the number of FLOPs needed;
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 通过降低所需的FLOP数量来减少所需的计算复杂度；
 - en: Reduce the inference latency and make things run faster.
+  id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 减少推断延迟，使事情运行更快。
 - en: Several methods can be used to make inference cheaper in memory or/and faster
     in time.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 可以使用几种方法使推断在内存上更便宜或/和在时间上更快。
 - en: Apply various *parallelism* to scale up the model across a large number of GPUs.
     Smart parallelism of model components and data makes it possible to run a model
     of trillions of parameters.
+  id: totrans-16
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 应用各种*并行性*来扩展模型跨多个GPU。模型组件和数据的智能并行性使得可以运行具有数万亿参数的模型。
 - en: Memory *offloading* to offload temporarily unused data to the CPU and read them
     back when needed later. This helps with memory usage but causes higher latency.
+  id: totrans-17
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将内存*卸载*以将暂时未使用的数据卸载到CPU，并在稍后需要时读取。这有助于内存使用，但会导致更高的延迟。
 - en: Smart batching strategy; E.g. [EffectiveTransformer](https://github.com/bytedance/effective_transformer)
     packs consecutive sequences together to remove padding within one batch.
+  id: totrans-18
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 智能分批策略；例如，[EffectiveTransformer](https://github.com/bytedance/effective_transformer)将连续序列打包在一起，以消除一个批次内的填充。
 - en: Network *compression* techniques, such as *pruning, quantization, distillation*.
     A model of smaller size, in terms of parameter count or bitwidth, should demand
     less memory and run faster.
+  id: totrans-19
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 网络*压缩*技术，如*修剪、量化、蒸馏*。在参数数量或位宽方面更小的模型应该需要更少的内存并且运行更快。
 - en: Improvement specific to a target model architecture. Many *architectural changes*,
     especially those for attention layers, help with transformer decoding speed.
+  id: totrans-20
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 针对目标模型架构的改进。许多*架构变化*，特别是用于注意力层的变化，有助于提高变压器解码速度。
 - en: Check [the previous post on large model training](https://lilianweng.github.io/posts/2021-09-25-train-large/)
     on different types of training parallelism and memory saving designs including
     CPU memory offloading. This post focuses on network compression techniques and
     architecture-specific improvement for transformer models.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 查看[关于大型模型训练的先前文章](https://lilianweng.github.io/posts/2021-09-25-train-large/)，介绍了不同类型的训练并行性和内存节省设计，包括CPU内存卸载。本文重点介绍了用于Transformer模型的网络压缩技术和特定架构的改进。
 - en: Distillation
+  id: totrans-22
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 蒸馏
 - en: '**Knowledge Distillation** (**KD**; [Hinton et al. 2015](https://arxiv.org/abs/1503.02531),
     [Gou et al. 2020](https://arxiv.org/abs/2006.05525)) is a straightforward way
     to build a smaller, cheaper model (*“student model”*) to speed up inference by
@@ -116,15 +162,22 @@
     the student. There is no much restriction on how the student architecture should
     be constructed, except for a matched output space with the teacher in order to
     construct a proper learning objective.'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: '**知识蒸馏** (**KD**; [Hinton et al. 2015](https://arxiv.org/abs/1503.02531), [Gou
+    et al. 2020](https://arxiv.org/abs/2006.05525)) 是一种直接的方法，通过将预训练的昂贵模型(*“教师模型”*)的技能转移到一个更小、更便宜的模型(*“学生模型”*)，以加快推理速度。对于学生架构的构建并没有太多限制，除了需要与教师匹配输出空间以构建适当的学习目标。'
 - en: '![](../Images/725a3661459727ebe97c6bb59776196d.png)'
+  id: totrans-24
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/725a3661459727ebe97c6bb59776196d.png)'
 - en: 'Fig. 1\. The generic framework of teacher-student knowledge distillation training.
     (Image source: [Gou et al. 2020](”https://arxiv.org/abs/2006.05525”))'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Fig. 1\. 师生知识蒸馏训练的通用框架。 (图片来源: [Gou et al. 2020](”https://arxiv.org/abs/2006.05525”))'
 - en: Given a dataset, a student model is trained to mimic outputs of a teacher via
     distillation loss. Usually a neural network has a softmax layer; For example,
     a LLM outputs a probability distribution over tokens. Let’s denote the logits
@@ -133,18 +186,26 @@
     between two softmax outputs with a high temperature $T$. When ground truth labels
     $\mathbf{y}$ are known, we can combine it with a *supervised* learning objective
     between ground truth and the student’s soft logits using e.g. cross-entropy.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 给定一个数据集，通过蒸馏损失训练学生模型来模仿教师的输出。通常神经网络有一个softmax层；例如，LLM输出一个关于标记的概率分布。我们将教师和学生模型之间softmax之前的logits层分别表示为$\mathbf{z}_t$和$\mathbf{z}_s$。*蒸馏损失*通过高温$T$最小化两个softmax输出之间的差异。当已知地面真实标签$\mathbf{y}$时，我们可以将其与学生的软性logits之间的*监督*学习目标结合起来，例如使用交叉熵。
 - en: $$ \mathcal{L}_\text{KD} = \mathcal{L}_\text{distll}(\text{softmax}(\mathbf{z}_t,
     T), \text{softmax}(\mathbf{z}_s, T)) + \lambda\mathcal{L}_\text{CE}(\mathbf{y},
     \mathbf{z}_s) $$
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathcal{L}_\text{KD} = \mathcal{L}_\text{distll}(\text{softmax}(\mathbf{z}_t,
+    T), \text{softmax}(\mathbf{z}_s, T)) + \lambda\mathcal{L}_\text{CE}(\mathbf{y},
+    \mathbf{z}_s) $$
 - en: where $\lambda$ is a hyperparameter to balance between soft and hard learning
     objectives. A common choice for $\mathcal{L}_\text{distll}$ is KL divergence /
     cross entropy.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$\lambda$是一个超参数，用于平衡软性和硬性学习目标。$\mathcal{L}_\text{distll}$的常见选择是KL散度/交叉熵。
 - en: A successful early trial is **DistilBERT** ([Sanh et al. 2019](https://arxiv.org/abs/1910.01108))
     that is able to reduce the parameters of a BERT by 40% while maintaining 97% performance
     of BERT on fine-tuned downstream tasks and running 71% faster. The loss of pre-training
@@ -152,65 +213,92 @@
     (i.e. [Masked language modeling loss](https://lilianweng.github.io/posts/2019-01-31-lm/#MLM)
     $\mathcal{L}_\text{MLM}$ in the case of BERT) and a special *cosine embedding
     loss* to align the hidden state vectors between teacher and student.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个成功的早期尝试是**DistilBERT** ([Sanh et al. 2019](https://arxiv.org/abs/1910.01108))，能够将BERT的参数减少40%，同时在精调后的下游任务上保持BERT
+    97%的性能，并且运行速度提高了71%。DistilBERT的预训练损失包括软蒸馏损失、监督训练损失(即在BERT情况下的[掩码语言建模损失](https://lilianweng.github.io/posts/2019-01-31-lm/#MLM)
+    $\mathcal{L}_\text{MLM}$)和一种特殊的*余弦嵌入损失*，用于调整教师和学生之间的隐藏状态向量。
 - en: Distillation can be easily combined with [quantization](#quantization), [pruning](#pruning)
     or [sparsification](#sparsity) techniques, where the teacher model is the original
     full-precision, dense model and the student is quantized, pruned, or trimmed to
     have higher sparsity level.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 蒸馏可以轻松与[量化](#quantization)、[剪枝](#pruning)或[稀疏化](#sparsity)技术结合，其中教师模型是原始的全精度、稠密模型，而学生模型是量化、剪枝或修剪以具有更高稀疏度水平的模型。
 - en: Quantization
+  id: totrans-31
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 量化
 - en: 'There are two common approaches for applying quantization on a deep neural
     network:'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 对深度神经网络应用量化有两种常见方法：
 - en: '*Post-Training Quantization (PTQ)*: A model is first trained to convergence
     and then we convert its weights to lower precision without more training. It is
     usually quite cheap to implement, in comparison to training.'
+  id: totrans-33
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*后训练量化（PTQ）*：首先将模型训练到收敛，然后将其权重转换为较低精度而无需更多训练。与训练相比，实现起来通常要便宜得多。'
 - en: '*Quantization-Aware Training (QAT)*: Quantization is applied during pre-training
     or further fine-tuning. QAT is able to attain better performance but requires
     extra computation resources and access to representative training data.'
+  id: totrans-34
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*量化感知训练（QAT）*：在预训练或进一步微调期间应用量化。QAT能够获得更好的性能，但需要额外的计算资源和代表性训练数据。'
 - en: We should be aware of the gap between theoretical optimal quantization strategy
     and the hardware kernel support. Due to the lack of GPU kernel support for certain
     types of matrix multiplication (e.g. INT4 x FP16), not all the methods below result
     in speedup for the actual inference.
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们应该意识到理论最佳量化策略与硬件内核支持之间的差距。由于GPU内核对某些类型的矩阵乘法（例如INT4 x FP16）缺乏支持，下面的方法并不都会导致实际推断速度的提升。
 - en: Challenges for Transformer Quantization
+  id: totrans-36
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Transformer量化的挑战
 - en: 'Many studies on Transformer model quantization have the same observation: A
     simple low-precision (e.g. 8-bit) post-training quantization leads to significant
     performance drop mainly due to the high dynamic ranges of activation and a naive
     activation quantization strategy fails to maintain the capacity.'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 许多关于Transformer模型量化的研究都有相同的观察结果：简单的低精度（例如8位）后训练量化会导致显著的性能下降，主要是由于激活的高动态范围和天真的激活量化策略无法保持容量。
 - en: '![](../Images/9bba072c597c9c3e5bd136aa1bfdbbe5.png)'
+  id: totrans-38
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9bba072c597c9c3e5bd136aa1bfdbbe5.png)'
 - en: 'Fig. 2\. Only quantizing model weights to 8-bit while keeping activation at
     full precision (`W8A32`) achieves much better results when activations are quantized
     to 8-bit irrespective of whether weights are in lower precision (`W8A8` and `W32A8`).
     (Image source: [Bondarenko et al. 2021](https://arxiv.org/abs/2109.12948))'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 图2。仅将模型权重量化为8位，同时保持激活在完整精度（`W8A32`）时，无论权重是否在较低精度（`W8A8`和`W32A8`）时，激活量化为8位都能取得更好的结果。
+    （图片来源：[Bondarenko等人2021](https://arxiv.org/abs/2109.12948)）
 - en: '[Bondarenko et al. (2021)](https://arxiv.org/abs/2109.12948) observed in a
     small BERT model that FFN’s input and output have very different dynamic ranges
     due to strong outliers in the output tensor. Therefore per-tensor quantization
     for the FFN’s residual sum is likely to cause a notable error.'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Bondarenko等人（2021）](https://arxiv.org/abs/2109.12948)在一个小型BERT模型中观察到FFN的输入和输出具有非常不同的动态范围，因为输出张量中存在强烈的异常值。因此，对于FFN的残差和总和进行每张量量化可能会导致显着的误差。'
 - en: As the model size continues to grow to billions of parameters, outlier features
     of high magnitude start to emerge in *all* transformer layers, causing failure
     of simple low-bit quantization. [Dettmers et al. (2022)](https://arxiv.org/abs/2208.07339)
@@ -219,28 +307,40 @@
     and these outlier features have a significant impact on the model performance.
     The scale of activation outliers in a few dimensions can be ~100× larger than
     most of the other values.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 随着模型规模继续增长到数十亿个参数，所有Transformer层中开始出现高幅度的异常值特征，导致简单的低位量化失败。[Dettmers等人（2022）](https://arxiv.org/abs/2208.07339)观察到对于大于6.7B参数的[OPT](https://arxiv.org/abs/2205.01068)模型出现了这种现象。更大的模型具有更多具有极端异常值的层，并且这些异常值特征对模型性能有显著影响。在少数维度中，激活异常值的规模可能比其他大多数值大100倍。
 - en: '![](../Images/138eae43c673ec786ed7f843aa719c0c.png)'
+  id: totrans-42
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/138eae43c673ec786ed7f843aa719c0c.png)'
 - en: 'Fig. 3\. The mean zero-shot accuracy over a set of language tasks (WinoGrande,
     HellaSwag, PIQA, LAMBADA) of OPT models of increasing sizes. (Image source: [Dettmers
     et al. 2022](https://arxiv.org/abs/2208.07339))'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 图3。随着OPT模型规模增加，一组语言任务（WinoGrande、HellaSwag、PIQA、LAMBADA）的零样本准确率均值。 （图片来源：[Dettmers等人2022](https://arxiv.org/abs/2208.07339))
 - en: Post-training quantization (PTQ)
+  id: totrans-44
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 后训练量化（PTQ）
 - en: Mixed-precision quantization
+  id: totrans-45
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 混合精度量化
 - en: The most straightforward approach for resolving the above quantization challenge
     is to implement quantization at different precision for weights vs activation.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 解决上述量化挑战最直接的方法是为权重和激活实现不同精度的量化。
 - en: GOBO ([Zadeh et al. 2020](https://arxiv.org/abs/2005.03842)) is one of the first
     models to apply post-training quantization on transformers (i.e. a small BERT
     model). It assumes that model weights of each layer follow a Gaussian distribution
@@ -248,61 +348,85 @@
     Outlier features remain in original form, while other values are split into multiple
     bins and only corresponding bin indices of weights and the centroid values are
     stored.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: GOBO（[Zadeh等人，2020](https://arxiv.org/abs/2005.03842)）是第一个在transformers上应用后训练量化的模型之一（即一个小型BERT模型）。它假设每层模型权重遵循高斯分布，因此通过跟踪每层的均值和标准差来检测异常值。异常特征保留在原始形式中，而其他值被分成多个箱，并且只存储权重的相应箱索引和质心值。
 - en: Based on the observation that only certain activation layers (e.g. residual
     connections after FFN) in BERT cause big performance drop, [Bondarenko et al.
     (2021)](https://arxiv.org/abs/2109.12948) adopted mixed-precision quantization
     by using 16-bit quantization on problematic activations but 8-bit on others.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 基于观察到BERT中只有某些激活层（例如FFN后的残差连接）会导致性能大幅下降，[Bondarenko等人（2021）](https://arxiv.org/abs/2109.12948)采用了混合精度量化，对问题激活使用16位量化，而对其他激活使用8位量化。
 - en: 'Mixed-precision quantization in `LLM.int8()` ([Dettmers et al. 2022](https://arxiv.org/abs/2208.07339))
     is implemented via two mixed-precision decompositions:'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: '`LLM.int8()`中的混合精度量化（[Dettmers等人，2022](https://arxiv.org/abs/2208.07339)）通过两种混合精度分解实现：'
 - en: 'Because matrix multiplication contains a set of independent inner products
     between row and column vectors, we can impose independent quantization per inner
     product: Each row and column are scaled by the absolution maximum values and then
     quantized to INT8.'
+  id: totrans-50
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 因为矩阵乘法包含一组独立的行向量和列向量之间的内积，我们可以对每个内积进行独立的量化：每行和每列都按绝对最大值进行缩放，然后量化为INT8。
 - en: Outlier activation features (e.g. 20x larger than other dimensions) remain in
     FP16 but they represent only a tiny fraction of total weights. How to identify
     outliers is empirical.
+  id: totrans-51
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 异常激活特征（例如比其他维度大20倍）保留在FP16中，但它们仅占总权重的一小部分。如何识别异常值是经验性的。
 - en: '![](../Images/33f8a976159592458e948c450c4ac8a3.png)'
+  id: totrans-52
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/33f8a976159592458e948c450c4ac8a3.png)'
 - en: 'Fig. 4\. Two mixed-precision decompositions of `LLM.int8()`. (Image source:
     [Dettmers et al. 2022](https://arxiv.org/abs/2208.07339))'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 图4。`LLM.int8()`的两种混合精度分解。（图片来源：[Dettmers等人，2022](https://arxiv.org/abs/2208.07339)）
 - en: Quantization at fine-grained granularity
+  id: totrans-54
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 细粒度粒度的量化
 - en: '![](../Images/bd7f9ebc1d3a525adeb0320120da3aad.png)'
+  id: totrans-55
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/bd7f9ebc1d3a525adeb0320120da3aad.png)'
 - en: Fig. 5\. Comparison of quantization at different granularity. $d$ is the model
     size / hidden state dimension and $h$ is the number of heads in one MHSA (multi-head
     self-attention) component.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 图5。不同粒度的量化比较。$d$是模型大小/隐藏状态维度，$h$是一个MHSA（多头自注意力）组件中的头数。
 - en: Naively quantizing the entire weight matrix in one layer (“per-tensor” or “per-layer”
     quantization) is easiest to implement but does not lead to good granularity of
     quantization.
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 在一个层中天真地对整个权重矩阵进行量化（“每张量”或“每层”量化）最容易实现，但不会导致良好的量化粒度。
 - en: '**Q-BERT** ([Shen, Dong & Ye, et al. 2020](https://arxiv.org/abs/1909.05840))
     applied *group-wise quantization* to a fine-tuned BERT model, treating an individual
     matrix $W$ with respect to *each head* in MHSA (multi-head self-attention) as
     one group and then applies Hessian based mixed precision quantization.'
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: '**Q-BERT**（[Shen，Dong＆Ye等人，2020](https://arxiv.org/abs/1909.05840)）对一个经过微调的BERT模型应用*分组量化*，将MHSA（多头自注意力）中每个头对应的矩阵$W$视为一组，然后应用基于Hessian的混合精度量化。'
 - en: '*Per-embedding group (PEG)* activation quantization was motivated by the observation
     that outlier values only appear in a few out of $d$ (hidden state / model size)
     dimensions ([Bondarenko et al. 2021](https://arxiv.org/abs/2109.12948)). Per-embedding
@@ -311,34 +435,48 @@
     where elements in the same group share quantization parameters. To ensure all
     outliers are grouped together, they apply a deterministic range-based permutation
     of embedding dimensions, where dimensions are sorted by their value ranges.'
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: '*每嵌入组（PEG）*激活量化的动机是观察到异常值仅出现在$d$（隐藏状态/模型大小）个维度中的少数维度中（[Bondarenko等人，2021](https://arxiv.org/abs/2109.12948)）。每嵌入组在计算上非常昂贵。相比之下，PEG量化将激活张量分成几个沿嵌入维度均匀大小的组，其中同一组中的元素共享量化参数。为了确保所有异常值被分组在一起，他们应用了一种确定性基于范围的嵌入维度排列，其中维度按其值范围排序。'
 - en: '**ZeroQuant** ([Yao et al. 2022](https://arxiv.org/abs/2206.01861)) uses *group-wise
     quantization* for weights, same as in Q-BERT, and *token-wise quantization* for
     activation. To avoid expensive quantization and de-quantization computation, ZeroQuant
     built customized *kernel* to *fuse* quantization operation with its previous operator.'
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: '**ZeroQuant**（[Yao等人，2022](https://arxiv.org/abs/2206.01861)）对权重使用*分组量化*，与Q-BERT相同，并对激活使用*令牌量化*。为了避免昂贵的量化和去量化计算，ZeroQuant构建了定制的*内核*来*融合*量化操作与其先前的运算符。'
 - en: Second order information for quantization
+  id: totrans-61
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 用于量化的二阶信息
 - en: Q-BERT ([Shen, Dong & Ye, et al. 2020](https://arxiv.org/abs/1909.05840)) developed
     Hessian AWare Quantization (HAWQ) for its mixed-precision quantization. The motivation
     is that parameters with higher Hessian spectrum (i.e., larger top eigenvalues)
     are more sensitive to quantization and thus require higher precision. It is essentially
     a way to identify outliers.
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: Q-BERT（[Shen, Dong & Ye等人，2020](https://arxiv.org/abs/1909.05840)）为其混合精度量化开发了Hessian
+    AWare Quantization（HAWQ）。其动机是，具有更高Hessian谱（即更大的顶部特征值）的参数对量化更敏感，因此需要更高的精度。这本质上是一种识别异常值的方法。
 - en: 'In another viewpoint, the problem of quantization is an optimization problem.
     Given a weight matrix $\mathbf{W}$ and an input matrix $\mathbf{X}$ , we want
     to find a quantized weight matrix $\hat{\mathbf{W}}$ to minimize the MSE:'
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 从另一个角度来看，量化问题是一个优化问题。给定一个权重矩阵$\mathbf{W}$和一个输入矩阵$\mathbf{X}$，我们希望找到一个量化的权重矩阵$\hat{\mathbf{W}}$来最小化均方误差：
 - en: $$ \hat{\mathbf{W}}^* = {\arg\min}_{\hat{\mathbf{W}}} | \mathbf{W}\mathbf{X}
     - \hat{\mathbf{W}}\mathbf{X}| $$
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \hat{\mathbf{W}}^* = {\arg\min}_{\hat{\mathbf{W}}} | \mathbf{W}\mathbf{X}
+    - \hat{\mathbf{W}}\mathbf{X}| $$
 - en: '**GPTQ** ([Frantar et al. 2022](https://arxiv.org/abs/2210.17323)) treats the
     weight matrix $\mathbf{W}$ as a collection of row vectors ${\mathbf{w}}$ and applies
     quantization to each row independently. GPTQ iteratively quantizes more weights
@@ -348,61 +486,88 @@
     method if interested. GPTQ can reduce the bitwidth of weights in OPT-175B down
     to 3 or 4 bits without much performance loss, but it only applies to model weights
     not activation.'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: '**GPTQ**（[Frantar等人，2022](https://arxiv.org/abs/2210.17323)）将权重矩阵$\mathbf{W}$视为一组行向量${\mathbf{w}}$，并对每行独立应用量化。GPTQ迭代地量化更多被贪婪选择以最小化量化误差的权重。对所选权重的更新具有闭合形式的公式，利用Hessian矩阵。如果感兴趣，可以在论文和OBQ（Optimal
+    Brain Quantization；[Frantar & Alistarh，2022](https://arxiv.org/abs/2208.11580)）方法中阅读更多细节。GPTQ可以将OPT-175B中的权重位宽降至3或4位而几乎不损失性能，但仅适用于模型权重而不是激活。'
 - en: Outlier smoothing
+  id: totrans-66
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 异常值平滑
 - en: It is known that activations are harder to quantize than weights in transformer
     models. **SmoothQuant** ([Xiao & Lin 2022](https://arxiv.org/abs/2211.10438))
     proposed a smart solution to smooth outlier features from activations to weights
     via mathematically equivalent transformation and then enable quantization on both
     weights and activations (`W8A8`). Because of this, SmoothQuant has better hardware
     efficiency than mixed-precision quantization.
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 众所周知，在变压器模型中，激活比权重更难量化。**SmoothQuant**（[Xiao & Lin，2022](https://arxiv.org/abs/2211.10438)）提出了一个聪明的解决方案，通过数学上等效的转换将激活中的异常特征平滑到权重上，然后在权重和激活上启用量化（`W8A8`）。由于这个原因，SmoothQuant比混合精度量化具有更好的硬件效率。
 - en: '![](../Images/c95294b17a1f34dd697fe1302cfa0f46.png)'
+  id: totrans-68
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c95294b17a1f34dd697fe1302cfa0f46.png)'
 - en: 'Fig. 6\. SmoothQuant migrates the scale variance from activations to weights
     offline to reduce the difficulty of activation quantization. Both the resulting
     new weight and activation matrices are easy to quantize. (Image source: [Xiao
     & Lin 2022](https://arxiv.org/abs/2211.10438))'
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 图6\. SmoothQuant将激活的尺度变化迁移到权重上，以降低激活量化的难度。得到的新权重和激活矩阵都容易量化。（图片来源：[Xiao & Lin
+    2022](https://arxiv.org/abs/2211.10438)）
 - en: 'Considering a per-channel smooth factor $\mathbf{s}$, SmoothQuant scales the
     weights according to:'
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 考虑每个通道的平滑因子 $\mathbf{s}$，SmoothQuant根据以下方式调整权重：
 - en: $$ \mathbf{Y} = (\mathbf{X} \text{diag}(\mathbf{s})^{-1}) \cdot (\text{diag}(\mathbf{s})\mathbf{W})
     = \hat{\mathbf{X}}\hat{\mathbf{W}} $$
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathbf{Y} = (\mathbf{X} \text{diag}(\mathbf{s})^{-1}) \cdot (\text{diag}(\mathbf{s})\mathbf{W})
+    = \hat{\mathbf{X}}\hat{\mathbf{W}} $$
 - en: 'The smoothing factor can be easily fused into previous layers’ parameters offline.
     A hyperparameter $\alpha$ controls how much we migrate the quantization difficulty
     from activations to weights: $\mathbf{s} = \max (\vert \mathbf{X}_j \vert)^\alpha
     / \max( \vert \mathbf{W}_j \vert )^{1-\alpha}$. The paper found that $\alpha=0.5$
     is a sweet spot for many LLMs in the experiments. For models with more significant
     outliers in activation, $\alpha$ can be adjusted to be larger.'
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 平滑因子可以轻松地离线融入到先前层的参数中。一个超参数 $\alpha$ 控制我们将量化难度从激活迁移到权重的程度：$\mathbf{s} = \max
+    (\vert \mathbf{X}_j \vert)^\alpha / \max( \vert \mathbf{W}_j \vert )^{1-\alpha}$。论文发现在实验中，对于许多LLM模型，$\alpha=0.5$
+    是一个最佳选择。对于激活中有更显著异常值的模型，$\alpha$ 可以调整得更大。
 - en: Quantization-aware training (QAT)
+  id: totrans-73
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 量化感知训练（QAT）
 - en: Quantization-aware training fuses the quantization operation into the pre-training
     or fine-tuning process. It learns model weights in low-bit representation directly
     and leads to better performance at the cost of additional training time and computation.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 量化感知训练将量化操作融入到预训练或微调过程中。它直接学习低比特表示的模型权重，并在额外的训练时间和计算成本下实现更好的性能。
 - en: The most straightforward approach is to **fine-tune** the model after quantization
     on a training dataset that is the same as or representative of the pre-training
     dataset. The training objective can be the same as the one for pre-training (e.g.
     NLL/MLM in general language model training) or specific to a downstream task that
     we care about (e.g. Cross entropy for classification).
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 最直接的方法是在量化后在与预训练数据集相同或代表性的训练数据集上**微调**模型。训练目标可以与预训练相同（例如一般语言模型训练中的NLL/MLM）或特定于我们关心的下游任务（例如分类中的交叉熵）。
 - en: Another approach is to consider the full-precision model as the teacher and
     the lower-precision model as the student, and then optimize the low-precision
     model with **distillation** loss. Distillation usually doesn’t need to use the
@@ -412,57 +577,80 @@
     the network layer by layer and uses its original, unquantized version as the teacher
     model. Given the same inputs, LKD minimizes the MSE between the multiplication
     with layer weights and the multiplication of quantized layer weights.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一种方法是将全精度模型视为教师，将低精度模型视为学生，然后用**蒸馏**损失优化低精度模型。蒸馏通常不需要使用原始数据集；例如，维基百科数据集是一个不错的选择，甚至随机标记也可以带来相当不错的性能提升。*逐层知识蒸馏*（*LKD*；[Yao
+    et al. 2022](https://arxiv.org/abs/2206.01861)）方法逐层量化网络，并使用其原始的、未量化的版本作为教师模型。给定相同的输入，LKD最小化了层权重乘法和量化层权重乘法之间的均方误差。
 - en: Pruning
+  id: totrans-77
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 剪枝
 - en: Network pruning is to reduce the model size by trimming unimportant model weights
     or connections while the model capacity remains. It may or may not require re-training.
     Pruning can be **unstructured** or **structured**.
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 网络剪枝是通过修剪不重要的模型权重或连接来减小模型大小，同时保持模型容量。可能需要重新训练，也可能不需要。剪枝可以是**非结构化**或**结构化**的。
 - en: '*Unstructured pruning* is allowed to drop any weight or connection, so it does
     not retain the original network architecture. Unstructured pruning often does
     not work well with modern hardware and doesn’t lead to actual inference speedup.'
+  id: totrans-79
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*非结构化剪枝*允许丢弃任何权重或连接，因此不保留原始网络架构。非结构化剪枝通常与现代硬件不兼容，也不会导致实际推理加速。'
 - en: '*Structured pruning* aims to maintain the dense matrix multiplication form
     where some elements are zeros. They may need to follow certain pattern restrictions
     to work with what hardware kernel supports. Here we focus on structured pruning
     to achieve *high sparsity* in transformer models.'
+  id: totrans-80
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*结构化修剪*旨在保持稠密矩阵乘法形式，其中一些元素为零。它们可能需要遵循某些模式限制，以便与硬件内核支持的内容配合使用。在这里，我们专注于结构化修剪以在变压器模型中实现*高稀疏性*。'
 - en: 'A routine workflow to construct a pruned network has three steps:'
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 构建修剪网络的常规工作流程有三个步骤：
 - en: Train a dense network until convergence;
+  id: totrans-82
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 训练一个密集网络直到收敛；
 - en: Prune the network to remove unwanted structure;
+  id: totrans-83
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 修剪网络以去除不需要的结构；
 - en: Optionally retrain the network to recover the performance with new weights.
+  id: totrans-84
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 可选地重新训练网络以恢复性能与新权重。
 - en: 'The idea of discovering a sparse structure within a dense model via network
     pruning while the sparse network can still maintain similar performance is motivated
     by [**Lottery Ticket Hypothesis**](https://lilianweng.github.io/posts/2019-03-14-overfit/#the-lottery-ticket-hypothesis)
     (**LTH**): A randomly initialized, dense, feed-forward network contains a pool
     of subnetworks and among them only a subset (a sparse network) are *“winning tickets”*
     which can achieve the optimal performance when trained in isolation.'
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过网络修剪在稠密模型中发现稀疏结构的想法，而稀疏网络仍然可以保持类似的性能，受到[**彩票票据假设**](https://lilianweng.github.io/posts/2019-03-14-overfit/#the-lottery-ticket-hypothesis)（**LTH**）的启发：一个随机初始化的、密集的、前馈网络包含一组子网络，其中只有一个子集（一个稀疏网络）是*“中奖票”*，当单独训练时可以达到最佳性能。
 - en: How to prune?
+  id: totrans-86
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 如何进行修剪？
 - en: '**Magnitude pruning** is simplest yet quite effective pruning method - weights
     with smallest absolute values are trimmed. In fact, some studies ([Gale et al.
     2019](https://arxiv.org/abs/1902.09574)) found that *simple magnitude pruning
@@ -471,8 +659,10 @@
     and $l_0$ regularization ([Louizos et al. 2017](https://arxiv.org/abs/1712.01312)).
     Magnitude pruning is simple to apply to large models and achieves reasonably consistent
     performance across a wide range of hyperparameters.'
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: '**幅度修剪**是最简单但相当有效的修剪方法 - 剪掉绝对值最小的权重。事实上，一些研究（[Gale等人，2019](https://arxiv.org/abs/1902.09574)）发现*简单的幅度修剪方法可以达到与复杂修剪方法（如变分辍学（[Molchanov等人，2017](https://arxiv.org/abs/1701.05369)）和$l_0$正则化（[Louizos等人，2017](https://arxiv.org/abs/1712.01312)））相媲美甚至更好的结果*。幅度修剪易于应用于大型模型，并在各种超参数范围内实现相当一致的性能。'
 - en: '[Zhu & Gupta (2017)](https://arxiv.org/abs/1710.01878) found that *large sparse
     models were able to achieve better performance than their small but dense counterparts*.
     They proposed **Gradual Magnitude Pruning (GMP)** algorithm that increases the
@@ -483,118 +673,165 @@
     The process of GMP is sensitive to the learning rate schedule, which should be
     higher than what’s used in dense network training, but not too high to prevent
     convergence.'
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Zhu & Gupta（2017）](https://arxiv.org/abs/1710.01878)发现*大型稀疏模型能够比它们小但密集的对应物性能更好*。他们提出了**渐进幅度修剪（GMP）**算法，该算法在训练过程中逐渐增加网络的稀疏性。在每个训练步骤中，绝对值最小的权重被掩盖为零，以达到所需的稀疏水平$s$，掩盖的权重在反向传播过程中不会获得梯度更新。所需的稀疏水平$s$随着更多的训练步骤而增加。GMP的过程对学习率调度很敏感，学习率应该高于密集网络训练中使用的学习率，但不要太高以防止收敛。'
 - en: '**Iterative pruning** ([Renda et al. 2020](https://arxiv.org/abs/2003.02389))
     iterates step 2 (prune) & step 3 (retrain) multiple times: Only a small fraction
     of weights are pruned and the model is retrained in each iteration. The process
     repeats until a desired sparsity level is reached.'
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: '**迭代修剪**（[Renda等人，2020](https://arxiv.org/abs/2003.02389)）多次迭代步骤2（修剪）和步骤3（重新训练）：每次修剪只修剪一小部分权重，并在每次迭代中重新训练模型。该过程重复，直到达到所需的稀疏水平。'
 - en: How to retrain?
+  id: totrans-90
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 如何进行重新训练？
 - en: The retraining step can be simple fine-tuning using the same pre-training data
     or other task-specific datasets.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 重新训练步骤可以简单地使用相同的预训练数据或其他特定任务的数据进行微调。
 - en: '[Lottery Ticket Hypothesis](https://lilianweng.github.io/posts/2019-03-14-overfit/#the-lottery-ticket-hypothesis)
     proposed a **weight rewinding** retraining technique: After pruning, the unpruned
     weights are *reinitialized back to original values* earlier in the training and
     then retrain with the same learning rate schedule.'
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: '[彩票票假设](https://lilianweng.github.io/posts/2019-03-14-overfit/#the-lottery-ticket-hypothesis)提出了一种**权重回退**重新训练技术：剪枝后，未剪枝的权重*重新初始化为训练早期的原始值*，然后按相同的学习率计划重新训练。'
 - en: '**Learning rate rewinding** ([Renda et al. 2020](https://arxiv.org/abs/2003.02389))
     only resets the learning rate back to its early value, while the unpruned weights
     stay unchanged since the end of the last train stage. They observed that (1) retraining
     with weight rewinding outperforms retraining with fine-tuning across networks
     and datasets and (2) learning rate rewinding matches or outperforms weight rewinding
     in all tested scenarios.'
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: '**学习率回退**（[Renda等人，2020](https://arxiv.org/abs/2003.02389)）仅将学习率重置回早期值，而未剪枝的权重自上次训练阶段结束以来保持不变。他们观察到（1）使用权重回退重新训练优于在各种网络和数据集上进行微调重新训练，以及（2）学习率回退在所有测试场景中与权重回退相匹配或优于其表现。'
 - en: Sparsity
+  id: totrans-94
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 稀疏性
 - en: 'Sparsity is an effective way to scale up model capacity while keeping model
     inference computationally efficient. Here we consider two types of sparsity for
     transformers:'
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 稀疏性是一种有效的方式，可以在保持模型推断计算效率的同时扩展模型容量。在这里，我们考虑变压器的两种稀疏性：
 - en: Sparsified dense layers, including both self-attention and FFN layers.
+  id: totrans-96
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 稀疏化的密集层，包括自注意力和FFN层。
 - en: Sparse model architecture; i.e. via incorporating the Mixture-of-Experts (MoE)
     component.
+  id: totrans-97
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 稀疏模型架构；即通过整合专家混合（MoE）组件。
 - en: N:M Sparsity via Pruning
+  id: totrans-98
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 通过剪枝实现的N:M稀疏性
 - en: '**N:M sparsity** is a structured sparsity pattern that works well with modern
     GPU hardware optimization, in which $N$ out of every $M$ consecutive elements
     are zeros. For example, the sparse tensor core of Nvidia A100 GPU has support
     for 2:4 sparsity for faster inference ([Nvidia 2020](https://images.nvidia.com/aem-dam/en-zz/Solutions/data-center/nvidia-ampere-architecture-whitepaper.pdf)).'
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: '**N:M稀疏性**是一种结构化稀疏模式，与现代GPU硬件优化配合良好，其中每$M$个连续元素中有$N$个为零。例如，Nvidia A100 GPU的稀疏张量核支持2:4稀疏性，以实现更快的推断（[Nvidia，2020](https://images.nvidia.com/aem-dam/en-zz/Solutions/data-center/nvidia-ampere-architecture-whitepaper.pdf)）。'
 - en: '![](../Images/9fab047f5925135271a2af85e9df0724.png)'
+  id: totrans-100
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9fab047f5925135271a2af85e9df0724.png)'
 - en: 'Fig. 7\. A matrix of 2:4 structured sparsity and its compressed representation.
     (Image source: [Nvidia blog](https://developer.nvidia.com/blog/accelerating-inference-with-sparsity-using-ampere-and-tensorrt/))'
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 图7. 2:4结构稀疏性矩阵及其压缩表示。（图片来源：[Nvidia博客](https://developer.nvidia.com/blog/accelerating-inference-with-sparsity-using-ampere-and-tensorrt/)）
 - en: 'To sparsify a dense neural network to follow a N:M structured sparsity pattern,
     [Nvidia (2020)](https://images.nvidia.com/aem-dam/en-zz/Solutions/data-center/nvidia-ampere-architecture-whitepaper.pdf)
     suggested using the three-step [routine workflow](#routine-workflow) for training
     a pruned network: train –> prune to satisfy 2:4 sparsity –> retrain.'
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 要将密集神经网络稀疏化以遵循N:M结构稀疏模式，[Nvidia（2020）](https://images.nvidia.com/aem-dam/en-zz/Solutions/data-center/nvidia-ampere-architecture-whitepaper.pdf)建议使用三步[常规工作流程](#routine-workflow)来训练剪枝网络：训练
+    –> 剪枝以满足2:4稀疏性 –> 重新训练。
 - en: Permuting columns can provide more options in the pruning process to maintain
     parameters of large magnitude or to satisfy a special restriction like N:M sparsity
     ([Pool & Yu 2021](https://proceedings.neurips.cc/paper/2021/hash/6e8404c3b93a9527c8db241a1846599a-Abstract.html)).
     As long as paired axes of two matrices are permuted in the same order, the results
     of matrix multiplication would not change. For example,
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 对列进行排列可以在剪枝过程中提供更多选项，以保持大幅度参数或满足特殊限制（如N:M稀疏性）的参数（[Pool & Yu，2021](https://proceedings.neurips.cc/paper/2021/hash/6e8404c3b93a9527c8db241a1846599a-Abstract.html)）。只要两个矩阵的配对轴按相同顺序排列，矩阵乘法的结果就不会改变。例如，
 - en: (1) Within the self-attention module, if the same permutation order is applied
     on the axis 1 of query embedding matrix $\mathbf{Q}$ and the axis 0 of key embedding
     matrix $\mathbf{K}^\top$, the final result of matrix multiplication of $\mathbf{Q}\mathbf{K}^\top$
     would stay the same.
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: （1）在自注意力模块中，如果在查询嵌入矩阵$\mathbf{Q}$的轴1和键嵌入矩阵$\mathbf{K}^\top$的轴0上应用相同的排列顺序，则矩阵乘法$\mathbf{Q}\mathbf{K}^\top$的最终结果将保持不变。
 - en: '![](../Images/1c40cc3244a551d240931b9d592ac318.png)'
+  id: totrans-105
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/1c40cc3244a551d240931b9d592ac318.png)'
 - en: Fig. 8\. Illustration of same permutation on $\mathbf{Q}$ (axis 1) and $\mathbf{K}^\top$
     (axis 0) to keep the results of a self-attention module unchanged.
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 图8\. 展示了对$\mathbf{Q}$（轴1）和$\mathbf{K}^\top$（轴0）进行相同排列以保持自注意力模块的结果不变。
 - en: (2) Within the FFN layer that contains two MLP layers and one ReLU non-linear
     layer, we can permute the first linear weight matrix $\mathbf{W}_1$ along the
     axis 1 and the second linear weight matrix $\mathbf{W}_2$ along the axis 0 in
     the same order.
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: (2) 在包含两个MLP层和一个ReLU非线性层的FFN层内，我们可以按照相同顺序沿轴1排列第一个线性权重矩阵$\mathbf{W}_1$和沿轴0排列第二个线性权重矩阵$\mathbf{W}_2$。
 - en: '![](../Images/7f552044e81f2e6288c15b1f1354b47d.png)'
+  id: totrans-108
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/7f552044e81f2e6288c15b1f1354b47d.png)'
 - en: Fig. 9\. Illustration of the same permutation on $\mathbf{W}_1$ (axis 1) and
     $\mathbf{W}_2$ (axis 0) to keep the FFN layer's output unchanged. For simplicity,
     the bias terms are skipped but the same permutation should be applied on them
     too.
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 图9\. 展示了对$\mathbf{W}_1$（轴1）和$\mathbf{W}_2$（轴0）进行相同排列以保持FFN层输出不变。为简单起见，跳过了偏置项，但偏置项也应该进行相同排列。
 - en: To enforce N:M structured sparsity, let’s split the columns of one matrix into
     multiple slides of $M$ columns (named “stripe”) and we can easily observe that
     both the order of columns within each stripe and the order of stripes have no
     effect on the N:M sparsity restriction.
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了强制N:M结构稀疏性，让我们将一个矩阵的列分成多个包含$M$列的滑块（称为“条纹”），我们可以很容易地观察到每个条纹内列的顺序以及条纹的顺序对N:M稀疏性限制没有影响。
 - en: '[Pool & Yu (2021)](https://proceedings.neurips.cc/paper/2021/hash/6e8404c3b93a9527c8db241a1846599a-Abstract.html)
     proposed an iterative greedy algorithm to find optimal permutation that maximizes
     the weight magnitude for N:M sparsity. All pairs of channels are speculatively
@@ -602,154 +839,232 @@
     adopted, generating a new permutation and concluding a single iteration. Greedy
     algorithm may only find local minima, so they introduced two techniques to escape
     local minima:'
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Pool & Yu（2021）](https://proceedings.neurips.cc/paper/2021/hash/6e8404c3b93a9527c8db241a1846599a-Abstract.html)提出了一种迭代贪婪算法，以找到最大化N:M稀疏性权重幅度的最佳排列。所有通道对都被推测性地交换，只有导致幅度最大增加的交换被采纳，生成一个新排列并完成单次迭代。贪婪算法可能只找到局部最小值，因此他们引入了两种技术来避开局部最小值：'
 - en: 'Bounded regressions: In practice two random channels are swapped, up to a fixed
     number of times. The solution search is limited to a depth of only one channel
     swap to keep the search space broad and shallow.'
+  id: totrans-112
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 有界回归：在实践中，随机交换两个通道，最多固定次数。解决方案搜索仅限于一次通道交换的深度，以保持搜索空间广泛且浅显。
 - en: 'Narrow, deep search: Choose multiple stripes and optimize them at the same
     time.'
+  id: totrans-113
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 狭窄、深度搜索：选择多个条纹并同时优化它们。
 - en: '![](../Images/6201035d10a8d3208d2da4d89d9a03c0.png)'
+  id: totrans-114
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6201035d10a8d3208d2da4d89d9a03c0.png)'
 - en: 'Fig. 10\. Algorithm of finding the best permutation for N:M sparsity greedily
     and iteratively. (Image source: [Pool & Yu 2021](https://proceedings.neurips.cc/paper/2021/hash/6e8404c3b93a9527c8db241a1846599a-Abstract.html))'
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: 图10\. 贪婪迭代地寻找N:M稀疏性最佳排列的算法。（图片来源：[Pool & Yu 2021](https://proceedings.neurips.cc/paper/2021/hash/6e8404c3b93a9527c8db241a1846599a-Abstract.html)）
 - en: The network can achieve better performance if it was permuted before pruning,
     compared to pruning the network in its default channel order.
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果在剪枝之前对网络进行排列，网络可以实现更好的性能，与在其默认通道顺序中剪枝相比。
 - en: To train a model with N:M sparsity from scratch, [Zhou & Ma, et al. (2021)](https://arxiv.org/abs/2102.04010)
     extended STE (Straight-Through Estimator; [Bengio et al. 2013](https://arxiv.org/abs/1308.3432)),
     which is commonly used for back-propagation update in model quantization, to work
     for magnitude pruning and sparse parameter update.
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: 要从头开始训练一个具有N:M稀疏性的模型，[周和马等人（2021）](https://arxiv.org/abs/2102.04010)扩展了STE（直通估计器；[Bengio等人2013](https://arxiv.org/abs/1308.3432)），这在模型量化的反向传播更新中常用，以适用于幅度剪枝和稀疏参数更新。
 - en: 'STE computes the gradients of dense parameters wrt the pruned network $\widetilde{W}$,
     $\partial \mathcal{L}/\partial \widetilde{W}$, and applies that to the dense network
     $W$ as an approximation:'
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: STE计算密集参数相对于被剪枝网络$\widetilde{W}$的梯度，$\partial \mathcal{L}/\partial \widetilde{W}$，并将其应用于密集网络$W$作为近似：
 - en: $$ W_{t+1} \gets W_t - \gamma \frac{\partial\mathcal{L}}{\partial\widetilde{W}}
     $$
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ W_{t+1} \gets W_t - \gamma \frac{\partial\mathcal{L}}{\partial\widetilde{W}}
+    $$
 - en: 'The extended version, **SR-STE** (Sparse-refined STE), updates the dense weights
     $W$ by:'
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: 扩展版本**SR-STE**（稀疏精化STE）通过以下方式更新密集权重$W$：
 - en: $$ W_{t+1} \gets W_t - \gamma \frac{\partial\mathcal{L}}{\partial\widetilde{W}}
     + \lambda_W (\bar{\mathcal{E}} \odot W_t) $$ where $\bar{\mathcal{E}}$ is the
     mask matrix for $\widetilde{W}$ and $\odot$ is element-wise multiplication. SR-STE
     is proposed to prevent large change in the binary mask by (1) restricting the
     values of weights pruned in $\widetilde{W}_t$, and (2) promoting the non-pruned
     weights in $\widetilde{W}_t$.
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ W_{t+1} \gets W_t - \gamma \frac{\partial\mathcal{L}}{\partial\widetilde{W}}
+    + \lambda_W (\bar{\mathcal{E}} \odot W_t) $$ 其中 $\bar{\mathcal{E}}$ 是 $\widetilde{W}$
+    的掩码矩阵，$\odot$ 是逐元素乘法。SR-STE 旨在通过（1）限制 $\widetilde{W}_t$ 中被修剪的权重的值，以及（2）促进 $\widetilde{W}_t$
+    中未被修剪的权重，防止二进制掩码的大变化。
 - en: '![](../Images/c48d040c45d3faf10e894b208fe7a9ee.png)'
+  id: totrans-122
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c48d040c45d3faf10e894b208fe7a9ee.png)'
 - en: 'Fig. 11\. Comparison of STE and SR-STE. $\odot$ is element-wise product; $\otimes$
     is matrix multiplication. (Image source: [Zhou & Ma, et al. 2021](https://arxiv.org/abs/2102.04010))'
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 11\. STE 和 SR-STE 的比较。$\odot$ 是逐元素乘积；$\otimes$ 是矩阵乘法。（图片来源：[Zhou & Ma, et
+    al. 2021](https://arxiv.org/abs/2102.04010)）
 - en: Different from STE or SR-STE, the **Top-KAST** ([Jayakumar et al. 2021](https://arxiv.org/abs/2106.03517))
     method can preserve constant sparsity throughout training in both the forward
     and backward-passes but does not require forward passes with dense parameters
     or dense gradients.
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: 与 STE 或 SR-STE 不同，**Top-KAST**（[Jayakumar et al. 2021](https://arxiv.org/abs/2106.03517)）方法可以在前向和反向传播中保持恒定的稀疏性，但不需要具有稠密参数或稠密梯度的前向传播。
 - en: 'At one training step $t$, Top-KAST processes as follows:'
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: 在一个训练步骤 $t$ 中，Top-KAST 的处理方式如下：
 - en: '*Sparse forward pass*: Select a subset of parameters $A^t \subset \Theta$,
     containing top-$K$ parameters by magnitude by each layer, restricted to top $D$-proportion
     of weights. The parameterization $\alpha^t$ at time $t$ has parameters zeroed
     out if it is not in $A^t$ (active weights).'
+  id: totrans-126
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*稀疏前向传播*：选择参数子集 $A^t \subset \Theta$，每层按大小包含前 $K$ 个参数，限制在前 $D$ 比例的权重中。在时间 $t$
+    的参数化 $\alpha^t$ 中，如果不在 $A^t$ 中（活跃权重），则将参数归零。'
 - en: $$ \alpha^t_i = \begin{cases} \theta^t_i & \text{ if } i \in A^t = \{i \mid
     \theta^t_i \in \text{TopK}(\theta^t, D) \}\\ 0 & \text{ otherwise} \end{cases}
     $$
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \alpha^t_i = \begin{cases} \theta^t_i & \text{ if } i \in A^t = \{i \mid
+    \theta^t_i \in \text{TopK}(\theta^t, D) \}\\ 0 & \text{ otherwise} \end{cases}
+    $$
 - en: where $\text{TopK}(\theta, x)$ selected top $x$ proportion of weights from $\theta$
     based on magnitude.
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 $\text{TopK}(\theta, x)$ 从 $\theta$ 中基于大小选择前 $x$ 比例的权重。
 - en: '*Sparse backward pass*: Then apply gradients to a larger parameter subset $B
     \subset \Theta$ where $B$ contains $(D+M)$-proportion of weights and $A \subset
     B$. Updating a larger proportion of weights enables more effective exploration
     of different pruning masks, making it more likely to cause permutations in the
     top $D$-proportion active weights.'
+  id: totrans-129
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*稀疏反向传播*：然后将梯度应用于更大的参数子集 $B \subset \Theta$，其中 $B$ 包含 $(D+M)$ 比例的权重，$A \subset
+    B$。更新更大比例的权重能够更有效地探索不同的修剪掩码，更有可能导致前 $D$ 比例的活跃权重中的排列。'
 - en: $$ \Delta_{\theta^t_i} = \begin{cases} -\eta \nabla_{\alpha_t} \mathcal{L}(y,
     x, \alpha^t)_i & \text{ if } i\in B^t = \{i \mid \theta^t_i \in \text{TopK}(\theta^t,
     D+M) \} \\ 0 & \text{ otherwise } \end{cases} $$
+  id: totrans-130
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \Delta_{\theta^t_i} = \begin{cases} -\eta \nabla_{\alpha_t} \mathcal{L}(y,
+    x, \alpha^t)_i & \text{ if } i\in B^t = \{i \mid \theta^t_i \in \text{TopK}(\theta^t,
+    D+M) \} \\ 0 & \text{ otherwise } \end{cases} $$
 - en: Training is split into two stages and the additional coordinates in the set
     $B \setminus A$ controls how much exploration is brought in. The amount of exploration
     is expected to diminish gradually through the training process and the mask eventually
     stabilizes.
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
+  zh: 训练分为两个阶段，集合 $B \setminus A$ 中的额外坐标控制引入多少探索。预计探索量会逐渐减少，并且掩码最终会稳定下来。
 - en: '![](../Images/25fe93ad5b6a36fa095319a6119ac598.png)'
+  id: totrans-132
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/25fe93ad5b6a36fa095319a6119ac598.png)'
 - en: 'Fig. 12\. The pruning mask of Top-KAST stabilizes in time. (Image source: [Jayakumar
     et al. 2021](https://arxiv.org/abs/2106.03517))'
+  id: totrans-133
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 12\. Top-KAST 的修剪掩码随时间稳定。（图片来源：[Jayakumar et al. 2021](https://arxiv.org/abs/2106.03517)）
 - en: To prevent rich-get-richer phenomenon, Top-KAST penalizes the magnitude of active
     weights via a L2 regularization loss to encourage more exploration of new items.
     Parameters in $B \setminus A$ are penalized more than $A$ for a higher selection
     bar during updates to stabilize the mask.
+  id: totrans-134
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了防止富者愈富现象，Top-KAST通过L2正则化损失惩罚活跃权重的大小，以鼓励对新项目进行更多的探索。在更新过程中，$B \setminus A$
+    中的参数受到比 $A$ 更高的选择门槛的惩罚，以稳定掩码。
 - en: $$ L_\text{penalty}(\alpha^t_i) = \begin{cases} \vert \theta^t_i\vert & \text{
     if } i \in A^t \\ \vert \theta^t_i\vert / D & \text{ if } i \in B^t \setminus
     A^t \\ 0 & \text{ otherwise} \end{cases} $$
+  id: totrans-135
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ L_\text{penalty}(\alpha^t_i) = \begin{cases} \vert \theta^t_i\vert & \text{
+    if } i \in A^t \\ \vert \theta^t_i\vert / D & \text{ if } i \in B^t \setminus
+    A^t \\ 0 & \text{ otherwise} \end{cases} $$
 - en: Sparsified Transformer
+  id: totrans-136
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 稀疏化Transformer
 - en: '*Scaling Transformer* ([Jaszczur et al. 2021](https://arxiv.org/abs/2111.12763))
     sparsifies both self-attention and FFN layers in transformer architecture, achieving
     37x speedup for single-example inference.'
+  id: totrans-137
   prefs: []
   type: TYPE_NORMAL
+  zh: '*Scaling Transformer*（[Jaszczur等人，2021](https://arxiv.org/abs/2111.12763)）在transformer架构中稀疏化了自注意力和FFN层，实现了单个示例推理的37倍加速。'
 - en: '![](../Images/fdcae05c8e0aa6ac8ce88209b13e696d.png)'
+  id: totrans-138
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/fdcae05c8e0aa6ac8ce88209b13e696d.png)'
 - en: 'Fig. 13\. The speed of decoding a single token (unbatched inference) by a transformer
     model when sparsification is applied on different layers. (Image source: [Jaszczur
     et al. 2021](https://arxiv.org/abs/2111.12763))'
+  id: totrans-139
   prefs: []
   type: TYPE_NORMAL
+  zh: 图13\. 当在不同层应用稀疏化时，transformer模型解码单个标记（非批量推理）的速度。 (图片来源：[Jaszczur等人，2021](https://arxiv.org/abs/2111.12763))
 - en: '**Sparse FFN layer**: Each FFN layer contains 2 MLP and one ReLU in-between.
     Because ReLU will introduce a lot of zeros, they implement a fixed structure on
     activations to enforce only 1 non-zero value in one block of $N$ elements. The
     sparsity pattern is dynamic, different for each token.'
+  id: totrans-140
   prefs: []
   type: TYPE_NORMAL
+  zh: '**稀疏FFN层**：每个FFN层包含2个MLP和一个ReLU层。由于ReLU会引入大量零值，它们在激活上实现了一个固定的结构，以强制每个$N$元素块中只有1个非零值。稀疏模式是动态的，对于每个标记都不同。'
 - en: $$ \begin{aligned} Y_\text{sparse} &= \max(0, xW_1 + b_1) \odot \text{Controller}(x)
     \\ \text{SparseFFN}(x) &= Y_\text{sparse} W_2 + b_2 \\ \text{Controller}(x) &=
     \arg\max(\text{Reshape}(x C_1 C_2, (-1, N))) \end{aligned} $$
+  id: totrans-141
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} Y_\text{sparse} &= \max(0, xW_1 + b_1) \odot \text{Controller}(x)
+    \\ \text{SparseFFN}(x) &= Y_\text{sparse} W_2 + b_2 \\ \text{Controller}(x) &=
+    \arg\max(\text{Reshape}(x C_1 C_2, (-1, N))) \end{aligned} $$
 - en: where each activation in $Y_\text{sparse}$ corresponds to one column in $W_1$
     and one row in $W_2$. The controller is implemented as a low-rank bottleneck dense
     layer, $C_1 \in \mathbb{R}^{d_\text{model} \times d_\text{lowrank}}, C_2 \in \mathbb{R}^{d_\text{lowrank}
@@ -759,60 +1074,88 @@
     we can compute $\text{Controller}(x)$ before loading FFN weight matrices, we know
     which columns will be zeroed out and thus choose *not to load* them into memory
     for inference speedup.
+  id: totrans-142
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$Y_\text{sparse}$中的每个激活对应于$W_1$中的一列和$W_2$中的一行。控制器实现为一个低秩瓶颈密集层，$C_1 \in \mathbb{R}^{d_\text{model}
+    \times d_\text{lowrank}}, C_2 \in \mathbb{R}^{d_\text{lowrank} \times d_\text{ff}}$，$d_\text{lowrank}
+    = d_\text{model} / N$。在推理中，它使用$\arg\max$来选择哪些列应该是非零的，并在训练期间使用Gumbel-softmax技巧（[Jang等人，2016](https://arxiv.org/abs/1611.01144)）。因为我们可以在加载FFN权重矩阵之前计算$\text{Controller}(x)$，所以我们知道哪些列将被置零，因此选择*不加载*它们以加快推理速度。
 - en: '![](../Images/5f949562872fd0982691b85d0c21d37c.png)'
+  id: totrans-143
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/5f949562872fd0982691b85d0c21d37c.png)'
 - en: 'Fig. 14\. (a) Sparse FFN layer; columns in red are not loaded in memory for
     faster inference. (b) Sparse FFN controller for 1:4 sparsity. (Image source: [Jaszczur
     et al. 2021](https://arxiv.org/abs/2111.12763)) *Lilian''s side note*: Fig (a)
     in the illustration from the paper is actually $Y_\text{sparse} = \max\big(0,
     (xW_1 + b_1) \odot \text{Controller}(x)\big)$, but it doesn''t change the results.'
+  id: totrans-144
   prefs: []
   type: TYPE_NORMAL
+  zh: 图14\. (a) 稀疏FFN层；红色列在内存中未加载，以加快推理速度。 (b) 1:4稀疏FFN控制器。 (图片来源：[Jaszczur等人，2021](https://arxiv.org/abs/2111.12763))
+    *莉莲的侧记*：论文插图中的(a)实际上是$Y_\text{sparse} = \max\big(0, (xW_1 + b_1) \odot \text{Controller}(x)\big)$，但这并不改变结果。
 - en: '**Sparse QKV (attention) layer**: In the attention layer, the dimensionality
     $d_\text{model}$ is divided into $S$ modules, each of size $M=d_\text{model} /S$.
     To make sure each subdivision can access any part of the embedding, Scaling Transformer
     introduces a multiplicative layer (i.e., a multiplication layer multiplies inputs
     from multiple neural network layers element-wise) which can represent arbitrary
     permutation but contains fewer parameters than a dense layer.'
+  id: totrans-145
   prefs: []
   type: TYPE_NORMAL
+  zh: '**稀疏QKV（注意力）层**：在注意力层中，维度$d_\text{model}$被分成$S$个模块，每个大小为$M=d_\text{model} /S$。为了确保每个子分区都可以访问嵌入的任何部分，Scaling
+    Transformer引入了一个乘法层（即，一个乘法层逐元素地将来自多个神经网络层的输入相乘），它可以表示任意排列，但包含的参数比密集层少。'
 - en: 'Given an input vector $x \in \mathbb{R}^{d_\text{model}}$, the multiplicative
     layer outputs $y \in \mathbb{R}^{S \times M}$:'
+  id: totrans-146
   prefs: []
   type: TYPE_NORMAL
+  zh: 给定输入向量$x \in \mathbb{R}^{d_\text{model}}$，乘法层输出$y \in \mathbb{R}^{S \times M}$：
 - en: $$ y_{s,m} = \sum_i x_i D_{i,s} E_{i,m} \quad\text{where }D \in \mathbb{R}^{d_\text{model}
     \times S}, D \in \mathbb{R}^{d_\text{model} \times M} $$
+  id: totrans-147
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ y_{s,m} = \sum_i x_i D_{i,s} E_{i,m} \quad\text{其中 }D \in \mathbb{R}^{d_\text{model}
+    \times S}, D \in \mathbb{R}^{d_\text{model} \times M} $$
 - en: The output of the multiplicative layer is a tensor of size $\in \mathbb{R}^{\text{batch
     size}\times \text{length} \times S \times M}$. It then gets processed by a two-dimensional
     convolutional layer, where $\text{length}$ and $S$ are treated as the height and
     width of an image. Such a convolution layer further reduces the parameter count
     and computation time of attention layer.
+  id: totrans-148
   prefs: []
   type: TYPE_NORMAL
+  zh: 乘法层的输出是一个大小为$\in \mathbb{R}^{\text{批量大小}\times \text{长度} \times S \times M}$的张量。然后通过一个二维卷积层处理，其中$\text{长度}$和$S$被视为图像的高度和宽度。这样的卷积层进一步减少了注意力层的参数数量和计算时间。
 - en: '![](../Images/546997f555fcb662f035d86760caf224.png)'
+  id: totrans-149
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/546997f555fcb662f035d86760caf224.png)'
 - en: 'Fig. 15\. (a) A multiplicative layer is introduced to enable partitions to
     access any part of an embedding. (b) Combination of multiplicative dense layer
     and 2-D convolutional layer reduces the number of parameters and computation time
     of the attention layer. (Image source: [Jaszczur et al. 2021](https://arxiv.org/abs/2111.12763))'
+  id: totrans-150
   prefs: []
   type: TYPE_NORMAL
+  zh: 图15\. (a) 引入了一个乘法层，使分区可以访问嵌入的任何部分。 (b) 乘法密集层和二维卷积层的组合减少了注意力层的参数数量和计算时间。 (图片来源：[Jaszczur等人2021](https://arxiv.org/abs/2111.12763))
 - en: To better work with long sequences, Scaling Transformer is further equipped
     with LSH (locality-sensitive hashing) attention from [Reformer](https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/#locality-sensitive-hashing-reformer)
     ([Kitaev, et al. 2020](https://arxiv.org/abs/2001.04451)) and FFN block recurrence,
     resulting in *Terraformer*.
+  id: totrans-151
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了更好地处理长序列，Scaling Transformer 进一步配备了来自[Reformer](https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/#locality-sensitive-hashing-reformer)（[Kitaev,
+    et al. 2020](https://arxiv.org/abs/2001.04451)）的LSH（局部敏感哈希）注意力和FFN块的循环，从而形成*Terraformer*。
 - en: Mixture-of-Experts
+  id: totrans-152
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 专家混合
 - en: Mixture-of-experts (MoE) models depend on a collection of “expert” networks
     and each example only activates a subset of networks to get predictions. The idea
     originated back to the 1990s ([Jacobs et al. 1991](https://www.cs.toronto.edu/~hinton/absps/jjnh91.pdf))
@@ -820,42 +1163,57 @@
     MoE module into transformer, please check my [previous post on large model training
     techniques](https://lilianweng.github.io/posts/2021-09-25-train-large/) and a
     survey paper on MoE by [Fedus et al. 2022](https://arxiv.org/abs/2209.01667).
+  id: totrans-153
   prefs: []
   type: TYPE_NORMAL
+  zh: 混合专家（MoE）模型依赖于一组“专家”网络，每个示例仅激活一部分网络以进行预测。这个想法最早可以追溯到上世纪90年代（[Jacobs et al. 1991](https://www.cs.toronto.edu/~hinton/absps/jjnh91.pdf)），与集成方法密切相关。有关如何将MoE模块整合到Transformer中的详细信息，请查看我的[关于大型模型训练技术的先前文章](https://lilianweng.github.io/posts/2021-09-25-train-large/)以及[Fedus等人2022年的MoE综述论文](https://arxiv.org/abs/2209.01667)。
 - en: 'With MoE architecture, only partial parameters are utilized at decoding time
     and therefore it saves inference cost. The capacity of each expert can be adjusted
     with a hyperparameter, capacity factor $C$, and the expert capacity is defined
     as:'
+  id: totrans-154
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用MoE架构，解码时仅利用部分参数，因此节省了推理成本。每个专家的容量可以通过超参数，容量因子$C$进行调整，专家容量定义为：
 - en: '$$ \text{Expert capacity} = \text{round}(C \cdot k \cdot \frac{\text{total
     # tokens in one batch}}{\text{# experts}}) $$'
+  id: totrans-155
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \text{专家容量} = \text{round}(C \cdot k \cdot \frac{\text{一个批次中的总标记数}}{\text{#
+    专家}}) $$
 - en: where top-$k$ experts are selected per token. Larger $C$ leads to higher expert
     capacity and improved performance but more expensive computationally. When $C>1$,
     a slack capacity is added; otherwise, when $C<1$, the routing network needs to
     ignore some tokens.
+  id: totrans-156
   prefs: []
   type: TYPE_NORMAL
+  zh: 每个标记选择前$k$个专家。较大的$C$会导致更高的专家容量和更好的性能，但计算成本更高。当$C>1$时，会添加一定的松弛容量；否则，当$C<1$时，路由网络需要忽略一些标记。
 - en: Routing Strategy Improvement
+  id: totrans-157
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 路由策略改进
 - en: MoE layer has a routing network to assign a subset of experts for each input
     token. The routing strategy in vanilla MoE models is to route each token toward
     preferred experts differently as they come up in the natural order. If a token
     is routed to experts that have reached their capacity, the token would be marked
     *“overflowed” and skipped*.
+  id: totrans-158
   prefs: []
   type: TYPE_NORMAL
+  zh: MoE层具有一个路由网络，为每个输入标记分配一组专家。香草MoE模型中的路由策略是根据自然顺序将每个标记路由到不同的首选专家。如果一个标记被路由到已达到容量的专家，该标记将被标记为*“溢出”并跳过*。
 - en: '**V-MoE** (Vision MoE; [Riquelme et al. 2021](https://arxiv.org/abs/2106.05974))
     adds MoE layers into ViT (Vision Transformer). It matches the performance of previous
     SoTA but only requires *half* of inference compute. V-MoE can be scaled up to
     15B parameters. Their experiments used $k=2$, 32 experts and every-2 expert placement
     (meaning that MoEs are placed in every other layer).'
+  id: totrans-159
   prefs: []
   type: TYPE_NORMAL
+  zh: '**V-MoE**（视觉MoE；[Riquelme等人，2021](https://arxiv.org/abs/2106.05974)）将MoE层添加到ViT（视觉Transformer）中。它与先前的最先进技术性能相匹配，但只需要*一半*的推理计算。V-MoE可以扩展到15B参数。他们的实验使用了$k=2$，32个专家和每2个专家放置一次（这意味着MoE层放置在每隔一层）。'
 - en: Since each expert has a limited capacity, some important and informative tokens
     may have to be discarded if they come up too late in the predefined sequence order
     (e.g. the order of words in a sentence, or the order of image patches). To avoid
@@ -864,32 +1222,44 @@
     a priority score (max or sum of top-$k$ router scores) per token before expert
     assignment and alters the order of tokens accordingly. This guarantees that the
     expert capacity buffer would be fulfilled with key tokens first.
+  id: totrans-160
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于每个专家的容量有限，如果一些重要且信息丰富的标记出现得太晚（例如句子中的单词顺序或图像块的顺序），则可能不得不丢弃它们。为了避免在普通路由方案中出现这种缺点，V-MoE采用**BPR（批量优先路由）**来首先为具有高优先级分数的标记分配专家。BPR在专家分配之前为每个标记计算优先级分数（路由器分数的最大值或前$k$个的总和），并相应地改变标记的顺序。这确保了专家容量缓冲区首先填满关键标记。
 - en: '![](../Images/c063b58b528994fd5ab986e8a0fed8b2.png)'
+  id: totrans-161
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c063b58b528994fd5ab986e8a0fed8b2.png)'
 - en: 'Fig. 16\. How image patches are discarded according to priority scores when
     $C < 1$. (Image source: [Riquelme et al. 2021](https://arxiv.org/abs/2106.05974))'
+  id: totrans-162
   prefs: []
   type: TYPE_NORMAL
+  zh: 图16。当$C < 1$时，根据优先级分数丢弃图像块的方式。（图片来源：[Riquelme等人，2021](https://arxiv.org/abs/2106.05974)）
 - en: BPR works much better than vanilla routing when $C\leq 0.5$, where the model
     starts dropping a significant amount of tokens. It capacitates the model to be
     competitive with the dense network even at quite low capacities.
+  id: totrans-163
   prefs: []
   type: TYPE_NORMAL
+  zh: 当$C\leq 0.5$时，BPR比普通路由效果要好得多，模型开始丢弃大量标记。即使在非常低的容量下，它也使模型能够与密集网络竞争。
 - en: When looking into how to interpret image class-expert association, they observed
     that early MoE layers are more general, while later MoE layers could be specialized
     for a few image classes.
+  id: totrans-164
   prefs: []
   type: TYPE_NORMAL
+  zh: 当研究如何解释图像类别专家关联时，他们观察到早期的MoE层更为通用，而后期的MoE层可能会专门针对少数图像类别。
 - en: '**Task MoE** (Task-level Mixture-of-Experts; [Kudugunta et al. 2021](https://arxiv.org/abs/2110.03742)
     ) takes the task information into consideration and routes tokens at the *task*
     level instead of the word or token level for machine translation. They used MNMT
     (multilingual neural machine translation) as an example and group translation
     tasks based on the target language or language pairs.'
+  id: totrans-165
   prefs: []
   type: TYPE_NORMAL
+  zh: '**任务MoE**（任务级混合专家；[Kudugunta等人，2021](https://arxiv.org/abs/2110.03742)）考虑了任务信息，并在机器翻译的*任务*级别而不是单词或标记级别上路由标记。他们以MNMT（多语言神经机器翻译）为例，并根据目标语言或语言对对翻译任务进行分组。'
 - en: Token level routing is dynamic and the routing decision for each token is made
     disjointly. Hence, at inference time, the server needs to preload all the experts.
     In comparison, task level routing is *static* given a fixed task, so the inference
@@ -897,32 +1267,44 @@
     According to their experiments, Task MoE can achieve similar performance gain
     as token MoE compared to dense model baseline with 2.6x higher peak throughput
     and 1.6% of the decoder size.
+  id: totrans-166
   prefs: []
   type: TYPE_NORMAL
+  zh: 标记级别的路由是动态的，每个标记的路由决策是独立进行的。因此，在推理时，服务器需要预加载所有专家。相比之下，任务级别的路由是*静态*的，给定一个固定的任务，因此一个任务的推理服务器只需要预加载$k$个专家（假设是前$k$个路由）。根据他们的实验，与密集模型基线相比，任务MoE可以实现类似的性能提升，具有2.6倍更高的峰值吞吐量和1.6%的解码器大小。
 - en: Task level MoE is essentially to categorize a distribution of tasks according
     to predefined *heuristics* and incorporate such human knowledge into the router.
     When such heuristics do not exist (e.g. consider a general sentence continuation
     task), it would not be straightforward how to utilize Task MoE.
+  id: totrans-167
   prefs: []
   type: TYPE_NORMAL
+  zh: 任务级MoE基本上是根据预定义的*启发式*对任务分布进行分类，并将这种人类知识纳入路由器中。当这样的启发式不存在时（例如考虑一个通用的句子续写任务），如何利用任务MoE就不那么直接了。
 - en: '**PR-MoE** (Pyramid residual MoE; [Rajbhandari et al. 2022](https://arxiv.org/abs/2201.05596))
     has each token pass one fixed MLP and one chosen expert. Due to the observation
     that MoE at later layers is more beneficial, PR-MoE adopts more exports at later
     layers. DeepSpeed library implements a flexible multi-expert, multi-data parallelism
     to enable training PR-MoE with different numbers of experts across layers.'
+  id: totrans-168
   prefs: []
   type: TYPE_NORMAL
+  zh: '**PR-MoE**（金字塔残差MoE；[Rajbhandari等人，2022](https://arxiv.org/abs/2201.05596)）使每个标记通过一个固定的MLP和一个选择的专家。由于观察到后续层的MoE更有益，PR-MoE在后续层采用更多的专家。DeepSpeed库实现了灵活的多专家、多数据并行，以便在不同层次上训练具有不同专家数量的PR-MoE。'
 - en: '![](../Images/103ff0dc26f6bcc7f8ed0067b9b49f4f.png)'
+  id: totrans-169
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/103ff0dc26f6bcc7f8ed0067b9b49f4f.png)'
 - en: 'Fig. 17\. Illustration of PR-MoE architecture in comparison with a standard
     MoE. (Image source: [Rajbhandari et al. 2022](https://arxiv.org/abs/2201.05596))'
+  id: totrans-170
   prefs: []
   type: TYPE_NORMAL
+  zh: 图17. PR-MoE架构与标准MoE的比较示意图（图片来源：[Rajbhandari等人，2022](https://arxiv.org/abs/2201.05596)）
 - en: Kernel Improvement
+  id: totrans-171
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 内核改进
 - en: Expert networks can be hosted on different devices. However, when the number
     of GPUs increases, the number of experts per GPU decreases and the communication
     between experts (“All-to-all”) grows to be more expensive. All-to-all communication
@@ -932,8 +1314,11 @@
     all-to-all algorithm performs poorly at large scale with a small workload. There
     are a variety of kernel improvements to enable more efficient MoE computation,
     such as making all-to-all communication cheaper/faster.
+  id: totrans-172
   prefs: []
   type: TYPE_NORMAL
+  zh: 专家网络可以托管在不同的设备上。然而，当GPU数量增加时，每个GPU上的专家数量减少，专家之间的通信（“全对全”）变得更加昂贵。跨多个GPU之间的全对全通信依赖于NCCL的P2P
+    API，这在大规模上无法饱和高速链接的带宽（例如NVLink、HDR InfiniBand），因为随着使用更多节点，单个块变得更小。现有的全对全算法在大规模和小工作负载下表现不佳。有各种内核改进可以实现更高效的MoE计算，例如使全对全通信更便宜/更快。
 - en: Both the *DeepSpeed* library ([Rajbhandari et al. 2022](https://arxiv.org/abs/2201.05596))
     and TUTEL ([Hwang et al. 2022](https://arxiv.org/abs/2206.03382)) implemented
     a tree-based **hierarchical all-to-all** algorithm, which runs an intra-node all-to-all
@@ -943,8 +1328,11 @@
     volume is doubled in such implementation, it enables better scaling with small
     batches at large scale as the bottleneck is on latency instead of communication
     bandwidth when the batch size is small.
+  id: totrans-173
   prefs: []
   type: TYPE_NORMAL
+  zh: '*DeepSpeed*库（[Rajbhandari等人，2022](https://arxiv.org/abs/2201.05596)）和TUTEL（[Hwang等人，2022](https://arxiv.org/abs/2206.03382)）都实现了基于树的**分层全对全**算法，该算法运行节点内全对全，然后是节点间全对全。它将通信跳数从$O(G)$减少到$O(G_\text{node}
+    + G / G_\text{node})$，其中$G$是GPU节点的总数，$G_\text{node}$是每个节点的GPU核心数。尽管在这种实现中通信量翻倍，但它能够更好地扩展大规模下的小批量，因为瓶颈在于小批量时延迟而不是通信带宽。'
 - en: '*DynaMoE* ([Kossmann et al. 2022](https://arxiv.org/abs/2205.01848)) uses **dynamic
     recompilation** to adapt the computational resources to dynamic workloads among
     experts. The `RECOMPILE` mechanism compiles the computation graph from scratch
@@ -954,347 +1342,529 @@
     that sample-expert assignments converge early in training, *sample assignment
     caching* is introduced after convergence and then `RECOMPILE` is used to eliminate
     the dependency between the gating network and experts.'
+  id: totrans-174
   prefs: []
   type: TYPE_NORMAL
+  zh: '*DynaMoE*（[Kossmann等人，2022](https://arxiv.org/abs/2205.01848)）使用**动态重新编译**来适应专家之间的动态工作负载。`RECOMPILE`机制从头开始编译计算图，并且只在需要时重新分配资源。它测量每个专家分配了多少样本，并动态调整它们的容量因子$C$，以减少运行时的内存和计算需求。基于观察到样本-专家分配在训练早期就会收敛，*样本分配缓存*在收敛后引入，然后使用`RECOMPILE`来消除门控网络和专家之间的依赖关系。'
 - en: Architectural Optimization
+  id: totrans-175
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 架构优化
 - en: The survey paper on *Efficient Transformers* ([Tay et al. 2020](https://arxiv.org/abs/2009.06732))
     reviewed a collection of new transformer architectures with improvement for better
     *computational and memory efficiency*. Strongly recommend a read. You can also
     check out my post [“The Transformer Family Version 2.0”](https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/)
     for introduction to a diverse set of transformer archiecture improvements in depth,
     including changes to make the model cheaper to run.
+  id: totrans-176
   prefs: []
   type: TYPE_NORMAL
+  zh: 有关*高效Transformer*的调查论文（[Tay et al. 2020](https://arxiv.org/abs/2009.06732)）审查了一系列新的Transformer架构，改进了更好的*计算和内存效率*。强烈推荐阅读。您还可以查看我的帖子[“Transformer家族2.0版”](https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/)，深入介绍了一系列Transformer架构改进，包括使模型更便宜运行的变化。
 - en: '![](../Images/064852b2a370a12b8495168c9ddc6f3d.png)'
+  id: totrans-177
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/064852b2a370a12b8495168c9ddc6f3d.png)'
 - en: Fig. 18\. Categorization of efficient transformer models.
+  id: totrans-178
   prefs: []
   type: TYPE_NORMAL
+  zh: 第18图。高效Transformer模型的分类。
 - en: '(Image source: [Tay et al. 2020](https://arxiv.org/abs/2009.06732))'
+  id: totrans-179
   prefs: []
   type: TYPE_NORMAL
+  zh: （图片来源：[Tay et al. 2020](https://arxiv.org/abs/2009.06732)）
 - en: Since the self-attention mechanism has quadratic time and memory complexity
     and that is the main bottleneck for better transformer decoding efficiency, all
     the efficient transformer models have applied some form of sparsity to the otherwise
     dense attention layer. Here only lists a high-level overview, several derived
     from [Tay et al. 2020](https://arxiv.org/abs/2009.06732).
+  id: totrans-180
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于自注意力机制具有二次时间和内存复杂度，这是提高Transformer解码效率的主要瓶颈，所有高效Transformer模型都对原本密集的注意力层应用了某种形式的稀疏性。这里仅列出一个高层次概述，其中几个源自[Tay
+    et al. 2020](https://arxiv.org/abs/2009.06732)。
 - en: Sparse Attention Patterns
+  id: totrans-181
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 稀疏注意力模式
 - en: '*Fixed Patterns* limit the field of view for the attention matrix, using predefined,
     fixed patterns.'
+  id: totrans-182
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*固定模式*限制了注意力矩阵的视野，使用预定义的固定模式。'
 - en: Chunk input sequences into fixed blocks, such as [Blockwise Attention](https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/##strided-context);
+  id: totrans-183
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 将输入序列分块成固定块，例如[Blockwise Attention](https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/##strided-context)；
 - en: '[Image Transformer](https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/##fixed-local-context)
     uses local attention;'
+  id: totrans-184
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[Image Transformer](https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/##fixed-local-context)使用局部注意力；'
 - en: '[Sparse Transformer](https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/##strided-context)
     uses strided attention patterns.'
+  id: totrans-185
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[Sparse Transformer](https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/##strided-context)使用跨步注意力模式。'
 - en: '*Combined Patterns* learn to sort/cluster the input tokens - enabling a more
     optimal global view of the sequence while maintaining the efficiency benefits
     of fixed patterns.'
+  id: totrans-186
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*组合模式*学习对输入标记进行排序/聚类-实现序列的更优全局视图，同时保持固定模式的效率优势。'
 - en: '[Sparse Transformer](https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/#sparse-attention-matrix-factorization-sparse-transformers)
     combines strided and local attention;'
+  id: totrans-187
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[Sparse Transformer](https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/#sparse-attention-matrix-factorization-sparse-transformers)结合了跨步和局部注意力；'
 - en: Given a high dimensional input tensor, instead of applying attention to the
     flattened version of the input, [Axial Transformer](https://arxiv.org/abs/1912.12180)
     applies multiple attentions, each along a single axis of the input tensor.
+  id: totrans-188
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 给定高维输入张量，而不是对输入的扁平化版本应用注意力，[Axial Transformer](https://arxiv.org/abs/1912.12180)应用多个注意力，每个沿着输入张量的一个轴。
 - en: '[ETC, Longformer and Big Bird](https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/#combination-of-local-and-global-context)
     combines local and global context, as well as strided or random attention.'
+  id: totrans-189
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[ETC、Longformer和Big Bird](https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/#combination-of-local-and-global-context)结合了局部和全局上下文，以及跨步或随机注意力。'
 - en: '*Learnable Patterns* identify the optimal attention pattern via learning.'
+  id: totrans-190
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*可学习模式*通过学习确定最佳注意力模式。'
 - en: '[Reformer](https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/#content-based-attention)
     clusters tokens into clusters based on hash-based similarity (LSH);'
+  id: totrans-191
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[Reformer](https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/#content-based-attention)根据基于哈希相似性（LSH）将标记聚类到簇中；'
 - en: '[Routing Transformer](https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/#content-based-attention)
     runs $k$-means clustering on tokens;'
+  id: totrans-192
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[Routing Transformer](https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/#content-based-attention)在标记上运行$k$-means聚类；'
 - en: '[Sinkhorn Sorting Network](https://arxiv.org/abs/2002.11296) learns to sort
     blocks of input sequence.'
+  id: totrans-193
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[Sinkhorn Sorting Network](https://arxiv.org/abs/2002.11296)学习对输入序列的块进行排序。'
 - en: Recurrence
+  id: totrans-194
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 循环
 - en: Recurrence mechanism connects multiple blocks/segments via recurrence.
+  id: totrans-195
   prefs: []
   type: TYPE_NORMAL
+  zh: 递归机制通过递归连接多个块/段。
 - en: '[Transformer-XL](https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/#context-memory)
     makes use of longer context by reusing hidden states between segments.'
+  id: totrans-196
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[Transformer-XL](https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/#context-memory)通过在段之间重用隐藏状态来利用更长的上下文。'
 - en: '[Universal Transformer](https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/#make-it-recurrent)
     combines self-attention with the recurrent mechanism in RNN.'
+  id: totrans-197
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[通用变压器](https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/#make-it-recurrent)将自注意机制与RNN中的递归机制结合在一起。'
 - en: '[Compressive Transformer](https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/#context-memory)
     is an extension of Transformer-XL with additional memory, containing a set of
     memory slots for past activiations and compressive memory slots for compressed
     activations. Whenever the model accepts a new input segment, the oldest activations
     in the primary memory are moved to the compressed memory where a compression function
     is applied.'
+  id: totrans-198
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[压缩变压器](https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/#context-memory)是Transformer-XL的扩展，具有额外的记忆，包含一组用于过去激活的记忆槽和用于压缩激活的压缩记忆槽。每当模型接受新的输入段时，主要记忆中最老的激活被移动到压缩记忆中，其中应用了压缩函数。'
 - en: Memory Saving Designs
+  id: totrans-199
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 节省内存设计
 - en: Memory saving designs refer to changes of the architecture to use less memory.
+  id: totrans-200
   prefs: []
   type: TYPE_NORMAL
+  zh: 节省内存设计指的是对架构的更改，以使用更少的内存。
 - en: '[Linformer](https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/#low-rank-attention)
     projects the length dimension of keys and values to a lower-dimensional representation
     ($N \to k$) and thus the memory complexity is reduced from $N \times N$ to $N
     \times k$.'
+  id: totrans-201
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[Linformer](https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/#low-rank-attention)将键和值的长度维度投影到较低维度表示（$N
+    \to k$），因此内存复杂度从$N \times N$减少到$N \times k$。'
 - en: '[Shazeer (2019)](https://arxiv.org/abs/1911.02150) proposed *multi-query attention*
     which has the keys and values shared across different attention “heads”, greatly
     reducing the size of these tensors and the memory cost.'
+  id: totrans-202
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[Shazeer (2019)](https://arxiv.org/abs/1911.02150)提出了*多查询注意力*，其键和值在不同注意力“头”之间共享，大大减少了这些张量的大小和内存成本。'
 - en: '[Random feature attention and Performer](https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/#low-rank-attention)
     use [kernel methods]((https://lilianweng.github.io/posts/2022-09-08-ntk/#kernel--kernel-methods))
     to achieve a cheaper mathematical format of the self-attention mechanism.'
+  id: totrans-203
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[随机特征注意力和表演者](https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/#low-rank-attention)使用[核方法]((https://lilianweng.github.io/posts/2022-09-08-ntk/#kernel--kernel-methods))来实现自注意机制的更便宜的数学格式。'
 - en: Adaptive Attention
+  id: totrans-204
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 自适应注意力
 - en: '*Adaptive attention* enables the model to learn the optimal attention span
     or decide on when to do early exiting for different input tokens.'
+  id: totrans-205
   prefs: []
   type: TYPE_NORMAL
+  zh: '*自适应注意力*使模型能够学习每个输入令牌的最佳注意跨度或决定何时对不同输入令牌进行早期退出。'
 - en: '[Adaptive Attention Span](https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/#adaptive-attention-span)
     trains the model to learn the optimal attention span per token per head via a
     soft mask between the token and other keys.'
+  id: totrans-206
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[自适应注意跨度](https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/#adaptive-attention-span)训练模型通过令牌和其他键之间的软掩码学习每个令牌每个头的最佳注意跨度。'
 - en: '[Universal Transformer](https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/#make-it-recurrent)
     incorporates recurrent mechanism and uses [ACT (Adaptive computation time)](https://lilianweng.github.io/posts/2020-04-07-the-transformer-family/#adaptive-computation-time-act)
     to dynamically decide the number of recurrent steps.'
+  id: totrans-207
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[通用变压器](https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/#make-it-recurrent)结合了递归机制，并使用[ACT（自适应计算时间）](https://lilianweng.github.io/posts/2020-04-07-the-transformer-family/#adaptive-computation-time-act)动态决定递归步数。'
 - en: '[Depth-Adaptive Transformer and CALM](https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/#depth-adaptive-transformer)
     learns when to early exit the computation layers per token using some confidence
     measures to achieve good performance-efficiency tradeoffs.'
+  id: totrans-208
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[深度自适应变压器和CALM](https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/#depth-adaptive-transformer)学习何时根据一些置信度度量来提前退出每个令牌的计算层，以实现良好的性能效率权衡。'
 - en: Citation
+  id: totrans-209
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 引用
 - en: 'Cited as:'
+  id: totrans-210
   prefs: []
   type: TYPE_NORMAL
+  zh: '被引用为:'
 - en: Weng, Lilian. (Jan 2023). Large Transformer Model Inference Optimization. Lil’Log.
     https://lilianweng.github.io/posts/2023-01-10-inference-optimization/.
+  id: totrans-211
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 翁，莉莲。 (2023年1月)。大型变压器模型推理优化。Lil’Log。https://lilianweng.github.io/posts/2023-01-10-inference-optimization/.
 - en: Or
+  id: totrans-212
   prefs: []
   type: TYPE_NORMAL
+  zh: 或
 - en: '[PRE0]'
+  id: totrans-213
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: References
+  id: totrans-214
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: '[1] Bondarenko et al. [“Understanding and overcoming the challenges of efficient
     transformer quantization”](https://arxiv.org/abs/2109.12948) ACL 2021.'
+  id: totrans-215
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] Bondarenko等人 [“理解和克服高效Transformer量化的挑战”](https://arxiv.org/abs/2109.12948)
+    ACL 2021.'
 - en: '[2] Dettmers et al. [“LLM.int8(): 8-bit Matrix Multiplication for Transformers
     at Scale”](https://arxiv.org/abs/2208.07339) NeuriPS 2022'
+  id: totrans-216
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] Dettmers等人 [“LLM.int8(): 用于规模化Transformer的8位矩阵乘法”](https://arxiv.org/abs/2208.07339)
+    NeuriPS 2022'
 - en: '[3] Zadeh et al. [“Gobo: Quantizing attention-based NLP models for low latency
     and energy efficient inference.”](https://arxiv.org/abs/2005.03842) MICRO 2020'
+  id: totrans-217
   prefs: []
   type: TYPE_NORMAL
+  zh: '[3] Zadeh等人 [“Gobo：为低延迟和高能效推理量化基于注意力的NLP模型。”](https://arxiv.org/abs/2005.03842)
+    MICRO 2020'
 - en: '[4] Shen, Dong & Ye, et al. [“Q-BERT: Hessian based ultra low precision quantization
     of BERT”](https://arxiv.org/abs/1909.05840) AAAI 2020.'
+  id: totrans-218
   prefs: []
   type: TYPE_NORMAL
+  zh: '[4] 沈，董 & 叶等人 [“Q-BERT：基于Hessian的BERT超低精度量化”](https://arxiv.org/abs/1909.05840)
+    AAAI 2020.'
 - en: '[5] Yao et al. [“ZeroQuant: Efficient and affordable post-training quantization
     for large-scale transformers”](https://arxiv.org/abs/2206.01861) arXiv preprint
     arXiv:2206.01861 (2022).'
+  id: totrans-219
   prefs: []
   type: TYPE_NORMAL
+  zh: '[5] 姚等人 [“ZeroQuant：大规模Transformer的高效且经济实惠的训练后量化”](https://arxiv.org/abs/2206.01861)
+    arXiv预印本 arXiv:2206.01861 (2022).'
 - en: '[6] Frantar et al. [“GPTQ: Accurate Quantization for Generative Pre-trained
     Transformers”](https://arxiv.org/abs/2210.17323) arXiv preprint arXiv:2210.17323
     (2022).'
+  id: totrans-220
   prefs: []
   type: TYPE_NORMAL
+  zh: '[6] Frantar等人 [“GPTQ：用于生成式预训练Transformer的准确量化”](https://arxiv.org/abs/2210.17323)
+    arXiv预印本 arXiv:2210.17323 (2022).'
 - en: '[7] Xiao & Lin [“SmoothQuant: Accelerated sparse neural training: A provable
     and efficient method to find N:M transposable masks.”](https://arxiv.org/abs/2211.10438)
     arXiv preprint arXiv:2211.10438 (2022). | [code](https://github.com/mit-han-lab/smoothquant)'
+  id: totrans-221
   prefs: []
   type: TYPE_NORMAL
+  zh: '[7] 肖 & 林 [“SmoothQuant：加速稀疏神经训练：一种可证明且高效的方法来找到N:M可转置掩码。”](https://arxiv.org/abs/2211.10438)
+    arXiv预印本 arXiv:2211.10438 (2022). | [code](https://github.com/mit-han-lab/smoothquant)'
 - en: '[8] Pool & Yu. [“Channel Permutations for N:M Sparsity.”](https://proceedings.neurips.cc/paper/2021/hash/6e8404c3b93a9527c8db241a1846599a-Abstract.html)
     NeuriPS 2021\. | [code](https://github.com/NVIDIA/apex/tree/master/apex/contrib/sparsity)'
+  id: totrans-222
   prefs: []
   type: TYPE_NORMAL
+  zh: '[8] Pool & 余 [“通道置换用于N:M稀疏性。”](https://proceedings.neurips.cc/paper/2021/hash/6e8404c3b93a9527c8db241a1846599a-Abstract.html)
+    NeuriPS 2021\. | [code](https://github.com/NVIDIA/apex/tree/master/apex/contrib/sparsity)'
 - en: '[9] Zhou & Ma, et al. [“Learning N:M fine-grained structured sparse neural
     networks from scratch.”](https://arxiv.org/abs/2102.04010) arXiv preprint arXiv:2102.04010
     (2021).'
+  id: totrans-223
   prefs: []
   type: TYPE_NORMAL
+  zh: '[9] 周 & 马等人 [“从头开始学习N:M细粒度结构稀疏神经网络。”](https://arxiv.org/abs/2102.04010) arXiv预印本
+    arXiv:2102.04010 (2021).'
 - en: '[10] Jayakumar et al. [“Top-KAST: Top-K Always Sparse Training.”](https://arxiv.org/abs/2106.03517)
     NeuriPS 2020.'
+  id: totrans-224
   prefs: []
   type: TYPE_NORMAL
+  zh: '[10] Jayakumar等人 [“Top-KAST：始终稀疏的Top-K训练。”](https://arxiv.org/abs/2106.03517)
+    NeuriPS 2020.'
 - en: '[11] Nvidia. [“Nvidia A100 tensor core GPU architecture.”](https://images.nvidia.com/aem-dam/en-zz/Solutions/data-center/nvidia-ampere-architecture-whitepaper.pdf)
     2020.'
+  id: totrans-225
   prefs: []
   type: TYPE_NORMAL
+  zh: '[11] Nvidia [“Nvidia A100张量核GPU架构。”](https://images.nvidia.com/aem-dam/en-zz/Solutions/data-center/nvidia-ampere-architecture-whitepaper.pdf)
+    2020.'
 - en: '[12] Gale, Elsen & Hooker [“The State of Sparsity in Deep Neural Networks.”](https://arxiv.org/abs/1902.09574)
     arXiv preprint arXiv:1902.09574 (2019).'
+  id: totrans-226
   prefs: []
   type: TYPE_NORMAL
+  zh: '[12] 盖尔，埃尔森 & 胡克 [“深度神经网络中稀疏性的现状。”](https://arxiv.org/abs/1902.09574) arXiv预印本
+    arXiv:1902.09574 (2019).'
 - en: '[13] Zhu & Gupta. [“To Prune, or Not to Prune: Exploring the Efficacy of Pruning
     for Model Compression.”](https://arxiv.org/abs/1710.01878) arXiv preprint arXiv:1710.01878
     (2017).'
+  id: totrans-227
   prefs: []
   type: TYPE_NORMAL
+  zh: '[13] 朱 & 古普塔 [“剪枝还是不剪枝：探索模型压缩的有效性。”](https://arxiv.org/abs/1710.01878) arXiv预印本
+    arXiv:1710.01878 (2017).'
 - en: '[14] Renda et al. [“Comparing rewinding and fine-tuning in neural network pruning.”](https://arxiv.org/abs/2003.02389)
     arXiv preprint arXiv:2003.02389 (2020).'
+  id: totrans-228
   prefs: []
   type: TYPE_NORMAL
+  zh: '[14] Renda等人 [“神经网络剪枝中比较重绕和微调。”](https://arxiv.org/abs/2003.02389) arXiv预印本
+    arXiv:2003.02389 (2020).'
 - en: '[15] Zhou & Ma, et al. [“Learning N:M fine-grained structured sparse neural
     networks from scratch.”](https://arxiv.org/abs/2102.04010) arXiv preprint arXiv:2102.04010
     (2021).'
+  id: totrans-229
   prefs: []
   type: TYPE_NORMAL
+  zh: '[15] 周 & 马等人 [“从头开始学习N:M细粒度结构稀疏神经网络。”](https://arxiv.org/abs/2102.04010) arXiv预印本
+    arXiv:2102.04010 (2021).'
 - en: '[16] Pool & Yu. [“Channel Permutations for N:M Sparsity.”](https://proceedings.neurips.cc/paper/2021/hash/6e8404c3b93a9527c8db241a1846599a-Abstract.html)
     NeuriPS 2021\. | [code](https://github.com/NVIDIA/apex/tree/master/apex/contrib/sparsity)'
+  id: totrans-230
   prefs: []
   type: TYPE_NORMAL
+  zh: '[16] Pool & 余 [“通道置换用于N:M稀疏性。”](https://proceedings.neurips.cc/paper/2021/hash/6e8404c3b93a9527c8db241a1846599a-Abstract.html)
+    NeuriPS 2021\. | [code](https://github.com/NVIDIA/apex/tree/master/apex/contrib/sparsity)'
 - en: '[17] Jaszczur et al. [“Sparse is Enough in Scaling Transformers.”](https://arxiv.org/abs/2111.12763)
     NeuriPS 2021.'
+  id: totrans-231
   prefs: []
   type: TYPE_NORMAL
+  zh: '[17] Jaszczur等人 [“在扩展Transformer中稀疏就足够了。”](https://arxiv.org/abs/2111.12763)
+    NeuriPS 2021.'
 - en: '[18] Mishra et al. [“An Survey of Neural Network Compression.”](https://arxiv.org/abs/2010.03954)
     arXiv preprint arXiv:1710.09282 (2017).'
+  id: totrans-232
   prefs: []
   type: TYPE_NORMAL
+  zh: '[18] Mishra et al. [“神经网络压缩综述。”](https://arxiv.org/abs/2010.03954) arXiv预印本
+    arXiv:1710.09282 (2017).'
 - en: '[19] Fedus et al. [“A Review of Sparse Expert Models in Deep Learning.”](https://arxiv.org/abs/2209.01667)
     arXiv preprint arXiv:2209.01667 (2022)..'
+  id: totrans-233
   prefs: []
   type: TYPE_NORMAL
+  zh: '[19] Fedus et al. [“深度学习中稀疏专家模型综述。”](https://arxiv.org/abs/2209.01667) arXiv预印本
+    arXiv:2209.01667 (2022)。'
 - en: '[20] Riquelme et al. [“Scaling vision with sparse mixture of experts.”](https://arxiv.org/abs/2106.05974)
     NeuriPS 2021.'
+  id: totrans-234
   prefs: []
   type: TYPE_NORMAL
+  zh: '[20] Riquelme et al. [“利用稀疏专家混合扩展视觉。”](https://arxiv.org/abs/2106.05974) NeuriPS
+    2021.'
 - en: '[21] Kudugunta et al. [“Beyond Distillation: Task-level Mixture-of-Experts
     for Efficient Inference.”](https://arxiv.org/abs/2110.03742) arXiv preprint arXiv:2110.03742
     (2021).'
+  id: totrans-235
   prefs: []
   type: TYPE_NORMAL
+  zh: '[21] Kudugunta et al. [“超越蒸馏：任务级专家混合用于高效推理。”](https://arxiv.org/abs/2110.03742)
+    arXiv预印本 arXiv:2110.03742 (2021).'
 - en: '[22] Rajbhandari et al. [“DeepSpeed-MoE: Advancing mixture-of-experts inference
     and training to power next-generation ai scale.”](https://arxiv.org/abs/2201.05596)
     arXiv preprint arXiv:2201.05596 (2022).'
+  id: totrans-236
   prefs: []
   type: TYPE_NORMAL
+  zh: '[22] Rajbhandari et al. [“DeepSpeed-MoE：推动下一代AI规模的专家混合推理和训练。”](https://arxiv.org/abs/2201.05596)
+    arXiv预印本 arXiv:2201.05596 (2022).'
 - en: '[23] Kossmann et al. [“Optimizing mixture of experts using dynamic recompilations.”](https://arxiv.org/abs/2205.01848)
     arXiv preprint arXiv:2205.01848 (2022).'
+  id: totrans-237
   prefs: []
   type: TYPE_NORMAL
+  zh: '[23] Kossmann et al. [“使用动态重新编译优化专家混合。”](https://arxiv.org/abs/2205.01848)
+    arXiv预印本 arXiv:2205.01848 (2022).'
 - en: '[24] Hwang et al. [“Tutel: Adaptive mixture-of-experts at scale.”](https://arxiv.org/abs/2206.03382)
     arXiv preprint arXiv:2206.03382 (2022). | [code](https://github.com/microsoft/tutel)'
+  id: totrans-238
   prefs: []
   type: TYPE_NORMAL
+  zh: '[24] Hwang et al. [“Tutel：规模化自适应专家混合。”](https://arxiv.org/abs/2206.03382) arXiv预印本
+    arXiv:2206.03382 (2022)。| [code](https://github.com/microsoft/tutel)'
 - en: '[25] Noam Shazeer. [“Fast Transformer Decoding: One Write-Head is All You Need.”](https://arxiv.org/abs/1911.02150)
     arXiv preprint arXiv:1911.02150 (2019).'
+  id: totrans-239
   prefs: []
   type: TYPE_NORMAL
+  zh: '[25] Noam Shazeer. [“快速Transformer解码：一个写头就够了。”](https://arxiv.org/abs/1911.02150)
+    arXiv预印本 arXiv:1911.02150 (2019).'
 - en: '[26] Tay et al. [“Efficient Transformers: A Survey.”](https://arxiv.org/abs/2009.06732)
     ACM Computing Surveys 55.6 (2022): 1-28.'
+  id: totrans-240
   prefs: []
   type: TYPE_NORMAL
+  zh: '[26] Tay et al. [“高效Transformer：一项调查。”](https://arxiv.org/abs/2009.06732) ACM计算调查
+    55.6 (2022): 1-28.'
 - en: '[27] Pope et al. [“Efficiently Scaling Transformer Inference.”](https://arxiv.org/abs/2211.05102)
     arXiv preprint arXiv:2211.05102 (2022).'
+  id: totrans-241
   prefs: []
   type: TYPE_NORMAL
+  zh: '[27] Pope et al. [“高效扩展Transformer推理。”](https://arxiv.org/abs/2211.05102) arXiv预印本
+    arXiv:2211.05102 (2022).'
 - en: '[28] Frankle & Carbin. [“The Lottery Ticket Hypothesis: Finding Sparse, Trainable
     Neural Networks”](https://arxiv.org/abs/1803.03635) ICLR 2019.'
+  id: totrans-242
   prefs: []
   type: TYPE_NORMAL
+  zh: '[28] Frankle & Carbin. [“抽奖票假设：寻找稀疏、可训练的神经网络”](https://arxiv.org/abs/1803.03635)
+    ICLR 2019.'
 - en: '[29] Elabyad et al. [“Depth-Adaptive Transformer”](https://arxiv.org/abs/1910.10073)
     ICLR 2020.'
+  id: totrans-243
   prefs: []
   type: TYPE_NORMAL
+  zh: '[29] Elabyad et al. [“深度自适应Transformer”](https://arxiv.org/abs/1910.10073)
+    ICLR 2020.'
 - en: '[30] Schuster et al. [“Confident Adaptive Language Modeling”](https://arxiv.org/abs/2207.07061)
     arXiv preprint arXiv:2207.07061 (2022).'
+  id: totrans-244
   prefs: []
   type: TYPE_NORMAL
+  zh: '[30] Schuster et al. [“自信自适应语言建模”](https://arxiv.org/abs/2207.07061) arXiv预印本
+    arXiv:2207.07061 (2022).'
 - en: '[31] Gou et al. [“https://arxiv.org/abs/2006.05525”](https://arxiv.org/abs/2006.05525)
     arXiv preprint arXiv:2006.05525 (2020).'
+  id: totrans-245
   prefs: []
   type: TYPE_NORMAL
+  zh: '[31] Gou et al. [“https://arxiv.org/abs/2006.05525”](https://arxiv.org/abs/2006.05525)
+    arXiv预印本 arXiv:2006.05525 (2020).'
 - en: '[32] Hinton et al. [“Distilling the Knowledge in a Neural Network”](https://arxiv.org/abs/1503.02531)
     NIPS 2014.'
+  id: totrans-246
   prefs: []
   type: TYPE_NORMAL
+  zh: '[32] Hinton et al. [“提炼神经网络中的知识”](https://arxiv.org/abs/1503.02531) NIPS 2014.'
 - en: '[33] Sanh et al. [“DistilBERT, a distilled version of BERT: smaller, faster,
     cheaper and lighter”](https://arxiv.org/abs/1910.01108) Workshop on Energy Efficient
     Machine Learning and Cognitive Computing @ NeuriPS 2019.'
+  id: totrans-247
   prefs: []
   type: TYPE_NORMAL
+  zh: '[33] Sanh et al. [“DistilBERT，BERT的精简版本：更小、更快、更便宜、更轻”](https://arxiv.org/abs/1910.01108)
+    NeuriPS 2019能源高效机器学习和认知计算研讨会。'

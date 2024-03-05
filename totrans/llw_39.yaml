@@ -1,11 +1,15 @@
 - en: 'Object Detection for Dummies Part 1: Gradient Vector, HOG, and SS'
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 对象检测入门第1部分：梯度向量、HOG和SS
 - en: 原文：[https://lilianweng.github.io/posts/2017-10-29-object-recognition-part-1/](https://lilianweng.github.io/posts/2017-10-29-object-recognition-part-1/)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://lilianweng.github.io/posts/2017-10-29-object-recognition-part-1/](https://lilianweng.github.io/posts/2017-10-29-object-recognition-part-1/)
 - en: I’ve never worked in the field of computer vision and has no idea how the magic
     could work when an autonomous car is configured to tell apart a stop sign from
     a pedestrian in a red hat. To motivate myself to look into the maths behind object
@@ -15,314 +19,470 @@
     to deep neural networks yet. Deep learning models for object detection and recognition
     will be discussed in [Part 2](https://lilianweng.github.io/posts/2017-12-15-object-recognition-part-2/)
     and [Part 3](https://lilianweng.github.io/posts/2017-12-31-object-recognition-part-3/).
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 我从未在计算机视觉领域工作过，也不知道当自动驾驶汽车被配置为区分停车标志和戴红帽的行人时，这种魔法是如何运作的。为了激励自己深入研究对象识别和检测算法背后的数学，我正在撰写一些关于这个主题“对象检测入门”的帖子。本文，第1部分，从图像处理中的超基础概念和一些图像分割方法开始。暂时不涉及深度神经网络。对象检测和识别的深度学习模型将在[第2部分](https://lilianweng.github.io/posts/2017-12-15-object-recognition-part-2/)和[第3部分](https://lilianweng.github.io/posts/2017-12-31-object-recognition-part-3/)中讨论。
 - en: 'Disclaimer: When I started, I was using “object recognition” and “object detection”
     interchangeably. I don’t think they are the same: the former is more about telling
     whether an object exists in an image while the latter needs to spot where the
     object is. However, they are highly related and many object recognition algorithms
     lay the foundation for detection.'
+  id: totrans-3
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 免责声明：当我开始时，我将“对象识别”和“对象检测”互换使用。我认为它们并不相同：前者更多地是告诉一个图像中是否存在对象，而后者需要找出对象的位置。然而，它们高度相关，许多对象识别算法为检测奠定了基础。
 - en: 'Links to all the posts in the series: [[Part 1](https://lilianweng.github.io/posts/2017-10-29-object-recognition-part-1/)]
     [[Part 2](https://lilianweng.github.io/posts/2017-12-15-object-recognition-part-2/)]
     [[Part 3](https://lilianweng.github.io/posts/2017-12-31-object-recognition-part-3/)]
     [[Part 4](https://lilianweng.github.io/posts/2018-12-27-object-recognition-part-4/)].'
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: 系列中所有帖子的链接：[[第1部分](https://lilianweng.github.io/posts/2017-10-29-object-recognition-part-1/)]
+    [[第2部分](https://lilianweng.github.io/posts/2017-12-15-object-recognition-part-2/)]
+    [[第3部分](https://lilianweng.github.io/posts/2017-12-31-object-recognition-part-3/)]
+    [[第4部分](https://lilianweng.github.io/posts/2018-12-27-object-recognition-part-4/)]。
 - en: Image Gradient Vector
+  id: totrans-5
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 图像梯度向量
 - en: First of all, I would like to make sure we can distinguish the following terms.
     They are very similar, closely related, but not exactly the same.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，我想确保我们能区分以下术语。它们非常相似，密切相关，但并非完全相同。
 - en: '|  | **Derivative** | **Directional Derivative** | **Gradient** |'
+  id: totrans-7
   prefs: []
   type: TYPE_TB
+  zh: '|  | **导数** | **方向导数** | **梯度** |'
 - en: '| --- | --- | --- | --- |'
+  id: totrans-8
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- | --- | --- |'
 - en: '| Value type | Scalar | Scalar | Vector |'
+  id: totrans-9
   prefs: []
   type: TYPE_TB
+  zh: '| 值类型 | 标量 | 标量 | 向量 |'
 - en: '| Definition | The rate of change of a function $f(x,y,z,…)$ at a point $(x_0,y_0,z_0,…)$,
     which is the slope of the tangent line at the point. | The instantaneous rate
     of change of $f(x,y,z, …)$ in the direction of an unit vector $\vec{u}$. | It
     points in the direction of the greatest rate of increase of the function, containing
     all the partial derivative information of a multivariable function. |'
+  id: totrans-10
   prefs: []
   type: TYPE_TB
+  zh: '| 定义 | 函数$f(x,y,z,…)$在点$(x_0,y_0,z_0,…)$处的变化率，即该点切线的斜率。 | $f(x,y,z, …)$在单位向量$\vec{u}$方向的瞬时变化率。
+    | 它指向函数增长速度最快的方向，包含多变量函数的所有偏导数信息。 |'
 - en: In the image processing, we want to know the direction of colors changing from
     one extreme to the other (i.e. black to white on a grayscale image). Therefore,
     we want to measure “gradient” on pixels of colors. The gradient on an image is
     discrete because each pixel is independent and cannot be further split.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 在图像处理中，我们想要知道颜色从一个极端变化到另一个极端的方向（即在灰度图像上从黑到白）。因此，我们想要测量像素颜色上的“梯度”。图像上的梯度是离散的，因为每个像素是独立的，无法进一步分割。
 - en: 'The [image gradient vector](https://en.wikipedia.org/wiki/Image_gradient) is
     defined as a metric for every individual pixel, containing the pixel color changes
     in both x-axis and y-axis. The definition is aligned with the gradient of a continuous
     multi-variable function, which is a vector of partial derivatives of all the variables.
     Suppose f(x, y) records the color of the pixel at location (x, y), the gradient
     vector of the pixel (x, y) is defined as follows:'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: '[图像梯度向量](https://en.wikipedia.org/wiki/Image_gradient)被定义为每个单独像素的度量，包含x轴和y轴上的像素颜色变化。该定义与连续多变量函数的梯度一致，这是所有变量的偏导数向量。假设f(x,
+    y)记录位置(x, y)处像素的颜色，则像素(x, y)的梯度向量定义如下：'
 - en: $$ \begin{align*} \nabla f(x, y) = \begin{bmatrix} g_x \\ g_y \end{bmatrix}
     = \begin{bmatrix} \frac{\partial f}{\partial x} \\[6pt] \frac{\partial f}{\partial
     y} \end{bmatrix} = \begin{bmatrix} f(x+1, y) - f(x-1, y)\\ f(x, y+1) - f(x, y-1)
     \end{bmatrix} \end{align*} $$
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{align*} \nabla f(x, y) = \begin{bmatrix} g_x \\ g_y \end{bmatrix}
+    = \begin{bmatrix} \frac{\partial f}{\partial x} \\[6pt] \frac{\partial f}{\partial
+    y} \end{bmatrix} = \begin{bmatrix} f(x+1, y) - f(x-1, y)\\ f(x, y+1) - f(x, y-1)
+    \end{bmatrix} \end{align*} $$
 - en: The $\frac{\partial f}{\partial x}$ term is the partial derivative on the x-direction,
     which is computed as the color difference between the adjacent pixels on the left
     and right of the target, f(x+1, y) - f(x-1, y). Similarly, the $\frac{\partial
     f}{\partial y}$ term is the partial derivative on the y-direction, measured as
     f(x, y+1) - f(x, y-1), the color difference between the adjacent pixels above
     and below the target.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: $\frac{\partial f}{\partial x}$项是x方向的偏导数，计算为目标左右相邻像素的颜色差异，f(x+1, y) - f(x-1,
+    y)。类似地，$\frac{\partial f}{\partial y}$项是y方向的偏导数，测量为f(x, y+1) - f(x, y-1)，目标上下相邻像素的颜色差异。
 - en: 'There are two important attributes of an image gradient:'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 图像梯度有两个重要属性：
 - en: '**Magnitude** is the L2-norm of the vector, $g = \sqrt{ g_x^2 + g_y^2 }$.'
+  id: totrans-16
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**幅度**是向量的L2范数，$g = \sqrt{ g_x^2 + g_y^2 }$。'
 - en: '**Direction** is the arctangent of the ratio between the partial derivatives
     on two directions, $\theta = \arctan{(g_y / g_x)}$.'
+  id: totrans-17
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**方向**是两个方向上偏导数比率的反正切，$\theta = \arctan{(g_y / g_x)}$。'
 - en: '![](../Images/33ef74d3621b903d0c4ee4ce46d7f960.png)'
+  id: totrans-18
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/33ef74d3621b903d0c4ee4ce46d7f960.png)'
 - en: Fig. 1\. To compute the gradient vector of a target pixel at location (x, y),
     we need to know the colors of its four neighbors (or eight surrounding pixels
     depending on the kernel).
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 图1。要计算目标像素在位置(x, y)处的梯度向量，我们需要知道其四个邻居的颜色（或者根据核心的不同，可能是周围八个像素）。
 - en: 'The gradient vector of the example in Fig. 1\. is:'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 图1中示例的梯度向量是：
 - en: $$ \begin{align*} \nabla f = \begin{bmatrix} f(x+1, y) - f(x-1, y)\\ f(x, y+1)
     - f(x, y-1) \end{bmatrix} = \begin{bmatrix} 55-105\\ 90-40 \end{bmatrix} = \begin{bmatrix}
     -50\\ 50 \end{bmatrix} \end{align*} $$
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{align*} \nabla f = \begin{bmatrix} f(x+1, y) - f(x-1, y)\\ f(x, y+1)
+    - f(x, y-1) \end{bmatrix} = \begin{bmatrix} 55-105\\ 90-40 \end{bmatrix} = \begin{bmatrix}
+    -50\\ 50 \end{bmatrix} \end{align*} $$
 - en: Thus,
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，
 - en: the magnitude is $\sqrt{50^2 + (-50)^2} = 70.7107$, and
+  id: totrans-23
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 幅度为$\sqrt{50^2 + (-50)^2} = 70.7107$，以及
 - en: the direction is $\arctan{(-50/50)} = -45^{\circ}$.
+  id: totrans-24
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 方向为$\arctan{(-50/50)} = -45^{\circ}$。
 - en: Repeating the gradient computation process for every pixel iteratively is too
     slow. Instead, it can be well translated into applying a convolution operator
     on the entire image matrix, labeled as $\mathbf{A}$ using one of the specially
     designed convolutional kernels.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 对每个像素迭代地重复梯度计算过程太慢了。相反，可以很好地转化为在整个图像矩阵$\mathbf{A}$上应用卷积运算符，使用其中一个特别设计的卷积核。
 - en: 'Let’s start with the x-direction of the example in Fig 1\. using the kernel
     $[-1,0,1]$ sliding over the x-axis; $\ast$ is the convolution operator:'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们从图1中的x方向开始，使用核$[-1,0,1]$沿x轴滑动；$\ast$是卷积运算符：
 - en: $$ \begin{align*} \mathbf{G}_x &= [-1, 0, 1] \ast [105, 255, 55] = -105 + 0
     + 55 = -50 \end{align*} $$
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{align*} \mathbf{G}_x &= [-1, 0, 1] \ast [105, 255, 55] = -105 + 0
+    + 55 = -50 \end{align*} $$
 - en: 'Similarly, on the y-direction, we adopt the kernel $[+1, 0, -1]^\top$:'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 类似地，在y方向上，我们采用核$[+1, 0, -1]^\top$：
 - en: $$ \begin{align*} \mathbf{G}_y &= [+1, 0, -1]^\top \ast \begin{bmatrix} 90\\
     255\\ 40 \end{bmatrix} = 90 + 0 - 40 = 50 \end{align*} $$
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{align*} \mathbf{G}_y &= [+1, 0, -1]^\top \ast \begin{bmatrix} 90\\
+    255\\ 40 \end{bmatrix} = 90 + 0 - 40 = 50 \end{align*} $$
 - en: 'Try this in python:'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 在python中尝试这个：
 - en: '[PRE0]'
+  id: totrans-31
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: These two functions return `array([[0], [-50], [0]])` and `array([[0, 50, 0]])`
     respectively. (Note that in the numpy array representation, 40 is shown in front
     of 90, so -1 is listed before 1 in the kernel correspondingly.)
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 这两个函数分别返回`array([[0], [-50], [0]])`和`array([[0, 50, 0]])`。（请注意，在numpy数组表示中，90显示在40之前，因此在核心中相应地列出-1在1之前。）
 - en: Common Image Processing Kernels
+  id: totrans-33
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 常见图像处理卷积核
 - en: '[Prewitt operator](https://en.wikipedia.org/wiki/Prewitt_operator): Rather
     than only relying on four directly adjacent neighbors, the Prewitt operator utilizes
     eight surrounding pixels for smoother results.'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: '[普雷维特算子](https://en.wikipedia.org/wiki/Prewitt_operator)：普雷维特算子不仅依赖于四个直接相邻的像素，还利用周围八个像素以获得更平滑的结果。'
 - en: $$ \mathbf{G}_x = \begin{bmatrix} -1 & 0 & +1 \\ -1 & 0 & +1 \\ -1 & 0 & +1
     \end{bmatrix} \ast \mathbf{A} \text{ and } \mathbf{G}_y = \begin{bmatrix} +1 &
     +1 & +1 \\ 0 & 0 & 0 \\ -1 & -1 & -1 \end{bmatrix} \ast \mathbf{A} $$
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathbf{G}_x = \begin{bmatrix} -1 & 0 & +1 \\ -1 & 0 & +1 \\ -1 & 0 & +1
+    \end{bmatrix} \ast \mathbf{A} \text{ and } \mathbf{G}_y = \begin{bmatrix} +1 &
+    +1 & +1 \\ 0 & 0 & 0 \\ -1 & -1 & -1 \end{bmatrix} \ast \mathbf{A} $$
 - en: '[Sobel operator](https://en.wikipedia.org/wiki/Sobel_operator): To emphasize
     the impact of directly adjacent pixels more, they get assigned with higher weights.'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Sobel算子](https://en.wikipedia.org/wiki/Sobel_operator)：为了更强调直接相邻像素的影响，它们被赋予更高的权重。'
 - en: $$ \mathbf{G}_x = \begin{bmatrix} -1 & 0 & +1 \\ -2 & 0 & +2 \\ -1 & 0 & +1
     \end{bmatrix} \ast \mathbf{A} \text{ and } \mathbf{G}_y = \begin{bmatrix} +1 &
     +2 & +1 \\ 0 & 0 & 0 \\ -1 & -2 & -1 \end{bmatrix} \ast \mathbf{A} $$
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathbf{G}_x = \begin{bmatrix} -1 & 0 & +1 \\ -2 & 0 & +2 \\ -1 & 0 & +1
+    \end{bmatrix} \ast \mathbf{A} \text{ and } \mathbf{G}_y = \begin{bmatrix} +1 &
+    +2 & +1 \\ 0 & 0 & 0 \\ -1 & -2 & -1 \end{bmatrix} \ast \mathbf{A} $$
 - en: Different kernels are created for different goals, such as edge detection, blurring,
     sharpening and many more. Check [this wiki page](https://en.wikipedia.org/wiki/Kernel_(image_processing))
     for more examples and references.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 不同的卷积核用于不同的目标，如边缘检测、模糊、锐化等。查看[此维基页面](https://en.wikipedia.org/wiki/Kernel_(image_processing))获取更多示例和参考资料。
 - en: 'Example: Manu in 2004'
+  id: totrans-39
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 示例：2004年的Manu
 - en: Let’s run a simple experiment on the photo of Manu Ginobili in 2004 [[Download
     Image]({{ ‘/assets/data/manu-2004.jpg’ | relative_url }}){:target="_blank"}] when
     he still had a lot of hair. For simplicity, the photo is converted to grayscale
     first. For colored images, we just need to repeat the same process in each color
     channel respectively.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们对2004年Manu Ginobili的照片进行一个简单的实验[[下载图片]({{ ‘/assets/data/manu-2004.jpg’ |
+    relative_url }}){:target="_blank"}]，当时他还有很多头发。为简单起见，照片首先转换为灰度。对于彩色图像，我们只需要分别在每个颜色通道中重复相同的过程。
 - en: '![](../Images/a1377b70c65b8e62eb83745d3d318505.png)'
+  id: totrans-41
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a1377b70c65b8e62eb83745d3d318505.png)'
 - en: 'Fig. 2\. Manu Ginobili in 2004 with hair. (Image source: [Manu Ginobili''s
     bald spot through the years](http://ftw.usatoday.com/2013/05/manu-ginobilis-bald-spot-through-the-years))'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 图2。2004年的Manu Ginobili有头发。（图片来源：[Manu Ginobili's bald spot through the years](http://ftw.usatoday.com/2013/05/manu-ginobilis-bald-spot-through-the-years)）
 - en: '[PRE1]'
+  id: totrans-43
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: '![](../Images/17127761825d65d967c663fc9de4fc30.png)'
+  id: totrans-44
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/17127761825d65d967c663fc9de4fc30.png)'
 - en: Fig. 3\. Apply Sobel operator kernel on the example image.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 图3。在示例图像上应用Sobel算子卷积核。
 - en: You might notice that most area is in gray. Because the difference between two
     pixel is between -255 and 255 and we need to convert them back to [0, 255] for
     the display purpose. A simple linear transformation ($\mathbf{G}$ + 255)/2 would
     interpret all the zeros (i.e., constant colored background shows no change in
     gradient) as 125 (shown as gray).
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 您可能会注意到大部分区域是灰色的。因为两个像素之间的差异在-255和255之间，我们需要将它们转换回[0, 255]以供显示目的。一个简单的线性转换（$\mathbf{G}$
+    + 255）/2会将所有的零（即，常色背景显示梯度无变化）解释为125（显示为灰色）。
 - en: Histogram of Oriented Gradients (HOG)
+  id: totrans-47
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 方向梯度直方图（HOG）
 - en: The Histogram of Oriented Gradients (HOG) is an efficient way to extract features
     out of the pixel colors for building an object recognition classifier. With the
     knowledge of image gradient vectors, it is not hard to understand how HOG works.
     Let’s start!
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 方向梯度直方图（HOG）是从像素颜色中提取特征以构建对象识别分类器的高效方法。通过了解图像梯度向量的知识，理解HOG的工作原理并不难。让我们开始吧！
 - en: How HOG works
+  id: totrans-49
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: HOG的工作原理
 - en: Preprocess the image, including resizing and color normalization.
+  id: totrans-50
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 预处理图像，包括调整大小和颜色归一化。
 - en: Compute the gradient vector of every pixel, as well as its magnitude and direction.
+  id: totrans-51
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 计算每个像素的梯度向量、大小和方向。
 - en: Divide the image into many 8x8 pixel cells. In each cell, the magnitude values
     of these 64 cells are binned and cumulatively added into 9 buckets of unsigned
     direction (no sign, so 0-180 degree rather than 0-360 degree; this is a practical
     choice based on empirical experiments).
+  id: totrans-52
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将图像分成许多8x8像素单元。在每个单元格中，这64个单元格的大小值被分组并累加到9个无符号方向的桶中（没有符号，因此是0-180度而不是0-360度；这是基于经验实验的实际选择）。
 - en: For better robustness, if the direction of the gradient vector of a pixel lays
     between two buckets, its magnitude does not all go into the closer one but proportionally
     split between two. For example, if a pixel’s gradient vector has magnitude 8 and
     degree 15, it is between two buckets for degree 0 and 20 and we would assign 2
     to bucket 0 and 6 to bucket 20.
+  id: totrans-53
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 为了更好的鲁棒性，如果像素的梯度向量的方向位于两个桶之间，其幅度不会全部分配给更接近的一个，而是在两者之间按比例分配。例如，如果像素的梯度向量幅度为8，角度为15度，则它位于角度0和20之间的两个桶中，我们将分配2给桶0，6给桶20。
 - en: This interesting configuration makes the histogram much more stable when small
     distortion is applied to the image.
+  id: totrans-54
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 这种有趣的配置使得直方图在图像受到轻微扭曲时更加稳定。
 - en: '![](../Images/332464bfa795f8e6a52463939ff90129.png)'
+  id: totrans-55
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/332464bfa795f8e6a52463939ff90129.png)'
 - en: 'Fig. 4\. How to split one gradient vector''s magnitude if its degress is between
     two degree bins. (Image source: https://www.learnopencv.com/histogram-of-oriented-gradients/)'
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 图4\. 如何分割一个梯度向量的幅度，如果其角度在两个角度区间之间。（图片来源：https://www.learnopencv.com/histogram-of-oriented-gradients/）
 - en: Then we slide a 2x2 cells (thus 16x16 pixels) block across the image. In each
     block region, 4 histograms of 4 cells are concatenated into one-dimensional vector
     of 36 values and then normalized to have an unit weight. The final HOG feature
     vector is the concatenation of all the block vectors. It can be fed into a classifier
     like SVM for learning object recognition tasks.
+  id: totrans-57
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 然后我们在图像上滑动一个2x2单元格（因此是16x16像素）的块。在每个块区域内，4个单元格的4个直方图被连接成一个36个值的一维向量，然后归一化为单位权重。最终的HOG特征向量是所有块向量的连接。它可以被输入到像SVM这样的分类器中，用于学习目标识别任务。
 - en: 'Example: Manu in 2004'
+  id: totrans-58
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 例如：2004年的Manu
 - en: Let’s reuse the same example image in the previous section. Remember that we
     have computed $\mathbf{G}_x$ and $\mathbf{G}_y$ for the whole image.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们重复使用前一节中的相同示例图像。记住我们已经计算出整个图像的$\mathbf{G}_x$和$\mathbf{G}_y$。
 - en: '[PRE2]'
+  id: totrans-60
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: The following code simply calls the functions to construct a histogram and plot
     it.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下代码简单地调用函数来构建直方图并绘制它。
 - en: '[PRE3]'
+  id: totrans-62
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: In the code above, I use the block with top left corner located at [200, 200]
     as an example and here is the final normalized histogram of this block. You can
     play with the code to change the block location to be identified by a sliding
     window.
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上面的代码中，我以位于[200, 200]的左上角的块作为示例，这是该块的最终归一化直方图。您可以尝试更改代码以将块位置更改为由滑动窗口识别。
 - en: '![](../Images/fe5d0d232415556438390b48255bf4df.png)'
+  id: totrans-64
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/fe5d0d232415556438390b48255bf4df.png)'
 - en: Fig. 5\. Demonstration of a HOG histogram for one block.
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 图5\. 展示了一个块的HOG直方图。
 - en: The code is mostly for demonstrating the computation process. There are many
     off-the-shelf libraries with HOG algorithm implemented, such as [OpenCV](https://github.com/opencv/opencv),
     [SimpleCV](http://simplecv.org/) and [scikit-image](http://scikit-image.org/).
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 代码主要用于演示计算过程。有许多已实现HOG算法的现成库，例如[OpenCV](https://github.com/opencv/opencv)，[SimpleCV](http://simplecv.org/)和[scikit-image](http://scikit-image.org/)。
 - en: Image Segmentation (Felzenszwalb’s Algorithm)
+  id: totrans-67
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 图像分割（Felzenszwalb算法）
 - en: When there exist multiple objects in one image (true for almost every real-world
     photos), we need to identify a region that potentially contains a target object
     so that the classification can be executed more efficiently.
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 当一张图像中存在多个对象（几乎适用于每张真实世界的照片）时，我们需要识别一个潜在包含目标对象的区域，以便分类可以更有效地执行。
 - en: Felzenszwalb and Huttenlocher ([2004](http://cvcl.mit.edu/SUNSeminar/Felzenszwalb_IJCV04.pdf))
     proposed an algorithm for segmenting an image into similar regions using a graph-based
     approach. It is also the initialization method for Selective Search (a popular
     region proposal algorithm) that we are gonna discuss later.
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: Felzenszwalb和Huttenlocher（[2004](http://cvcl.mit.edu/SUNSeminar/Felzenszwalb_IJCV04.pdf)）提出了一种使用基于图的方法将图像分割成相似区域的算法。这也是我们将在后面讨论的Selective
+    Search（一种流行的区域提议算法）的初始化方法。
 - en: Say, we use a undirected graph $G=(V, E)$ to represent an input image. One vertex
     $v_i \in V$ represents one pixel. One edge $e = (v_i, v_j) \in E$ connects two
     vertices $v_i$ and $v_j$. Its associated weight $w(v_i, v_j)$ measures the dissimilarity
@@ -331,227 +491,332 @@
     are. A segmentation solution $S$ is a partition of $V$ into multiple connected
     components, $\{C\}$. Intuitively similar pixels should belong to the same components
     while dissimilar ones are assigned to different components.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设我们使用一个无向图$G=(V, E)$来表示一个输入图像。一个顶点$v_i \in V$代表一个像素。一条边$e = (v_i, v_j) \in
+    E$连接两个顶点$v_i$和$v_j$。其关联的权重$w(v_i, v_j)$衡量了$v_i$和$v_j$之间的不相似性。不相似性可以在颜色、位置、强度等维度上量化。权重越高，两个像素之间的相似性越低。一个分割解$S$是将$V$划分为多个连通分量$\{C\}$。直观上相似的像素应该属于同一个分量，而不相似的像素应该分配到不同的分量。
 - en: Graph Construction
+  id: totrans-71
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 图形构建
 - en: There are two approaches to constructing a graph out of an image.
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 有两种方法可以从图像构建图形。
 - en: '**Grid Graph**: Each pixel is only connected with surrounding neighbours (8
     other cells in total). The edge weight is the absolute difference between the
     intensity values of the pixels.'
+  id: totrans-73
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**网格图**：每个像素只与周围的邻居相连（总共8个单元格）。边的权重是像素强度值之间的绝对差异。'
 - en: '**Nearest Neighbor Graph**: Each pixel is a point in the feature space (x,
     y, r, g, b), in which (x, y) is the pixel location and (r, g, b) is the color
     values in RGB. The weight is the Euclidean distance between two pixels’ feature
     vectors.'
+  id: totrans-74
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**最近邻图**：每个像素是特征空间中的一个点（x, y, r, g, b），其中（x, y）是像素位置，（r, g, b）是RGB颜色值。权重是两个像素特征向量之间的欧氏距离。'
 - en: Key Concepts
+  id: totrans-75
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 关键概念
 - en: 'Before we lay down the criteria for a good graph partition (aka image segmentation),
     let us define a couple of key concepts:'
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们制定一个良好的图形分区（也称为图像分割）的标准之前，让我们定义一些关键概念：
 - en: '**Internal difference**: $Int(C) = \max_{e\in MST(C, E)} w(e)$, where $MST$
     is the minimum spanning tree of the components. A component $C$ can still remain
     connected even when we have removed all the edges with weights < $Int(C)$.'
+  id: totrans-77
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**内部差异**：$Int(C) = \max_{e\in MST(C, E)} w(e)$，其中$MST$是分量的最小生成树。即使我们删除了所有权重小于$Int(C)$的边，分量$C$仍然保持连接。'
 - en: '**Difference between two components**: $Dif(C_1, C_2) = \min_{v_i \in C_1,
     v_j \in C_2, (v_i, v_j) \in E} w(v_i, v_j)$. $Dif(C_1, C_2) = \infty$ if there
     is no edge in-between.'
+  id: totrans-78
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**两个分量之间的差异**：$Dif(C_1, C_2) = \min_{v_i \in C_1, v_j \in C_2, (v_i, v_j) \in
+    E} w(v_i, v_j)$。如果两者之间没有边，则$Dif(C_1, C_2) = \infty$。'
 - en: '**Minimum internal difference**: $MInt(C_1, C_2) = min(Int(C_1) + \tau(C_1),
     Int(C_2) + \tau(C_2))$, where $\tau(C) = k / \vert C \vert$ helps make sure we
     have a meaningful threshold for the difference between components. With a higher
     $k$, it is more likely to result in larger components.'
+  id: totrans-79
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**最小内部差异**：$MInt(C_1, C_2) = min(Int(C_1) + \tau(C_1), Int(C_2) + \tau(C_2)$，其中$\tau(C)
+    = k / \vert C \vert$有助于确保我们对分量之间差异的阈值是有意义的。较高的$k$值更有可能导致较大的分量。'
 - en: 'The quality of a segmentation is assessed by a pairwise region comparison predicate
     defined for given two regions $C_1$ and $C_2$:'
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过给定两个区域$C_1$和$C_2$定义的成对区域比较谓词来评估分割的质量：
 - en: $$ D(C_1, C_2) = \begin{cases} \text{True} & \text{ if } Dif(C_1, C_2) > MInt(C_1,
     C_2) \\ \text{False} & \text{ otherwise} \end{cases} $$
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ D(C_1, C_2) = \begin{cases} \text{True} & \text{ if } Dif(C_1, C_2) > MInt(C_1,
+    C_2) \\ \text{False} & \text{ otherwise} \end{cases} $$
 - en: Only when the predicate holds True, we consider them as two independent components;
     otherwise the segmentation is too fine and they probably should be merged.
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 仅当谓词为True时，我们将它们视为两个独立的分量；否则，分割太细，它们可能应该合并。
 - en: How Image Segmentation Works
+  id: totrans-83
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 图像分割的工作原理
 - en: 'The algorithm follows a bottom-up procedure. Given $G=(V, E)$ and $|V|=n, |E|=m$:'
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 该算法遵循自底向上的过程。给定$G=(V, E)$和$|V|=n, |E|=m$：
 - en: Edges are sorted by weight in ascending order, labeled as $e_1, e_2, \dots,
     e_m$.
+  id: totrans-85
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 边按权重升序排序，标记为$e_1, e_2, \dots, e_m$。
 - en: Initially, each pixel stays in its own component, so we start with $n$ components.
+  id: totrans-86
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 最初，每个像素都保持在自己的分量中，因此我们从$n$个分量开始。
 - en: 'Repeat for $k=1, \dots, m$:'
+  id: totrans-87
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 对于$k=1, \dots, m$，重复以下步骤：
 - en: The segmentation snapshot at the step $k$ is denoted as $S^k$.
+  id: totrans-88
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 第$k$步的分割快照表示为$S^k$。
 - en: We take the k-th edge in the order, $e_k = (v_i, v_j)$.
+  id: totrans-89
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们按顺序取第$k$条边，$e_k = (v_i, v_j)$。
 - en: If $v_i$ and $v_j$ belong to the same component, do nothing and thus $S^k =
     S^{k-1}$.
+  id: totrans-90
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如果$v_i$和$v_j$属于同一个分量，则不执行任何操作，因此$S^k = S^{k-1}$。
 - en: If $v_i$ and $v_j$ belong to two different components $C_i^{k-1}$ and $C_j^{k-1}$
     as in the segmentation $S^{k-1}$, we want to merge them into one if $w(v_i, v_j)
     \leq MInt(C_i^{k-1}, C_j^{k-1})$; otherwise do nothing.
+  id: totrans-91
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如果$v_i$和$v_j$属于分割$S^{k-1}$中的两个不同组件$C_i^{k-1}$和$C_j^{k-1}$，我们希望将它们合并为一个，如果$w(v_i,
+    v_j) \leq MInt(C_i^{k-1}, C_j^{k-1})$；否则不执行任何操作。
 - en: If you are interested in the proof of the segmentation properties and why it
     always exists, please refer to the [paper](http://fcv2011.ulsan.ac.kr/files/announcement/413/IJCV(2004)%20Efficient%20Graph-Based%20Image%20Segmentation.pdf).
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果您对分割属性的证明以及为什么它总是存在感兴趣，请参考[论文](http://fcv2011.ulsan.ac.kr/files/announcement/413/IJCV(2004)%20Efficient%20Graph-Based%20Image%20Segmentation.pdf)。
 - en: '![](../Images/fa48b6241edcfdf8629ff31692fa0bb6.png)'
+  id: totrans-93
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/fa48b6241edcfdf8629ff31692fa0bb6.png)'
 - en: Fig. 6\. An indoor scene with segmentation detected by the grid graph construction
     in Felzenszwalb's graph-based segmentation algorithm (k=300).
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 图6\. 室内场景，Felzenszwalb的基于图的分割算法中检测到的分割。
 - en: 'Example: Manu in 2013'
+  id: totrans-95
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 例子：2013年的梅努
 - en: This time I would use the photo of old Manu Ginobili in 2013 [[Image]({{ ‘/assets/data/manu-2013.jpg’
     | relative_url }})] as the example image when his bald spot has grown up strong.
     Still for simplicity, we use the picture in grayscale.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 这次我将使用2013年老梅努·吉诺比利的照片[[图片]({{ ‘/assets/data/manu-2013.jpg’ | relative_url }})]作为示例图像，当他的秃顶变得更加明显时。为简单起见，我们使用灰度图片。
 - en: '![](../Images/7b1dd5733eff7f194b1f871cc92c5202.png)'
+  id: totrans-97
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/7b1dd5733eff7f194b1f871cc92c5202.png)'
 - en: 'Fig. 7\. Manu Ginobili in 2013 with bald spot. (Image source: [Manu Ginobili''s
     bald spot through the years](http://ftw.usatoday.com/2013/05/manu-ginobilis-bald-spot-through-the-years))'
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 图7\. 2013年梅努·吉诺比利的秃顶。（图片来源：[梅努·吉诺比利多年来的秃顶](http://ftw.usatoday.com/2013/05/manu-ginobilis-bald-spot-through-the-years)）
 - en: Rather than coding from scratch, let us apply [skimage.segmentation.felzenszwalb](http://scikit-image.org/docs/dev/api/skimage.segmentation.html#skimage.segmentation.felzenszwalb)
     to the image.
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 与其从头开始编码，不如将[skimage.segmentation.felzenszwalb](http://scikit-image.org/docs/dev/api/skimage.segmentation.html#skimage.segmentation.felzenszwalb)应用于图像。
 - en: '[PRE4]'
+  id: totrans-100
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: The code ran two versions of Felzenszwalb’s algorithms as shown in Fig. 8\.
     The left k=100 generates a finer-grained segmentation with small regions where
     Manu’s bald spot is identified. The right one k=1000 outputs a coarser-grained
     segmentation where regions tend to be larger.
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 代码运行了Felzenszwalb算法的两个版本，如图8所示。左侧k=100生成了细粒度分割，其中识别出了梅努的秃顶的小区域。右侧k=1000输出了粗粒度分割，其中区域倾向于更大。
 - en: '![](../Images/86580e7852c62c4ae1e33cae7a7f2d11.png)'
+  id: totrans-102
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/86580e7852c62c4ae1e33cae7a7f2d11.png)'
 - en: Fig. 8\. Felsenszwalb's efficient graph-based image segmentation is applied
     on the photo of Manu in 2013.
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 图8\. Felzenszwalb的高效基于图的图像分割应用于2013年梅努的照片。
 - en: Selective Search
+  id: totrans-104
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 选择性搜索
 - en: 'Selective search is a common algorithm to provide region proposals that potentially
     contain objects. It is built on top of the image segmentation output and use region-based
     characteristics (NOTE: not just attributes of a single pixel) to do a bottom-up
     hierarchical grouping.'
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 选择性搜索是一种常见的算法，用于提供可能包含对象的区域建议。它建立在图像分割输出之上，并使用基于区域的特征（注意：不仅仅是单个像素的属性）进行自下而上的分层分组。
 - en: How Selective Search Works
+  id: totrans-106
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 选择性搜索的工作原理
 - en: At the initialization stage, apply Felzenszwalb and Huttenlocher’s graph-based
     image segmentation algorithm to create regions to start with.
+  id: totrans-107
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在初始化阶段，应用Felzenszwalb和Huttenlocher的基于图的图像分割算法创建起始区域。
 - en: 'Use a greedy algorithm to iteratively group regions together:'
+  id: totrans-108
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用贪婪算法迭代地将区域组合在一起：
 - en: First the similarities between all neighbouring regions are calculated.
+  id: totrans-109
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 首先计算所有相邻区域之间的相似性。
 - en: The two most similar regions are grouped together, and new similarities are
     calculated between the resulting region and its neighbours.
+  id: totrans-110
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 将两个最相似的区域组合在一起，并计算结果区域与其邻域之间的新相似性。
 - en: The process of grouping the most similar regions (Step 2) is repeated until
     the whole image becomes a single region.
+  id: totrans-111
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将最相似的区域组合在一起（步骤2），直到整个图像变成一个单一区域。
 - en: '![](../Images/cc3dc7ef55f1b1caf68558a312bd2aa5.png)'
+  id: totrans-112
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/cc3dc7ef55f1b1caf68558a312bd2aa5.png)'
 - en: Fig. 9\. The detailed algorithm of Selective Search.
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: 图9\. 选择性搜索的详细算法。
 - en: Configuration Variations
+  id: totrans-114
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 配置变化
 - en: 'Given two regions $(r_i, r_j)$, selective search proposed four complementary
     similarity measures:'
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: 给定两个区域$(r_i, r_j)$，选择性搜索提出了四种互补的相似性度量：
 - en: '**Color** similarity'
+  id: totrans-116
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**颜色**相似性'
 - en: '**Texture**: Use algorithm that works well for material recognition such as
     [SIFT](http://www.cs.ubc.ca/~lowe/papers/iccv99.pdf).'
+  id: totrans-117
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**纹理**：使用适用于材料识别的算法，如[SIFT](http://www.cs.ubc.ca/~lowe/papers/iccv99.pdf)。'
 - en: '**Size**: Small regions are encouraged to merge early.'
+  id: totrans-118
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**大小**：鼓励小区域尽早合并。'
 - en: '**Shape**: Ideally one region can fill the gap of the other.'
+  id: totrans-119
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**形状**：理想情况下，一个区域可以填补另一个区域的空白。'
 - en: By (i) tuning the threshold $k$ in Felzenszwalb and Huttenlocher’s algorithm,
     (ii) changing the color space and (iii) picking different combinations of similarity
     metrics, we can produce a diverse set of Selective Search strategies. The version
@@ -559,37 +824,59 @@
     mixture of various initial segmentation proposals, (ii) a blend of multiple color
     spaces and (iii) a combination of all similarity measures. Unsurprisingly we need
     to balance between the quality (the model complexity) and the speed.
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过（i）调整Felzenszwalb和Huttenlocher算法中的阈值$k$，（ii）改变颜色空间和（iii）选择不同的相似性度量组合，我们可以生成多样化的选择性搜索策略。配置具有最佳质量的区域提议的版本包括（i）各种初始分割提议的混合，（ii）多个颜色空间的混合和（iii）所有相似性度量的组合。毫不奇怪，我们需要在质量（模型复杂性）和速度之间取得平衡。
 - en: '* * *'
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'Cited as:'
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: 引用为：
 - en: '[PRE5]'
+  id: totrans-123
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: References
+  id: totrans-124
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: '[1] Dalal, Navneet, and Bill Triggs. [“Histograms of oriented gradients for
     human detection.”](https://hal.inria.fr/file/index/docid/548512/filename/hog_cvpr2005.pdf)
     Computer Vision and Pattern Recognition (CVPR), 2005.'
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] Dalal, Navneet, 和 Bill Triggs. [“用于人体检测的定向梯度直方图。”](https://hal.inria.fr/file/index/docid/548512/filename/hog_cvpr2005.pdf)
+    计算机视觉与模式识别（CVPR），2005年。'
 - en: '[2] Pedro F. Felzenszwalb, and Daniel P. Huttenlocher. [“Efficient graph-based
     image segmentation.”](http://cvcl.mit.edu/SUNSeminar/Felzenszwalb_IJCV04.pdf)
     Intl. journal of computer vision 59.2 (2004): 167-181.'
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] Pedro F. Felzenszwalb 和 Daniel P. Huttenlocher. [“高效基于图像的图像分割。”](http://cvcl.mit.edu/SUNSeminar/Felzenszwalb_IJCV04.pdf)
+    计算机视觉国际期刊 59.2（2004年）：167-181。'
 - en: '[3] [Histogram of Oriented Gradients by Satya Mallick](https://www.learnopencv.com/histogram-of-oriented-gradients/)'
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: '[3] [Satya Mallick的定向梯度直方图](https://www.learnopencv.com/histogram-of-oriented-gradients/)'
 - en: '[4] [Gradient Vectors by Chris McCormick](http://mccormickml.com/2013/05/07/gradient-vectors/)'
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: '[4] [Chris McCormick的梯度向量](http://mccormickml.com/2013/05/07/gradient-vectors/)'
 - en: '[5] [HOG Person Detector Tutorial by Chris McCormick](http://mccormickml.com/2013/05/09/hog-person-detector-tutorial/)'
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
+  zh: '[5] [Chris McCormick的HOG人体检测器教程](http://mccormickml.com/2013/05/09/hog-person-detector-tutorial/)'

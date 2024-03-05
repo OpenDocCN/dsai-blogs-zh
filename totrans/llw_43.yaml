@@ -1,87 +1,123 @@
 - en: How to Explain the Prediction of a Machine Learning Model?
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 如何解释机器学习模型的预测？
 - en: 原文：[https://lilianweng.github.io/posts/2017-08-01-interpretation/](https://lilianweng.github.io/posts/2017-08-01-interpretation/)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://lilianweng.github.io/posts/2017-08-01-interpretation/](https://lilianweng.github.io/posts/2017-08-01-interpretation/)
 - en: The machine learning models have started penetrating into critical areas like
     health care, justice systems, and financial industry. Thus to figure out how the
     models make the decisions and make sure the decisioning process is aligned with
     the ethnic requirements or legal regulations becomes a necessity.
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 机器学习模型已经开始渗透到健康保健、司法系统和金融行业等关键领域。因此，弄清楚模型如何做出决策，并确保决策过程符合种族要求或法律法规成为必要。
 - en: Meanwhile, the rapid growth of deep learning models pushes the requirement of
     interpreting complicated models further. People are eager to apply the power of
     AI fully on key aspects of everyday life. However, it is hard to do so without
     enough trust in the models or an efficient procedure to explain unintended behavior,
     especially considering that the deep neural networks are born as *black-boxes*.
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: 与此同时，深度学习模型的快速增长进一步推动了解释复杂模型的需求。人们渴望充分应用人工智能的力量在日常生活的关键方面。然而，如果没有足够对模型的信任或有效的解释意外行为的程序，特别是考虑到深度神经网络是作为*黑匣子*诞生的，这是很困难的。
 - en: 'Think of the following cases:'
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: 想象以下情况：
 - en: The financial industry is highly regulated and loan issuers are required by
     law to make fair decisions and explain their credit models to provide reasons
     whenever they decide to decline loan application.
+  id: totrans-5
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 金融行业受到严格监管，贷款发放机构法律要求做出公平决策，并解释他们的信用模型以提供拒绝贷款申请的原因。
 - en: Medical diagnosis model is responsible for human life. How can we be confident
     enough to treat a patient as instructed by a black-box model?
+  id: totrans-6
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 医疗诊断模型对人类生命负责。我们如何能够有足够的信心按照黑匣子模型的指示来治疗患者？
 - en: When using a criminal decision model to predict the risk of recidivism at the
     court, we have to make sure the model behaves in an equitable, honest and nondiscriminatory
     manner.
+  id: totrans-7
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在法庭上使用犯罪决策模型来预测再犯风险时，我们必须确保模型以公平、诚实和无歧视的方式运作。
 - en: If a self-driving car suddenly acts abnormally and we cannot explain why, are
     we gonna be comfortable enough to use the technique in real traffic in large scale?
+  id: totrans-8
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 如果自动驾驶汽车突然表现异常，而我们无法解释原因，我们是否会足够放心地在大规模的实际交通中使用这项技术？
 - en: At [Affirm](https://www.affirm.com/), we are issuing tens of thousands of installment
     loans every day and our underwriting model has to provide declination reasons
     when the model rejects one’s loan application. That’s one of the many motivations
     for me to dig deeper and write this post. Model interpretability is a big field
     in machine learning. This review is never met to exhaust every study, but to serve
     as a starting point.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 在[Affirm](https://www.affirm.com/)，我们每天发放数以万计的分期贷款，当模型拒绝某人的贷款申请时，我们的核保模型必须提供拒绝原因。这是我深入研究并撰写这篇文章的许多动机之一。模型可解释性是机器学习中的一个重要领域。这篇评论并不旨在详尽研究每一项研究，而是作为一个起点。
 - en: '* * *'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: Interpretable Models
+  id: totrans-11
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 可解释模型
 - en: 'Lipton (2017) summarized the properties of an interpretable model in a theoretical
     review paper, [“The mythos of model interpretability”](https://arxiv.org/pdf/1606.03490.pdf):
     A human can repeat (*“simulatability”*) the computation process with a full understanding
     of the algorithm (*“algorithmic transparency”*) and every individual part of the
     model owns an intuitive explanation (*“decomposability”*).'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: Lipton (2017)在一篇理论评论论文中总结了可解释模型的特性，[“模型可解释性的神话”](https://arxiv.org/pdf/1606.03490.pdf)：人类可以重复(*“可模拟性”*)计算过程，并完全理解算法(*“算法透明度”*)，模型的每个部分都有直观的解释(*“可分解性”*)。
 - en: Many classic models have relatively simpler formation and naturally, come with
     a model-specific interpretation method. Meanwhile, new tools are being developed
     to help create better interpretable models ([Been, Khanna, & Koyejo, 2016](http://papers.nips.cc/paper/6300-examples-are-not-enough-learn-to-criticize-criticism-for-interpretability.pdf);
     [Lakkaraju, Bach & Leskovec, 2016](http://www.kdd.org/kdd2016/papers/files/rpp1067-lakkarajuA.pdf)).
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 许多经典模型具有相对简单的形式，并自然地带有特定于模型的解释方法。同时，正在开发新工具来帮助创建更好的可解释模型([Been, Khanna, & Koyejo,
+    2016](http://papers.nips.cc/paper/6300-examples-are-not-enough-learn-to-criticize-criticism-for-interpretability.pdf);
+    [Lakkaraju, Bach & Leskovec, 2016](http://www.kdd.org/kdd2016/papers/files/rpp1067-lakkarajuA.pdf))。
 - en: Regression
+  id: totrans-14
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 回归
 - en: 'A general form of a linear regression model is:'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 线性回归模型的一般形式是：
 - en: $$ y = w_0 + w_1 x_1 + w_2 x_2 + … + w_n x_n $$
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ y = w_0 + w_1 x_1 + w_2 x_2 + … + w_n x_n $$
 - en: The coefficients describe the change of the response triggered by one unit increase
     of the independent variables. The coefficients are not comparable directly unless
     the features have been standardized (check sklearn.preprocessing.[StandardScalar](http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html#sklearn.preprocessing.StandardScaler)
@@ -89,100 +125,142 @@
     since one unit of different features can refer to very different things. Without
     standardization, the product $w_i \dot x_i$ can be used to quantify one feature’s
     contribution to the response.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 系数描述了独立变量增加一个单位时响应的变化。除非特征已经标准化（查看sklearn.preprocessing.[StandardScaler](http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html#sklearn.preprocessing.StandardScaler)和[RobustScaler](http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.RobustScaler.html#sklearn.preprocessing.RobustScaler)），否则不能直接比较这些系数，因为不同特征的一个单位可能指的是非常不同的事物。在没有标准化的情况下，乘积$w_i
+    \dot x_i$可以用来量化一个特征对响应的贡献。
 - en: Naive Bayes
+  id: totrans-18
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 朴素贝叶斯
 - en: Naive Bayes is named as “Naive” because it works on a very simplified assumption
     that features are independent of each other and each contributes to the output
     independently.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 朴素贝叶斯之所以被称为“朴素”，是因为它基于一个非常简化的假设，即特征彼此独立，并且每个特征对输出的贡献是独立的。
 - en: 'Given a feature vector $\mathbf{x} = [x_1, x_2, \dots, x_n]$ and a class label
     $c \in \{1, 2, \dots, C\}$, the probability of this data point belonging to this
     class is:'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 给定一个特征向量$\mathbf{x} = [x_1, x_2, \dots, x_n]$和一个类别标签$c \in \{1, 2, \dots, C\}$，这个数据点属于这个类别的概率是：
 - en: $$ \begin{aligned} p(c | x_1, x_2, \dots, x_n) &\propto p(c, x_1, x_2, \dots,
     x_n)\\ &\propto p(c) p(x_1 | c) p(x_2 | c) \dots p(x_n | c)\\ &\propto p(c) \prod_{i=1}^n
     p(x_i | c). \end{aligned} $$
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} p(c | x_1, x_2, \dots, x_n) &\propto p(c, x_1, x_2, \dots,
+    x_n)\\ &\propto p(c) p(x_1 | c) p(x_2 | c) \dots p(x_n | c)\\ &\propto p(c) \prod_{i=1}^n
+    p(x_i | c). \end{aligned} $$
 - en: 'The Naive Bayes classifier is then defined as:'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后定义朴素贝叶斯分类器为：
 - en: $$ \hat{y} = \arg\max_{c \in 1, \dots, C} p(c) \prod_{i=1}^n p(x_i | c) $$
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \hat{y} = \arg\max_{c \in 1, \dots, C} p(c) \prod_{i=1}^n p(x_i | c) $$
 - en: Because the model has learned the prior $p(x_i \vert c)$ during the training,
     the contribution of an individual feature value can be easily measured by the
     posterior, $p(c \vert x_i) = p(c)p(x_i \vert c) / p(x_i)$.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 因为模型在训练过程中学习了先验$p(x_i \vert c)$，所以通过后验$p(c \vert x_i) = p(c)p(x_i \vert c) /
+    p(x_i)$可以轻松衡量单个特征值的贡献。
 - en: Decision Tree/Decision Lists
+  id: totrans-25
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 决策树/决策列表
 - en: Decision lists are a set of boolean functions, usually constructed by the syntax
     like `if... then... else...`. The if-condition contains a function involving one
     or multiple features and a boolean output. Decision lists are born with good interpretability
     and can be visualized in a tree structure. Many research on decision lists is
     driven by medical applications, where the interpretability is almost as crucial
     as the model itself.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 决策列表是一组布尔函数，通常由`if... then... else...`的语法构建。if条件包含涉及一个或多个特征和布尔输出的函数。决策列表具有良好的可解释性，并且可以在树结构中可视化。许多关于决策列表的研究都受到医疗应用的推动，其中可解释性几乎与模型本身一样重要。
 - en: 'A few types of decision lists are briefly described below:'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面简要描述了几种决策列表类型：
 - en: '[Falling Rule Lists (FRL)](http://proceedings.mlr.press/v38/wang15a.pdf) (Wang
     and Rudin, 2015) has fully enforced monotonicity on feature values. One key point,
     for example in the binary classification context, is that the probability of prediction
     $Y=1$ associated with each rule decreases as one moves down the decision lists.'
+  id: totrans-28
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[下降规则列表（FRL）](http://proceedings.mlr.press/v38/wang15a.pdf)（Wang和Rudin，2015）对特征值完全强制单调性。例如，在二元分类环境中，与每条规则相关的预测$Y=1$的概率随着在决策列表中向下移动而减少。'
 - en: '[Bayesian Rule List (BRL)](https://arxiv.org/abs/1511.01644) (Letham et al.,
     2015) is a generative model that yields a posterior distribution over possible
     decision lists.'
+  id: totrans-29
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[贝叶斯规则列表（BRL）](https://arxiv.org/abs/1511.01644)（Letham等人，2015）是一个生成模型，可以产生可能的决策列表的后验分布。'
 - en: '[Interpretable Decision Sets (IDS)](https://cs.stanford.edu/people/jure/pubs/interpretable-kdd16.pdf)
     (Lakkaraju, Bach & Leskovec, 2016) is a prediction framework to create a set of
     classification rules. The learning is optimized for both accuracy and interpretability
     simultaneously. IDS is closely related to the BETA method I’m gonna describe [later](https://lilianweng.github.io/posts/2017-08-01-interpretation/#beta-black-box-explanation-through-transparent-approximations)
     for interpreting black-box models.'
+  id: totrans-30
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[可解释决策集（IDS）](https://cs.stanford.edu/people/jure/pubs/interpretable-kdd16.pdf)（Lakkaraju，Bach＆Leskovec，2016）是一个预测框架，用于创建一组分类规则。学习同时优化准确性和可解释性。IDS与我稍后将描述的[BETA方法](https://lilianweng.github.io/posts/2017-08-01-interpretation/#beta-black-box-explanation-through-transparent-approximations)密切相关，用于解释黑匣子模型。'
 - en: Random Forests
+  id: totrans-31
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 随机森林
 - en: Weirdly enough, many people believe that the [Random Forests](http://www.math.univ-toulouse.fr/~agarivie/Telecom/apprentissage/articles/randomforest2001.pdf)
     model is a black box, which is not true. Considering that the output of random
     forests is the majority vote by a large number of independent decision trees and
     each tree is naturally interpretable.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 奇怪的是，许多人认为[随机森林](http://www.math.univ-toulouse.fr/~agarivie/Telecom/apprentissage/articles/randomforest2001.pdf)模型是一个黑匣子，这是不正确的。考虑到随机森林的输出是大量独立决策树的多数投票，而每棵树都是自然可解释的。
 - en: It is not very hard to gauge the influence of individual features if we look
     into a single tree at a time. The global feature importance of random forests
     can be quantified by the total decrease in node impurity averaged over all trees
     of the ensemble (“mean decrease impurity”).
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们一次查看一棵树，那么很容易评估单个特征的影响。随机森林的全局特征重要性可以通过整个集合中所有树的节点不纯度总减少的平均值来量化（“平均减少不纯度”）。
 - en: 'For one instance, because the decision paths in all the trees are well tracked,
     we can use the difference between the mean value of data points in a parent node
     between that of a child node to approximate the contribution of this split. Read
     more in this series of blog posts: [Interpreting Random Forests](http://blog.datadive.net/interpreting-random-forests/).'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于一个实例，因为所有树中的决策路径都被很好地跟踪，我们可以利用父节点和子节点之间数据点均值的差异来近似这次分裂的贡献。在这一系列博客文章中了解更多：[解释随机森林](http://blog.datadive.net/interpreting-random-forests/)。
 - en: Interpreting Black-Box Models
+  id: totrans-35
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 解释黑匣子模型
 - en: 'A lot of models are not designed to be interpretable. Approaches to explaining
     a black-box model aim to extract information from the trained model to justify
     its prediction outcome, without knowing how the model works in details. To keep
@@ -190,65 +268,94 @@
     real-world applications: Even when the base model is being constantly upgraded
     and refined, the interpretation engine built on top would not worry about the
     changes.'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 许多模型并非设计为可解释的。解释黑匣子模型的方法旨在从训练模型中提取信息来证明其预测结果，而不知道模型的详细工作原理。让解释过程独立于模型实现对于现实世界的应用是有益的：即使基础模型不断升级和完善，建立在其之上的解释引擎也不会担心变化。
 - en: Without the concern of keeping the model transparent and interpretable, we can
     endow the model with greater power of expressivity by adding more parameters and
     nonlinearity computation. That’s how deep neural networks become successful in
     tasks involving rich inputs.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果不考虑保持模型透明和可解释性，我们可以通过添加更多参数和非线性计算赋予模型更大的表达能力。这就是深度神经网络在涉及丰富输入的任务中取得成功的方式。
 - en: 'There is no hard requirement on how the explanation should be presented, but
     the primary goal is mainly to answer: **Can I trust this model?** When we rely
     on the model to make a critical or life-and-death decision, we have to make sure
     the model is trustworthy ahead of time.'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 解释的呈现方式没有严格要求，但主要目标主要是回答：**我能相信这个模型吗？** 当我们依赖模型做出关键或生死决定时，我们必须确保模型是可信的。
 - en: 'The interpretation framework should balance between two goals:'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 解释框架应该在两个目标之间取得平衡：
 - en: '**Fidelity**: the prediction produced by an explanation should agree with the
     original model as much as possible.'
+  id: totrans-40
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**忠实度**：解释产生的预测应尽可能与原始模型一致。'
 - en: '**Interpretability**: the explanation should be simple enough to be human-understandable.'
+  id: totrans-41
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**可解释性**：解释应该足够简单以便人类理解。'
 - en: 'Side Notes: The next three methods are designed for local interpretation.'
+  id: totrans-42
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 附注：接下来的三种方法是为局部解释而设计的。
 - en: Prediction Decomposition
+  id: totrans-43
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 预测分解
 - en: '[Robnik-Sikonja and Kononenko (2008)](http://lkm.fri.uni-lj.si/rmarko/papers/RobnikSikonjaKononenko08-TKDE.pdf)
     proposed to explain the model prediction for one instance by measuring the difference
     between the original prediction and the one made with omitting a set of features.'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Robnik-Sikonja 和 Kononenko (2008)](http://lkm.fri.uni-lj.si/rmarko/papers/RobnikSikonjaKononenko08-TKDE.pdf)
+    提出通过测量原始预测与省略一组特征后的预测之间的差异来解释模型对一个实例的预测。'
 - en: 'Let’s say we need to generate an explanation for a classification model $f:
     \mathbf{X} \rightarrow \mathbf{Y}$. Given a data point $x \in X$ which consists
     of $a$ individual values of attribute $A_i$, $i = 1, \dots, a$, and is labeled
     with class $y \in Y$. The *prediction difference* is quantified by computing the
     difference between the model predicted probabilities with or without knowing $A_i$:'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: '假设我们需要为一个分类模型 $f: \mathbf{X} \rightarrow \mathbf{Y}$ 生成解释。给定一个数据点 $x \in X$，其中包含属性
+    $A_i$ 的 $a$ 个单独值，$i = 1, \dots, a$，并且被标记为类别 $y \in Y$。*预测差异* 通过计算知道或不知道 $A_i$
+    的情况下模型预测的概率之间的差异来量化：'
 - en: $$ \text{probDiff}_i (y | x) = p(y| x) - p(y | x \backslash A_i) $$
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \text{probDiff}_i (y | x) = p(y| x) - p(y | x \backslash A_i) $$
 - en: (The paper also discussed on using the odds ratio or the entropy-based information
     metric to quantify the prediction difference.)
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: （该论文还讨论了使用赔率比或基于熵的信息度量来量化预测差异。）
 - en: '**Problem**: If the target model outputs a probability, then great, getting
     $ p(y \vert x) $ is straightforward. Otherwise, the model prediction has to run
     through an appropriate post-modeling calibration to translate the prediction score
     into probabilities. This calibration layer is another piece of complication.'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: '**问题**：如果目标模型输出概率，那很好，获取 $ p(y \vert x) $ 就很简单。否则，模型预测必须经过适当的后建模校准来将预测分数转换为概率。这个校准层是另一个复杂的部分。'
 - en: '**Another problem**: If we generate $x \backslash A_i$ by replacing $A_i$ with
     a missing value (like `None`, `NaN`, etc.), we have to rely on the model’s internal
     mechanism for missing value imputation. A model which replaces these missing cases
@@ -256,25 +363,39 @@
     special placeholder. One solution as presented in the paper is to replace $A_i$
     with all possible values of this feature and then sum up the prediction weighted
     by how likely each value shows in the data:'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: '**另一个问题**：如果我们通过用缺失值（如 `None`、`NaN` 等）替换 $A_i$ 来生成 $x \backslash A_i$，我们必须依赖模型的内部机制进行缺失值插补。一个用中位数替换这些缺失情况的模型应该与一个插入特殊占位符的模型产生非常不同的输出。论文中提出的一个解决方案是用该特征的所有可能值替换
+    $A_i$，然后根据每个值在数据中出现的可能性加权求和预测：'
 - en: $$ \begin{aligned} p(y \vert x \backslash A_i) &= \sum_{s=1}^{m_i} p(A_i=a_s
     \vert x \backslash A_i) p(y \vert x \leftarrow A_i=a_s) \\ &\approx \sum_{s=1}^{m_i}
     p(A_i=a_s) p(y \vert x \leftarrow A_i=a_s) \end{aligned} $$
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} p(y \vert x \backslash A_i) &= \sum_{s=1}^{m_i} p(A_i=a_s
+    \vert x \backslash A_i) p(y \vert x \leftarrow A_i=a_s) \\ &\approx \sum_{s=1}^{m_i}
+    p(A_i=a_s) p(y \vert x \leftarrow A_i=a_s) \end{aligned} $$
 - en: Where $p(y \vert x \leftarrow A_i=a_s)$ is the probability of getting label
     $y$ if we replace the feature $A_i$ with value $a_s$ in the feature vector of
     $x$. There are $m_i$ unique values of $A_i$ in the training set.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 $p(y \vert x \leftarrow A_i=a_s)$ 是在特征向量 $x$ 中用值 $a_s$ 替换特征 $A_i$ 后获得标签 $y$
+    的概率。训练集中有 $m_i$ 个唯一值的 $A_i$。
 - en: With the help of the measures of prediction difference when omitting known features,
     we can *decompose* the impact of each individual feature on the prediction.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 借助省略已知特征时的预测差异度量，我们可以*分解*每个单独特征对预测的影响。
 - en: '![](../Images/2aea6e925fbd32649ca141dcf0c5abe9.png)'
+  id: totrans-53
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/2aea6e925fbd32649ca141dcf0c5abe9.png)'
 - en: 'Fig. 1\. Explanations for a SVM model predicting the survival of one male adult
     first-class passenger in the [Titanic dataset](https://www.kaggle.com/c/titanic/data).
     The information difference is very similar to the probability difference, but
@@ -285,153 +406,226 @@
     and negative explanations for given attributes'' values. In this case, being a
     male adult makes it very less likely to survive; the class level does not impact
     as much.'
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 图1. 对一个SVM模型进行解释，该模型预测了[Titanic数据集](https://www.kaggle.com/c/titanic/data)中一个男性成年头等舱乘客的生存情况。信息差异与概率差异非常相似，但它衡量了在不知道$A\_i$的情况下找出$y$为真所需的信息量：$\text{infDiff}\_i
+    (y|x) = \log\_2 p(y|x) - \log\_2 p(y|x \backslash A\_i)$。特定实例的解释用深色条形图表示。浅色阴影的半高条形图是给定属性值的平均正面和负面解释。在这种情况下，成为男性成年人使得生存的可能性非常小；舱位等级的影响不那么大。
 - en: Local Gradient Explanation Vector
+  id: totrans-55
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 局部梯度解释向量
 - en: This method ([Baehrens, et al. 2010](http://www.jmlr.org/papers/volume11/baehrens10a/baehrens10a.pdf))
     is able to explain the local decision taken by arbitrary nonlinear classification
     algorithms, using the local gradients that characterize how a data point has to
     be moved to change its predicted label.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种方法（[Baehrens等人，2010](http://www.jmlr.org/papers/volume11/baehrens10a/baehrens10a.pdf)）能够解释任意非线性分类算法所做的局部决策，使用表征数据点如何移动以改变其预测标签的局部梯度。
 - en: 'Let’s say, we have a [Bayes Classifier](https://en.wikipedia.org/wiki/Bayes_classifier)
     which is trained on the data set $X$ and outputs probabilities over the class
     labels $Y$, $p(Y=y \vert X=x)$. And one class label $y$ is drawn from the class
     label pool, $\{1, 2, \dots, C\}$. This Bayes classifier is constructed as:'
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设我们有一个[贝叶斯分类器](https://en.wikipedia.org/wiki/Bayes_classifier)，它在数据集$X$上训练，并输出类标签$Y$上的概率，$p(Y=y
+    \vert X=x)$。并且一个类标签$y$从类标签池$\{1, 2, \dots, C\}$中抽取。这个贝叶斯分类器构造如下：
 - en: $$ f^{*}(x) = \arg \min_{c \in \{1, \dots, C\}} p(Y \neq c \vert X = x) $$
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ f^{*}(x) = \arg \min_{c \in \{1, \dots, C\}} p(Y \neq c \vert X = x) $$
 - en: The *local explanation vector* is defined as the derivative of the probability
     prediction function at the test point $x = x_0$. A large entry in this vector
     highlights a feature with a big influence on the model decision; A positive sign
     indicates that increasing the feature would lower the probability of $x_0$ assigned
     to $f^{*}(x_0)$.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: '*局部解释向量*被定义为在测试点$x = x_0$处的概率预测函数的导数。这个向量中的大数值突出显示了对模型决策有很大影响的特征；正号表示增加该特征会降低$x_0$被分配给$f^{*}(x_0)$的概率。'
 - en: 'However, this approach requires the model output to be a probability (similar
     to the [“Prediction Decomposition”](https://lilianweng.github.io/posts/2017-08-01-interpretation/#prediction-decomposition)
     method above). What if the original model (labelled as $f$) is not calibrated
     to yield probabilities? As suggested by the paper, we can approximate $f$ by another
     classifier in a form that resembles the Bayes classifier $f^{*}$:'
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，这种方法要求模型输出为概率（类似于上面的[“预测分解”](https://lilianweng.github.io/posts/2017-08-01-interpretation/#prediction-decomposition)方法）。如果原始模型（标记为$f$）没有校准为产生概率怎么办？正如论文建议的，我们可以通过另一个分类器来近似$f$，使其形式类似于贝叶斯分类器$f^{*}$：
 - en: '(1) Apply [Parzen window](https://en.wikipedia.org/?title=Parzen_window&redirect=no)
     to the training data to estimate the weighted class densities:'
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: (1) 对训练数据应用[Parzen窗口](https://en.wikipedia.org/?title=Parzen_window&redirect=no)来估计加权类密度：
 - en: $$ \hat{p}_{\sigma}(x, y=c) = \frac{1}{n} \sum_{i \in I_c} k_{\sigma} (x - x_i)
     $$
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \hat{p}_{\sigma}(x, y=c) = \frac{1}{n} \sum_{i \in I_c} k_{\sigma} (x - x_i)
+    $$
 - en: Where $I_c$ is the index set containing the indices of data points assigned
     to class $c$ by the model $f$, $I_c = \{i \vert f(x_i) = c\}$. $k_{\sigma}$ is
     a kernel function. Gaussian kernel is a popular one among [many candidates](https://en.wikipedia.org/wiki/Kernel_(statistics)#Kernel_functions_in_common_use).
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$I_c$是包含由模型$f$分配给类别$c$的数据点索引的索引集，$I_c = \{i \vert f(x_i) = c\}$。$k_{\sigma}$是一个核函数。高斯核是[许多候选中](https://en.wikipedia.org/wiki/Kernel_(statistics)#Kernel_functions_in_common_use)最受欢迎的一个。
 - en: '(2) Then, apply the Bayes’ rule to approximate the probability $p(Y=c \vert
     X=x)$ for all classes:'
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: (2) 然后，应用贝叶斯规则来近似所有类别的概率$p(Y=c \vert X=x)$：
 - en: $$ \begin{aligned} \hat{p}_{\sigma}(y=c | x) &= \frac{\hat{p}_{\sigma}(x, y=c)}{\hat{p}_{\sigma}(x,
     y=c) + \hat{p}_{\sigma}(x, y \neq c)} \\ &\approx \frac{\sum_{i \in I_c} k_{\sigma}
     (x - x_i)}{\sum_i k_{\sigma} (x - x_i)} \end{aligned} $$
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \hat{p}_{\sigma}(y=c | x) &= \frac{\hat{p}_{\sigma}(x, y=c)}{\hat{p}_{\sigma}(x,
+    y=c) + \hat{p}_{\sigma}(x, y \neq c)} \\ &\approx \frac{\sum_{i \in I_c} k_{\sigma}
+    (x - x_i)}{\sum_i k_{\sigma} (x - x_i)} \end{aligned} $$
 - en: '(3) The final estimated Bayes classifier takes the form:'
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: (3) 最终估计的贝叶斯分类器形式如下：
 - en: $$ \hat{f}_{\sigma} = \arg\min_{c \in \{1, \dots, C\}} \hat{p}_{\sigma}(y \neq
     c \vert x) $$
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \hat{f}_{\sigma} = \arg\min_{c \in \{1, \dots, C\}} \hat{p}_{\sigma}(y \neq
+    c \vert x) $$
 - en: Noted that we can generate the labeled data with the original model $f$, as
     much as we want, not restricted by the size of the training data. The hyperparameter
     $\sigma$ is selected to optimize the chances of $\hat{f}_{\sigma}(x) = f(x)$ to
     achieve high fidelity.
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意，我们可以使用原始模型 $f$ 生成标记数据，数量不受训练数据大小限制。超参数 $\sigma$ 被选择以优化 $\hat{f}_{\sigma}(x)
+    = f(x)$ 达到高保真度的机会。
 - en: '![](../Images/02dd527b0a113f55a4a29a5ef4b13797.png)'
+  id: totrans-69
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/02dd527b0a113f55a4a29a5ef4b13797.png)'
 - en: Fig. 2\. An example of how local gradient explanation vector is applied on simple
     object classification with Gaussian Processes Classifier (GPC). The GPC model
     outputs the probability by nature. (a) shows the training points and their labels
     in red (positive 1) and blue (negative -1). (b) illustrates a probability function
     for the positive class. (c-d) shows the local gradients and the directions of
     the local explanation vectors.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 图2\. 展示了如何在简单对象分类中应用局部梯度解释向量与高斯过程分类器（GPC）。GPC 模型自然输出概率。 (a) 显示了训练点及其标签，红色（正1）和蓝色（负-1）。
+    (b) 展示了正类别的概率函数。 (c-d) 显示了局部梯度和局部解释向量的方向。
 - en: 'Side notes: As you can see both the methods above require the model prediction
     to be a probability. Calibration of the model output adds another layer of complication.'
+  id: totrans-71
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 附注：正如您所见，上述两种方法都要求模型预测为概率。模型输出的校准增加了另一层复杂性。
 - en: LIME (Local Interpretable Model-Agnostic Explanations)
+  id: totrans-72
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: LIME（局部可解释模型无关解释）
 - en: '[LIME](https://github.com/marcotcr/lime), short for *local interpretable model-agnostic
     explanation*, can approximate a black-box model locally in the neighborhood of
     the prediction we are interested ([Ribeiro, Singh, & Guestrin, 2016](https://arxiv.org/pdf/1602.04938.pdf)).'
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: '[LIME](https://github.com/marcotcr/lime)，简称*局部可解释模型无关解释*，可以在我们感兴趣的预测周围局部近似黑盒模型（[Ribeiro,
+    Singh, & Guestrin, 2016](https://arxiv.org/pdf/1602.04938.pdf)）。'
 - en: 'Same as above, let us label the black-box model as $f$. LIME presents the following
     steps:'
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 与上述相同，让我们将黑盒模型标记为 $f$。LIME 提出以下步骤：
 - en: '(1) Convert the dataset into interpretable data representation: $x \Rightarrow
     x_b$.'
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: (1) 将数据集转换为可解释数据表示：$x \Rightarrow x_b$。
 - en: 'Text classifier: a binary vector indicating the presence or absence of a word'
+  id: totrans-76
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 文本分类器：指示单词存在或不存在的二进制向量
 - en: 'Image classifier: a binary vector indicating the presence or absence of a contiguous
     patch of similar pixels (super-pixel).'
+  id: totrans-77
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 图像分类器：指示相似像素块（超像素）存在或不存在的二进制向量。
 - en: '![](../Images/0e1ff3df3c9cb3f04ce02a478706c378.png)'
+  id: totrans-78
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/0e1ff3df3c9cb3f04ce02a478706c378.png)'
 - en: 'Fig. 3\. An example of converting an image into interpretable data representation.
     (Image source: [www.oreilly.com/learning/introduction-to-local-interpretable-model-agnostic-explanations-lime](https://www.oreilly.com/learning/introduction-to-local-interpretable-model-agnostic-explanations-lime))'
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: '图3\. 将图像转换为可解释数据表示的示例。 (图片来源: [www.oreilly.com/learning/introduction-to-local-interpretable-model-agnostic-explanations-lime](https://www.oreilly.com/learning/introduction-to-local-interpretable-model-agnostic-explanations-lime))'
 - en: (2) Given a prediction $f(x)$ with the corresponding interpretable data representation
     $x_b$, let us sample instances around $x_b$ by drawing nonzero elements of $x_b$
     uniformly at random where the number of such draws is also uniformly sampled.
     This process generates a perturbed sample $z_b$ which contains a fraction of nonzero
     elements of $x_b$.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: (2) 给定一个预测 $f(x)$，对应的可解释数据表示为 $x_b$，让我们围绕 $x_b$ 采样实例，通过均匀随机抽取 $x_b$ 的非零元素，抽取次数也是均匀抽样的。这个过程生成了一个扰动样本
+    $z_b$，其中包含 $x_b$ 的非零元素的一部分。
 - en: Then we recover $z_b$ back into the original input $z$ and get a prediction
     score $f(z)$ by the target model.
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后我们将 $z_b$ 恢复回原始输入 $z$，通过目标模型得到一个预测分数 $f(z)$。
 - en: Use many such sampled data points $z_b \in \mathcal{Z}_b$ and their model predictions,
     we can learn an explanation model (such as in a form as simple as a regression)
     with local fidelity. The sampled data points are weighted differently based on
     how close they are to $x_b$. The paper used a lasso regression with preprocessing
     to select top $k$ most significant features beforehand, named “K-LASSO”.
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用许多这样的采样数据点 $z_b \in \mathcal{Z}_b$ 及其模型预测，我们可以学习一个解释模型（例如以回归形式简单表示），具有本地的准确性。根据它们与
+    $x_b$ 的接近程度，采样数据点被赋予不同的权重。该论文使用了一个 lasso 回归与预处理，事先选择了前 k 个最显著的特征，称为“K-LASSO”。
 - en: '![](../Images/f20adc815da97a853a43ebe1a853fed2.png)'
+  id: totrans-83
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f20adc815da97a853a43ebe1a853fed2.png)'
 - en: 'Fig. 4\. The pink and blue areas are two classes predicted by the black-box
     model $f$. the big red cross is the point to be explained and other smaller crosses
     (predicted as pink by $f$) and dots (predicted as blue by $f$) are sampled data
     points. Even though the model can be very complicated, we are still able to learn
     a local explanation model as simple as the grey dash line. (Image source: [homes.cs.washington.edu/~marcotcr/blog/lime](https://homes.cs.washington.edu/~marcotcr/blog/lime/))'
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 4\. 粉色和蓝色区域是黑盒模型 $f$ 预测的两个类别，大红色十字是要解释的点，其他小十字（被 $f$ 预测为粉色）和点（被 $f$ 预测为蓝色）是采样数据点。即使模型可能非常复杂，我们仍然能够学习一个简单的本地解释模型，如灰色虚线所示。（图片来源：[homes.cs.washington.edu/~marcotcr/blog/lime](https://homes.cs.washington.edu/~marcotcr/blog/lime/)）
 - en: Examining whether the explanation makes sense can directly decide whether the
     model is trustworthy because sometimes the model can pick up spurious correlation
     or generalization. One interesting example in the paper is to apply LIME on an
@@ -442,82 +636,116 @@
     nor “Atheism” directly. After such a diagnosis, we learned that even the model
     gives us a nice accuracy, it cannot be trusted. It also shed lights on ways to
     improve the model, such as better preprocessing on the text.
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 检查解释是否合理可以直接决定模型是否值得信赖，因为有时模型可能会捕捉到虚假相关性或泛化。论文中的一个有趣例子是将 LIME 应用于 SVM 文本分类器，用于区分“基督教”和“无神论”。该模型在保留测试集上取得了相当不错的准确率（94%！），但
+    LIME 解释表明决策是基于非常任意的原因，比如计算单词“re”、“posting”和“host”，这些单词与“基督教”或“无神论”都没有直接联系。经过这样的诊断，我们了解到即使模型给出了不错的准确率，也不能被信任。这也启示了改进模型的方法，比如在文本上进行更好的预处理。
 - en: '![](../Images/17c93c82df9eb93f562466466394def7.png)'
+  id: totrans-86
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/17c93c82df9eb93f562466466394def7.png)'
 - en: 'Fig. 5\. Illustration of how to use LIME on an image classifier. (Image source:
     [www.oreilly.com/learning/introduction-to-local-interpretable-model-agnostic-explanations-lime](https://www.oreilly.com/learning/introduction-to-local-interpretable-model-agnostic-explanations-lime))'
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 5\. 展示如何在图像分类器上使用 LIME。（图片来源：[www.oreilly.com/learning/introduction-to-local-interpretable-model-agnostic-explanations-lime](https://www.oreilly.com/learning/introduction-to-local-interpretable-model-agnostic-explanations-lime)）
 - en: For more detailed non-paper explanation, please read [this blog post](https://www.oreilly.com/learning/introduction-to-local-interpretable-model-agnostic-explanations-lime)
     by the author. A very nice read.
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 欲了解更详细的非论文解释，请阅读作者的[这篇博客文章](https://www.oreilly.com/learning/introduction-to-local-interpretable-model-agnostic-explanations-lime)。非常值得一读。
 - en: 'Side Notes: Interpreting a model locally is supposed to be easier than interpreting
     the model globally, but harder to maintain (thinking about the [curse of dimensionality](https://en.wikipedia.org/wiki/Curse_of_dimensionality)).
     Methods described below aim to explain the behavior of a model as a whole. However,
     the global approach is unable to capture the fine-grained interpretation, such
     as a feature might be important in this region but not at all in another.'
+  id: totrans-89
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 附注：在本地解释模型应该比全局解释模型更容易，但更难维护（考虑到[维度诅咒](https://en.wikipedia.org/wiki/Curse_of_dimensionality)）。下面描述的方法旨在解释整个模型的行为。然而，全局方法无法捕捉细粒度的解释，例如一个特征在这个区域可能很重要，但在另一个区域可能一点都不重要。
 - en: Feature Selection
+  id: totrans-90
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 特征选择
 - en: Essentially all the classic feature selection methods ([Yang and Pedersen, 1997](http://www.surdeanu.info/mihai/teaching/ista555-spring15/readings/yang97comparative.pdf);
     [Guyon and Elisseeff, 2003](http://www.jmlr.org/papers/volume3/guyon03a/guyon03a.pdf))
     can be considered as ways to explain a model globally. Feature selection methods
     decompose the contribution of multiple features so that we can explain the overall
     model output by individual feature impact.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 本质上，所有经典的特征选择方法（[Yang and Pedersen, 1997](http://www.surdeanu.info/mihai/teaching/ista555-spring15/readings/yang97comparative.pdf);
+    [Guyon and Elisseeff, 2003](http://www.jmlr.org/papers/volume3/guyon03a/guyon03a.pdf)）都可以被视为全局解释模型的方法。特征选择方法将多个特征的贡献分解，以便我们可以通过各个特征的影响来解释整体模型输出。
 - en: There are a ton of resources on feature selection so I would skip the topic
     in this post.
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 有大量关于特征选择的资源，所以我会在本文中跳过这个主题。
 - en: BETA (Black Box Explanation through Transparent Approximations)
+  id: totrans-93
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: BETA（透明逼近的黑盒解释）
 - en: '[BETA](https://arxiv.org/abs/1707.01154), short for *black box explanation
     through transparent approximations*, is closely connected to [Interpretable Decision
     Sets](https://cs.stanford.edu/people/jure/pubs/interpretable-kdd16.pdf) (Lakkaraju,
     Bach & Leskovec, 2016). BETA learns a compact two-level decision set in which
     each rule explains part of the model behavior unambiguously.'
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: '[BETA](https://arxiv.org/abs/1707.01154)，简称*透明逼近的黑盒解释*，与[可解释决策集](https://cs.stanford.edu/people/jure/pubs/interpretable-kdd16.pdf)（Lakkaraju,
+    Bach & Leskovec, 2016）密切相关。BETA学习一个紧凑的两级决策集，其中每个规则清晰地解释模型行为的一部分。'
 - en: The authors proposed an novel objective function so that the learning process
     is optimized for **high fidelity** (high agreement between explanation and the
     model), **low unambiguity** (little overlaps between decision rules in the explanation),
     and **high interpretability** (the explanation decision set is lightweight and
     small). These aspects are combined into one objection function to optimize for.
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 作者提出了一个新颖的目标函数，使学习过程针对**高忠实度**（解释与模型之间的高一致性）、**低明确性**（解释中决策规则之间的重叠较少）和**高可解释性**（解释决策集轻量且小）进行优化。这些方面被合并为一个目标函数进行优化。
 - en: '![](../Images/61f4dd9764483bbd38f1537ccd66bff3.png)'
+  id: totrans-96
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/61f4dd9764483bbd38f1537ccd66bff3.png)'
 - en: 'Fig. 6\. Measures for desiderata of a good model explanation: fidelity, unambiguity,
     and interpretability. Given the target model is $\mathcal{B}$, its explanation
     is a two level decision set $\Re$ containing a set of rules ${(q\_1, s\_1, c\_1),
     \dots, (q\_M, s\_M, c\_M)}$, where $q\_i$ and $s\_i$ are conjunctions of predicates
     of the form (feature, operator, value) and $c\_i$ is a class label. Check [the
     paper](https://arxiv.org/abs/1707.01154) for more details. (Image source: [arxiv.org/abs/1707.01154](https://arxiv.org/abs/1707.01154))'
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 图6. 一个好的模型解释的要求：忠实度、明确性和可解释性。给定目标模型为$\mathcal{B}$，其解释是一个包含一组规则的两级决策集$\Re$，其中规则为$(q\_1,
+    s\_1, c\_1), \dots, (q\_M, s\_M, c\_M)$，其中$q\_i$和$s\_i$是形式为（特征，运算符，数值）的谓词的合取，$c\_i$是一个类别标签。查看[论文](https://arxiv.org/abs/1707.01154)获取更多细节。（图片来源：[arxiv.org/abs/1707.01154](https://arxiv.org/abs/1707.01154))
 - en: Explainable Artificial Intelligence
+  id: totrans-98
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 可解释人工智能
 - en: I borrow the name of this section from the DARPA project [“Explainable Artificial
     Intelligence”](https://www.darpa.mil/program/explainable-artificial-intelligence).
     This Explainable AI (XAI) program aims to develop more interpretable models and
     to enable human to understand, appropriately trust, and effectively manage the
     emerging generation of artificially intelligent techniques.
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 我从DARPA项目[“可解释人工智能”](https://www.darpa.mil/program/explainable-artificial-intelligence)中借用了这个部分的名称。这个可解释人工智能（XAI）计划旨在开发更具解释性的模型，并使人类能够理解、适当信任和有效管理新一代人工智能技术的出现。
 - en: With the progress of the deep learning applications, people start worrying about
     that [we may never know even if the model goes bad](https://www.technologyreview.com/s/601860/if-a-driverless-car-goes-bad-we-may-never-know-why/).
     The complicated structure, the large number of learnable parameters, the nonlinear
@@ -526,8 +754,11 @@
     creating a true black-box. Although the power of deep learning is originated from
     this complexity — more flexible to capture rich and intricate patterns in the
     real-world data.
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 随着深度学习应用的进展，人们开始担心[即使模型出现问题，我们也可能永远不知道](https://www.technologyreview.com/s/601860/if-a-driverless-car-goes-bad-we-may-never-know-why/)。复杂的结构，大量的可学习参数，非线性数学运算以及[一些有趣的特性](https://arxiv.org/abs/1312.6199)
+    (Szegedy等人，2014)导致深度神经网络的不可解释性，创造了一个真正的黑匣子。尽管深度学习的力量源于这种复杂性——更灵活地捕捉现实世界数据中丰富而复杂的模式。
 - en: 'Studies on **adversarial examples** ([OpenAI Blog: Robust Adversarial Examples](https://blog.openai.com/robust-adversarial-inputs/),
     [Attacking Machine Learning with Adversarial Examples](https://blog.openai.com/adversarial-example-research/),
     [Goodfellow, Shlens & Szegedy, 2015](https://arxiv.org/pdf/1412.6572.pdf); [Nguyen,
@@ -535,11 +766,17 @@
     raise the alarm on the robustness and safety of AI applications. Sometimes the
     models could show unintended, unexpected and unpredictable behavior and we have
     no fast/good strategy to tell why.'
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 对**对抗样本**的研究（[OpenAI博客：强大的对抗样本](https://blog.openai.com/robust-adversarial-inputs/)，[用对抗样本攻击机器学习](https://blog.openai.com/adversarial-example-research/)，[Goodfellow,
+    Shlens & Szegedy, 2015](https://arxiv.org/pdf/1412.6572.pdf); [Nguyen, Yosinski,
+    & Clune, 2015](http://www.cv-foundation.org/openaccess/content_cvpr_2015/papers/Nguyen_Deep_Neural_Networks_2015_CVPR_paper.pdf))引起了人们对人工智能应用的稳健性和安全性的警示。有时模型可能表现出意外的、意想不到的和不可预测的行为，我们没有快速/良好的策略来解释原因。
 - en: '![](../Images/c43d0b5396e976fe8849587e6698869b.png)'
+  id: totrans-102
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c43d0b5396e976fe8849587e6698869b.png)'
 - en: 'Fig. 7\. Illustrations of adversarial examples. (a-d) are adversarial images
     that are generated by adding human-imperceptible noises onto original images ([Szegedy
     et al., 2013](https://arxiv.org/abs/1312.6199)). A well-trained neural network
@@ -547,104 +784,169 @@
     are patterns that are generated ([Nguyen, Yosinski & Clune, 2015](http://www.cv-foundation.org/openaccess/content_cvpr_2015/papers/Nguyen_Deep_Neural_Networks_2015_CVPR_paper.pdf)).
     A well-trained neural network model labels them into (e) school bus, (f) guitar,
     (g) peacock and (h) Pekinese respectively. (Image source: [Wang, Raj & Xing, 2017](https://arxiv.org/pdf/1702.07800.pdf))'
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 图7. 对抗样本的插图。 (a-d) 是通过在原始图像上添加人类无法察觉的噪音生成的对抗图像（[Szegedy等人，2013](https://arxiv.org/abs/1312.6199)）。训练良好的神经网络模型可以成功分类原始图像，但无法对对抗图像进行分类。
+    (e-h) 是生成的模式（[Nguyen, Yosinski & Clune, 2015](http://www.cv-foundation.org/openaccess/content_cvpr_2015/papers/Nguyen_Deep_Neural_Networks_2015_CVPR_paper.pdf)）。训练良好的神经网络模型将它们标记为
+    (e) 校车，(f) 吉他，(g) 孔雀和 (h) 狮子狗。 (图片来源：[Wang, Raj & Xing, 2017](https://arxiv.org/pdf/1702.07800.pdf))
 - en: Nvidia recently developed [a method to visualize the most important pixel points](https://blogs.nvidia.com/blog/2017/04/27/how-nvidias-neural-net-makes-decisions/)
     in their self-driving cars’ decisioning process. The visualization provides insights
     on how AI thinks and what the system relies on while operating the car. If what
     the AI believes to be important agrees with how human make similar decisions,
     we can naturally gain more confidence in the black-box model.
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: Nvidia最近开发了[一种方法来可视化最重要的像素点](https://blogs.nvidia.com/blog/2017/04/27/how-nvidias-neural-net-makes-decisions/)，用于他们的自动驾驶汽车的决策过程。这种可视化提供了关于人工智能思维方式以及系统在操作汽车时依赖的内容的见解。如果人工智能认为重要的内容与人类做出类似决策的方式一致，我们自然会对这个黑匣子模型更有信心。
 - en: Many exciting news and findings are happening in this evolving field every day.
     Hope my post can give you some pointers and encourage you to investigate more
     into this topic :)
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个不断发展的领域每天都有许多令人兴奋的新闻和发现。希望我的帖子能给你一些指引，并鼓励你更深入地探究这个主题 :)
 - en: '* * *'
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'Cited as:'
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: '引用为:'
 - en: '[PRE0]'
+  id: totrans-108
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: References
+  id: totrans-109
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: '[1] Zachary C. Lipton. [“The mythos of model interpretability.”](https://arxiv.org/pdf/1606.03490.pdf)
     arXiv preprint arXiv:1606.03490 (2016).'
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] Zachary C. Lipton. [“模型可解释性的神话。”](https://arxiv.org/pdf/1606.03490.pdf)
+    arXiv预印本 arXiv:1606.03490 (2016).'
 - en: '[2] Been Kim, Rajiv Khanna, and Oluwasanmi O. Koyejo. “Examples are not enough,
     learn to criticize! criticism for interpretability.” Advances in Neural Information
     Processing Systems. 2016.'
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] Been Kim, Rajiv Khanna, 和 Oluwasanmi O. Koyejo. “Examples are not enough,
+    learn to criticize! criticism for interpretability.” Advances in Neural Information
+    Processing Systems. 2016.'
 - en: '[3] Himabindu Lakkaraju, Stephen H. Bach, and Jure Leskovec. [“Interpretable
     decision sets: A joint framework for description and prediction.”](http://www.kdd.org/kdd2016/papers/files/rpp1067-lakkarajuA.pdf)
     Proc. 22nd ACM SIGKDD Intl. Conf. on Knowledge Discovery and Data Mining. ACM,
     2016.'
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: '[3] Himabindu Lakkaraju, Stephen H. Bach, 和 Jure Leskovec. [“可解释的决策集：描述和预测的联合框架。”](http://www.kdd.org/kdd2016/papers/files/rpp1067-lakkarajuA.pdf)
+    Proc. 22nd ACM SIGKDD Intl. Conf. on Knowledge Discovery and Data Mining. ACM,
+    2016.'
 - en: '[4] Robnik-Šikonja, Marko, and Igor Kononenko. [“Explaining classifications
     for individual instances.”](http://lkm.fri.uni-lj.si/rmarko/papers/RobnikSikonjaKononenko08-TKDE.pdf)
     IEEE Transactions on Knowledge and Data Engineering 20.5 (2008): 589-600.'
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: '[4] Robnik-Šikonja, Marko, 和 Igor Kononenko. [“解释个体实例的分类。”](http://lkm.fri.uni-lj.si/rmarko/papers/RobnikSikonjaKononenko08-TKDE.pdf)
+    IEEE Transactions on Knowledge and Data Engineering 20.5 (2008): 589-600.'
 - en: '[5] Baehrens, David, et al. [“How to explain individual classification decisions.”](http://www.jmlr.org/papers/volume11/baehrens10a/baehrens10a.pdf)
     Journal of Machine Learning Research 11.Jun (2010): 1803-1831.'
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: '[5] Baehrens, David, 等. [“如何解释个体分类决策。”](http://www.jmlr.org/papers/volume11/baehrens10a/baehrens10a.pdf)
+    Journal of Machine Learning Research 11.Jun (2010): 1803-1831.'
 - en: '[6] Marco Tulio Ribeiro, Sameer Singh, and Carlos Guestrin. [“Why should I
     trust you?: Explaining the predictions of any classifier.”](https://arxiv.org/pdf/1602.04938.pdf)
     Proc. 22nd ACM SIGKDD Intl. Conf. on Knowledge Discovery and Data Mining. ACM,
     2016.'
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: '[6] Marco Tulio Ribeiro, Sameer Singh, 和 Carlos Guestrin. [“为什么我应该相信你？：解释任何分类器的预测。”](https://arxiv.org/pdf/1602.04938.pdf)
+    Proc. 22nd ACM SIGKDD Intl. Conf. on Knowledge Discovery and Data Mining. ACM,
+    2016.'
 - en: '[7] Yiming Yang, and Jan O. Pedersen. [“A comparative study on feature selection
     in text categorization.”](http://www.surdeanu.info/mihai/teaching/ista555-spring15/readings/yang97comparative.pdf)
     Intl. Conf. on Machine Learning. Vol. 97\. 1997.'
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: '[7] Yiming Yang, 和 Jan O. Pedersen. [“文本分类中特征选择的比较研究。”](http://www.surdeanu.info/mihai/teaching/ista555-spring15/readings/yang97comparative.pdf)
+    Intl. Conf. on Machine Learning. Vol. 97\. 1997.'
 - en: '[8] Isabelle Guyon, and André Elisseeff. [“An introduction to variable and
     feature selection.”](http://www.jmlr.org/papers/volume3/guyon03a/guyon03a.pdf)
     Journal of Machine Learning Research 3.Mar (2003): 1157-1182.'
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: '[8] Isabelle Guyon, 和 André Elisseeff. [“变量和特征选择简介。”](http://www.jmlr.org/papers/volume3/guyon03a/guyon03a.pdf)
+    Journal of Machine Learning Research 3.Mar (2003): 1157-1182.'
 - en: '[9] Ian J. Goodfellow, Jonathon Shlens, and Christian Szegedy. [“Explaining
     and harnessing adversarial examples.”](https://arxiv.org/pdf/1412.6572.pdf) ICLR
     2015.'
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: '[9] Ian J. Goodfellow, Jonathon Shlens, 和 Christian Szegedy. [“解释和利用对抗样本。”](https://arxiv.org/pdf/1412.6572.pdf)
+    ICLR 2015.'
 - en: '[10] Christian Szegedy, Wojciech Zaremba, Ilya Sutskever, Joan Bruna, Dumitru
     Erhan, Ian Goodfellow, Rob Fergus. [“Intriguing properties of neural networks.”](https://arxiv.org/abs/1312.6199)
     Intl. Conf. on Learning Representations (2014)'
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: '[10] Christian Szegedy, Wojciech Zaremba, Ilya Sutskever, Joan Bruna, Dumitru
+    Erhan, Ian Goodfellow, Rob Fergus. [“神经网络的有趣特性。”](https://arxiv.org/abs/1312.6199)
+    Intl. Conf. on Learning Representations (2014)'
 - en: '[11] Nguyen, Anh, Jason Yosinski, and Jeff Clune. [“Deep neural networks are
     easily fooled: High confidence predictions for unrecognizable images.”](http://www.cv-foundation.org/openaccess/content_cvpr_2015/papers/Nguyen_Deep_Neural_Networks_2015_CVPR_paper.pdf)
     Proc. IEEE Conference on Computer Vision and Pattern Recognition. 2015.'
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: '[11] Nguyen, Anh, Jason Yosinski, 和 Jeff Clune. [“深度神经网络很容易被愚弄：对无法识别图像的高置信度预测。”](http://www.cv-foundation.org/openaccess/content_cvpr_2015/papers/Nguyen_Deep_Neural_Networks_2015_CVPR_paper.pdf)
+    Proc. IEEE Conference on Computer Vision and Pattern Recognition. 2015.'
 - en: '[12] Benjamin Letham, Cynthia Rudin, Tyler H. McCormick, and David Madigan.
     [“Interpretable classifiers using rules and Bayesian analysis: Building a better
     stroke prediction model.”](https://arxiv.org/abs/1511.01644) The Annals of Applied
     Statistics 9, No. 3 (2015): 1350-1371.'
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: '[12] Benjamin Letham, Cynthia Rudin, Tyler H. McCormick, 和 David Madigan. [“使用规则和贝叶斯分析的可解释分类器：构建更好的中风预测模型。”](https://arxiv.org/abs/1511.01644)
+    The Annals of Applied Statistics 9, No. 3 (2015): 1350-1371.'
 - en: '[13] Haohan Wang, Bhiksha Raj, and Eric P. Xing. [“On the Origin of Deep Learning.”](https://arxiv.org/pdf/1702.07800.pdf)
     arXiv preprint arXiv:1702.07800 (2017).'
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: '[13] Haohan Wang, Bhiksha Raj, 和 Eric P. Xing. [“关于深度学习的起源。”](https://arxiv.org/pdf/1702.07800.pdf)
+    arXiv preprint arXiv:1702.07800 (2017).'
 - en: '[14] [OpenAI Blog: Robust Adversarial Examples](https://blog.openai.com/robust-adversarial-inputs/)'
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: '[14] [OpenAI 博客：Robust Adversarial Examples](https://blog.openai.com/robust-adversarial-inputs/)'
 - en: '[15] [Attacking Machine Learning with Adversarial Examples](https://blog.openai.com/adversarial-example-research/)'
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: '[15] [用对抗样本攻击机器学习](https://blog.openai.com/adversarial-example-research/)'
 - en: '[16] [Reading an AI Car’s Mind: How NVIDIA’s Neural Net Makes Decisions](https://blogs.nvidia.com/blog/2017/04/27/how-nvidias-neural-net-makes-decisions/)'
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: '[16] [读懂AI汽车的思维：NVIDIA的神经网络如何做出决策](https://blogs.nvidia.com/blog/2017/04/27/how-nvidias-neural-net-makes-decisions/)'

@@ -1,16 +1,22 @@
 - en: Thinking about High-Quality Human Data
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 思考高质量的人类数据
 - en: 原文：[https://lilianweng.github.io/posts/2024-02-05-human-data-quality/](https://lilianweng.github.io/posts/2024-02-05-human-data-quality/)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://lilianweng.github.io/posts/2024-02-05-human-data-quality/](https://lilianweng.github.io/posts/2024-02-05-human-data-quality/)
 - en: '[Special thank you to [Ian Kivlichan](https://scholar.google.com/citations?user=FRBObOwAAAAJ&hl=en)
     for many useful pointers (E.g. the 100+ year old Nature paper “Vox populi”) and
     nice feedback. 🙏 ]'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: '[特别感谢[Ian Kivlichan](https://scholar.google.com/citations?user=FRBObOwAAAAJ&hl=en)提供了许多有用的指引（例如100多年前的《自然》杂志上的“民意”论文）和宝贵的反馈。🙏]'
 - en: High-quality data is the fuel for modern data deep learning model training.
     Most of the task-specific labeled data comes from human annotation, such as classification
     task or [RLHF](https://lilianweng.github.io/posts/2021-01-02-controllable-text-generation/#rl-fine-tuning-with-human-preferences)
@@ -20,51 +26,73 @@
     community knows the value of high quality data, but somehow we have this subtle
     impression that “Everyone wants to do the model work, not the data work” ([Sambasivan
     et al. 2021](https://dl.acm.org/doi/abs/10.1145/3411764.3445518)).
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: 高质量数据是现代数据深度学习模型训练的燃料。大多数任务特定的标记数据来自人类标注，例如分类任务或[RLHF](https://lilianweng.github.io/posts/2021-01-02-controllable-text-generation/#rl-fine-tuning-with-human-preferences)标记（可以构建为分类格式）用于LLM对齐训练。后续的许多机器学习技术可以帮助提高数据质量，但从根本上说，人类数据收集涉及对细节的关注和谨慎的执行。社区知道高质量数据的价值，但不知何故我们有这种微妙的印象：“每个人都想做模型工作，而不是数据工作”（[Sambasivan等人，2021](https://dl.acm.org/doi/abs/10.1145/3411764.3445518)）。
 - en: '![](../Images/fa16acb7631052a382be08ca5db95245.png)'
+  id: totrans-4
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/fa16acb7631052a382be08ca5db95245.png)'
 - en: Fig. 1\. Two directions to approach high data quality.
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: 图1. 接近高数据质量的两个方向。
 - en: Human Raters ↔ Data Quality
+  id: totrans-6
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 人类评分员 ↔ 数据质量
 - en: 'Collecting human data involve a set of operation steps and every step contributes
     to the data quality:'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 收集人类数据涉及一系列操作步骤，每一步都对数据质量有所贡献：
 - en: 'Task design: Design task workflow to improve clarity and reduce complexity.
     Detailed guidelines are helpful but very long and complicated guidelines demand
     a decent amount of training to be useful.'
+  id: totrans-8
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 任务设计：设计任务工作流程以提高清晰度并减少复杂性。详细的指南是有帮助的，但非常长和复杂的指南需要相当多的培训才能发挥作用。
 - en: 'Select and train a pool of raters: Select annotators with matched skillset
     and consistency. Training sessions are necessary. After onboarding, regular feedback
     and calibration sessions are also needed.'
+  id: totrans-9
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 选择和培训一组评分员：选择具有匹配技能和一致性的标注者。培训课程是必要的。入职后，还需要定期反馈和校准会议。
 - en: Collect and aggregate data. This is the stage where more ML techniques can be
     applied to clean, filter and smartly aggregate data to identify the true labels.
+  id: totrans-10
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 收集和汇总数据。这是更多机器学习技术可以应用于清洁、过滤和智能聚合数据以识别真实标签的阶段。
 - en: '![](../Images/5b506f613c8e7a99b7f95dc9085c7caf.png)'
+  id: totrans-11
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/5b506f613c8e7a99b7f95dc9085c7caf.png)'
 - en: 'Fig. 2\. Quality assurance refers to a set of actions that allow one to improve
     quality by acting on the quality attributes identified in the quality model. (Image
     source: [Daniel et al. 2018](https://arxiv.org/abs/1801.02546))'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 图2. 质量保证指的是通过对质量模型中确定的质量属性采取行动来提高质量的一系列行动。（图片来源：[Daniel等人，2018](https://arxiv.org/abs/1801.02546))
 - en: The Wisdom of the Crowd
+  id: totrans-13
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 众人的智慧
 - en: '[Vox populi](https://en.wikipedia.org/wiki/Vox_populi) (originally “Vox populi,
     vox Dei”), a Latin phrase, means the voice of people. A short paper named was
     the same name was published in 1907 on Nature. It tracked an event at an annual
@@ -75,8 +103,10 @@
     the trustworthiness of a democratic judgment than might have been expected.”*
     This is probably the earliest mention of how crowdsourcing (“the wisdom of the
     crowd”) would work out.'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: '[民意](https://en.wikipedia.org/wiki/Vox_populi)（最初是“Vox populi, vox Dei”），一句拉丁短语，意为人民的声音。1907年在《自然》杂志上发表了一篇同名短文。它追踪了一次年度展览中的一个事件，人们会猜测一头肥牛的重量，以赢得奖品，如果猜测接近真实数字。中间估计被视为“民意”，最终非常接近真实值。作者总结道：“我认为，这个结果更值得信赖的是民主判断的可靠性，这可能超出了预期。”这可能是关于众包（“众人的智慧”）如何运作的最早提及。'
 - en: 'Almost 100 years later, [Callison-Burch (2009)](https://aclanthology.org/D09-1030/)
     did an early study on using Amazon Mechanical Turk (AMT) to run non-expert human
     evaluation on Machine Translation (MT) tasks and even to rely on non-experts to
@@ -84,64 +114,94 @@
     Each turker is shown a source sentence, a reference translation, and 5 translations
     from 5 MT systems. They are asked to rank 5 translations from best to worst. Each
     task is completed by 5 turkers.'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 大约100年后，[Callison-Burch (2009)](https://aclanthology.org/D09-1030/) 进行了一项早期研究，使用亚马逊
+    Mechanical Turk（AMT）来进行非专家人员对机器翻译（MT）任务的评估，甚至依赖非专家人员创建新的黄金参考翻译。 人类评估的设置很简单：每个工人被展示一个源句子，一个参考翻译，以及来自5个MT系统的5个翻译。
+    他们被要求将5个翻译从最好到最差进行排名。 每个任务由5个工人完成。
 - en: 'Unsurprisingly, there are spammers producing low quality annotation to only
     optimize the volume. So when measuring the agreement between experts and non-experts,
     different weighting schemes need to be applied to downweight the contribution
     of spammers: (1) “weighted by experts”: using agreement rate with experts on a
     gold set of 10 examples; (2) “weighted by non-experts”: relying on agreement rate
     with the rest of turkers on the whole dataset.'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 毫不奇怪，有些垃圾邮件制造商只优化体积而产生低质量的注释。 因此，在衡量专家和非专家之间的一致性时，需要应用不同的加权方案来降低垃圾邮件制造商的贡献：(1)“由专家加权”：使用与专家在一个包含10个示例的黄金集上的一致性率;
+    (2)“由非专家加权”：依赖于与整个数据集上的其他工人的一致性率。
 - en: In a harder task, non-expert human annotators were asked to create new gold
     reference translations. Callison-Burch designed the task in two stages, where
     the first stage created new translations with reference to MT outputs and the
     second one filtered translations that may seem to be gerated by a MT system. The
     correlation between experts’ and crowdsourced translations is higher than that
     between expert and MT system outputs.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 在一个更困难的任务中，非专家人类注释者被要求创建新的黄金参考翻译。 Callison-Burch设计了两个阶段的任务，第一阶段根据MT输出创建新的翻译，第二阶段过滤可能由MT系统生成的翻译。
+    专家和众包翻译之间的相关性高于专家和MT系统输出之间的相关性。
 - en: '![](../Images/9652c419600380a5ca8f07332498b6d6.png)'
+  id: totrans-18
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9652c419600380a5ca8f07332498b6d6.png)'
 - en: 'Fig. 3\. (Left) The agreement rate is measured by comparing each pair of translation
     sentences ("A > B", "A=B", "A < B") and thus chance agreement is 1/3\. The upper
     bound is set by the expert-expert agreement rate. (Right) Comparison of BLEU score
     between translations from different sources. LCD (Linguistic Data Consortium)
     translators provide expert translations. (Image source: [Callison-Burch 2009](https://aclanthology.org/D09-1030/))'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 图3.（左）通过比较每对翻译句子（"A > B"，"A=B"，"A < B"）来衡量一致性率，因此偶然一致性率为1/3。 上限由专家-专家一致性率设定。
+    （右）比较来自不同来源的翻译之间的BLEU分数。 LCD（语言数据联盟）翻译人员提供专家翻译。（图片来源：[Callison-Burch 2009](https://aclanthology.org/D09-1030/)）
 - en: Rater Agreement
+  id: totrans-20
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 评分者一致性
 - en: We often think of annotation as targeting a single ground truth and try to evaluate
     quality against one gold answer with consistent standards. A common practice for
     finding reliable ground truth labels is to collect multiple labels from multiple
     raters. Assuming that each rater performs at a different level of quality, we
     can use a weighted average of annotations but weighted by a proficiency score.
     This score is often approximated by how often one rater agrees with others.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们经常认为注释是针对单一真相，并尝试根据一致的标准评估质量。 找到可靠的基准标签的常见做法是从多个评分者那里收集多个标签。 假设每个评分者的质量水平不同，我们可以使用注释的加权平均值，但是根据熟练度得分加权。
+    这个分数通常是通过评分者与其他人一致的频率来近似的。
 - en: '**Majority Voting**: Taking the majority vote is the simplest way of aggregation,
     equivalent to taking the [mode](https://en.wikipedia.org/wiki/Mode_(statistics))
     of a set of labels. In this setting, every annotator is contributing equally.'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: '**多数投票**：采取多数投票是最简单的聚合方式，相当于取一组标签的[众数](https://en.wikipedia.org/wiki/Mode_(statistics))。
+    在这种情况下，每个注释者都是平等贡献的。'
 - en: '**Raw agreement** ([Tratz & Hovy, 2010](https://aclanthology.org/P10-1070/)):
     Raw agreement counts the percentage of other people agreeing with them. This is
     indirectly correlated to majority vote, because all members of the majority class
     are expected to get higher inter-annotator agreement rate.'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: '**原始一致性** ([Tratz & Hovy, 2010](https://aclanthology.org/P10-1070/))：原始一致性计算其他人同意的百分比。
+    这与多数投票间接相关，因为预期大多数类别的所有成员都会获得更高的标注者间一致性率。'
 - en: '**Cohen’s Kappa** ([Landis & Koch, 1977](https://www.jstor.org/stable/2529310)):
     Cohen’s kappa measures the inter-rater agreement in the form of $\kappa = (p_o
     - p_e) / (1 - p_c)$, where $p_o$ is the raw agreement rate and $p_e$ is the agreement
     by chance. Cohen’s kappa has a correction term for agreeing by chance, but this
     correction may be overestimated if one label is more prevalent.'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: '**Cohen''s Kappa**（[Landis & Koch, 1977](https://www.jstor.org/stable/2529310)）：Cohen''s
+    Kappa以$\kappa = (p_o - p_e) / (1 - p_c)$的形式衡量评分者间的一致性，其中$p_o$是原始一致率，$p_e$是随机一致率。Cohen''s
+    Kappa对于通过偶然一致性有一个校正项，但如果一个标签更普遍，则这种校正可能被高估。'
 - en: '**Probabilistic Graph Modeling**: There is a body of work relying on [probabilistic
     graph modeling](https://en.wikipedia.org/wiki/Graphical_model) to model different
     factors within annotation decisions, e.g. difficulty of the task, task latent
@@ -149,8 +209,10 @@
     [Zheng et al. (2017)](https://dl.acm.org/doi/abs/10.14778/3055540.3055547) compared
     17 algorithms on truth inference in crowdsourcing and most of them are probabilistic
     graph models.'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: '**概率图建模**：有一系列依赖于[概率图建模](https://en.wikipedia.org/wiki/Graphical_model)的工作，用于模拟标注决策中的不同因素，例如任务难度、任务潜在主题、评分者偏见、评分者信心，然后相应地预测真实标签。[Zheng等人（2017）](https://dl.acm.org/doi/abs/10.14778/3055540.3055547)比较了17种算法在众包中的真实推断，其中大多数是概率图模型。'
 - en: '**MACE** (Multi-Annotator Competence Estimation; [Hovy et al. 2013](https://aclanthology.org/N13-1132))
     is an early example of using graph modeling to estimate the likelihood of someone
     acting like a “spammer” by providing random labels. Unsurprisingly in cases when
@@ -161,119 +223,173 @@
     Then the generative process can be represented as belows. The parameter $\theta_j$
     defines the trustworthiness of the annotator $j$ (probability of not spamming)
     and the parameter $\xi_j$ defines how an annotator behaves when they are spamming.'
+  id: totrans-26
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**MACE**（多注释者能力估计；[Hovy等人，2013](https://aclanthology.org/N13-1132)）是使用图建模早期的例子，用于估计某人像“垃圾邮件发送者”一样提供随机标签的可能性。在激励不一致的情况下，一些注释者可能会表现为“垃圾邮件发送者”，以优化完成更多任务以获取更高报酬。MACE的目标是识别垃圾邮件发送者。给定任务$i$和注释者$j$，$T_i$是真实标签，$A_{ij}$是分配的标签，$S_{ij}$模拟了注释者$j$发送垃圾邮件的概率。然后生成过程可以表示如下。参数$\theta_j$定义了注释者$j$的可信度（不发送垃圾邮件的概率），参数$\xi_j$定义了注释者在发送垃圾邮件时的行为。'
 - en: '$$ \begin{align} & \text{for } i = 1 \dots N : \\ & \quad T_i \sim \text{Uniform}
     \\ & \quad \text{for } j = 1 \dots M : \\ & \quad \quad S_{ij} \sim \text{Bernoulli}(1
     - \theta_j) \\ & \quad \quad \text{if } S_{ij} = 0 : \\ & \quad \quad \quad A_{ij}
     = T_i \\ & \quad \quad \text{else } : \\ & \quad \quad \quad A_{ij} \sim \text{Multinomial}(\xi_j)
     \\ \end{align} $$'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: '$$ \begin{align} & \text{for } i = 1 \dots N : \\ & \quad T_i \sim \text{Uniform}
+    \\ & \quad \text{for } j = 1 \dots M : \\ & \quad \quad S_{ij} \sim \text{Bernoulli}(1
+    - \theta_j) \\ & \quad \quad \text{if } S_{ij} = 0 : \\ & \quad \quad \quad A_{ij}
+    = T_i \\ & \quad \quad \text{else } : \\ & \quad \quad \quad A_{ij} \sim \text{Multinomial}(\xi_j)
+    \\ \end{align} $$'
 - en: 'Then we can learn $\theta, \xi$ to maximize the observed data, in the form
     of the marginal data likelihood, where $A$ is the matrix of annotations, $S$ is
     the matrix of competence indicators and $T$ is the matrix of true labels:'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后我们可以学习$\theta, \xi$以最大化观察到的数据，以边际数据似然的形式，其中$A$是注释矩阵，$S$是能力指示器矩阵，$T$是真实标签矩阵：
 - en: $$ P(A; \theta, \xi) = \sum_{T, S} \big[ \prod_{i=1}^N P(T_i) \cdot \prod_{j=1}^M
     P(S_{ij}; \theta_j) \cdot P(A_{ij} \vert S_{ij}, T_i; \xi_j) \big] $$
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ P(A; \theta, \xi) = \sum_{T, S} \big[ \prod_{i=1}^N P(T_i) \cdot \prod_{j=1}^M
+    P(S_{ij}; \theta_j) \cdot P(A_{ij} \vert S_{ij}, T_i; \xi_j) \big] $$
 - en: Either EM (Expectation–maximization) or VB (Variational Bayes) can be applied
     to maximize the above marginal likelihood. During EM optimization, at M-step,
     a fixed value $\delta$ is added to the fractional counts before normalizing. During
     VB training, they applied symmetric Beta priors on $\theta_j$ and symmetric Dirichlet
     priors on $\xi_j$. When recovering the correct answers, we can take majority vote
     weighted by the annotators’ $\theta$ estimates.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 可以应用EM（期望最大化）或VB（变分贝叶斯）来最大化上述边际似然。在EM优化期间，在M步骤中，在归一化之前，会将固定值$\delta$添加到分数计数中。在VB训练期间，他们在$\theta_j$上应用对称Beta先验，在$\xi_j$上应用对称Dirichlet先验。在恢复正确答案时，我们可以采用按注释者$\theta$估计加权的多数投票。
 - en: Rater Disagreement & Two Paradigms
+  id: totrans-31
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 评分者不一致 & 两种范式
 - en: The aggregation process described above depends on an assumption that there
     exists *one* underlying gold answer and thus we can evaluate annotators’ performance
     accordingly. However, in many topics, especially in safety, social, or cultural
     areas, people can disagree and often this disagreement is valid and then it comes
     down to how much we want to apply a strict rule versus embracing diversity.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 上述聚合过程依赖于这样一个假设，即存在*一个*潜在的黄金答案，因此我们可以相应地评估注释者的表现。然而，在许多主题中，特别是在安全、社会或文化领域，人们可能存在分歧，而且这种分歧通常是有效的，然后问题就在于我们有多大程度上想要应用严格的规则而不是拥抱多样性。
 - en: '[Aroyo & Welty (2015)](https://ojs.aaai.org/aimagazine/index.php/aimagazine/article/view/2564)
     discussed a set of “myths” in the practice of human annotation collection and
     found all of them somewhat inaccurate, key findings including:'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Aroyo & Welty（2015）](https://ojs.aaai.org/aimagazine/index.php/aimagazine/article/view/2564)
+    讨论了人类注释收集实践中的一组“神话”，发现所有这些神话都有些不准确，主要发现包括：'
 - en: Often there is more than one correct interpretation for some samples. We need
     diverse perspectives via e.g. having multiple people to review annotation quality.
+  id: totrans-34
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 对于某些样本，往往存在多种正确的解释。我们需要通过例如让多人审查注释质量来获得多元化的观点。
 - en: Disagreement is not always bad. We should reduce disagreements caused by errors
     or poorly designed process but other disagreements can give us rich information.
+  id: totrans-35
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 不一致并非总是不好的。我们应该减少由错误或设计不佳的过程引起的分歧，但其他分歧可以为我们提供丰富的信息。
 - en: If it is caused by a task not well defined, we should enhance the instruction.
     However, a more detailed guideline does not resolve innate diversity among opinions.
+  id: totrans-36
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如果这是由任务定义不清晰引起的，我们应该加强说明。然而，更详细的指南并不能解决意见之间固有的多样性。
 - en: Experts may not always be better than lay people, but they would have a big
     gap in terms of considering what’s important.
+  id: totrans-37
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 专家未必总是比普通人更好，但在考虑什么是重要的方面，他们之间存在很大差距。
 - en: Ground truth annotations can change in time, especially those related to timely
     events or news.
+  id: totrans-38
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 地面真实注释可能会随时间变化，特别是与及时事件或新闻相关的注释。
 - en: Later, [Rottger et al. (2021)](https://arxiv.org/abs/2112.07475) formulated
     the difference into two contrasting paradigms for data annotation for subjective
     NLP tasks.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 随后，[Rottger等人（2021）](https://arxiv.org/abs/2112.07475) 将这种差异形式化为主观NLP任务数据注释的两种对立范式。
 - en: '|  | Descriptive | Prescriptive |'
+  id: totrans-40
   prefs: []
   type: TYPE_TB
+  zh: '|  | 描述性 | 规范性 |'
 - en: '| --- | --- | --- |'
+  id: totrans-41
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- | --- |'
 - en: '| Definition | Encourage annotator subjectivity, trying to model many beliefs.
     | Discourage annotator subjectivity, trying to consistently apply one belief.
     |'
+  id: totrans-42
   prefs: []
   type: TYPE_TB
+  zh: '| 定义 | 鼓励注释者主观性，试图模拟多种信念。 | 阻止注释者主观性，试图一致地应用一个信念。 |'
 - en: '| Pros | - Can help to identify which entries are more subjective; - Embrace
     diversity'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: '| 优点 | - 可帮助识别哪些条目更主观； - 拥抱多样性'
 - en: '| - More aligned with standard NLP setup. - Easier to do QC by measuring disagreement
     or doing label aggregation.'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: '| - 更符合标准NLP设置。 - 通过测量不一致性或进行标签聚合来更容易进行质量控制。'
 - en: '|'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: '|'
 - en: '| Cons | - Metrics like rater disagreement cannot be used to measure data quality
     or annotator performance; - Cannot be used for training models that are optimized
     for outputting one preset behavior.'
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: '| 缺点 | - 无法使用评分者不一致等指标来衡量数据质量或注释者表现； - 不能用于训练针对输出一个预设行为进行优化的模型。'
 - en: '| - Expensive and challenging to create high-quality annotation guidelines,
     which can never be perfect, in practice; - Training annotators to get familiar
     with guideline in order to apply it properly is also challenging;'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: '| - 创建高质量的注释指南既昂贵又具有挑战性，在实践中永远无法完美； - 培训注释者熟悉指南以便正确应用也具有挑战性；'
 - en: '- Cannot capture an interpretable diversity of beliefs or consistently encode
     one specific belief.'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: '- 无法捕捉可解释的信仰多样性或始终编码一个特定信念。'
 - en: '|'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: '|'
 - en: 'The descriptive paradigm allows us to understand a number of important effects
     as well as to account for different perspectives. For example, annotator identity
     (e.g. African American, LGBTQ) is found to be a statistically significant factor
@@ -285,25 +401,35 @@
     like demographic or behavior information. Comparing T&S expert labels and crowd
     annotations, they found that agreement rates vary across semantic topics and the
     level of severity:'
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 描述性范式使我们能够理解许多重要效应，并考虑不同的观点。例如，注释者身份（例如非裔美国人，LGBTQ）被发现是一个在他们如何标记与身份相关内容为有毒时的统计显著因素（[Goyal等人，2022](https://arxiv.org/abs/2205.00501)）。主题可以是不同意见的另一个主要驱动因素。[Wang等人（2023）](https://research.google/pubs/all-that-agrees-is-not-gold-evaluating-ground-truth-labels-and-dialogue-content-for-safety/)研究了人类对话系统安全性的评估过程，并比较了信任与安全（T&S）专业人员和众包注释者标签之间的结果。他们有意收集了与众包注释者相关的丰富元数据，如人口统计信息或行为信息。比较T&S专家标签和众包注释，他们发现协议率在语义主题和严重程度上有所不同：
 - en: Agreement rate differs a lot across different topics; ranging from 0.96 on violence/gory
     to 0.25 on personal topics.
+  id: totrans-51
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 协议率在不同主题之间差异很大；从暴力/血腥的0.96到个人主题的0.25不等。
 - en: Agreement rates are higher on “extreme” and “benign” conversations, given four
     label options marking “benign”, “debatable”, “moderate” to “extreme”.
+  id: totrans-52
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在“极端”和“良性”对话中，协议率较高，给出四个标签选项标记为“良性”，“有争议”，“中等”到“极端”。
 - en: '![](../Images/5cc3e2f47f65949e121a8d69adec8928.png)'
+  id: totrans-53
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/5cc3e2f47f65949e121a8d69adec8928.png)'
 - en: 'Fig. 4\. Correlations between non-expert and expert annotations vary a lot
     across topics. (Image source: [Wang et al. 2023](https://research.google/pubs/all-that-agrees-is-not-gold-evaluating-ground-truth-labels-and-dialogue-content-for-safety/))'
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 图4. 非专家和专家注释之间的相关性在不同主题之间差异很大。（图片来源：[Wang等人，2023](https://research.google/pubs/all-that-agrees-is-not-gold-evaluating-ground-truth-labels-and-dialogue-content-for-safety/)）
 - en: '[Zhang et al. (2023)](https://arxiv.org/abs/2311.04345) proposed a taxonomy
     of rater disagreement to analyze the root causes. Among the listed causes, disagreement
     due to stochastic errors or inconsistency on the individual level should be avoided.
@@ -312,59 +438,89 @@
     the disagreement deconvolution method ([Gordon et al. 2021](https://dl.acm.org/doi/abs/10.1145/3411764.3445423))
     disentangles stable opinions from errors by anchoring each individual’s opinion
     to their own primary label and thus encouraging *intra*-rater consistency.'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Zhang等人（2023）](https://arxiv.org/abs/2311.04345)提出了一个评分者不一致性的分类法，以分析根本原因。在列出的原因中，由于随机错误或个体水平上的不一致性而导致的不一致性应该被避免。在评分者在多次询问时给出相同任务不同标签的情况下，其中一些很可能是由人为错误引起的。基于这种直觉，不一致性解构方法（[Gordon等人，2021](https://dl.acm.org/doi/abs/10.1145/3411764.3445423)）通过将每个个体的意见锚定到他们自己的主要标签，从而鼓励*内部*评分者一致性。'
 - en: '![](../Images/926cd3e977f2849c1cfd71c5db545df7.png)'
+  id: totrans-56
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/926cd3e977f2849c1cfd71c5db545df7.png)'
 - en: 'Fig. 5\. A taxonomy of causes for rater disagreement. (Image source: [Zhang
     et al. 2023](https://arxiv.org/abs/2311.04345))'
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 图5. 评分者不一致性的原因分类法。（图片来源：[Zhang等人，2023](https://arxiv.org/abs/2311.04345)）
 - en: 'Disagreement deconvolution relies on probabilistic graph modeling:'
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 不一致性解构依赖于概率图建模：
 - en: Estimate how often an annotator returns non-primary labels, $p_\text{flip}$
+  id: totrans-59
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 估计注释者返回非主要标签的频率，$p_\text{flip}$
 - en: Per sample, get an adjusted label distribution $p^*$ of primary labels based
     on $p_\text{flip}$
+  id: totrans-60
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 每个样本，根据$p_\text{flip}$得到一个调整后的主要标签分布$p^*$
 - en: Sample from $p^*$ as a new test set.
+  id: totrans-61
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 从$p^*$中抽取一个新的测试集。
 - en: Measure performance metrics against the new test set.
+  id: totrans-62
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 根据新的测试集来衡量性能指标。
 - en: 'Given $C$-category classification, the sampling process of the generative model
     is stated as follows:'
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 给定$C$类别分类，生成模型的抽样过程如下所述：
 - en: $$ \begin{aligned} y^*\mid x &\sim \text{Categorial}([C], p^*(y\mid x)) \\ y_\text{other}\mid
     y^* &\sim \text{Categorial}([C]\setminus\{y^*\}, \frac{1}{C-1}) \\ z_\text{flip}
     \mid x &\sim \text{Bernoulli}(p_\text{flip}(x)) \\ y\mid y^*, y_\text{other},
     z_\text{flip} &= y^* (1 - z_\text{flip}) + y_\text{other} z_\text{flip} \end{aligned}
     $$
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} y^*\mid x &\sim \text{分类}([C], p^*(y\mid x)) \\ y_\text{other}\mid
+    y^* &\sim \text{分类}([C]\setminus\{y^*\}, \frac{1}{C-1}) \\ z_\text{flip} \mid
+    x &\sim \text{伯努利}(p_\text{flip}(x)) \\ y\mid y^*, y_\text{other}, z_\text{flip}
+    &= y^* (1 - z_\text{flip}) + y_\text{other} z_\text{flip} \end{aligned} $$
 - en: 'Given the true $p(y\mid x)$ and $p_\text{flip}$ that can be estimated from
     the data, we would update the label distribution of primary labels:'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 给定可以从数据中估计的真实$p(y\mid x)$和$p_\text{flip}$，我们将更新主要标签的标签分布：
 - en: $$ p^*(y\mid x) = \frac{p(y\mid x) - \frac{p_\text{flip}(x)}{C-1}}{1 - \frac{C
     \cdot p_\text{flip}(x)}{C - 1}} $$
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ p^*(y\mid x) = \frac{p(y\mid x) - \frac{p_\text{flip}(x)}{C-1}}{1 - \frac{C
+    \cdot p_\text{flip}(x)}{C - 1}} $$
 - en: A new test set sampled from $p^*(y \mid x)$ represents the primary labels with
     individual inconsistency noise removed. It can be used for evaluation, as a noise-free
     test set.
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 从$p^*(y \mid x)$中抽取的新测试集表示去除个体不一致噪声的主要标签。它可以用于评估，作为一个无噪声的测试集。
 - en: 'To capture systematic disagreement among annotators when learning to predict
     labels, [Davani et al. (2021)](https://arxiv.org/abs/2110.05719) experimented
     with a multi-annotator model where predicting each annotator’s labels is treated
@@ -374,42 +530,61 @@
     by $a_j \in A$ to the sample $x_i \in X$. The majority vote for $x_i$ is denoted
     as $\bar{y}_{i,}$. The experiment is to train a classification head on top of
     a pre-trained BERT model and compares 4 setups:'
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了捕捉学习预测标签时注释者之间的系统性分歧，[Davani等人（2021）](https://arxiv.org/abs/2110.05719)尝试了一个多注释者模型的实验，其中预测每个注释者的标签被视为一个子任务。例如，分类任务在一个带注释的数据集$D=(X,
+    A, Y)$上定义，其中$X$是文本实例，$A$是注释者集合，$Y$是注释矩阵，$y_{ij} \in Y$表示$A$中的$a_j$为样本$x_i \in
+    X$分配的二进制标签。$x_i$的多数投票表示为$\bar{y}_{i,}$。实验是在一个预训练的BERT模型之上训练一个分类头，并比较4种设置：
 - en: 'Baseline: Directly predict the majority vote $\bar{y}_i$, not using the full
     annotation matrix $Y$.'
+  id: totrans-69
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 基线：直接预测多数投票$\bar{y}_i$，不使用完整的注释矩阵$Y$。
 - en: 'Ensemble: Train one model per annotator separately to predict $y_{ij}$ and
     then the results are aggregated by majority vote.'
+  id: totrans-70
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 集成：分别训练每个注释者的一个模型来预测$y_{ij}$，然后通过多数投票来聚合结果。
 - en: 'Multi-label: Learn to predict $\vert A \vert$ labels to represent all annotators’
     labels per sample $\langle y_{i1}, \dots, y_{i\vert A \vert} \rangle$, with a
     shared MLP layer and then outputs are aggregated.'
+  id: totrans-71
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 多标签：学习预测$\vert A \vert$个标签来表示每个样本$\langle y_{i1}, \dots, y_{i\vert A \vert}
+    \rangle$的所有注释者的标签，使用共享的MLP层，然后聚合输出。
 - en: 'Multi-task: Similar to multi-label, but each annotator’s prediction head is
     learned from a separated MLP layer, such that we allocate extra compute to learn
     the difference among annotators.'
+  id: totrans-72
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 多任务：类似于多标签，但每个注释者的预测头是从一个单独的MLP层学习的，这样我们可以分配额外的计算资源来学习注释者之间的差异。
 - en: Experiment results on the [GHC (Gab Hate Corpus)](https://osf.io/edua3/) dataset
     showed that the multi-task model achieves the best F1 score and also can naturally
     provide prediction uncertainty estimation, correlated with annotation disagreement.
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 在[GHC（Gab Hate Corpus）](https://osf.io/edua3/)数据集上的实验结果显示，多任务模型实现了最佳的F1分数，并且还可以自然地提供与注释不一致相关的预测不确定性估计。
 - en: '![](../Images/fda5099c17a2b907dc72b62f3a1bd8cc.png)'
+  id: totrans-74
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/fda5099c17a2b907dc72b62f3a1bd8cc.png)'
 - en: 'Fig. 6\. Illustration of different architectures for modeling multiple annotators''
     labels. (Image source: [Davani et al. 2021](https://arxiv.org/abs/2110.05719))'
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 图6. 不同架构用于建模多个注释者的标签。 (图片来源：[Davani等人 2021](https://arxiv.org/abs/2110.05719))
 - en: Jury Learning ([Gordon et al. 2022](https://arxiv.org/abs/2202.02950)) mimics
     the [jury process](https://www.uscourts.gov/services-forms/jury-service/juror-selection-process)
     by modeling the different annotators’ labeling behavior conditioned on their characteristics.
@@ -418,64 +593,95 @@
     each as a potential juror. At decision time, practitioners can specify the composition
     of a group of jurors to determine a sampling strategy. The final decision is made
     by aggregating labels from jurors from multiple trials.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 陪审团学习（[Gordon et al. 2022](https://arxiv.org/abs/2202.02950)）模拟了[陪审团流程](https://www.uscourts.gov/services-forms/jury-service/juror-selection-process)，通过建模不同注释者的标注行为，条件是他们的特征。
+    从具有每个标注者标签和人口特征的数据集开始，我们训练一个模型来学习预测每个个体注释者所做的标签，每个都是潜在的陪审员。 在决策时，从业者可以指定陪审团的组成来确定抽样策略。
+    最终决定是通过汇总来自多次审判的陪审员的标签做出的。
 - en: '![](../Images/83c221c6e414739b04a4e34638db0cf3.png)'
+  id: totrans-77
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/83c221c6e414739b04a4e34638db0cf3.png)'
 - en: 'Fig. 7\. Illustration of how jury learning works. (Image source: [Gordon et
     al. 2022](https://arxiv.org/abs/2202.02950))'
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 7\. 陪审团学习的工作原理示意图。（图片来源：[Gordon et al. 2022](https://arxiv.org/abs/2202.02950)）
 - en: The jury learning model is a [DCN (Deep & Cross network)](https://arxiv.org/abs/2008.13535)
     , commonly for recommendation use case, that is jointly trained to learn comment
     embedding, annotator embedding and group (annotator’s characteristics) embedding.
     The text content is processed by a pre-trained BERT, which is also jointly fine-tuned
     but for a shorter period to avoid overfitting.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 陪审团学习模型是一个[DCN（深度与交叉网络）](https://arxiv.org/abs/2008.13535)，通常用于推荐用例，联合训练以学习评论嵌入、注释者嵌入和组（注释者特征）嵌入。
+    文本内容通过预训练的 BERT 处理，也联合微调，但时间较短以避免过拟合。
 - en: '![](../Images/762f64268fc04e7d64a685d7e95bc70b.png)'
+  id: totrans-80
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/762f64268fc04e7d64a685d7e95bc70b.png)'
 - en: 'Fig. 8\. DCN model architecture for jury learning. (Image source: [Gordon et
     al. 2022](https://arxiv.org/abs/2202.02950))'
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 8\. 用于陪审团学习的 DCN 模型架构。（图片来源：[Gordon et al. 2022](https://arxiv.org/abs/2202.02950)）
 - en: Their experiment runs on the [toxicity diversity dataset](https://data.esrg.stanford.edu/study/toxicity-perspectives)
     and compares jury learning with a baseline model which is a fine-tuned BERT to
     predict individual annotator’s label without using metadata. Performance is measured
     in MAE (mean absolute error). Jury learning consistently outperforms the annotator-agnostic
     baseline on the full test set as well as each group segment.
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 他们的实验运行在[有毒多样性数据集](https://data.esrg.stanford.edu/study/toxicity-perspectives)上，并将陪审团学习与一个基线模型进行比较，该基线模型是一个经过微调的
+    BERT，用于预测个体注释者的标签而不使用元数据。 性能以 MAE（平均绝对误差）进行衡量。 陪审团学习在整个测试集以及每个组段上始终优于注释者无关的基线。
 - en: '![](../Images/255290b72a600fa5151a65ba72051a01.png)'
+  id: totrans-83
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/255290b72a600fa5151a65ba72051a01.png)'
 - en: 'Fig. 9\. Experiment results comparing an annotator-agnostic baseline with jury
     learning. (Image source: [Gordon et al. 2022](https://arxiv.org/abs/2202.02950))'
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 9\. 实验结果比较了一个与陪审团学习无关的基线模型。（图片来源：[Gordon et al. 2022](https://arxiv.org/abs/2202.02950)）
 - en: Data Quality ↔ Model Training
+  id: totrans-85
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 数据质量 ↔ 模型训练
 - en: Once a dataset is constructed, many methods can help identify mislabels according
     to the training dynamics. Note that we only focus on methods to find and exclude
     data points with potentially incorrect labels, not about [how to train a model
     with noisy data](https://lilianweng.github.io/posts/2022-04-15-data-gen/#training-with-noisy-data).
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦构建了数据集，许多方法可以帮助根据训练动态识别错误标签。请注意，我们只关注于找到并排除潜在错误标签的数据点的方法，而不是关于[如何使用有噪声数据训练模型](https://lilianweng.github.io/posts/2022-04-15-data-gen/#training-with-noisy-data)。
 - en: Influence Functions
+  id: totrans-87
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 影响函数
 - en: '**Influence functions** is a classic technique from robust statistics ([Hampel,
     1974](https://www.jstor.org/stable/2285666)) to measure the effect of training
     data points by describing how the model parameters change as we upweight a training
     point by an infinitesimal amount. [Koh & Liang (2017)](https://arxiv.org/abs/1703.04730)
     introduced the concept to be applied to deep neural networks.'
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: '**影响函数**是来自健壮统计学的经典技术（[Hampel, 1974](https://www.jstor.org/stable/2285666)），用于衡量训练数据点的影响，描述模型参数在我们微调训练点时如何变化。[Koh
+    & Liang (2017)](https://arxiv.org/abs/1703.04730) 将这个概念引入到深度神经网络中。'
 - en: 'Given $n$ data samples in the train set, $z_i = (x_i, y_i)$ for $i =1, \dots,
     n$, The model parameter $\theta$ is optimized to minimize a loss: $\hat{\theta}
     = \arg\min_{\theta \in \Theta} \frac{1}{n}\sum_{i=1}^n \mathcal{L}(z_i, \theta)$.
@@ -485,80 +691,124 @@
     computing this literally for every sample is too expensive. One way to approximate
     this is to compute the parameter change given a small upweight $\epsilon$ on $z$.
     By definition, the influence of upweighting $z$ by $\epsilon$ is given by:'
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 给定训练集中的$n$个数据样本，$z_i = (x_i, y_i)$，$i =1, \dots, n$，模型参数$\theta$被优化以最小化损失：$\hat{\theta}
+    = \arg\min_{\theta \in \Theta} \frac{1}{n}\sum_{i=1}^n \mathcal{L}(z_i, \theta)$。移除单个数据点$z$后的模型参数变化表示为$\hat{\theta}_{-z}
+    - \hat{\theta}$，其中$\hat{\theta}_{-z} = \arg\min_{\theta \in \Theta} \frac{1}{n}
+    \sum_{z_i \neq z} \mathcal{L}(z_i, \theta)$。然而，为每个样本计算这个变化是太昂贵的。一种近似的方法是计算在$z$上加小权重$\epsilon$时的参数变化。根据定义，对$z$进行加权的影响由以下公式给出：
 - en: $$ \mathcal{I}_{\text{up,params}}(z) = \frac{d\hat{\theta}_{\epsilon,z}}{d\epsilon}\bigg\vert_{\epsilon=0}=-\mathbf{H}^{-1}_{\hat{\theta}}
     \nabla_\theta \mathcal{L}(z, \hat{\theta}) $$
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathcal{I}_{\text{up,params}}(z) = \frac{d\hat{\theta}_{\epsilon,z}}{d\epsilon}\bigg\vert_{\epsilon=0}=-\mathbf{H}^{-1}_{\hat{\theta}}
+    \nabla_\theta \mathcal{L}(z, \hat{\theta}) $$
 - en: where $\hat{\theta}_{\epsilon,z} = \arg\min_{\theta \in \Theta} \frac{1}{n}\sum_{i=1}^n
     \mathcal{L}(z_i, \theta) + \epsilon L(z, \theta)$ and $\mathbf{H}^{-1}_{\hat{\theta}}
     = \frac{1}{n}\sum_{i=1}^n \nabla^2_\theta \mathcal{L}(z_i, \hat{\theta})$. Removing
     a data point $x$ is equivalent to upweighting it by $\epsilon = -\frac{1}{n}$
     and therefore $\hat{\theta}_{-z} - \hat{\theta} \approx -\frac{1}{n} \mathcal{I}_{\text{up,params}}(z)$.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$\hat{\theta}_{\epsilon,z} = \arg\min_{\theta \in \Theta} \frac{1}{n}\sum_{i=1}^n
+    \mathcal{L}(z_i, \theta) + \epsilon L(z, \theta)$，$\mathbf{H}^{-1}_{\hat{\theta}}
+    = \frac{1}{n}\sum_{i=1}^n \nabla^2_\theta \mathcal{L}(z_i, \hat{\theta})$。移除数据点$x$等同于在其上加权$\epsilon
+    = -\frac{1}{n}$，因此$\hat{\theta}_{-z} - \hat{\theta} \approx -\frac{1}{n} \mathcal{I}_{\text{up,params}}(z)$。
 - en: 'The influence of upweighting $z$ on the loss at a test point $z_\text{test}$
     is given by applying the chain rule:'
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 在测试点$z_\text{test}$处，对$z$进行加权对损失的影响可以通过应用链式法则得到：
 - en: $$ \begin{aligned} \mathcal{I}_{\text{up,loss}}(z, z_\text{test}) &= \frac{d
     \mathcal{L}(z_\text{test}, \hat{\theta}_{\epsilon,z})}{d\epsilon}\bigg\vert_{\epsilon=0}
     \\ &= \nabla_\theta \mathcal{L}(z_\text{test}, \hat{\theta})^\top \frac{d \hat{\theta}_{\epsilon,z}}{d\epsilon}\bigg\vert_{\epsilon=0}
     \\ &= - \nabla_\theta \mathcal{L}(z_\text{test}, \hat{\theta})^\top \mathbf{H}^{-1}_{\hat{\theta}}
     \nabla_\theta \mathcal{L}(z, \hat{\theta}) \end{aligned} $$
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \mathcal{I}_{\text{up,loss}}(z, z_\text{test}) &= \frac{d
+    \mathcal{L}(z_\text{test}, \hat{\theta}_{\epsilon,z})}{d\epsilon}\bigg\vert_{\epsilon=0}
+    \\ &= \nabla_\theta \mathcal{L}(z_\text{test}, \hat{\theta})^\top \frac{d \hat{\theta}_{\epsilon,z}}{d\epsilon}\bigg\vert_{\epsilon=0}
+    \\ &= - \nabla_\theta \mathcal{L}(z_\text{test}, \hat{\theta})^\top \mathbf{H}^{-1}_{\hat{\theta}}
+    \nabla_\theta \mathcal{L}(z, \hat{\theta}) \end{aligned} $$
 - en: Using the influence function we can measure the effect of a single data point
     on model parameters and loss function in closed forms. It can help approximate
     leave-one-out retraining without actually running all the retraining. To identify
     mislabeled data, we can measure $\mathcal{I}_\text{up,loss}(z_i, z_i)$, approximating
     the prediction error on $z_i$ if $z_i$ is removed from the training set.
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用影响函数，我们可以以闭合形式测量单个数据点对模型参数和损失函数的影响。它可以帮助近似 leave-one-out 重新训练，而无需实际运行所有重新训练。为了识别错误标记的数据，我们可以测量$\mathcal{I}_\text{up,loss}(z_i,
+    z_i)$，近似于如果将$z_i$从训练集中移除，则$z_i$的预测误差。
 - en: '![](../Images/d20674396e2af7f5b7710d14a1e297e1.png)'
+  id: totrans-95
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d20674396e2af7f5b7710d14a1e297e1.png)'
 - en: 'Fig. 10\. Influence functions values match leave-one-out training results on
     10-class MNIST. (Image source: [Kohn & Liang, 2017](https://arxiv.org/abs/1703.04730))'
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: '图10. 影响函数值与10类 MNIST 上的 leave-one-out 训练结果相匹配。 (图片来源: [Kohn & Liang, 2017](https://arxiv.org/abs/1703.04730))'
 - en: Given the closed form, influence functions is still hard to be scaled up because
     the inverse Hessian vector product is hard to compute. [Grosse et al. (2023)](https://arxiv.org/abs/2308.03296)
     experimented with the EK-FAC (Eigenvalue-corrected Kronecker-Factored Approximate
     Curvature; [George et al. 2018](https://arxiv.org/abs/1806.03884)) approximation
     instead.
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 鉴于闭合形式，影响函数仍然很难扩展，因为求逆 Hessian 矢量乘积很难计算。[Grosse 等人 (2023)](https://arxiv.org/abs/2308.03296)
+    尝试使用 EK-FAC（Eigenvalue-corrected Kronecker-Factored Approximate Curvature; [George
+    等人 2018](https://arxiv.org/abs/1806.03884)）近似。
 - en: Prediction Changes during Training
+  id: totrans-98
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 训练过程中的预测变化
 - en: 'Another branch of methods are to track the changes of model prediction during
     training to identify cases which seem hard to be learned. **Data Maps** ([Swayamdipta
     et al. 2020](https://arxiv.org/abs/2009.10795)) tracks two attributes of model
     behavior dynamics during training to analyze the quality of dataset:'
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一类方法是跟踪模型在训练过程中的预测变化，以识别似乎难以学习的情况。**数据映射**（[Swayamdipta等人，2020](https://arxiv.org/abs/2009.10795)）跟踪模型行为动态的两个属性，以分析数据集的质量：
 - en: '**Confidence**: The model’s confidence in the true label, defined as the mean
     model probability of the true label across epochs. They also used a coarse-grained
     metric, “correctness”, defined as the fraction of times when the model predicts
     the correct label across epochs.'
+  id: totrans-100
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**置信度**：模型对真实标签的置信度，定义为跨历元的真实标签的平均模型概率。他们还使用了一个粗粒度的度量，“正确性”，定义为模型在跨历元预测正确标签的次数的比例。'
 - en: '**Variability**: The variation of the confidence, defined as the standard deviation
     of model probability of the true label across epochs.'
+  id: totrans-101
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**变异性**：置信度的变异性，定义为跨历元的真实标签的模型概率的标准差。'
 - en: '![](../Images/cb90212e4cc5430457ce335a9a786974.png)'
+  id: totrans-102
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/cb90212e4cc5430457ce335a9a786974.png)'
 - en: 'Fig. 11\. Data map for SNLI training set, based on a RoBERTa classifier. (Image
     source: [Swayamdipta et al. 2020](https://arxiv.org/abs/2009.10795))'
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 图11\. 基于RoBERTa分类器的SNLI训练集数据映射。（图片来源：[Swayamdipta等人，2020](https://arxiv.org/abs/2009.10795)）
 - en: Hard-to-learn (low confidence, low variability) samples are more likely to be
     mislabeled. They ran an experiment on WinoGrande dataset with 1% flipped label
     data. After retraining, flipped instances move to the lower confidence and slightly
@@ -568,47 +818,63 @@
     paper didn’t use both confidence and variability as features). This simple noise
     classifier then can be used on the original dataset to identify potentially mislabeled
     instances.
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 难以学习（低置信度，低变异性）的样本更有可能被错误标记。他们在WinoGrande数据集上进行了一个实验，其中有1%的标签翻转数据。重新训练后，翻转的实例移动到低置信度和稍高变异性区域，表明难以学习的区域包含了错误标记的样本。基于此，我们可以仅使用置信度分数在相等数量的标签翻转和干净样本上训练分类器（不确定为什么论文没有同时使用置信度和变异性作为特征）。然后，这个简单的噪声分类器可以用于原始数据集，以识别潜在的错误标记实例。
 - en: '![](../Images/1cf6ecfda87658c664b8bc87eb1db451.png)'
+  id: totrans-105
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/1cf6ecfda87658c664b8bc87eb1db451.png)'
 - en: 'Fig. 12\. Data points originally with high confidence and low variability scores
     moved to low confidence, slightly higher variability regions after labels get
     flipped. (Image source: [Swayamdipta et al. 2020](https://arxiv.org/abs/2009.10795))'
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 图12\. 原本具有高置信度和低变异性分数的数据点在标签翻转后移动到低置信度、稍高变异性区域。（图片来源：[Swayamdipta等人，2020](https://arxiv.org/abs/2009.10795)）
 - en: However, we should not consider all hard-to-learn samples to be incorrect. In
     fact, the paper hypothesizes that ambiguous (high variability) and hard-to-learn
     (low confidence, low variability) samples are more informative for learning. Experiments
     showed that they are good for OOD generalization, giving better results on OOD
     eval, even in comparison to 100% training set.
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，我们不应该认为所有难以学习的样本都是错误的。事实上，论文假设模棱两可（高变异性）和难以学习（低置信度，低变异性）的样本对学习更具信息量。实验证明，它们对OOD泛化效果很好，在OOD评估中取得了更好的结果，甚至比100%训练集还要好。
 - en: 'To investigate whether neural networks have a tendency to **forget** previously
     learned information, [Mariya Toneva et al. (2019)](https://arxiv.org/abs/1812.05159)
     designed an experiment: They track the model prediction for each sample during
     the training process and count the transitions for each sample from being classified
     correctly to incorrectly or vice-versa. Then samples can be categorized accordingly,'
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了调查神经网络是否有遗忘先前学到信息的倾向，[Mariya Toneva等人（2019）](https://arxiv.org/abs/1812.05159)设计了一个实验：他们跟踪模型在训练过程中对每个样本的预测，并计算每个样本从被正确分类到错误分类或反之的转换次数。然后可以相应地对样本进行分类，
 - en: '*Forgettable* (redundant) samples: If the class label changes across training
     epochs.'
+  id: totrans-109
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*易忘*（冗余）样本：如果类别标签在训练历元中发生变化。'
 - en: '*Unforgettable* samples: If the class label assignment is consistent across
     training epochs. Those samples are never forgotten once learned.'
+  id: totrans-110
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*难忘*样本：如果类别标签分配在训练历元中保持一致。这些样本一旦学习就永远不会被遗忘。'
 - en: They found that there are a large number of unforgettable examples that are
     never forgotten once learnt. Examples with noisy labels or images with “uncommon”
     features (visually complicated to classify) are among the most forgotten examples.
     The experiments empirically validated that unforgettable examples can be safely
     removed without compromising model performance.
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 他们发现有大量一旦学习就不会被遗忘的不可忘记的示例。具有嘈杂标签或具有“不寻常”特征的图像（在视觉上难以分类）是最容易被遗忘的示例之一。实验证明，不可忘记的示例可以安全地删除而不影响模型性能。
 - en: In the implementation, the forgetting event is only counted when a sample is
     included in the current training batch; that is, they compute forgetting across
     presentations of the same example in subsequent mini-batches. The number of forgetting
@@ -616,8 +882,10 @@
     have a small tendency to be first-time learned later in the training. The forgetting
     events are also found to be transferable throughout the training period and between
     architectures.
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 在实现中，遗忘事件仅在样本包含在当前训练批次中时计数；也就是说，他们在后续小批次的呈现中计算对同一示例的遗忘。每个样本的遗忘事件数量在不同种子之间非常稳定，易忘记的示例有一定倾向在训练后期首次学习。遗忘事件还被发现在整个训练期间和不同架构之间是可传递的。
 - en: '[Pleiss, et al. (2020)](https://arxiv.org/abs/2001.10528) developed a method
     named **AUM (Area under the Margin)** to spot wrong labels based on such an assumption:
     Say, a BIRD image is mistakenly marked as DOG. The gradient update would encourage
@@ -625,72 +893,107 @@
     provides an incorrect supervised signal to encourage the update to go another
     way. Hence, there exists tension between generalization and (wrong) prediction
     in gradient update signals.'
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Pleiss等人（2020）](https://arxiv.org/abs/2001.10528)开发了一种名为**AUM（边缘下面积）**的方法，基于这样一个假设来发现错误标签：比如，一张鸟类图像被错误地标记为狗类。梯度更新会鼓励从其他鸟类图像到这张鸟类图像的泛化，而狗类标签提供了一个不正确的监督信号，鼓励更新朝着另一种方式进行。因此，在梯度更新信号中存在泛化和（错误）预测之间的紧张关系。'
 - en: 'Given a classification dataset $(\mathbf{x}, y) \in \mathcal{D}_\text{train}$,
     let $z^{(t)}_i(\mathbf{x}) \in \mathbb{R}$ be the logit corresponding to class
     $i$ at epoch $t$. The margin at epoch $t$ is the difference between the assigned
     logit and the next largest logit:'
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: 给定一个分类数据集$(\mathbf{x}, y) \in \mathcal{D}_\text{train}$，让$z^{(t)}_i(\mathbf{x})
+    \in \mathbb{R}$表示在第$t$个时期对应于类别$i$的logit。在第$t$个时期的边际是分配的logit与下一个最大logit之间的差异：
 - en: $$ M^{(t)}(\mathbf{x}, y) = z_y^{(t)}(\mathbf{x}) - \max_{i \neq y} z^{(t)}_i(\mathbf{x}),\quad
     \text{AUM}(\mathbf{x}, y) = \frac{1}{T} \sum^T_{t=1} M^{(t)}(\mathbf{x}, y) $$
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ M^{(t)}(\mathbf{x}, y) = z_y^{(t)}(\mathbf{x}) - \max_{i \neq y} z^{(t)}_i(\mathbf{x}),\quad
+    \text{AUM}(\mathbf{x}, y) = \frac{1}{T} \sum^T_{t=1} M^{(t)}(\mathbf{x}, y) $$
 - en: A negative margin indicates a wrong prediction and a large positive margin suggests
     high confidence in a correct prediction. The hypothesis is that mislabeled samples
     would have a smaller margin than correct samples due to the tension of generalization
     via SGD triggered by other samples.
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 负边缘表示错误预测，大正边缘表明对正确预测的高置信度。假设是，由于SGD通过其他样本触发的泛化紧张，错误标记的样本的边缘会比正确样本小。
 - en: 'In order to determine the threshold, they insert fake data, named “threshold
     samples”, to determine the threshold:'
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了确定阈值，他们插入了名为“阈值样本”的虚假数据来确定阈值：
 - en: Create a subset of threshold samples $\mathcal{D}_\text{thr}$. If there are
     $N$ training samples for $C$ classes, we randomly sample $N/(C+1)$ samples and
     switch all their labels to a fake new class $C+1$.
+  id: totrans-118
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 创建一个阈值样本子集$\mathcal{D}_\text{thr}$。如果有$N$个训练样本用于$C$个类别，我们随机抽取$N/(C+1)$个样本，并将它们所有的标签更改为一个虚假的新类别$C+1$。
 - en: 'Merge threshold samples into the original dataset: $\mathcal{D}’ = { (\mathbf{x},
     C+1): \mathbf{x} \in \mathcal{D}_\text{thr}} \cup (\mathcal{D} \setminus\mathcal{D}_\text{thr})$;'
+  id: totrans-119
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '将阈值样本合并到原始数据集中：$\mathcal{D}’ = { (\mathbf{x}, C+1): \mathbf{x} \in \mathcal{D}_\text{thr}}
+    \cup (\mathcal{D} \setminus\mathcal{D}_\text{thr})$;'
 - en: Train the model on $\mathcal{D}’$ and measure AUM of all the data;
+  id: totrans-120
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在$\mathcal{D}’$上训练模型并测量所有数据的AUM；
 - en: Compute the threshold $\alpha$ as the 99th percentile of AUM of threshold samples;
+  id: totrans-121
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 计算阈值$\alpha$为阈值样本AUM的第99百分位数；
 - en: 'Identify mislabeled data using $\alpha$ a threshold: ${(\mathbf{x}, y) \in
     \mathcal{D} \setminus \mathcal{D}_\text{thr}: \text{AUM}_{\mathbf{x}, y} \leq
     \alpha}$'
+  id: totrans-122
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '使用阈值$\alpha$识别错误标记的数据：${(\mathbf{x}, y) \in \mathcal{D} \setminus \mathcal{D}_\text{thr}:
+    \text{AUM}_{\mathbf{x}, y} \leq \alpha}$'
 - en: '![](../Images/c0055053102a89c5634c93ce9b8e18ec.png)'
+  id: totrans-123
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c0055053102a89c5634c93ce9b8e18ec.png)'
 - en: 'Fig. 13\. How the AUM of threshold samples help separate out mislabeled samples.
     (Image source: [Pleiss et al. 2020](https://arxiv.org/abs/2001.10528))'
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 13\. 阈值样本的AUM如何帮助分离错误标记的样本。（图片来源：[Pleiss et al. 2020](https://arxiv.org/abs/2001.10528)）
 - en: '![](../Images/deed79a2ecda1f81b539b1b363c25ed4.png)'
+  id: totrans-125
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/deed79a2ecda1f81b539b1b363c25ed4.png)'
 - en: 'Fig. 14\. Test error on CIFAR 10/100 with randomly mislabeled samples, comparing
     different methods for data filter or noisy data training. (Image source: [Pleiss
     et al. 2020](https://arxiv.org/abs/2001.10528))'
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 14\. 在 CIFAR 10/100 上测试误标记样本时的测试错误，比较不同方法的数据过滤或嘈杂数据训练。（图片来源：[Pleiss et al.
+    2020](https://arxiv.org/abs/2001.10528)）
 - en: Noisy Cross-Validation
+  id: totrans-127
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 嘈杂交叉验证
 - en: The **NCV (Noisy Cross-Validation)** method ([Chen et al. 2019](https://arxiv.org/abs/1905.05040))
     divides the dataset into half at random, and then identifies data samples as “clean”
     if its label matches the predicted label provided by the model that is only trained
@@ -698,96 +1001,154 @@
     INCV (Iterative Noisy Cross-Validation) runs NCV iteratively where more clean
     samples are added into the trusted candidate set $\mathcal{C}$ and more noisy
     samples are removed.
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: '**NCV（嘈杂交叉验证）**方法（[Chen et al. 2019](https://arxiv.org/abs/1905.05040)）将数据集随机分成两半，然后将数据样本标记为“干净”，如果其标签与仅在数据集的另一半上训练的模型提供的预测标签匹配。干净样本预计更可信。INC（迭代嘈杂交叉验证）迭代运行NCV，其中更多干净样本被添加到受信任的候选集$\mathcal{C}$中，更多嘈杂样本被移除。'
 - en: '![](../Images/79311807a83a2aeec5efa64d4adf43fd.png)'
+  id: totrans-129
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/79311807a83a2aeec5efa64d4adf43fd.png)'
 - en: 'Fig. 15\. Algorithm of INCV (iterative noisy cross-validation). (Image source:
     [Chen et al. 2019](https://arxiv.org/abs/1905.05040))'
+  id: totrans-130
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 15\. INCV（迭代嘈杂交叉验证）算法。（图片来源：[Chen et al. 2019](https://arxiv.org/abs/1905.05040)）
 - en: References
+  id: totrans-131
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: '[1] Francis Galton [“Vox populi”](https://www.nature.com/articles/075450a0)
     Nature 75, 450-451 (1907).'
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] 弗朗西斯·高尔顿 [“民意”](https://www.nature.com/articles/075450a0) Nature 75, 450-451（1907年）。'
 - en: '[2] Sambasivan et al. [“Everyone wants to do the model work, not the data work”:
     Data Cascades in High-Stakes AI"](https://dl.acm.org/doi/10.1145/3411764.3445518)
     CHI 2021'
+  id: totrans-133
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] Sambasivan等人 [“每个人都想做模型工作，而不是数据工作”：高风险AI中的数据级联](https://dl.acm.org/doi/10.1145/3411764.3445518)
+    CHI 2021'
 - en: '[3] Chris Callison-Burch. [“Fast, Cheap, and Creative: Evaluating Translation
     Quality Using Amazon’s Mechanical Turk”](https://aclanthology.org/D09-1030/) EMNLP
     2009'
+  id: totrans-134
   prefs: []
   type: TYPE_NORMAL
+  zh: '[3] Chris Callison-Burch. [“快速、廉价和创造性：使用亚马逊的 Mechanical Turk 评估翻译质量”](https://aclanthology.org/D09-1030/)
+    EMNLP 2009'
 - en: '[4] Rottger et al. [“Two Contrasting Data Annotation Paradigms for Subjective
     NLP Tasks”](https://arxiv.org/abs/2112.07475) NAACL 2022.'
+  id: totrans-135
   prefs: []
   type: TYPE_NORMAL
+  zh: '[4] Rottger等人 [“主观NLP任务的两种对比数据标注范式”](https://arxiv.org/abs/2112.07475) NAACL
+    2022。'
 - en: '[5] Aroyo & Welty [“Truth Is a Lie: Crowd Truth and the Seven Myths of Human
     Annotation”](https://ojs.aaai.org/aimagazine/index.php/aimagazine/article/view/2564)
     AI Magazine 36.1: 15-24 (2015).'
+  id: totrans-136
   prefs: []
   type: TYPE_NORMAL
+  zh: '[5] Aroyo & Welty [“真相是谎言：众包真相和人类标注的七大神话”](https://ojs.aaai.org/aimagazine/index.php/aimagazine/article/view/2564)
+    AI Magazine 36.1：15-24（2015年）。'
 - en: '[6] Hovy et al. [“Learning Whom to Trust with MACE”](https://aclanthology.org/N13-1132.pdf)
     NAACL-HLT 2013.'
+  id: totrans-137
   prefs: []
   type: TYPE_NORMAL
+  zh: '[6] Hovy等人 [“使用MACE学习信任对象”](https://aclanthology.org/N13-1132.pdf) NAACL-HLT
+    2013。'
 - en: '[7] Wang et al. [“All that Agrees Is Not Gold: Evaluating Ground Truth Labels
     and Dialogue Content for Safety”](https://research.google/pubs/all-that-agrees-is-not-gold-evaluating-ground-truth-labels-and-dialogue-content-for-safety/)
     2023.'
+  id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: '[7] 王等人 [“一切一致并非黄金：评估安全的地面真相标签和对话内容”](https://research.google/pubs/all-that-agrees-is-not-gold-evaluating-ground-truth-labels-and-dialogue-content-for-safety/)
+    2023年。'
 - en: '[8] Zhang et al. [“A Taxonomy of Rater Disagreements: Surveying Challenges
     & Opportunities from the Perspective of Annotating Online Toxicity”](https://arxiv.org/abs/2311.04345)
     arXiv preprint arXiv:2311.04345 (2023).'
+  id: totrans-139
   prefs: []
   type: TYPE_NORMAL
+  zh: '[8] 张等人 [“评分者分歧的分类法：从在线毒性注释的注释角度调查挑战和机会”](https://arxiv.org/abs/2311.04345)
+    arXiv 预印本 arXiv:2311.04345（2023年）。'
 - en: '[9] Davani et al. [“Dealing with disagreements: Looking beyond the majority
     vote in subjective annotations”](https://arxiv.org/abs/2110.05719) ACL 2022.'
+  id: totrans-140
   prefs: []
   type: TYPE_NORMAL
+  zh: '[9] Davani等人 [“处理分歧：超越多数投票在主观注释中”](https://arxiv.org/abs/2110.05719) ACL 2022。'
 - en: '[10] Gordon et al. [“Jury Learning: Integrating Dissenting Voices into Machine
     Learning Models”](https://arxiv.org/abs/2202.02950) CHI 2022.'
+  id: totrans-141
   prefs: []
   type: TYPE_NORMAL
+  zh: '[10] Gordon等人 [“陪审团学习：将异议声音整合到机器学习模型中”](https://arxiv.org/abs/2202.02950) CHI
+    2022。'
 - en: '[11] Gordon et al. [“The Disagreement Deconvolution: Bringing Machine Learning
     Performance Metrics In Line With Reality”](https://dl.acm.org/doi/abs/10.1145/3411764.3445423)
     CHI 2021'
+  id: totrans-142
   prefs: []
   type: TYPE_NORMAL
+  zh: '[11] Gordon等人 [“分歧解卷积：使机器学习性能指标符合现实”](https://dl.acm.org/doi/abs/10.1145/3411764.3445423)
+    CHI 2021'
 - en: '[12] Daniel et al. 2018 [“Quality Control in Crowdsourcing: A Survey of Quality
     Attributes, Assessment Techniques, and Assurance Actions”](https://arxiv.org/abs/1801.02546)
     ACM Computing Surveys (CSUR), 51(1), 1-40 (2018).'
+  id: totrans-143
   prefs: []
   type: TYPE_NORMAL
+  zh: '[12] Daniel等人。2018年[“众包中的质量控制：质量属性、评估技术和保证措施调查”](https://arxiv.org/abs/1801.02546)
+    ACM计算调查（CSUR），51(1)，1-40（2018年）。'
 - en: '[13] Koh & Liang. [“Understanding Black-box Predictions via Influence Functions”](https://arxiv.org/abs/1703.04730)
     ICML 2017.'
+  id: totrans-144
   prefs: []
   type: TYPE_NORMAL
+  zh: '[13] Koh & Liang。[“通过影响函数理解黑盒预测”](https://arxiv.org/abs/1703.04730) ICML 2017。'
 - en: '[14] Grosse et al. [“Studying Large Language Model Generalization with Influence
     Functions”](https://arxiv.org/abs/2308.03296) arXiv preprint arXiv:2308.03296
     (2023).'
+  id: totrans-145
   prefs: []
   type: TYPE_NORMAL
+  zh: '[14] Grosse等人。[“利用影响函数研究大型语言模型的泛化能力”](https://arxiv.org/abs/2308.03296) arXiv预印本arXiv:2308.03296（2023年）。'
 - en: '[15] Swayamdipta et al. [“Dataset Cartography: Mapping and Diagnosing Datasets
     with Training Dynamics”](https://arxiv.org/abs/2009.10795) EMNLP 2020.'
+  id: totrans-146
   prefs: []
   type: TYPE_NORMAL
+  zh: '[15] Swayamdipta等人。[“数据集制图：通过训练动态绘制和诊断数据集”](https://arxiv.org/abs/2009.10795)
+    EMNLP 2020。'
 - en: '[16] Toneva, et al. [“An Empirical Study of Example Forgetting during Deep
     Neural Network Learning”](https://arxiv.org/abs/1812.05159) ICLR 2019.'
+  id: totrans-147
   prefs: []
   type: TYPE_NORMAL
+  zh: '[16] Toneva等人。[“深度神经网络学习过程中示例遗忘的实证研究”](https://arxiv.org/abs/1812.05159) ICLR
+    2019。'
 - en: '[17] Pleiss, et al. [“Identifying Mislabeled Data using the Area Under the
     Margin Ranking”](https://arxiv.org/abs/2001.10528) NeuriPS 2020.'
+  id: totrans-148
   prefs: []
   type: TYPE_NORMAL
+  zh: '[17] Pleiss等人。[“利用边缘排名下面积识别错误标记数据”](https://arxiv.org/abs/2001.10528) NeuriPS
+    2020。'
 - en: '[18] Chen et al. [“Understanding and utilizing deep neural networks trained
     with noisy labels”](https://arxiv.org/abs/1905.05040) ICML 2019.'
+  id: totrans-149
   prefs: []
   type: TYPE_NORMAL
+  zh: '[18] Chen等人。[“理解和利用使用含有噪声标签训练的深度神经网络”](https://arxiv.org/abs/1905.05040) ICML
+    2019。'

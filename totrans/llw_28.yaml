@@ -1,133 +1,191 @@
 - en: 'Object Detection Part 4: Fast Detection Models'
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 目标检测第4部分：快速检测模型
 - en: 原文：[https://lilianweng.github.io/posts/2018-12-27-object-recognition-part-4/](https://lilianweng.github.io/posts/2018-12-27-object-recognition-part-4/)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://lilianweng.github.io/posts/2018-12-27-object-recognition-part-4/](https://lilianweng.github.io/posts/2018-12-27-object-recognition-part-4/)
 - en: In [Part 3](https://lilianweng.github.io/posts/2017-12-31-object-recognition-part-3/),
     we have reviewed models in the R-CNN family. All of them are region-based object
     detection algorithms. They can achieve high accuracy but could be too slow for
     certain applications such as autonomous driving. In Part 4, we only focus on fast
     object detection models, including SSD, RetinaNet, and models in the YOLO family.
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 在[第3部分](https://lilianweng.github.io/posts/2017-12-31-object-recognition-part-3/)中，我们回顾了R-CNN系列中的模型。它们都是基于区域的目标检测算法。它们可以实现高准确性，但对于某些应用，如自动驾驶，可能太慢了。在第4部分中，我们只关注快速目标检测模型，包括SSD、RetinaNet和YOLO系列中的模型。
 - en: 'Links to all the posts in the series: [[Part 1](https://lilianweng.github.io/posts/2017-10-29-object-recognition-part-1/)]
     [[Part 2](https://lilianweng.github.io/posts/2017-12-15-object-recognition-part-2/)]
     [[Part 3](https://lilianweng.github.io/posts/2017-12-31-object-recognition-part-3/)]
     [[Part 4](https://lilianweng.github.io/posts/2018-12-27-object-recognition-part-4/)].'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: 系列中所有文章的链接：[[第1部分](https://lilianweng.github.io/posts/2017-10-29-object-recognition-part-1/)]
+    [[第2部分](https://lilianweng.github.io/posts/2017-12-15-object-recognition-part-2/)]
+    [[第3部分](https://lilianweng.github.io/posts/2017-12-31-object-recognition-part-3/)]
+    [[第4部分](https://lilianweng.github.io/posts/2018-12-27-object-recognition-part-4/)]。
 - en: Two-stage vs One-stage Detectors
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 两阶段与一阶段检测器
 - en: 'Models in the R-CNN family are all region-based. The detection happens in two
     stages: (1) First, the model proposes a set of regions of interests by select
     search or regional proposal network. The proposed regions are sparse as the potential
     bounding box candidates can be infinite. (2) Then a classifier only processes
     the region candidates.'
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: R-CNN系列中的模型都是基于区域的。检测分为两个阶段：(1) 首先，模型通过选择性搜索或区域提议网络提出一组感兴趣的区域。提出的区域是稀疏的，因为潜在的边界框候选可能是无限的。(2)
+    然后分类器只处理区域候选。
 - en: The other different approach skips the region proposal stage and runs detection
     directly over a dense sampling of possible locations. This is how a one-stage
     object detection algorithm works. This is faster and simpler, but might potentially
     drag down the performance a bit.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一种不同的方法跳过了区域提议阶段，直接在可能位置的密集采样上运行检测。这就是一阶段目标检测算法的工作原理。这种方法更快、更简单，但可能会稍微降低性能。
 - en: All the models introduced in this post are one-stage detectors.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文介绍的所有模型都是一阶段检测器。
 - en: 'YOLO: You Only Look Once'
+  id: totrans-8
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: YOLO：You Only Look Once
 - en: The **YOLO** model (**“You Only Look Once”**; [Redmon et al., 2016](https://www.cv-foundation.org/openaccess/content_cvpr_2016/papers/Redmon_You_Only_Look_CVPR_2016_paper.pdf))
     is the very first attempt at building a fast real-time object detector. Because
     YOLO does not undergo the region proposal step and only predicts over a limited
     number of bounding boxes, it is able to do inference super fast.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: '**YOLO**模型（“You Only Look Once”；[Redmon et al., 2016](https://www.cv-foundation.org/openaccess/content_cvpr_2016/papers/Redmon_You_Only_Look_CVPR_2016_paper.pdf)）是构建快速实时目标检测器的首次尝试。由于YOLO不经历区域提议步骤，只对有限数量的边界框进行预测，因此能够快速进行推断。'
 - en: Workflow
+  id: totrans-10
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 工作流程
 - en: '**Pre-train** a CNN network on image classification task.'
+  id: totrans-11
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**预训练**一个CNN网络进行图像分类任务。'
 - en: Split an image into $S \times S$ cells. If an object’s center falls into a cell,
     that cell is “responsible” for detecting the existence of that object. Each cell
     predicts (a) the location of $B$ bounding boxes, (b) a confidence score, and (c)
     a probability of object class conditioned on the existence of an object in the
     bounding box.
+  id: totrans-12
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将图像分割成$S \times S$个单元格。如果一个物体的中心落入一个单元格中，那个单元格就“负责”检测该物体的存在。每个单元格预测(a) $B$个边界框的位置，(b)
+    置信度分数，以及(c) 在边界框中存在物体的条件下的物体类别概率。
 - en: The **coordinates** of bounding box are defined by a tuple of 4 values, (center
     x-coord, center y-coord, width, height) — $(x, y, w, h)$, where $x$ and $y$ are
     set to be offset of a cell location. Moreover, $x$, $y$, $w$ and $h$ are normalized
     by the image width and height, and thus all between (0, 1].
+  id: totrans-13
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 边界框的**坐标**由一个包含4个值的元组定义，(中心x坐标，中心y坐标，宽度，高度) — $(x, y, w, h)$，其中$x$和$y$被设置为单元格位置的偏移量。此外，$x$、$y$、$w$和$h$都被图像的宽度和高度归一化，因此都在(0,
+    1]之间。
 - en: 'A **confidence score** indicates the likelihood that the cell contains an object:
     `Pr(containing an object) x IoU(pred, truth)`; where `Pr` = probability and `IoU`
     = interaction under union.'
+  id: totrans-14
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一个**置信度分数**表示单元格包含对象的可能性：`Pr(包含对象) x IoU(预测, 真实)`；其中`Pr` = 概率，`IoU` = 交并比。
 - en: 'If the cell contains an object, it predicts a **probability** of this object
     belonging to every class $C_i, i=1, \dots, K$: `Pr(the object belongs to the class
     C_i | containing an object)`. At this stage, the model only predicts one set of
     class probabilities per cell, regardless of the number of bounding boxes, $B$.'
+  id: totrans-15
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如果单元格包含一个对象，则预测该对象属于每个类别$C_i, i=1, \dots, K$的**概率**：`Pr(对象属于类别C_i | 包含对象)`。在这个阶段，模型只预测每个单元格一组类别概率，而不考虑边界框的数量$B$。
 - en: In total, one image contains $S \times S \times B$ bounding boxes, each box
     corresponding to 4 location predictions, 1 confidence score, and K conditional
     probabilities for object classification. The total prediction values for one image
     is $S \times S \times (5B + K)$, which is the tensor shape of the final conv layer
     of the model.
+  id: totrans-16
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 总共，一张图像包含$S \times S \times B$个边界框，每个边界框对应4个位置预测，1个置信度分数，以及K个用于对象分类的条件概率。一张图像的总预测值为$S
+    \times S \times (5B + K)$，这是模型最终卷积层的张量形状。
 - en: The final layer of the pre-trained CNN is modified to output a prediction tensor
     of size $S \times S \times (5B + K)$.
+  id: totrans-17
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 预训练CNN的最终层被修改为输出大小为$S \times S \times (5B + K)$的预测张量。
 - en: '![](../Images/e2eb281fd51e55b215a29cb7d09fe3c0.png)'
+  id: totrans-18
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e2eb281fd51e55b215a29cb7d09fe3c0.png)'
 - en: 'Fig. 1\. The workflow of YOLO model. (Image source: [original paper](https://www.cv-foundation.org/openaccess/content_cvpr_2016/papers/Redmon_You_Only_Look_CVPR_2016_paper.pdf))'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 图1\. YOLO模型的工作流程。（图片来源：[原始论文](https://www.cv-foundation.org/openaccess/content_cvpr_2016/papers/Redmon_You_Only_Look_CVPR_2016_paper.pdf)）
 - en: Network Architecture
+  id: totrans-20
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 网络架构
 - en: The base model is similar to [GoogLeNet](https://www.cs.unc.edu/~wliu/papers/GoogLeNet.pdf)
     with inception module replaced by 1x1 and 3x3 conv layers. The final prediction
     of shape $S \times S \times (5B + K)$ is produced by two fully connected layers
     over the whole conv feature map.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 基础模型类似于[GoogLeNet](https://www.cs.unc.edu/~wliu/papers/GoogLeNet.pdf)，其中inception模块被1x1和3x3卷积层替换。形状为$S
+    \times S \times (5B + K)$的最终预测是通过对整个卷积特征图进行两个全连接层计算得到的。
 - en: '![](../Images/a94d308f05e47f644244bbab129b1a7e.png)'
+  id: totrans-22
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a94d308f05e47f644244bbab129b1a7e.png)'
 - en: Fig. 2\. The network architecture of YOLO.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 图2\. YOLO的网络架构。
 - en: Loss Function
+  id: totrans-24
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 损失函数
 - en: The loss consists of two parts, the *localization loss* for bounding box offset
     prediction and the *classification loss* for conditional class probabilities.
     Both parts are computed as the sum of squared errors. Two scale parameters are
@@ -137,8 +195,11 @@
     Down-weighting the loss contributed by background boxes is important as most of
     the bounding boxes involve no instance. In the paper, the model sets $\lambda_\text{coord}
     = 5$ and $\lambda_\text{noobj} = 0.5$.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 损失由两部分组成，*定位损失*用于边界框偏移预测，*分类损失*用于条件类别概率。这两部分都被计算为平方误差的总和。使用两个比例参数来控制我们希望增加边界框坐标预测的损失量（$\lambda_\text{coord}$）以及我们希望减少没有对象的边界框置信度预测的损失量（$\lambda_\text{noobj}$）。减少背景框贡献的损失很重要，因为大多数边界框不包含实例。在论文中，模型设置$\lambda_\text{coord}
+    = 5$和$\lambda_\text{noobj} = 0.5$。
 - en: $$ \begin{aligned} \mathcal{L}_\text{loc} &= \lambda_\text{coord} \sum_{i=0}^{S^2}
     \sum_{j=0}^B \mathbb{1}_{ij}^\text{obj} [(x_i - \hat{x}_i)^2 + (y_i - \hat{y}_i)^2
     + (\sqrt{w_i} - \sqrt{\hat{w}_i})^2 + (\sqrt{h_i} - \sqrt{\hat{h}_i})^2 ] \\ \mathcal{L}_\text{cls}
@@ -146,82 +207,123 @@
     (1 - \mathbb{1}_{ij}^\text{obj})\big) (C_{ij} - \hat{C}_{ij})^2 + \sum_{i=0}^{S^2}
     \sum_{c \in \mathcal{C}} \mathbb{1}_i^\text{obj} (p_i(c) - \hat{p}_i(c))^2\\ \mathcal{L}
     &= \mathcal{L}_\text{loc} + \mathcal{L}_\text{cls} \end{aligned} $$
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \mathcal{L}_\text{loc} &= \lambda_\text{coord} \sum_{i=0}^{S^2}
+    \sum_{j=0}^B \mathbb{1}_{ij}^\text{obj} [(x_i - \hat{x}_i)^2 + (y_i - \hat{y}_i)^2
+    + (\sqrt{w_i} - \sqrt{\hat{w}_i})^2 + (\sqrt{h_i} - \sqrt{\hat{h}_i})^2 ] \\ \mathcal{L}_\text{cls}
+    &= \sum_{i=0}^{S^2} \sum_{j=0}^B \big( \mathbb{1}_{ij}^\text{obj} + \lambda_\text{noobj}
+    (1 - \mathbb{1}_{ij}^\text{obj})\big) (C_{ij} - \hat{C}_{ij})^2 + \sum_{i=0}^{S^2}
+    \sum_{c \in \mathcal{C}} \mathbb{1}_i^\text{obj} (p_i(c) - \hat{p}_i(c))^2\\ \mathcal{L}
+    &= \mathcal{L}_\text{loc} + \mathcal{L}_\text{cls} \end{aligned} $$
 - en: 'NOTE: In the original YOLO paper, the loss function uses $C_i$ instead of $C_{ij}$
     as confidence score. I made the correction based on my own understanding, since
     every bounding box should have its own confidence score. Please kindly let me
     if you do not agree. Many thanks.'
+  id: totrans-27
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 注意：在原始 YOLO 论文中，损失函数使用 $C_i$ 而不是 $C_{ij}$ 作为置信度分数。我根据自己的理解进行了更正，因为每个边界框应该有自己的置信度分数。如果您不同意，请告诉我。非常感谢。
 - en: where,
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: where,
 - en: '$\mathbb{1}_i^\text{obj}$: An indicator function of whether the cell i contains
     an object.'
+  id: totrans-29
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $\mathbb{1}_i^\text{obj}$：指示函数，表示单元格 i 是否包含对象。
 - en: '$\mathbb{1}_{ij}^\text{obj}$: It indicates whether the j-th bounding box of
     the cell i is “responsible” for the object prediction (see Fig. 3).'
+  id: totrans-30
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $\mathbb{1}_{ij}^\text{obj}$：它指示单元格 i 的第 j 个边界框是否“负责”对象预测（见图 3）。
 - en: '$C_{ij}$: The confidence score of cell i, `Pr(containing an object) * IoU(pred,
     truth)`.'
+  id: totrans-31
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $C_{ij}$：单元格 i 的置信度分数，`Pr(包含对象) * IoU(预测, 真实)`.
 - en: '$\hat{C}_{ij}$: The predicted confidence score.'
+  id: totrans-32
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $\hat{C}_{ij}$：预测的置信度分数。
 - en: '$\mathcal{C}$: The set of all classes.'
+  id: totrans-33
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $\mathcal{C}$：所有类别的集合。
 - en: '$p_i(c)$: The conditional probability of whether cell i contains an object
     of class $c \in \mathcal{C}$.'
+  id: totrans-34
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $p_i(c)$：单元格 i 是否包含类别 $c \in \mathcal{C}$ 的条件概率。
 - en: '$\hat{p}_i(c)$: The predicted conditional class probability.'
+  id: totrans-35
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $\hat{p}_i(c)$：预测的条件类别概率。
 - en: '![](../Images/6cd5297ca41572fd4f26d5411d0196a0.png)'
+  id: totrans-36
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6cd5297ca41572fd4f26d5411d0196a0.png)'
 - en: Fig. 3\. At one location, in cell i, the model proposes B bounding box candidates
     and the one that has highest overlap with the ground truth is the "responsible"
     predictor.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 3\. 在一个位置，单元格 i 中，模型提出 B 个边界框候选项，与地面实况有最高重叠的那个是“负责”的预测器。
 - en: The loss function only penalizes classification error if an object is present
     in that grid cell, $\mathbb{1}_i^\text{obj} = 1$. It also only penalizes bounding
     box coordinate error if that predictor is “responsible” for the ground truth box,
     $\mathbb{1}_{ij}^\text{obj} = 1$.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果网格单元格中存在对象，则损失函数仅惩罚分类错误，$\mathbb{1}_i^\text{obj} = 1$。如果该预测器“负责”地面实况框，则它也只惩罚边界框坐标错误，$\mathbb{1}_{ij}^\text{obj}
+    = 1$。
 - en: As a one-stage object detector, YOLO is super fast, but it is not good at recognizing
     irregularly shaped objects or a group of small objects due to a limited number
     of bounding box candidates.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 作为一种单阶段目标检测器，YOLO 非常快速，但由于有限数量的边界框候选项，它不擅长识别不规则形状的对象或一组小对象。
 - en: 'SSD: Single Shot MultiBox Detector'
+  id: totrans-40
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: SSD：单次多框检测器
 - en: The **Single Shot Detector** (**SSD**; [Liu et al, 2016](https://arxiv.org/abs/1512.02325))
     is one of the first attempts at using convolutional neural network’s pyramidal
     feature hierarchy for efficient detection of objects of various sizes.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: '**单次检测器**（**SSD**；[Liu 等人，2016](https://arxiv.org/abs/1512.02325)）是第一次尝试使用卷积神经网络的金字塔特征层次结构来高效检测各种大小的对象。'
 - en: Image Pyramid
+  id: totrans-42
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 图像金字塔
 - en: SSD uses the [VGG-16](https://arxiv.org/abs/1409.1556) model pre-trained on
     ImageNet as its base model for extracting useful image features. On top of VGG16,
     SSD adds several conv feature layers of decreasing sizes. They can be seen as
@@ -229,42 +331,61 @@
     feature maps at earlier levels are good at capturing small objects and small coarse-grained
     feature maps can detect large objects well. In SSD, the detection happens in every
     pyramidal layer, targeting at objects of various sizes.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: SSD 使用在 ImageNet 上预训练的 [VGG-16](https://arxiv.org/abs/1409.1556) 模型作为提取有用图像特征的基础模型。在
+    VGG16 之上，SSD 添加了几个尺寸递减的卷积特征层。它们可以被看作是不同尺度图像的*金字塔表示*。直观地说，较早级别的大细粒度特征图对捕捉小对象很好，而较小的粗粒度特征图可以很好地检测大对象。在
+    SSD 中，检测发生在每个金字塔层，针对各种大小的对象。
 - en: '![](../Images/652ffe91e1c8de38b5aeb0387ded78c0.png)'
+  id: totrans-44
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/652ffe91e1c8de38b5aeb0387ded78c0.png)'
 - en: Fig. 4\. The model architecture of SSD.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 4\. SSD 的模型架构。
 - en: Workflow
+  id: totrans-46
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 工作流程
 - en: Unlike YOLO, SSD does not split the image into grids of arbitrary size but predicts
     offset of predefined *anchor boxes* (this is called “default boxes” in the paper)
     for every location of the feature map. Each box has a fixed size and position
     relative to its corresponding cell. All the anchor boxes tile the whole feature
     map in a convolutional manner.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 与 YOLO 不同，SSD 不会将图像分割成任意大小的网格，而是为特征图的每个位置预测预定义*锚框*的偏移量（在论文中称为“默认框”）。每个框都有固定的大小和位置，相对于其对应的单元格。所有锚框以卷积方式铺设整个特征图。
 - en: Feature maps at different levels have different receptive field sizes. The anchor
     boxes on different levels are rescaled so that one feature map is only responsible
     for objects at one particular scale. For example, in Fig. 5 the dog can only be
     detected in the 4x4 feature map (higher level) while the cat is just captured
     by the 8x8 feature map (lower level).
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 不同级别的特征图具有不同的感受野大小。不同级别上的锚框被重新缩放，以便一个特征图仅负责特定尺度的对象。例如，在图5中，狗只能在4x4特征图（较高级别）中被检测到，而猫只能被8x8特征图（较低级别）捕捉到。
 - en: '![](../Images/2c48c66b1f7a7353016d5979b54ec791.png)'
+  id: totrans-49
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/2c48c66b1f7a7353016d5979b54ec791.png)'
 - en: 'Fig. 5\. The SSD framework. (a) The training data contains images and ground
     truth boxes for every object. (b) In a fine-grained feature maps (8 x 8), the
     anchor boxes of different aspect ratios correspond to smaller area of the raw
     input. (c) In a coarse-grained feature map (4 x 4), the anchor boxes cover larger
     area of the raw input. (Image source: [original paper](https://arxiv.org/abs/1512.02325))'
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: '图5\. SSD框架。 (a) 训练数据包含每个对象的图像和地面真实框。 (b) 在细粒度特征图（8 x 8）中，不同纵横比的锚框对应于原始输入的较小区域。
+    (c) 在粗粒度特征图（4 x 4）中，锚框覆盖了原始输入的较大区域。 (图片来源: [原始论文](https://arxiv.org/abs/1512.02325))'
 - en: The width, height and the center location of an anchor box are all normalized
     to be (0, 1). At a location $(i, j)$ of the $\ell$-th feature layer of size $m
     \times n$, $i=1,\dots,n, j=1,\dots,m$, we have a unique linear scale proportional
@@ -272,8 +393,11 @@
     in addition to a special scale (why we need this? the paper didn’t explain. maybe
     just a heuristic trick) when the aspect ratio is 1\. This gives us 6 anchor boxes
     in total per feature cell.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 锚框的宽度、高度和中心位置都被归一化为(0, 1)。在大小为$m \times n$的第$\ell$个特征层的位置$(i, j)$处，$i=1,\dots,n,
+    j=1,\dots,m$，我们有一个与层级成比例的唯一线性尺度和5种不同的框纵横比（宽高比），以及一个特殊尺度（为什么需要这个？论文没有解释。也许只是一个启发式技巧），当纵横比为1时。这给我们每个特征单元总共6个锚框。
 - en: '$$ \begin{aligned} \text{level index: } &\ell = 1, \dots, L \\ \text{scale
     of boxes: } &s_\ell = s_\text{min} + \frac{s_\text{max} - s_\text{min}}{L - 1}
     (\ell - 1) \\ \text{aspect ratio: } &r \in \{1, 2, 3, 1/2, 1/3\}\\ \text{additional
@@ -281,64 +405,103 @@
     6 boxes in total.}\\ \text{width: } &w_\ell^r = s_\ell \sqrt{r} \\ \text{height:
     } &h_\ell^r = s_\ell / \sqrt{r} \\ \text{center location: } & (x^i_\ell, y^j_\ell)
     = (\frac{i+0.5}{m}, \frac{j+0.5}{n}) \end{aligned} $$![](../Images/c83971b9eef5c4b682572971417840f4.png)'
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: '$$ \begin{aligned} \text{级别索引: } &\ell = 1, \dots, L \\ \text{框的尺度: } &s_\ell
+    = s_\text{min} + \frac{s_\text{max} - s_\text{min}}{L - 1} (\ell - 1) \\ \text{纵横比:
+    } &r \in \{1, 2, 3, 1/2, 1/3\}\\ \text{额外尺度: } & s''_\ell = \sqrt{s_\ell s_{\ell
+    + 1}} \text{ 当 } r = 1 \text{，因此总共有6个框。}\\ \text{宽度: } &w_\ell^r = s_\ell \sqrt{r}
+    \\ \text{高度: } &h_\ell^r = s_\ell / \sqrt{r} \\ \text{中心位置: } & (x^i_\ell, y^j_\ell)
+    = (\frac{i+0.5}{m}, \frac{j+0.5}{n}) \end{aligned} $$![](../Images/c83971b9eef5c4b682572971417840f4.png)'
 - en: Fig. 6\. An example of how the anchor box size is scaled up with the layer index
     $\ell$ for $L=6, s\_\text{min} = 0.2, s\_\text{max} = 0.9$. Only the boxes of
     aspect ratio $r=1$ are illustrated.
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 图6\. 锚框大小随着层索引$\ell$的增加而扩大的示例，其中$L=6, s\_\text{min} = 0.2, s\_\text{max} = 0.9$。仅展示了纵横比$r=1$的框。
 - en: At every location, the model outputs 4 offsets and $c$ class probabilities by
     applying a $3 \times 3 \times p$ conv filter (where $p$ is the number of channels
     in the feature map) for every one of $k$ anchor boxes. Therefore, given a feature
     map of size $m \times n$, we need $kmn(c+4)$ prediction filters.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 在每个位置，模型通过对每个$k$个锚框应用一个$3 \times 3 \times p$的卷积滤波器（其中$p$是特征图中的通道数）来输出4个偏移量和$c$个类别概率。因此，给定大小为$m
+    \times n$的特征图，我们需要$kmn(c+4)$个预测滤波器。
 - en: Loss Function
+  id: totrans-55
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 损失函数
 - en: Same as YOLO, the loss function is the sum of a localization loss and a classification
     loss.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 与YOLO相同，损失函数是定位损失和分类损失的总和。
 - en: $\mathcal{L} = \frac{1}{N}(\mathcal{L}_\text{cls} + \alpha \mathcal{L}_\text{loc})$
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: $\mathcal{L} = \frac{1}{N}(\mathcal{L}_\text{cls} + \alpha \mathcal{L}_\text{loc})$
 - en: where $N$ is the number of matched bounding boxes and $\alpha$ balances the
     weights between two losses, picked by cross validation.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$N$是匹配的边界框数量，$\alpha$在两个损失之间平衡权重，由交叉验证选择。
 - en: The *localization loss* is a [smooth L1 loss](https://github.com/rbgirshick/py-faster-rcnn/files/764206/SmoothL1Loss.1.pdf)
     between the predicted bounding box correction and the true values. The coordinate
     correction transformation is same as what [R-CNN](https://lilianweng.github.io/posts/2017-12-31-object-recognition-part-3/#r-cnn)
     does in [bounding box regression](https://lilianweng.github.io/posts/2017-12-31-object-recognition-part-3/#bounding-box-regression).
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: '*定位损失*是预测边界框修正与真实值之间的[平滑 L1 损失](https://github.com/rbgirshick/py-faster-rcnn/files/764206/SmoothL1Loss.1.pdf)。坐标修正转换与[R-CNN](https://lilianweng.github.io/posts/2017-12-31-object-recognition-part-3/#r-cnn)在[边界框回归](https://lilianweng.github.io/posts/2017-12-31-object-recognition-part-3/#bounding-box-regression)中所做的相同。'
 - en: $$ \begin{aligned} \mathcal{L}_\text{loc} &= \sum_{i,j} \sum_{m\in\{x, y, w,
     h\}} \mathbb{1}_{ij}^\text{match} L_1^\text{smooth}(d_m^i - t_m^j)^2\\ L_1^\text{smooth}(x)
     &= \begin{cases} 0.5 x^2 & \text{if } \vert x \vert < 1\\ \vert x \vert - 0.5
     & \text{otherwise} \end{cases} \\ t^j_x &= (g^j_x - p^i_x) / p^i_w \\ t^j_y &=
     (g^j_y - p^i_y) / p^i_h \\ t^j_w &= \log(g^j_w / p^i_w) \\ t^j_h &= \log(g^j_h
     / p^i_h) \end{aligned} $$
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \mathcal{L}_\text{loc} &= \sum_{i,j} \sum_{m\in\{x, y, w,
+    h\}} \mathbb{1}_{ij}^\text{match} L_1^\text{smooth}(d_m^i - t_m^j)^2\\ L_1^\text{smooth}(x)
+    &= \begin{cases} 0.5 x^2 & \text{if } \vert x \vert < 1\\ \vert x \vert - 0.5
+    & \text{otherwise} \end{cases} \\ t^j_x &= (g^j_x - p^i_x) / p^i_w \\ t^j_y &=
+    (g^j_y - p^i_y) / p^i_h \\ t^j_w &= \log(g^j_w / p^i_w) \\ t^j_h &= \log(g^j_h
+    / p^i_h) \end{aligned} $$
 - en: where $\mathbb{1}_{ij}^\text{match}$ indicates whether the $i$-th bounding box
     with coordinates $(p^i_x, p^i_y, p^i_w, p^i_h)$ is matched to the $j$-th ground
     truth box with coordinates $(g^j_x, g^j_y, g^j_w, g^j_h)$ for any object. $d^i_m,
     m\in\{x, y, w, h\}$ are the predicted correction terms. See [this](https://lilianweng.github.io/posts/2017-12-31-object-recognition-part-3/#bounding-box-regression)
     for how the transformation works.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 $\mathbb{1}_{ij}^\text{match}$ 表示第 $i$ 个边界框的坐标 $(p^i_x, p^i_y, p^i_w, p^i_h)$
+    是否与第 $j$ 个真实边界框的坐标 $(g^j_x, g^j_y, g^j_w, g^j_h)$ 匹配。$d^i_m, m\in\{x, y, w, h\}$
+    是预测的修正项。查看[这里](https://lilianweng.github.io/posts/2017-12-31-object-recognition-part-3/#bounding-box-regression)了解转换如何工作。
 - en: 'The *classification loss* is a softmax loss over multiple classes ([softmax_cross_entropy_with_logits](https://www.tensorflow.org/api_docs/python/tf/nn/softmax_cross_entropy_with_logits)
     in tensorflow):'
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: '*分类损失*是多类别的 softmax 损失（[tensorflow 中的 softmax_cross_entropy_with_logits](https://www.tensorflow.org/api_docs/python/tf/nn/softmax_cross_entropy_with_logits)）：'
 - en: $$ \mathcal{L}_\text{cls} = -\sum_{i \in \text{pos}} \mathbb{1}_{ij}^k \log(\hat{c}_i^k)
     - \sum_{i \in \text{neg}} \log(\hat{c}_i^0)\text{, where }\hat{c}_i^k = \text{softmax}(c_i^k)
     $$
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathcal{L}_\text{cls} = -\sum_{i \in \text{pos}} \mathbb{1}_{ij}^k \log(\hat{c}_i^k)
+    - \sum_{i \in \text{neg}} \log(\hat{c}_i^0)\text{, where }\hat{c}_i^k = \text{softmax}(c_i^k)
+    $$
 - en: 'where $\mathbb{1}_{ij}^k$ indicates whether the $i$-th bounding box and the
     $j$-th ground truth box are matched for an object in class $k$. $\text{pos}$ is
     the set of matched bounding boxes ($N$ items in total) and $\text{neg}$ is the
@@ -346,441 +509,646 @@
     to select easily misclassified negative examples to construct this $\text{neg}$
     set: Once all the anchor boxes are sorted by objectiveness confidence score, the
     model picks the top candidates for training so that neg:pos is at most 3:1.'
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 $\mathbb{1}_{ij}^k$ 表示第 $i$ 个边界框和第 $j$ 个真实边界框是否匹配类别 $k$ 的对象。$\text{pos}$
+    是匹配的边界框集合（总共 $N$ 个项目），$\text{neg}$ 是负例集合。SSD 使用[硬负样本挖掘](https://lilianweng.github.io/posts/2017-12-31-object-recognition-part-3/#common-tricks)来选择易被错误分类的负例，构建这个
+    $\text{neg}$ 集合：一旦所有锚框按照目标置信度得分排序，模型选择前几个候选项进行训练，使得 neg:pos 最多为 3:1。
 - en: YOLOv2 / YOLO9000
+  id: totrans-65
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: YOLOv2 / YOLO9000
 - en: '**YOLOv2** ([Redmon & Farhadi, 2017](https://arxiv.org/abs/1612.08242)) is
     an enhanced version of YOLO. **YOLO9000** is built on top of YOLOv2 but trained
     with joint dataset combining the COCO detection dataset and the top 9000 classes
     from ImageNet.'
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: '**YOLOv2**（[Redmon & Farhadi, 2017](https://arxiv.org/abs/1612.08242)）是 YOLO
+    的增强版本。**YOLO9000** 建立在 YOLOv2 的基础上，但是使用 COCO 检测数据集和 ImageNet 中前 9000 个类别的联合数据集进行训练。'
 - en: YOLOv2 Improvement
+  id: totrans-67
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: YOLOv2 改进
 - en: 'A variety of modifications are applied to make YOLO prediction more accurate
     and faster, including:'
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了使 YOLO 预测更准确和更快，应用了各种修改，包括：
 - en: '**1\. BatchNorm helps**: Add *batch norm* on all the convolutional layers,
     leading to significant improvement over convergence.'
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: '**1\. BatchNorm 有帮助**：在所有卷积层上添加*批量归一化*，显著提高收敛速度。'
 - en: '**2\. Image resolution matters**: Fine-tuning the base model with *high resolution*
     images improves the detection performance.'
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: '**2\. 图像分辨率很重要**：使用*高分辨率*图像微调基础模型可以提高检测性能。'
 - en: '**3\. Convolutional anchor box detection**: Rather than predicts the bounding
     box position with fully-connected layers over the whole feature map, YOLOv2 uses
     *convolutional layers* to predict locations of *anchor boxes*, like in faster
     R-CNN. The prediction of spatial locations and class probabilities are decoupled.
     Overall, the change leads to a slight decrease in mAP, but an increase in recall.'
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: '**3\. 卷积锚框检测**：YOLOv2不像使用全连接层在整个特征图上预测边界框位置，而是使用卷积层来预测*锚框*的位置，就像faster R-CNN中一样。空间位置和类别概率的预测是分离的。总体上，这种改变导致mAP略微下降，但召回率增加。'
 - en: '**4\. K-mean clustering of box dimensions**: Different from faster R-CNN that
     uses hand-picked sizes of anchor boxes, YOLOv2 runs k-mean clustering on the training
     data to find good priors on anchor box dimensions. The distance metric is designed
     to *rely on IoU scores*:'
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: '**4\. 锚框尺寸的K均值聚类**：与使用手动选择大小的锚框的faster R-CNN不同，YOLOv2在训练数据上运行K均值聚类，以找到锚框尺寸的良好先验。距离度量设计为*依赖于IoU分数*：'
 - en: $$ \text{dist}(x, c_i) = 1 - \text{IoU}(x, c_i), i=1,\dots,k $$
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \text{dist}(x, c_i) = 1 - \text{IoU}(x, c_i), i=1,\dots,k $$
 - en: where $x$ is a ground truth box candidate and $c_i$ is one of the centroids.
     The best number of centroids (anchor boxes) $k$ can be chosen by the [elbow method](https://en.wikipedia.org/wiki/Elbow_method_(clustering)).
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$x$是一个地面真实框候选，$c_i$是其中一个中心点。最佳中心点（锚框）数量$k$可以通过[肘部法则](https://en.wikipedia.org/wiki/Elbow_method_(clustering))选择。
 - en: The anchor boxes generated by clustering provide better average IoU conditioned
     on a fixed number of boxes.
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 由聚类生成的锚框在固定数量的锚框上提供更好的平均IoU。
 - en: '**5\. Direct location prediction**: YOLOv2 formulates the bounding box prediction
     in a way that it would *not diverge* from the center location too much. If the
     box location prediction can place the box in any part of the image, like in regional
     proposal network, the model training could become unstable.'
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: '**5\. 直接位置预测**：YOLOv2以一种方式制定边界框预测，使其*不会偏离*中心位置太远。如果边界框位置预测可以将边界框放在图像的任何部分，就像在区域建议网络中一样，模型训练可能会变得不稳定。'
 - en: Given the anchor box of size $(p_w, p_h)$ at the grid cell with its top left
     corner at $(c_x, c_y)$, the model predicts the offset and the scale, $(t_x, t_y,
     t_w, t_h)$ and the corresponding predicted bounding box $b$ has center $(b_x,
     b_y)$ and size $(b_w, b_h)$. The confidence score is the sigmoid ($\sigma$) of
     another output $t_o$.
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 给定大小为$(p_w, p_h)$的锚框在网格单元的左上角为$(c_x, c_y)$，模型预测偏移和比例$(t_x, t_y, t_w, t_h)$，相应的预测边界框$b$的中心为$(b_x,
+    b_y)$，大小为$(b_w, b_h)$。置信度分数是另一个输出$t_o$的sigmoid($\sigma$)。
 - en: $$ \begin{aligned} b_x &= \sigma(t_x) + c_x\\ b_y &= \sigma(t_y) + c_y\\ b_w
     &= p_w e^{t_w}\\ b_h &= p_h e^{t_h}\\ \text{Pr}(\text{object}) &\cdot \text{IoU}(b,
     \text{object}) = \sigma(t_o) \end{aligned} $$![](../Images/91e23778f5ee93891da12b61a4a57b87.png)
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} b_x &= \sigma(t_x) + c_x\\ b_y &= \sigma(t_y) + c_y\\ b_w
+    &= p_w e^{t_w}\\ b_h &= p_h e^{t_h}\\ \text{Pr}(\text{object}) &\cdot \text{IoU}(b,
+    \text{object}) = \sigma(t_o) \end{aligned} $$![](../Images/91e23778f5ee93891da12b61a4a57b87.png)
 - en: 'Fig. 7\. YOLOv2 bounding box location prediction. (Image source: [original
     paper](https://arxiv.org/abs/1612.08242))'
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 图7\. YOLOv2边界框位置预测。（图片来源：[原论文](https://arxiv.org/abs/1612.08242)）
 - en: '**6\. Add fine-grained features**: YOLOv2 adds a passthrough layer to bring
     *fine-grained features* from an earlier layer to the last output layer. The mechanism
     of this passthrough layer is similar to *identity mappings in ResNet* to extract
     higher-dimensional features from previous layers. This leads to 1% performance
     increase.'
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: '**6\. 添加细粒度特征**：YOLOv2添加了一个透传层，将*较早层*的细粒度特征传递到最后的输出层。这个透传层的机制类似于ResNet中的*恒等映射*，从先前的层提取高维特征。这导致性能提高了1%。'
 - en: '**7\. Multi-scale training**: In order to train the model to be robust to input
     images of different sizes, a *new size* of input dimension is *randomly sampled*
     every 10 batches. Since conv layers of YOLOv2 downsample the input dimension by
     a factor of 32, the newly sampled size is a multiple of 32.'
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: '**7\. 多尺度训练**：为了训练模型对不同尺寸的输入图像具有鲁棒性，每10批次会*随机抽样*一个*新尺寸*的输入维度。由于YOLOv2的卷积层将输入维度下采样32倍，新抽样的尺寸是32的倍数。'
 - en: '**8\. Light-weighted base model**: To make prediction even faster, YOLOv2 adopts
     a light-weighted base model, DarkNet-19, which has 19 conv layers and 5 max-pooling
     layers. The key point is to insert avg poolings and 1x1 conv filters between 3x3
     conv layers.'
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: '**8\. 轻量级基础模型**：为了使预测速度更快，YOLOv2采用了一个轻量级的基础模型，DarkNet-19，它有19个卷积层和5个最大池化层。关键点是在3x3卷积层之间插入平均池化和1x1卷积滤波器。'
 - en: 'YOLO9000: Rich Dataset Training'
+  id: totrans-83
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: YOLO9000：丰富的数据集训练
 - en: Because drawing bounding boxes on images for object detection is much more expensive
     than tagging images for classification, the paper proposed a way to combine small
     object detection dataset with large ImageNet so that the model can be exposed
     to a much larger number of object categories. The name of YOLO9000 comes from
     the top 9000 classes in ImageNet. During joint training, if an input image comes
     from the classification dataset, it only backpropagates the classification loss.
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 因为在图像上绘制边界框进行目标检测比为分类标记图像要昂贵得多，所以该论文提出了一种将小目标检测数据集与大型ImageNet相结合的方法，以便模型可以接触到更多的对象类别。
+    YOLO9000的名称来自ImageNet中前9000个类。在联合训练期间，如果输入图像来自分类数据集，则仅反向传播分类损失。
 - en: The detection dataset has much fewer and more general labels and, moreover,
     labels cross multiple datasets are often not mutually exclusive. For example,
     ImageNet has a label “Persian cat” while in COCO the same image would be labeled
     as “cat”. Without mutual exclusiveness, it does not make sense to apply softmax
     over all the classes.
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 检测数据集的标签要少得多且更通用，而且跨多个数据集的标签通常不是相互排斥的。例如，ImageNet有一个标签“波斯猫”，而在COCO中，同一图像将被标记为“猫”。没有相互排斥性，对所有类别应用softmax就没有意义。
 - en: In order to efficiently merge ImageNet labels (1000 classes, fine-grained) with
     COCO/PASCAL (< 100 classes, coarse-grained), YOLO9000 built a hierarchical tree
     structure with reference to [WordNet](https://wordnet.princeton.edu/) so that
     general labels are closer to the root and the fine-grained class labels are leaves.
     In this way, “cat” is the parent node of “Persian cat”.
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了有效地将ImageNet标签（1000个类别，细粒度）与COCO/PASCAL（<100个类别，粗粒度）合并，YOLO9000构建了一个具有参考[WordNet](https://wordnet.princeton.edu/)的分层树结构，以便通用标签更接近根部，而细粒度类别标签是叶子。这样，“猫”是“波斯猫”的父节点。
 - en: '![](../Images/3c13d804fb372ab68020163ff3ac5ca6.png)'
+  id: totrans-87
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3c13d804fb372ab68020163ff3ac5ca6.png)'
 - en: 'Fig. 8\. The WordTree hierarchy merges labels from COCO and ImageNet. Blue
     nodes are COCO labels and red nodes are ImageNet labels. (Image source: [original
     paper](https://arxiv.org/abs/1612.08242))'
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 图8。WordTree层次结构合并了来自COCO和ImageNet的标签。蓝色节点是COCO标签，红色节点是ImageNet标签。（图片来源：[原论文](https://arxiv.org/abs/1612.08242)）
 - en: 'To predict the probability of a class node, we can follow the path from the
     node to the root:'
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 要预测类节点的概率，我们可以沿着从节点到根的路径进行：
 - en: '[PRE0]'
+  id: totrans-90
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: Note that `Pr(contain a "physical object")` is the confidence score, predicted
     separately in the bounding box detection pipeline. The path of conditional probability
     prediction can stop at any step, depending on which labels are available.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意`Pr（包含“物理对象”）`是置信度分数，在边界框检测管道中单独预测。条件概率预测的路径可以在任何步骤停止，取决于哪些标签可用。
 - en: RetinaNet
+  id: totrans-92
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: RetinaNet
 - en: The **RetinaNet** ([Lin et al., 2018](https://arxiv.org/abs/1708.02002)) is
     a one-stage dense object detector. Two crucial building blocks are *featurized
     image pyramid* and the use of *focal loss*.
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: '**RetinaNet**（[Lin等人，2018](https://arxiv.org/abs/1708.02002)）是一种单阶段密集目标检测器。两个关键构建模块是*特征化图像金字塔*和使用*焦点损失*。'
 - en: Focal Loss
+  id: totrans-94
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 焦点损失
 - en: One issue for object detection model training is an extreme imbalance between
     background that contains no object and foreground that holds objects of interests.
     **Focal loss** is designed to assign more weights on hard, easily misclassified
     examples (i.e. background with noisy texture or partial object) and to down-weight
     easy examples (i.e. obviously empty background).
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 目标检测模型训练的一个问题是背景中没有对象而前景中包含感兴趣的对象之间存在极端不平衡。**焦点损失**旨在对难以分类的例子（即具有嘈杂纹理或部分对象的背景）分配更多权重，并对易例子（即明显为空的背景）进行降权。
 - en: Starting with a normal cross entropy loss for binary classification,
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 从普通的二元分类交叉熵损失开始，
 - en: $$ \text{CE}(p, y) = -y\log p - (1-y)\log(1-p) $$
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \text{CE}(p, y) = -y\log p - (1-y)\log(1-p) $$
 - en: where $y \in \{0, 1\}$ is a ground truth binary label, indicating whether a
     bounding box contains a object, and $p \in [0, 1]$ is the predicted probability
     of objectiveness (aka confidence score).
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$y \in \{0, 1\}$是一个地面真实的二进制标签，表示边界框是否包含对象，$p \in [0, 1]$是对象性的预测概率（也称为置信度分数）。
 - en: For notational convenience,
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了方便表示，
 - en: $$ \text{let } p_t = \begin{cases} p & \text{if } y = 1\\ 1-p & \text{otherwise}
     \end{cases}, \text{then } \text{CE}(p, y)=\text{CE}(p_t) = -\log p_t $$
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \text{let } p_t = \begin{cases} p & \text{if } y = 1\\ 1-p & \text{otherwise}
+    \end{cases}, \text{then } \text{CE}(p, y)=\text{CE}(p_t) = -\log p_t $$
 - en: Easily classified examples with large $p_t \gg 0.5$, that is, when $p$ is very
     close to 0 (when y=0) or 1 (when y=1), can incur a loss with non-trivial magnitude.
     Focal loss explicitly adds a weighting factor $(1-p_t)^\gamma, \gamma \geq 0$
     to each term in cross entropy so that the weight is small when $p_t$ is large
     and therefore easy examples are down-weighted.
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 易分类的示例，即$p_t \gg 0.5$，即$p$非常接近0（当y=0时）或1（当y=1时），可能会产生具有非平凡幅度的损失。焦点损失明确地向交叉熵的每一项添加一个权重因子$(1-p_t)^\gamma,
+    \gamma \geq 0$，以便当$p_t$很大时权重很小，因此易例被降权。
 - en: $$ \text{FL}(p_t) = -(1-p_t)^\gamma \log p_t $$![](../Images/98a50b58a985bc86b9cffbdcfb01e4bc.png)
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \text{FL}(p_t) = -(1-p_t)^\gamma \log p_t $$![](../Images/98a50b58a985bc86b9cffbdcfb01e4bc.png)
 - en: 'Fig. 9\. The focal loss focuses less on easy examples with a factor of $(1-p\_t)^\gamma$.
     (Image source: [original paper](https://arxiv.org/abs/1708.02002))'
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 9\. 焦点损失通过$(1-p\_t)^\gamma$因子更少地关注简单的示例。(图片来源：[原始论文](https://arxiv.org/abs/1708.02002))
 - en: For a better control of the shape of the weighting function (see Fig. 10.),
     RetinaNet uses an $\alpha$-balanced variant of the focal loss, where $\alpha=0.25,
     \gamma=2$ works the best.
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了更好地控制权重函数的形状（见图10），RetinaNet使用焦点损失的$\alpha$平衡变体，其中$\alpha=0.25, \gamma=2$效果最好。
 - en: $$ \text{FL}(p_t) = -\alpha (1-p_t)^\gamma \log p_t $$![](../Images/b490046e27975c8b2e9ac2325bea5b87.png)
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \text{FL}(p_t) = -\alpha (1-p_t)^\gamma \log p_t $$![](../Images/b490046e27975c8b2e9ac2325bea5b87.png)
 - en: Fig. 10\. The plot of focal loss weights $\alpha (1-p\_t)^\gamma$ as a function
     of $p\_t$, given different values of $\alpha$ and $\gamma$.
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 10\. 焦点损失权重$\alpha (1-p\_t)^\gamma$作为$p\_t$的函数的绘图，给定不同的$\alpha$和$\gamma$值。
 - en: Featurized Image Pyramid
+  id: totrans-107
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 特征化图像金字塔
 - en: The **featurized image pyramid** ([Lin et al., 2017](https://arxiv.org/abs/1612.03144))
     is the backbone network for RetinaNet. Following the same approach by [image pyramid](#image-pyramid)
     in SSD, featurized image pyramids provide a basic vision component for object
     detection at different scales.
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: '**特征化图像金字塔**（[Lin等人，2017](https://arxiv.org/abs/1612.03144)）是RetinaNet的骨干网络。遵循SSD中的[图像金字塔](#image-pyramid)相同方法，特征化图像金字塔为不同尺度的目标检测提供了基本的视觉组件。'
 - en: The key idea of feature pyramid network is demonstrated in Fig. 11\. The base
     structure contains a sequence of *pyramid levels*, each corresponding to one network
     *stage*. One stage contains multiple convolutional layers of the same size and
     the stage sizes are scaled down by a factor of 2\. Let’s denote the last layer
     of the $i$-th stage as $C_i$.
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 特征金字塔网络的关键思想在图 11 中展示。基本结构包含一系列*金字塔级别*，每个级别对应一个网络*阶段*。一个阶段包含多个相同大小的卷积层，阶段大小按2的倍数缩小。我们将第$i$个阶段的最后一层表示为$C_i$。
 - en: '![](../Images/bffb8c6833265029ccb29c1f154e247e.png)'
+  id: totrans-110
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/bffb8c6833265029ccb29c1f154e247e.png)'
 - en: Fig. 11\. The illustration of the featurized image pyramid module. (Replot based
     on figure 3 in [FPN paper](https://arxiv.org/abs/1612.03144))
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 11\. 特征化图像金字塔模块的示意图。（基于[FPN论文](https://arxiv.org/abs/1612.03144)中的图3重新绘制）
 - en: 'Two pathways connect conv layers:'
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 两个路径连接卷积层：
 - en: '**Bottom-up pathway** is the normal feedforward computation.'
+  id: totrans-113
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**自下而上路径** 是正常的前向计算。'
 - en: '**Top-down pathway** goes in the inverse direction, adding coarse but semantically
     stronger feature maps back into the previous pyramid levels of a larger size via
     lateral connections.'
+  id: totrans-114
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**自上而下路径** 沿相反方向进行，通过横向连接将粗糙但语义更强的特征图返回到较大尺寸的先前金字塔级别中。'
 - en: First, the higher-level features are upsampled spatially coarser to be 2x larger.
     For image upscaling, the paper used nearest neighbor upsampling. While there are
     many [image upscaling algorithms](https://en.wikipedia.org/wiki/Image_scaling#Algorithms)
     such as using [deconv](https://www.tensorflow.org/api_docs/python/tf/layers/conv2d_transpose),
     adopting another image scaling method might or might not improve the performance
     of RetinaNet.
+  id: totrans-115
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 首先，更高级别的特征被空间上采样至2倍大小。对于图像上采样，论文使用最近邻插值。虽然有许多[图像上采样算法](https://en.wikipedia.org/wiki/Image_scaling#Algorithms)，如使用[反卷积](https://www.tensorflow.org/api_docs/python/tf/layers/conv2d_transpose)，采用另一种图像缩放方法可能会或可能不会提高RetinaNet的性能。
 - en: The larger feature map undergoes a 1x1 conv layer to reduce the channel dimension.
+  id: totrans-116
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 较大的特征图经过1x1卷积层以减少通道维度。
 - en: Finally, these two feature maps are merged by element-wise addition.
+  id: totrans-117
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 最后，这两个特征图通过逐元素相加合并。
 - en: The lateral connections only happen at the last layer in stages, denoted as
     $\{C_i\}$, and the process continues until the finest (largest) merged feature
     map is generated. The prediction is made out of every merged map after a 3x3 conv
     layer, $\{P_i\}$.
+  id: totrans-118
   prefs:
   - PREF_IND
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 横向连接仅发生在阶段的最后一层，表示为 $\{C_i\}$，该过程持续进行直到生成最细（最大）的合并特征图。在经过 3x3 卷积层后，每个合并地图 $\{P_i\}$
+    进行预测。
 - en: 'According to ablation studies, the importance rank of components of the featurized
     image pyramid design is as follows: **1x1 lateral connection** > detect object
     across multiple layers > top-down enrichment > pyramid representation (compared
     to only check the finest layer).'
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: 根据消融研究，图像金字塔设计组件的重要性排名如下：**1x1 横向连接** > 跨多个层检测对象 > 自顶向下丰富 > 金字塔表示（与仅检查最细层相比）。
 - en: Model Architecture
+  id: totrans-120
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 模型架构
 - en: The featurized pyramid is constructed on top of the ResNet architecture. Recall
     that [ResNet](TBA) has 5 conv blocks (= network stages / pyramid levels). The
     last layer of the $i$-th pyramid level, $C_i$, has resolution $2^i$ lower than
     the raw input dimension.
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: 特征化金字塔是在 ResNet 架构的顶部构建的。回想一下，[ResNet](TBA) 有 5 个卷积块（= 网络阶段 / 金字塔级别）。第 $i$ 个金字塔级别的最后一层，$C_i$，的分辨率比原始输入维度低
+    $2^i$。
 - en: 'RetinaNet utilizes feature pyramid levels $P_3$ to $P_7$:'
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: RetinaNet 利用特征金字塔级别 $P_3$ 到 $P_7$：
 - en: $P_3$ to $P_5$ are computed from the corresponding ResNet residual stage from
     $C_3$ to $C_5$. They are connected by both top-down and bottom-up pathways.
+  id: totrans-123
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $P_3$ 到 $P_5$ 是从 $C_3$ 到 $C_5$ 对应的 ResNet 残差阶段计算得出的。它们通过自顶向下和自底向上的路径连接在一起。
 - en: $P_6$ is obtained via a 3×3 stride-2 conv on top of $C_5$
+  id: totrans-124
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $P_6$ 是在 $C_5$ 顶部进行的 3×3 步长为 2 的卷积得到的。
 - en: $P_7$ applies ReLU and a 3×3 stride-2 conv on $P_6$.
+  id: totrans-125
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $P_7$ 在 $P_6$ 上应用 ReLU 和 3×3 步长为 2 的卷积。
 - en: Adding higher pyramid levels on ResNet improves the performance for detecting
     large objects.
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 ResNet 上添加更高的金字塔级别可以提高检测大物体的性能。
 - en: Same as in SSD, detection happens in all pyramid levels by making a prediction
     out of every merged feature map. Because predictions share the same classifier
     and the box regressor, they are all formed to have the same channel dimension
     d=256.
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: 与 SSD 中一样，通过在每个合并特征图上进行预测，所有金字塔级别中都发生检测。因为预测共享相同的分类器和框回归器，它们都被形成为具有相同的通道维度 d=256。
 - en: 'There are A=9 anchor boxes per level:'
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: 每个级别有 A=9 个锚框：
 - en: The base size corresponds to areas of $32^2$ to $512^2$ pixels on $P_3$ to $P_7$
     respectively. There are three size ratios, $\{2^0, 2^{1/3}, 2^{2/3}\}$.
+  id: totrans-129
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 基础尺寸对应于 $P_3$ 到 $P_7$ 上的 $32^2$ 到 $512^2$ 像素的区域。有三个尺寸比率，$\{2^0, 2^{1/3}, 2^{2/3}\}$。
 - en: For each size, there are three aspect ratios {1/2, 1, 2}.
+  id: totrans-130
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 对于每个尺寸，有三个长宽比 {1/2, 1, 2}。
 - en: As usual, for each anchor box, the model outputs a class probability for each
     of $K$ classes in the classification subnet and regresses the offset from this
     anchor box to the nearest ground truth object in the box regression subnet. The
     classification subnet adopts the focal loss introduced above.
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
+  zh: 与往常一样，对于每个锚框，模型在分类子网络中为 $K$ 个类别中的每一个输出类别概率，并在框回归子网络中回归从该锚框到最近的地面真实对象的偏移。分类子网络采用上面介绍的焦点损失。
 - en: '![](../Images/4003b7a9a0a1c5e27d6579ecea1ddf40.png)'
+  id: totrans-132
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/4003b7a9a0a1c5e27d6579ecea1ddf40.png)'
 - en: 'Fig. 12\. The RetinaNet model architecture uses a [FPN](https://arxiv.org/abs/1612.03144)
     backbone on top of ResNet. (Image source: the [FPN](https://arxiv.org/abs/1612.03144)
     paper)'
+  id: totrans-133
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 12\. RetinaNet 模型架构在 ResNet 顶部使用了[FPN](https://arxiv.org/abs/1612.03144)骨干。
+    （图片来源：[FPN](https://arxiv.org/abs/1612.03144) 论文）
 - en: YOLOv3
+  id: totrans-134
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: YOLOv3
 - en: '[YOLOv3](https://pjreddie.com/media/files/papers/YOLOv3.pdf) is created by
     applying a bunch of design tricks on YOLOv2\. The changes are inspired by recent
     advances in the object detection world.'
+  id: totrans-135
   prefs: []
   type: TYPE_NORMAL
+  zh: '[YOLOv3](https://pjreddie.com/media/files/papers/YOLOv3.pdf) 是通过在 YOLOv2 上应用一系列设计技巧而创建的。这些变化受到目标检测领域最新进展的启发。'
 - en: 'Here are a list of changes:'
+  id: totrans-136
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下是一些变化的列表：
 - en: '**1\. Logistic regression for confidence scores**: YOLOv3 predicts an confidence
     score for each bounding box using *logistic regression*, while YOLO and YOLOv2
     uses sum of squared errors for classification terms (see the [loss function](#loss-function)
     above). Linear regression of offset prediction leads to a decrease in mAP.'
+  id: totrans-137
   prefs: []
   type: TYPE_NORMAL
+  zh: '**1\. 置信度分数的逻辑回归**：YOLOv3 使用*逻辑回归*为每个边界框预测置信度分数，而 YOLO 和 YOLOv2 使用平方误差的和作为分类项（参见上面的[损失函数](#loss-function)）。偏移预测的线性回归会导致
+    mAP 的降低。'
 - en: '**2\. No more softmax for class prediction**: When predicting class confidence,
     YOLOv3 uses *multiple independent logistic classifier* for each class rather than
     one softmax layer. This is very helpful especially considering that one image
     might have multiple labels and not all the labels are guaranteed to be mutually
     exclusive.'
+  id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: '**2\. 不再使用softmax进行类别预测**：在预测类别置信度时，YOLOv3为每个类别使用*多个独立的逻辑分类器*，而不是一个softmax层。这对于考虑到一个图像可能有多个标签且不是所有标签都保证是互斥的情况非常有帮助。'
 - en: '**3\. Darknet + ResNet as the base model**: The new Darknet-53 still relies
     on successive 3x3 and 1x1 conv layers, just like the original dark net architecture,
     but has residual blocks added.'
+  id: totrans-139
   prefs: []
   type: TYPE_NORMAL
+  zh: '**3\. Darknet + ResNet作为基础模型**：新的Darknet-53仍然依赖于连续的3x3和1x1卷积层，就像原始的dark net架构一样，但添加了残差块。'
 - en: '**4\. Multi-scale prediction**: Inspired by image pyramid, YOLOv3 adds several
     conv layers after the base feature extractor model and makes prediction at three
     different scales among these conv layers. In this way, it has to deal with many
     more bounding box candidates of various sizes overall.'
+  id: totrans-140
   prefs: []
   type: TYPE_NORMAL
+  zh: '**4\. 多尺度预测**：受到图像金字塔的启发，YOLOv3在基础特征提取模型之后添加了几个卷积层，并在这些卷积层中的三个不同尺度上进行预测。这样，它必须处理各种尺寸的许多边界框候选。'
 - en: '**5\. Skip-layer concatenation**: YOLOv3 also adds cross-layer connections
     between two prediction layers (except for the output layer) and earlier finer-grained
     feature maps. The model first up-samples the coarse feature maps and then merges
     it with the previous features by concatenation. The combination with finer-grained
     information makes it better at detecting small objects.'
+  id: totrans-141
   prefs: []
   type: TYPE_NORMAL
+  zh: '**5\. 跨层连接**：YOLOv3还在两个预测层（除了输出层）和较早的细粒度特征图之间添加了跨层连接。模型首先上采样粗糙特征图，然后通过连接与之前的特征图合并。与细粒度信息的结合使其更擅长检测小物体。'
 - en: Interestingly, focal loss does not help YOLOv3, potentially it might be due
     to the usage of $\lambda_\text{noobj}$ and $\lambda_\text{coord}$ — they increase
     the loss from bounding box location predictions and decrease the loss from confidence
     predictions for background boxes.
+  id: totrans-142
   prefs: []
   type: TYPE_NORMAL
+  zh: 有趣的是，焦点损失对YOLOv3没有帮助，可能是由于使用了$\lambda_\text{noobj}$和$\lambda_\text{coord}$ ——
+    它们增加了边界框位置预测的损失，并减少了背景框置信度预测的损失。
 - en: Overall YOLOv3 performs better and faster than SSD, and worse than RetinaNet
     but 3.8x faster.
+  id: totrans-143
   prefs: []
   type: TYPE_NORMAL
+  zh: 总体而言，YOLOv3的性能比SSD更好更快，比RetinaNet差但快3.8倍。
 - en: '![](../Images/e30cfb033268041e1f11978a171a7485.png)'
+  id: totrans-144
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e30cfb033268041e1f11978a171a7485.png)'
 - en: 'Fig. 13\. The comparison of various fast object detection models on speed and
     mAP performance. (Image source: [focal loss](https://arxiv.org/abs/1708.02002)
     paper with additional labels from the [YOLOv3](https://pjreddie.com/media/files/papers/YOLOv3.pdf)
     paper.)'
+  id: totrans-145
   prefs: []
   type: TYPE_NORMAL
+  zh: 图13\. 各种快速目标检测模型在速度和mAP性能上的比较。（图片来源：[焦点损失](https://arxiv.org/abs/1708.02002)
+    论文，附加标签来自[YOLOv3](https://pjreddie.com/media/files/papers/YOLOv3.pdf) 论文。）
 - en: '* * *'
+  id: totrans-146
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'Cited as:'
+  id: totrans-147
   prefs: []
   type: TYPE_NORMAL
+  zh: 被引用为：
 - en: '[PRE1]'
+  id: totrans-148
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: Reference
+  id: totrans-149
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: '[1] Joseph Redmon, et al. [“You only look once: Unified, real-time object detection.”](https://www.cv-foundation.org/openaccess/content_cvpr_2016/papers/Redmon_You_Only_Look_CVPR_2016_paper.pdf)
     CVPR 2016.'
+  id: totrans-150
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] Joseph Redmon等人. [“You only look once: 统一的实时目标检测。”](https://www.cv-foundation.org/openaccess/content_cvpr_2016/papers/Redmon_You_Only_Look_CVPR_2016_paper.pdf)
+    CVPR 2016.'
 - en: '[2] Joseph Redmon and Ali Farhadi. [“YOLO9000: Better, Faster, Stronger.”](http://openaccess.thecvf.com/content_cvpr_2017/papers/Redmon_YOLO9000_Better_Faster_CVPR_2017_paper.pdf)
     CVPR 2017.'
+  id: totrans-151
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] Joseph Redmon 和 Ali Farhadi. [“YOLO9000: 更好、更快、更强。”](http://openaccess.thecvf.com/content_cvpr_2017/papers/Redmon_YOLO9000_Better_Faster_CVPR_2017_paper.pdf)
+    CVPR 2017.'
 - en: '[3] Joseph Redmon, Ali Farhadi. [“YOLOv3: An incremental improvement.”](https://pjreddie.com/media/files/papers/YOLOv3.pdf).'
+  id: totrans-152
   prefs: []
   type: TYPE_NORMAL
+  zh: '[3] Joseph Redmon, Ali Farhadi. [“YOLOv3: 一个渐进改进。”](https://pjreddie.com/media/files/papers/YOLOv3.pdf).'
 - en: '[4] Wei Liu et al. [“SSD: Single Shot MultiBox Detector.”](https://arxiv.org/abs/1512.02325)
     ECCV 2016.'
+  id: totrans-153
   prefs: []
   type: TYPE_NORMAL
+  zh: '[4] Wei Liu等人. [“SSD: 单次多框检测器。”](https://arxiv.org/abs/1512.02325) ECCV 2016.'
 - en: '[5] Tsung-Yi Lin, et al. [“Feature Pyramid Networks for Object Detection.”](https://arxiv.org/abs/1612.03144)
     CVPR 2017.'
+  id: totrans-154
   prefs: []
   type: TYPE_NORMAL
+  zh: '[5] Tsung-Yi Lin等人. [“用于目标检测的特征金字塔网络。”](https://arxiv.org/abs/1612.03144) CVPR
+    2017.'
 - en: '[6] Tsung-Yi Lin, et al. [“Focal Loss for Dense Object Detection.”](https://arxiv.org/abs/1708.02002)
     IEEE transactions on pattern analysis and machine intelligence, 2018.'
+  id: totrans-155
   prefs: []
   type: TYPE_NORMAL
+  zh: '[6] Tsung-Yi Lin等人. [“密集目标检测的焦点损失。”](https://arxiv.org/abs/1708.02002) IEEE模式分析与机器智能交易，2018年。'
 - en: '[7] [“What’s new in YOLO v3?”](https://towardsdatascience.com/yolo-v3-object-detection-53fb7d3bfe6b)
     by Ayoosh Kathuria on “Towards Data Science”, Apr 23, 2018.'
+  id: totrans-156
   prefs: []
   type: TYPE_NORMAL
+  zh: '[7] [“YOLO v3 有什么新功能？”](https://towardsdatascience.com/yolo-v3-object-detection-53fb7d3bfe6b)
+    作者 Ayoosh Kathuria 在“Towards Data Science”上，2018年4月23日发布。'

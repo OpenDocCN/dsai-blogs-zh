@@ -1,11 +1,15 @@
 - en: Flow-based Deep Generative Models
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 基于流的深度生成模型
 - en: 原文：[https://lilianweng.github.io/posts/2018-10-13-flow-models/](https://lilianweng.github.io/posts/2018-10-13-flow-models/)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://lilianweng.github.io/posts/2018-10-13-flow-models/](https://lilianweng.github.io/posts/2018-10-13-flow-models/)
 - en: So far, I’ve written about two types of generative models, [GAN](https://lilianweng.github.io/posts/2017-08-20-gan/)
     and [VAE](https://lilianweng.github.io/posts/2018-08-12-vae/). Neither of them
     explicitly learns the probability density function of real data, $p(\mathbf{x})$
@@ -13,127 +17,187 @@
     model with latent variables as an example, $p(\mathbf{x}) = \int p(\mathbf{x}\vert\mathbf{z})p(\mathbf{z})d\mathbf{z}$
     can hardly be calculated as it is intractable to go through all possible values
     of the latent code $\mathbf{z}$.
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 到目前为止，我已经写了关于两种生成模型，[GAN](https://lilianweng.github.io/posts/2017-08-20-gan/)和[VAE](https://lilianweng.github.io/posts/2018-08-12-vae/)。它们都没有明确地学习真实数据的概率密度函数$p(\mathbf{x})$（其中$\mathbf{x}
+    \in \mathcal{D}$）——因为这真的很困难！以具有潜在变量的生成模型为例，$p(\mathbf{x}) = \int p(\mathbf{x}\vert\mathbf{z})p(\mathbf{z})d\mathbf{z}$几乎无法计算，因为遍历所有可能的潜在编码$\mathbf{z}$是不可行的。
 - en: 'Flow-based deep generative models conquer this hard problem with the help of
     [normalizing flows](https://arxiv.org/abs/1505.05770), a powerful statistics tool
     for density estimation. A good estimation of $p(\mathbf{x})$ makes it possible
     to efficiently complete many downstream tasks: sample unobserved but realistic
     new data points (data generation), predict the rareness of future events (density
     estimation), infer latent variables, fill in incomplete data samples, etc.'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: 基于流的深度生成模型通过[正规化流](https://arxiv.org/abs/1505.05770)这一强大的统计工具征服了这个难题。对$p(\mathbf{x})$的良好估计使得能够高效地完成许多下游任务：采样未观察到但真实的新数据点（数据生成）、预测未来事件的稀有性（密度估计）、推断潜在变量、填补不完整的数据样本等。
 - en: Types of Generative Models
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 生成模型的类型
 - en: 'Here is a quick summary of the difference between GAN, VAE, and flow-based
     generative models:'
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里是GAN、VAE和基于流的生成模型之间的区别的快速总结：
 - en: 'Generative adversarial networks: GAN provides a smart solution to model the
     data generation, an unsupervised learning problem, as a supervised one. The discriminator
     model learns to distinguish the real data from the fake samples that are produced
     by the generator model. Two models are trained as they are playing a [minimax](https://en.wikipedia.org/wiki/Minimax)
     game.'
+  id: totrans-6
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 生成对抗网络：GAN提供了一个聪明的解决方案，将数据生成这个无监督学习问题建模为一个监督学习问题。鉴别器模型学习区分真实数据和生成器模型生成的假样本。两个模型被训练，就像它们在进行[极小极大](https://en.wikipedia.org/wiki/Minimax)游戏一样。
 - en: 'Variational autoencoders: VAE inexplicitly optimizes the log-likelihood of
     the data by maximizing the evidence lower bound (ELBO).'
+  id: totrans-7
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 变分自动编码器：VAE通过最大化证据下界（ELBO）隐式地优化数据的对数似然。
 - en: 'Flow-based generative models: A flow-based generative model is constructed
     by a sequence of invertible transformations. Unlike other two, the model explicitly
     learns the data distribution $p(\mathbf{x})$ and therefore the loss function is
     simply the negative log-likelihood.'
+  id: totrans-8
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 基于流的生成模型：一个基于流的生成模型是通过一系列可逆变换构建的。与其他两种不同，该模型明确地学习数据分布$p(\mathbf{x})$，因此损失函数简单地是负对数似然。
 - en: '![](../Images/c23f3ef0f3238a3cb5c32aeec670c3f3.png)'
+  id: totrans-9
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c23f3ef0f3238a3cb5c32aeec670c3f3.png)'
 - en: Fig. 1\. Comparison of three categories of generative models.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 图1。三类生成模型的比较。
 - en: Linear Algebra Basics Recap
+  id: totrans-11
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 线性代数基础回顾
 - en: 'We should understand two key concepts before getting into the flow-based generative
     model: the Jacobian determinant and the change of variable rule. Pretty basic,
     so feel free to skip.'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 在进入基于流的生成模型之前，我们应该了解两个关键概念：雅可比行列式和变量变换规则。相当基础，所以随意跳过。
 - en: Jacobian Matrix and Determinant
+  id: totrans-13
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 雅可比矩阵和行列式
 - en: 'Given a function of mapping a $n$-dimensional input vector $\mathbf{x}$ to
     a $m$-dimensional output vector, $\mathbf{f}: \mathbb{R}^n \mapsto \mathbb{R}^m$,
     the matrix of all first-order partial derivatives of this function is called the
     **Jacobian matrix**, $\mathbf{J}$ where one entry on the i-th row and j-th column
     is $\mathbf{J}_{ij} = \frac{\partial f_i}{\partial x_j}$.'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: '给定一个将$n$维输入向量$\mathbf{x}$映射到$m$维输出向量的函数，$\mathbf{f}: \mathbb{R}^n \mapsto \mathbb{R}^m$，这个函数的所有一阶偏导数的矩阵称为**雅可比矩阵**，$\mathbf{J}$，其中第i行第j列的一个条目是$\mathbf{J}_{ij}
+    = \frac{\partial f_i}{\partial x_j}$。'
 - en: $$ \mathbf{J} = \begin{bmatrix} \frac{\partial f_1}{\partial x_1} & \dots &
     \frac{\partial f_1}{\partial x_n} \\[6pt] \vdots & \ddots & \vdots \\[6pt] \frac{\partial
     f_m}{\partial x_1} & \dots & \frac{\partial f_m}{\partial x_n} \\[6pt] \end{bmatrix}
     $$
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathbf{J} = \begin{bmatrix} \frac{\partial f_1}{\partial x_1} & \dots &
+    \frac{\partial f_1}{\partial x_n} \\[6pt] \vdots & \ddots & \vdots \\[6pt] \frac{\partial
+    f_m}{\partial x_1} & \dots & \frac{\partial f_m}{\partial x_n} \\[6pt] \end{bmatrix}
+    $$
 - en: The determinant is one real number computed as a function of all the elements
     in a squared matrix. Note that the determinant *only exists for **square** matrices*.
     The absolute value of the determinant can be thought of as a measure of *“how
     much multiplication by the matrix expands or contracts space”.*
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 行列式是作为方阵中所有元素的函数计算的一个实数。请注意，行列式*仅适用于**方**阵*。行列式的绝对值可以被视为*“矩阵乘法如何扩展或收缩空间的度量”*。
 - en: 'The determinant of a nxn matrix $M$ is:'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: nxn矩阵$M$的行列式是：
 - en: $$ \det M = \det \begin{bmatrix} a_{11} & a_{12} & \dots & a_{1n} \\ a_{21}
     & a_{22} & \dots & a_{2n} \\ \vdots & \vdots & & \vdots \\ a_{n1} & a_{n2} & \dots
     & a_{nn} \\ \end{bmatrix} = \sum_{j_1 j_2 \dots j_n} (-1)^{\tau(j_1 j_2 \dots
     j_n)} a_{1j_1} a_{2j_2} \dots a_{nj_n} $$
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \det M = \det \begin{bmatrix} a_{11} & a_{12} & \dots & a_{1n} \\ a_{21}
+    & a_{22} & \dots & a_{2n} \\ \vdots & \vdots & & \vdots \\ a_{n1} & a_{n2} & \dots
+    & a_{nn} \\ \end{bmatrix} = \sum_{j_1 j_2 \dots j_n} (-1)^{\tau(j_1 j_2 \dots
+    j_n)} a_{1j_1} a_{2j_2} \dots a_{nj_n} $$
 - en: where the subscript under the summation $j_1 j_2 \dots j_n$ are all permutations
     of the set {1, 2, …, n}, so there are $n!$ items in total; $\tau(.)$ indicates
     the [signature](https://en.wikipedia.org/wiki/Parity_of_a_permutation) of a permutation.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 在求和符号下的下标$j_1 j_2 \dots j_n$是集合{1, 2, …, n}的所有排列，因此总共有$n!$项；$\tau(.)$表示排列的[符号](https://en.wikipedia.org/wiki/Parity_of_a_permutation)。
 - en: 'The determinant of a square matrix $M$ detects whether it is invertible: If
     $\det(M)=0$ then $M$ is not invertible (a *singular* matrix with linearly dependent
     rows or columns; or any row or column is all 0); otherwise, if $\det(M)\neq 0$,
     $M$ is invertible.'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 方阵$M$的行列式检测它是否可逆：如果$\det(M)=0$，则$M$不可逆（具有线性相关行或列的*奇异*矩阵；或任何行或列全为0）；否则，如果$\det(M)\neq
+    0$，$M$可逆。
 - en: 'The determinant of the product is equivalent to the product of the determinants:
     $\det(AB) = \det(A)\det(B)$. ([proof](https://proofwiki.org/wiki/Determinant_of_Matrix_Product))'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 乘积的行列式等于行列式的乘积：$\det(AB) = \det(A)\det(B)$。([证明](https://proofwiki.org/wiki/Determinant_of_Matrix_Product))
 - en: Change of Variable Theorem
+  id: totrans-22
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 变量变换定理
 - en: Let’s review the change of variable theorem specifically in the context of probability
     density estimation, starting with a single variable case.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们具体在概率密度估计的背景下回顾变量变换定理，从单变量情况开始。
 - en: Given a random variable $z$ and its known probability density function $z \sim
     \pi(z)$, we would like to construct a new random variable using a 1-1 mapping
     function $x = f(z)$. The function $f$ is invertible, so $z=f^{-1}(x)$. Now the
     question is *how to infer the unknown probability density function of the new
     variable*, $p(x)$?
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 给定随机变量$z$及其已知概率密度函数$z \sim \pi(z)$，我们希望使用一一映射函数$x = f(z)$构造一个新的随机变量。函数$f$是可逆的，因此$z=f^{-1}(x)$。现在的问题是*如何推断新变量的未知概率密度函数*，$p(x)$？
 - en: $$ \begin{aligned} & \int p(x)dx = \int \pi(z)dz = 1 \scriptstyle{\text{ ; Definition
     of probability distribution.}}\\ & p(x) = \pi(z) \left\vert\frac{dz}{dx}\right\vert
     = \pi(f^{-1}(x)) \left\vert\frac{d f^{-1}}{dx}\right\vert = \pi(f^{-1}(x)) \vert
     (f^{-1})'(x) \vert \end{aligned} $$
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} & \int p(x)dx = \int \pi(z)dz = 1 \scriptstyle{\text{ ; 概率分布的定义。}}\\
+    & p(x) = \pi(z) \left\vert\frac{dz}{dx}\right\vert = \pi(f^{-1}(x)) \left\vert\frac{d
+    f^{-1}}{dx}\right\vert = \pi(f^{-1}(x)) \vert (f^{-1})'(x) \vert \end{aligned}
+    $$
 - en: By definition, the integral $\int \pi(z)dz$ is the sum of an infinite number
     of rectangles of infinitesimal width $\Delta z$. The height of such a rectangle
     at position $z$ is the value of the density function $\pi(z)$. When we substitute
@@ -141,26 +205,42 @@
     and $\Delta z = (f^{-1}(x))’ \Delta x$. Here $\vert(f^{-1}(x))’\vert$ indicates
     the ratio between the area of rectangles defined in two different coordinate of
     variables $z$ and $x$ respectively.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 根据定义，积分$\int \pi(z)dz$是无限数量的宽度为$\Delta z$的矩形的总和。这样一个矩形在位置$z$的高度是密度函数$\pi(z)$的值。当我们进行变量替换时，$z
+    = f^{-1}(x)$导致$\frac{\Delta z}{\Delta x} = (f^{-1}(x))’$和$\Delta z = (f^{-1}(x))’
+    \Delta x$。这里$\vert(f^{-1}(x))’\vert$表示在两个不同变量$z$和$x$的坐标定义的矩形面积之间的比率。
 - en: 'The multivariable version has a similar format:'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 多变量版本具有类似的格式：
 - en: $$ \begin{aligned} \mathbf{z} &\sim \pi(\mathbf{z}), \mathbf{x} = f(\mathbf{z}),
     \mathbf{z} = f^{-1}(\mathbf{x}) \\ p(\mathbf{x}) &= \pi(\mathbf{z}) \left\vert
     \det \dfrac{d \mathbf{z}}{d \mathbf{x}} \right\vert = \pi(f^{-1}(\mathbf{x}))
     \left\vert \det \dfrac{d f^{-1}}{d \mathbf{x}} \right\vert \end{aligned} $$
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \mathbf{z} &\sim \pi(\mathbf{z}), \mathbf{x} = f(\mathbf{z}),
+    \mathbf{z} = f^{-1}(\mathbf{x}) \\ p(\mathbf{x}) &= \pi(\mathbf{z}) \left\vert
+    \det \dfrac{d \mathbf{z}}{d \mathbf{x}} \right\vert = \pi(f^{-1}(\mathbf{x}))
+    \left\vert \det \dfrac{d f^{-1}}{d \mathbf{x}} \right\vert \end{aligned} $$
 - en: where $\det \frac{\partial f}{\partial\mathbf{z}}$ is the Jacobian determinant
     of the function $f$. The full proof of the multivariate version is out of the
     scope of this post; ask Google if interested ;)
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 $\det \frac{\partial f}{\partial\mathbf{z}}$ 是函数 $f$ 的雅可比行列式。多元版本的完整证明超出了本文的范围；有兴趣的话可以向谷歌查询
+    ;)
 - en: What is Normalizing Flows?
+  id: totrans-30
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 什么是正规化流？
 - en: Being able to do good density estimation has direct applications in many machine
     learning problems, but it is very hard. For example, since we need to run backward
     propagation in deep learning models, the embedded probability distribution (i.e.
@@ -168,36 +248,53 @@
     the derivative easily and efficiently. That is why Gaussian distribution is often
     used in latent variable generative models, even though most of real world distributions
     are much more complicated than Gaussian.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 能够进行良好的密度估计在许多机器学习问题中有直接应用，但这非常困难。例如，由于我们需要在深度学习模型中运行反向传播，嵌入的概率分布（即后验 $p(\mathbf{z}\vert\mathbf{x})$）预计要足够简单，以便轻松高效地计算导数。这就是为什么高斯分布经常在潜变量生成模型中使用，即使大多数真实世界分布比高斯分布复杂得多。
 - en: Here comes a **Normalizing Flow** (NF) model for better and more powerful distribution
     approximation. A normalizing flow transforms a simple distribution into a complex
     one by applying a sequence of invertible transformation functions. Flowing through
     a chain of transformations, we repeatedly substitute the variable for the new
     one according to the change of variables theorem and eventually obtain a probability
     distribution of the final target variable.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里是一个更好、更强大的分布近似的**正规化流**（NF）模型。正规化流通过应用一系列可逆变换函数将简单分布转换为复杂分布。通过一系列变换，我们根据变量的变化反复替换变量为新变量，并最终获得最终目标变量的概率分布。
 - en: '![](../Images/15506c70ed3913a7acd57cc210fb8693.png)'
+  id: totrans-33
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/15506c70ed3913a7acd57cc210fb8693.png)'
 - en: Fig. 2\. Illustration of a normalizing flow model, transforming a simple distribution
     $p\_0(\mathbf{z}\_0)$ to a complex one $p\_K(\mathbf{z}\_K)$ step by step.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 图2. 演示了一个正规化流模型，逐步将简单分布 $p_0(\mathbf{z}_0)$ 转换为复杂分布 $p_K(\mathbf{z}_K)$。
 - en: As defined in Fig. 2,
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 如图2所定义，
 - en: $$ \begin{aligned} \mathbf{z}_{i-1} &\sim p_{i-1}(\mathbf{z}_{i-1}) \\ \mathbf{z}_i
     &= f_i(\mathbf{z}_{i-1})\text{, thus }\mathbf{z}_{i-1} = f_i^{-1}(\mathbf{z}_i)
     \\ p_i(\mathbf{z}_i) &= p_{i-1}(f_i^{-1}(\mathbf{z}_i)) \left\vert \det\dfrac{d
     f_i^{-1}}{d \mathbf{z}_i} \right\vert \end{aligned} $$
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \mathbf{z}_{i-1} &\sim p_{i-1}(\mathbf{z}_{i-1}) \\ \mathbf{z}_i
+    &= f_i(\mathbf{z}_{i-1})\text{，因此 }\mathbf{z}_{i-1} = f_i^{-1}(\mathbf{z}_i) \\
+    p_i(\mathbf{z}_i) &= p_{i-1}(f_i^{-1}(\mathbf{z}_i)) \left\vert \det\dfrac{d f_i^{-1}}{d
+    \mathbf{z}_i} \right\vert \end{aligned} $$
 - en: Then let’s convert the equation to be a function of $\mathbf{z}_i$ so that we
     can do inference with the base distribution.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后让我们将方程转换为关于 $\mathbf{z}_i$ 的函数，以便我们可以使用基本分布进行推断。
 - en: $$ \begin{aligned} p_i(\mathbf{z}_i) &= p_{i-1}(f_i^{-1}(\mathbf{z}_i)) \left\vert
     \det\dfrac{d f_i^{-1}}{d \mathbf{z}_i} \right\vert \\ &= p_{i-1}(\mathbf{z}_{i-1})
     \left\vert \det \color{red}{\Big(\dfrac{d f_i}{d\mathbf{z}_{i-1}}\Big)^{-1}} \right\vert
@@ -206,28 +303,46 @@
     & \scriptstyle{\text{; According to a property of Jacobians of invertible func.}}
     \\ \log p_i(\mathbf{z}_i) &= \log p_{i-1}(\mathbf{z}_{i-1}) - \log \left\vert
     \det \dfrac{d f_i}{d\mathbf{z}_{i-1}} \right\vert \end{aligned} $$
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} p_i(\mathbf{z}_i) &= p_{i-1}(f_i^{-1}(\mathbf{z}_i)) \left\vert
+    \det\dfrac{d f_i^{-1}}{d \mathbf{z}_i} \right\vert \\ &= p_{i-1}(\mathbf{z}_{i-1})
+    \left\vert \det \color{red}{\Big(\dfrac{d f_i}{d\mathbf{z}_{i-1}}\Big)^{-1}} \right\vert
+    & \scriptstyle{\text{；根据反函数定理。}} \\ &= p_{i-1}(\mathbf{z}_{i-1}) \color{red}{\left\vert
+    \det \dfrac{d f_i}{d\mathbf{z}_{i-1}} \right\vert^{-1}} & \scriptstyle{\text{；根据可逆函数的雅可比矩阵性质。}}
+    \\ \log p_i(\mathbf{z}_i) &= \log p_{i-1}(\mathbf{z}_{i-1}) - \log \left\vert
+    \det \dfrac{d f_i}{d\mathbf{z}_{i-1}} \right\vert \end{aligned} $$
 - en: '(*) A note on the *“inverse function theorem”*: If $y=f(x)$ and $x=f^{-1}(y)$,
     we have:'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: (*) 关于*“反函数定理”*的一点说明：如果 $y=f(x)$ 和 $x=f^{-1}(y)$，我们有：
 - en: $$ \dfrac{df^{-1}(y)}{dy} = \dfrac{dx}{dy} = (\dfrac{dy}{dx})^{-1} = (\dfrac{df(x)}{dx})^{-1}
     $$
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \dfrac{df^{-1}(y)}{dy} = \dfrac{dx}{dy} = (\dfrac{dy}{dx})^{-1} = (\dfrac{df(x)}{dx})^{-1}
+    $$
 - en: '(*) A note on *“Jacobians of invertible function”*: The determinant of the
     inverse of an invertible matrix is the inverse of the determinant: $\det(M^{-1})
     = (\det(M))^{-1}$, [because](#jacobian-matrix-and-determinant) $\det(M)\det(M^{-1})
     = \det(M \cdot M^{-1}) = \det(I) = 1$.'
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: (*) 关于 *“可逆函数的雅可比行列式”* 的注释：可逆矩阵的逆的行列式是原行列式的倒数：$\det(M^{-1}) = (\det(M))^{-1}$，[因为](#jacobian-matrix-and-determinant)
+    $\det(M)\det(M^{-1}) = \det(M \cdot M^{-1}) = \det(I) = 1$。
 - en: Given such a chain of probability density functions, we know the relationship
     between each pair of consecutive variables. We can expand the equation of the
     output $\mathbf{x}$ step by step until tracing back to the initial distribution
     $\mathbf{z}_0$.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 给定这样一系列概率密度函数，我们知道每对连续变量之间的关系。我们可以逐步展开输出 $\mathbf{x}$ 的方程，直到追溯到初始分布 $\mathbf{z}_0$。
 - en: $$ \begin{aligned} \mathbf{x} = \mathbf{z}_K &= f_K \circ f_{K-1} \circ \dots
     \circ f_1 (\mathbf{z}_0) \\ \log p(\mathbf{x}) = \log \pi_K(\mathbf{z}_K) &= \log
     \pi_{K-1}(\mathbf{z}_{K-1}) - \log\left\vert\det\dfrac{d f_K}{d \mathbf{z}_{K-1}}\right\vert
@@ -235,186 +350,291 @@
     - \log\left\vert\det\dfrac{d f_K}{d\mathbf{z}_{K-1}}\right\vert \\ &= \dots \\
     &= \log \pi_0(\mathbf{z}_0) - \sum_{i=1}^K \log\left\vert\det\dfrac{d f_i}{d\mathbf{z}_{i-1}}\right\vert
     \end{aligned} $$
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \mathbf{x} = \mathbf{z}_K &= f_K \circ f_{K-1} \circ \dots
+    \circ f_1 (\mathbf{z}_0) \\ \log p(\mathbf{x}) = \log \pi_K(\mathbf{z}_K) &= \log
+    \pi_{K-1}(\mathbf{z}_{K-1}) - \log\left\vert\det\dfrac{d f_K}{d \mathbf{z}_{K-1}}\right\vert
+    \\ &= \log \pi_{K-2}(\mathbf{z}_{K-2}) - \log\left\vert\det\dfrac{d f_{K-1}}{d\mathbf{z}_{K-2}}\right\vert
+    - \log\left\vert\det\dfrac{d f_K}{d\mathbf{z}_{K-1}}\right\vert \\ &= \dots \\
+    &= \log \pi_0(\mathbf{z}_0) - \sum_{i=1}^K \log\left\vert\det\dfrac{d f_i}{d\mathbf{z}_{i-1}}\right\vert
+    \end{aligned} $$
 - en: 'The path traversed by the random variables $\mathbf{z}_i = f_i(\mathbf{z}_{i-1})$
     is the **flow** and the full chain formed by the successive distributions $\pi_i$
     is called a **normalizing flow**. Required by the computation in the equation,
     a transformation function $f_i$ should satisfy two properties:'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 随机变量 $\mathbf{z}_i = f_i(\mathbf{z}_{i-1})$ 所经过的路径是 **流**，由连续分布 $\pi_i$ 形成的完整链被称为
+    **正规化流**。根据方程中的计算，变换函数 $f_i$ 应满足两个属性：
 - en: It is easily invertible.
+  id: totrans-45
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 容易反转。
 - en: Its Jacobian determinant is easy to compute.
+  id: totrans-46
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 其雅可比行列式易于计算。
 - en: Models with Normalizing Flows
+  id: totrans-47
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 具有正规化流的模型
 - en: 'With normalizing flows in our toolbox, the exact log-likelihood of input data
     $\log p(\mathbf{x})$ becomes tractable. As a result, the training criterion of
     flow-based generative model is simply the negative log-likelihood (NLL) over the
     training dataset $\mathcal{D}$:'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 有了正规化流在我们的工具箱中，输入数据 $\log p(\mathbf{x})$ 的精确对数似然变得可行。因此，基于流的生成模型的训练标准就是训练数据集
+    $\mathcal{D}$ 上的负对数似然（NLL）：
 - en: $$ \mathcal{L}(\mathcal{D}) = - \frac{1}{\vert\mathcal{D}\vert}\sum_{\mathbf{x}
     \in \mathcal{D}} \log p(\mathbf{x}) $$
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathcal{L}(\mathcal{D}) = - \frac{1}{\vert\mathcal{D}\vert}\sum_{\mathbf{x}
+    \in \mathcal{D}} \log p(\mathbf{x}) $$
 - en: RealNVP
+  id: totrans-50
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: RealNVP
 - en: 'The **RealNVP** (Real-valued Non-Volume Preserving; [Dinh et al., 2017](https://arxiv.org/abs/1605.08803))
     model implements a normalizing flow by stacking a sequence of invertible bijective
     transformation functions. In each bijection $f: \mathbf{x} \mapsto \mathbf{y}$,
     known as *affine coupling layer*, the input dimensions are split into two parts:'
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: '**RealNVP**（实值非体积保持；[Dinh et al., 2017](https://arxiv.org/abs/1605.08803)）模型通过堆叠一系列可逆双射变换函数来实现正规化流。在每个双射
+    $f: \mathbf{x} \mapsto \mathbf{y}$ 中，称为 *仿射耦合层*，输入维度被分成两部分：'
 - en: The first $d$ dimensions stay same;
+  id: totrans-52
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 前 $d$ 维保持不变；
 - en: The second part, $d+1$ to $D$ dimensions, undergo an affine transformation (“scale-and-shift”)
     and both the scale and shift parameters are functions of the first $d$ dimensions.
+  id: totrans-53
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 第二部分，$d+1$ 到 $D$ 维，经历一个仿射变换（“缩放和平移”），缩放和平移参数都是第一个 $d$ 维的函数。
 - en: $$ \begin{aligned} \mathbf{y}_{1:d} &= \mathbf{x}_{1:d} \\ \mathbf{y}_{d+1:D}
     &= \mathbf{x}_{d+1:D} \odot \exp({s(\mathbf{x}_{1:d})}) + t(\mathbf{x}_{1:d})
     \end{aligned} $$
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \mathbf{y}_{1:d} &= \mathbf{x}_{1:d} \\ \mathbf{y}_{d+1:D}
+    &= \mathbf{x}_{d+1:D} \odot \exp({s(\mathbf{x}_{1:d})}) + t(\mathbf{x}_{1:d})
+    \end{aligned} $$
 - en: where $s(.)$ and $t(.)$ are *scale* and *translation* functions and both map
     $\mathbb{R}^d \mapsto \mathbb{R}^{D-d}$. The $\odot$ operation is the element-wise
     product.
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 $s(.)$ 和 $t(.)$ 是 *缩放* 和 *平移* 函数，都将 $\mathbb{R}^d \mapsto \mathbb{R}^{D-d}$。$\odot$
+    运算是逐元素乘积。
 - en: Now let’s check whether this transformation satisfy two basic properties for
     a flow transformation.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们检查这个变换是否满足流变换的两个基本属性。
 - en: '**Condition 1**: “It is easily invertible.”'
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: '**条件 1**：“它很容易反转。”'
 - en: Yes and it is fairly straightforward.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 是的，而且相当简单。
 - en: $$ \begin{cases} \mathbf{y}_{1:d} &= \mathbf{x}_{1:d} \\ \mathbf{y}_{d+1:D}
     &= \mathbf{x}_{d+1:D} \odot \exp({s(\mathbf{x}_{1:d})}) + t(\mathbf{x}_{1:d})
     \end{cases} \Leftrightarrow \begin{cases} \mathbf{x}_{1:d} &= \mathbf{y}_{1:d}
     \\ \mathbf{x}_{d+1:D} &= (\mathbf{y}_{d+1:D} - t(\mathbf{y}_{1:d})) \odot \exp(-s(\mathbf{y}_{1:d}))
     \end{cases} $$
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{cases} \mathbf{y}_{1:d} &= \mathbf{x}_{1:d} \\ \mathbf{y}_{d+1:D}
+    &= \mathbf{x}_{d+1:D} \odot \exp({s(\mathbf{x}_{1:d})}) + t(\mathbf{x}_{1:d})
+    \end{cases} \Leftrightarrow \begin{cases} \mathbf{x}_{1:d} &= \mathbf{y}_{1:d}
+    \\ \mathbf{x}_{d+1:D} &= (\mathbf{y}_{d+1:D} - t(\mathbf{y}_{1:d})) \odot \exp(-s(\mathbf{y}_{1:d}))
+    \end{cases} $$
 - en: '**Condition 2**: “Its Jacobian determinant is easy to compute.”'
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: '**条件 2**：“它的雅可比行列式容易计算。”'
 - en: Yes. It is not hard to get the Jacobian matrix and determinant of this transformation.
     The Jacobian is a lower triangular matrix.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 是的。获得这个变换的雅可比矩阵和行列式并不困难。雅可比矩阵是一个下三角矩阵。
 - en: $$ \mathbf{J} = \begin{bmatrix} \mathbb{I}_d & \mathbf{0}_{d\times(D-d)} \\[5pt]
     \frac{\partial \mathbf{y}_{d+1:D}}{\partial \mathbf{x}_{1:d}} & \text{diag}(\exp(s(\mathbf{x}_{1:d})))
     \end{bmatrix} $$
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathbf{J} = \begin{bmatrix} \mathbb{I}_d & \mathbf{0}_{d\times(D-d)} \\[5pt]
+    \frac{\partial \mathbf{y}_{d+1:D}}{\partial \mathbf{x}_{1:d}} & \text{diag}(\exp(s(\mathbf{x}_{1:d})))
+    \end{bmatrix} $$
 - en: Hence the determinant is simply the product of terms on the diagonal.
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此行列式简单地是对角线上项的乘积。
 - en: $$ \det(\mathbf{J}) = \prod_{j=1}^{D-d}\exp(s(\mathbf{x}_{1:d}))_j = \exp(\sum_{j=1}^{D-d}
     s(\mathbf{x}_{1:d})_j) $$
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \det(\mathbf{J}) = \prod_{j=1}^{D-d}\exp(s(\mathbf{x}_{1:d}))_j = \exp(\sum_{j=1}^{D-d}
+    s(\mathbf{x}_{1:d})_j) $$
 - en: So far, the affine coupling layer looks perfect for constructing a normalizing
     flow :)
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 到目前为止，仿射耦合层看起来非常适合构建一个正规化流 :)
 - en: Even better, since (i) computing $f^-1$ does not require computing the inverse
     of $s$ or $t$ and (ii) computing the Jacobian determinant does not involve computing
     the Jacobian of $s$ or $t$, those functions can be *arbitrarily complex*; i.e.
     both $s$ and $t$ can be modeled by deep neural networks.
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 更好的是，由于（i）计算$f^{-1}$不需要计算$s$或$t$的逆，以及（ii）计算雅可比行列式不涉及计算$s$或$t$的雅可比矩阵，这些函数可以是*任意复杂*的；即$s$和$t$都可以由深度神经网络建模。
 - en: In one affine coupling layer, some dimensions (channels) remain unchanged. To
     make sure all the inputs have a chance to be altered, the model reverses the ordering
     in each layer so that different components are left unchanged. Following such
     an alternating pattern, the set of units which remain identical in one transformation
     layer are always modified in the next. Batch normalization is found to help training
     models with a very deep stack of coupling layers.
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 在一个仿射耦合层中，一些维度（通道）保持不变。为了确保所有输入都有机会被改变，模型在每一层中颠倒顺序，以便不同的组件保持不变。遵循这种交替模式，一个变换层中保持相同的单元集合总是在下一个中被修改。批量归一化被发现有助于训练具有非常深的耦合层堆栈的模型。
 - en: Furthermore, RealNVP can work in a multi-scale architecture to build a more
     efficient model for large inputs. The multi-scale architecture applies several
     “sampling” operations to normal affine layers, including spatial checkerboard
     pattern masking, squeezing operation, and channel-wise masking. Read the [paper](https://arxiv.org/abs/1605.08803)
     for more details on the multi-scale architecture.
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，RealNVP可以在多尺度架构中工作，为大输入构建更高效的模型。多尺度架构对正规仿射层应用了几个“采样”操作，包括空间棋盘格模式掩蔽、挤压操作和通道掩蔽。阅读[论文](https://arxiv.org/abs/1605.08803)以获取有关多尺度架构的更多详细信息。
 - en: NICE
+  id: totrans-69
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: NICE
 - en: The **NICE** (Non-linear Independent Component Estimation; [Dinh, et al. 2015](https://arxiv.org/abs/1410.8516))
     model is a predecessor of [RealNVP](#realnvp). The transformation in NICE is the
     affine coupling layer without the scale term, known as *additive coupling layer*.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: '**NICE**（非线性独立成分估计；[Dinh, et al. 2015](https://arxiv.org/abs/1410.8516)）模型是[RealNVP](#realnvp)的前身。NICE中的变换是不带比例项的仿射耦合层，称为*加性耦合层*。'
 - en: $$ \begin{cases} \mathbf{y}_{1:d} &= \mathbf{x}_{1:d} \\ \mathbf{y}_{d+1:D}
     &= \mathbf{x}_{d+1:D} + m(\mathbf{x}_{1:d}) \end{cases} \Leftrightarrow \begin{cases}
     \mathbf{x}_{1:d} &= \mathbf{y}_{1:d} \\ \mathbf{x}_{d+1:D} &= \mathbf{y}_{d+1:D}
     - m(\mathbf{y}_{1:d}) \end{cases} $$
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{cases} \mathbf{y}_{1:d} &= \mathbf{x}_{1:d} \\ \mathbf{y}_{d+1:D}
+    &= \mathbf{x}_{d+1:D} + m(\mathbf{x}_{1:d}) \end{cases} \Leftrightarrow \begin{cases}
+    \mathbf{x}_{1:d} &= \mathbf{y}_{1:d} \\ \mathbf{x}_{d+1:D} &= \mathbf{y}_{d+1:D}
+    - m(\mathbf{y}_{1:d}) \end{cases} $$
 - en: Glow
+  id: totrans-72
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Glow
 - en: The **Glow** ([Kingma and Dhariwal, 2018](https://arxiv.org/abs/1807.03039))
     model extends the previous reversible generative models, NICE and RealNVP, and
     simplifies the architecture by replacing the reverse permutation operation on
     the channel ordering with invertible 1x1 convolutions.
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: '**Glow**（[Kingma and Dhariwal, 2018](https://arxiv.org/abs/1807.03039)）模型扩展了之前的可逆生成模型
+    NICE 和 RealNVP，并通过将通道顺序上的反向排列操作替换为可逆的 1x1 卷积来简化架构。'
 - en: '![](../Images/ecbca48fb4a30253106f3c2ec3d56b53.png)'
+  id: totrans-74
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ecbca48fb4a30253106f3c2ec3d56b53.png)'
 - en: 'Fig. 3\. One step of flow in the Glow model. (Image source: [Kingma and Dhariwal,
     2018](https://arxiv.org/abs/1807.03039))'
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 3\. Glow 模型中的一步流程。（图片来源：[Kingma and Dhariwal, 2018](https://arxiv.org/abs/1807.03039)）
 - en: There are three substeps in one step of flow in Glow.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: Glow 中一步流程中有三个子步骤。
 - en: 'Substep 1: **Activation normalization** (short for “actnorm”)'
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: '子步骤 1: **激活归一化**（简称“actnorm”）'
 - en: It performs an affine transformation using a scale and bias parameter per channel,
     similar to batch normalization, but works for mini-batch size 1\. The parameters
     are trainable but initialized so that the first minibatch of data have mean 0
     and standard deviation 1 after actnorm.
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 它使用每个通道的比例和偏置参数执行仿射变换，类似于批量归一化，但适用于小批量大小为 1。参数是可训练的，但初始化为使得 actnorm 后的第一个小批量数据均值为
+    0，标准差为 1。
 - en: 'Substep 2: **Invertible 1x1 conv**'
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: '子步骤 2: **可逆的 1x1 卷积**'
 - en: Between layers of the RealNVP flow, the ordering of channels is reversed so
     that all the data dimensions have a chance to be altered. A 1×1 convolution with
     equal number of input and output channels is *a generalization of any permutation*
     of the channel ordering.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 RealNVP 流的层之间，通道的顺序被颠倒，以便所有数据维度都有机会被改变。具有相同输入和输出通道数量的 1×1 卷积是*通道顺序的任意排列*的一般化。
 - en: Say, we have an invertible 1x1 convolution of an input $h \times w \times c$
     tensor $\mathbf{h}$ with a weight matrix $\mathbf{W}$ of size $c \times c$. The
     output is a $h \times w \times c$ tensor, labeled as $f = \texttt{conv2d}(\mathbf{h};
     \mathbf{W})$. In order to apply the change of variable rule, we need to compute
     the Jacobian determinant $\vert \det\partial f / \partial\mathbf{h}\vert$.
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设我们有一个可逆的 $h \times w \times c$ 张量 $\mathbf{h}$ 的 1x1 卷积，使用大小为 $c \times c$
+    的权重矩阵 $\mathbf{W}$。输出是一个 $h \times w \times c$ 的张量，标记为 $f = \texttt{conv2d}(\mathbf{h};
+    \mathbf{W})$。为了应用变量规则的变化，我们需要计算雅可比行列式 $\vert \det\partial f / \partial\mathbf{h}\vert$。
 - en: 'Both the input and output of 1x1 convolution here can be viewed as a matrix
     of size $h \times w$. Each entry $\mathbf{x}_{ij}$ ($i=1,\dots,h, j=1,\dots,w$)
     in $\mathbf{h}$ is a vector of $c$ channels and each entry is multiplied by the
@@ -422,66 +642,101 @@
     in the output matrix respectively. The derivative of each entry is $\partial \mathbf{x}_{ij}
     \mathbf{W} / \partial\mathbf{x}_{ij} = \mathbf{W}$ and there are $h \times w$
     such entries in total:'
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里 1x1 卷积的输入和输出都可以看作是大小为 $h \times w$ 的矩阵。每个条目 $\mathbf{x}_{ij}$（$i=1,\dots,h,
+    j=1,\dots,w$）在 $\mathbf{h}$ 中是一个具有 $c$ 个通道的向量，每个条目分别与权重矩阵 $\mathbf{W}$ 相乘，以获得输出矩阵中相应的条目
+    $\mathbf{y}_{ij}$。每个条目的导数是 $\partial \mathbf{x}_{ij} \mathbf{W} / \partial\mathbf{x}_{ij}
+    = \mathbf{W}$，总共有 $h \times w$ 个这样的条目：
 - en: $$ \log \left\vert\det \frac{\partial\texttt{conv2d}(\mathbf{h}; \mathbf{W})}{\partial\mathbf{h}}\right\vert
     = \log (\vert\det\mathbf{W}\vert^{h \cdot w}\vert) = h \cdot w \cdot \log \vert\det\mathbf{W}\vert
     $$
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \log \left\vert\det \frac{\partial\texttt{conv2d}(\mathbf{h}; \mathbf{W})}{\partial\mathbf{h}}\right\vert
+    = \log (\vert\det\mathbf{W}\vert^{h \cdot w}\vert) = h \cdot w \cdot \log \vert\det\mathbf{W}\vert
+    $$
 - en: The inverse 1x1 convolution depends on the inverse matrix $\mathbf{W}^{-1}$.
     Since the weight matrix is relatively small, the amount of computation for the
     matrix determinant ([tf.linalg.det](https://www.tensorflow.org/api_docs/python/tf/linalg/det))
     and inversion ([tf.linalg.inv](https://www.tensorflow.org/api_docs/python/tf/linalg/inv))
     is still under control.
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 逆 1x1 卷积取决于逆矩阵 $\mathbf{W}^{-1}$。由于权重矩阵相对较小，矩阵行列式（[tf.linalg.det](https://www.tensorflow.org/api_docs/python/tf/linalg/det)）和求逆（[tf.linalg.inv](https://www.tensorflow.org/api_docs/python/tf/linalg/inv)）的计算量仍然可控。
 - en: 'Substep 3: **Affine coupling layer**'
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: '子步骤 3: **仿射耦合层**'
 - en: The design is same as in RealNVP.
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 设计与 RealNVP 相同。
 - en: '![](../Images/0709a491114387020fa9373d536a0493.png)'
+  id: totrans-87
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/0709a491114387020fa9373d536a0493.png)'
 - en: 'Fig. 4\. Three substeps in one step of flow in Glow. (Image source: [Kingma
     and Dhariwal, 2018](https://arxiv.org/abs/1807.03039))'
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 4\. Glow 中一步流程中的三个子步骤。（图片来源：[Kingma and Dhariwal, 2018](https://arxiv.org/abs/1807.03039)）
 - en: Models with Autoregressive Flows
+  id: totrans-89
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 具有自回归流的模型
 - en: 'The **autoregressive** constraint is a way to model sequential data, $\mathbf{x}
     = [x_1, \dots, x_D]$: each output only depends on the data observed in the past,
     but not on the future ones. In other words, the probability of observing $x_i$
     is conditioned on $x_1, \dots, x_{i-1}$ and the product of these conditional probabilities
     gives us the probability of observing the full sequence:'
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: '**自回归**约束是一种对顺序数据建模的方式，$\mathbf{x} = [x_1, \dots, x_D]$：每个输出仅取决于过去观察到的数据，而不取决于未来的数据。换句话说，观察到$x_i$的概率取决于$x_1,
+    \dots, x_{i-1}$，这些条件概率的乘积给出了观察到完整序列的概率：'
 - en: $$ p(\mathbf{x}) = \prod_{i=1}^{D} p(x_i\vert x_1, \dots, x_{i-1}) = \prod_{i=1}^{D}
     p(x_i\vert x_{1:i-1}) $$
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ p(\mathbf{x}) = \prod_{i=1}^{D} p(x_i\vert x_1, \dots, x_{i-1}) = \prod_{i=1}^{D}
+    p(x_i\vert x_{1:i-1}) $$
 - en: How to model the conditional density is of your choice. It can be a univariate
     Gaussian with mean and standard deviation computed as a function of $x_{1:i-1}$,
     or a multilayer neural network with $x_{1:i-1}$ as the input.
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 如何建模条件密度取决于您的选择。它可以是一个均值和标准差作为$x_{1:i-1}$的函数计算的单变量高斯分布，或者是一个多层神经网络，其中$x_{1:i-1}$作为输入。
 - en: If a flow transformation in a normalizing flow is framed as an autoregressive
     model — each dimension in a vector variable is conditioned on the previous dimensions
     — this is an **autoregressive flow**.
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果正规化流中的流变换被构建为一个自回归模型 —— 向量变量中的每个维度都是在前一个维度的条件下的 —— 这就是一个**自回归流**。
 - en: This section starts with several classic autoregressive models (MADE, PixelRNN,
     WaveNet) and then we dive into autoregressive flow models (MAF and IAF).
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 本节首先介绍几种经典的自回归模型（MADE，PixelRNN，WaveNet），然后我们深入研究自回归流模型（MAF和IAF）。
 - en: MADE
+  id: totrans-95
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: MADE
 - en: '**MADE** (Masked Autoencoder for Distribution Estimation; [Germain et al.,
     2015](https://arxiv.org/abs/1502.03509)) is a specially designed architecture
     to enforce the autoregressive property in the autoencoder *efficiently*. When
@@ -490,33 +745,48 @@
     the contribution from certain hidden units by multiplying binary mask matrices
     so that each input dimension is reconstructed only from previous dimensions in
     a *given* ordering in a *single pass*.'
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: '**MADE**（用于分布估计的掩码自编码器；[Germain等人，2015](https://arxiv.org/abs/1502.03509)）是一种特别设计的架构，可以有效地强制自编码器中的自回归属性。当使用自编码器来预测条件概率时，MADE通过乘以二进制掩码矩阵消除了来自某些隐藏单元的贡献，以便每个输入维度仅从*给定*顺序中的先前维度在*单次传递*中重建。'
 - en: In a multilayer fully-connected neural network, say, we have $L$ hidden layers
     with weight matrices $\mathbf{W}^1, \dots, \mathbf{W}^L$ and an output layer with
     weight matrix $\mathbf{V}$. The output $\hat{\mathbf{x}}$ has each dimension $\hat{x}_i
     = p(x_i\vert x_{1:i-1})$.
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 在一个多层全连接神经网络中，比如说，我们有$L$个隐藏层，带有权重矩阵$\mathbf{W}^1, \dots, \mathbf{W}^L$，以及一个带有权重矩阵$\mathbf{V}$的输出层。输出$\hat{\mathbf{x}}$的每个维度$\hat{x}_i
+    = p(x_i\vert x_{1:i-1})$。
 - en: 'Without any mask, the computation through layers looks like the following:'
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 没有任何掩码，层间的计算如下所示：
 - en: $$ \begin{aligned} \mathbf{h}^0 &= \mathbf{x} \\ \mathbf{h}^l &= \text{activation}^l(\mathbf{W}^l\mathbf{h}^{l-1}
     + \mathbf{b}^l) \\ \hat{\mathbf{x}} &= \sigma(\mathbf{V}\mathbf{h}^L + \mathbf{c})
     \end{aligned} $$![](../Images/d4947ab1c1980b88e5bc095b615910b2.png)
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \mathbf{h}^0 &= \mathbf{x} \\ \mathbf{h}^l &= \text{activation}^l(\mathbf{W}^l\mathbf{h}^{l-1}
+    + \mathbf{b}^l) \\ \hat{\mathbf{x}} &= \sigma(\mathbf{V}\mathbf{h}^L + \mathbf{c})
+    \end{aligned} $$![](../Images/d4947ab1c1980b88e5bc095b615910b2.png)
 - en: 'Fig. 5\. Demonstration of how MADE works in a three-layer feed-forward neural
     network. (Image source: [Germain et al., 2015](https://arxiv.org/abs/1502.03509))'
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 图5\. 展示了MADE在一个三层前馈神经网络中的工作原理。（图片来源：[Germain等人，2015](https://arxiv.org/abs/1502.03509)）
 - en: To zero out some connections between layers, we can simply element-wise multiply
     every weight matrix by a binary mask matrix. Each hidden node is assigned with
     a random “connectivity integer” between $1$ and $D-1$; the assigned value for
     the $k$-th unit in the $l$-th layer is denoted by $m^l_k$. The binary mask matrix
     is determined by element-wise comparing values of two nodes in two layers.
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 要将层之间的某些连接置零，我们可以简单地将每个权重矩阵与一个二进制掩码矩阵进行逐元素相乘。每个隐藏节点被分配一个介于$1$和$D-1$之间的随机“连接整数”；第$l$层中第$k$个单元的分配值用$m^l_k$表示。二进制掩码矩阵由比较两个层中两个节点的值来确定。
 - en: $$ \begin{aligned} \mathbf{h}^l &= \text{activation}^l((\mathbf{W}^l \color{red}{\odot
     \mathbf{M}^{\mathbf{W}^l}}) \mathbf{h}^{l-1} + \mathbf{b}^l) \\ \hat{\mathbf{x}}
     &= \sigma((\mathbf{V} \color{red}{\odot \mathbf{M}^{\mathbf{V}}}) \mathbf{h}^L
@@ -524,8 +794,16 @@
     = \begin{cases} 1, & \text{if } m^l_{k'} \geq m^{l-1}_k\\ 0, & \text{otherwise}
     \end{cases} \\ M^{\mathbf{V}}_{d, k} &= \mathbf{1}_{d \geq m^L_k} = \begin{cases}
     1, & \text{if } d > m^L_k\\ 0, & \text{otherwise} \end{cases} \end{aligned} $$
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \mathbf{h}^l &= \text{activation}^l((\mathbf{W}^l \color{red}{\odot
+    \mathbf{M}^{\mathbf{W}^l}}) \mathbf{h}^{l-1} + \mathbf{b}^l) \\ \hat{\mathbf{x}}
+    &= \sigma((\mathbf{V} \color{red}{\odot \mathbf{M}^{\mathbf{V}}}) \mathbf{h}^L
+    + \mathbf{c}) \\ M^{\mathbf{W}^l}_{k', k} &= \mathbf{1}_{m^l_{k'} \geq m^{l-1}_k}
+    = \begin{cases} 1, & \text{if } m^l_{k'} \geq m^{l-1}_k\\ 0, & \text{otherwise}
+    \end{cases} \\ M^{\mathbf{V}}_{d, k} &= \mathbf{1}_{d \geq m^L_k} = \begin{cases}
+    1, & \text{if } d > m^L_k\\ 0, & \text{otherwise} \end{cases} \end{aligned} $$
 - en: A unit in the current layer can only be connected to other units with equal
     or smaller numbers in the previous layer and this type of dependency easily propagates
     through the network up to the output layer. Once the numbers are assigned to all
@@ -534,65 +812,93 @@
     To make sure all the hidden units are connected to the input and output layers
     through some paths, the $m^l_k$ is sampled to be equal or greater than the minimal
     connectivity integer in the previous layer, $\min_{k’} m_{k’}^{l-1}$.
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 当前层中的一个单元只能连接到前一层中相等或更小编号的其他单元，这种依赖关系很容易通过网络传播到输出层。一旦所有单元和层都分配了编号，输入维度的顺序就固定了，并且条件概率是根据此产生的。在图5中有一个很好的插图。为了确保所有隐藏单元通过某些路径连接到输入和输出层，$m^l_k$
+    被抽样为大于或等于前一层中的最小连接整数，$\min_{k'} m_{k'}^{l-1}$。
 - en: 'MADE training can be further facilitated by:'
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: MADE训练可以通过以下方式进一步促进：
 - en: '*Order-agnostic training*: shuffle the input dimensions, so that MADE is able
     to model any arbitrary ordering; can create an ensemble of autoregressive models
     at the runtime.'
+  id: totrans-105
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*无序训练*：对输入维度进行洗牌，使MADE能够模拟任意顺序；可以在运行时创建自回归模型的集合。'
 - en: '*Connectivity-agnostic training*: to avoid a model being tied up to a specific
     connectivity pattern constraints, resample $m^l_k$ for each training minibatch.'
+  id: totrans-106
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*无连接性训练*：为了避免模型被绑定到特定的连接模式约束，对每个训练小批次重新抽样 $m^l_k$。'
 - en: PixelRNN
+  id: totrans-107
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: PixelRNN
 - en: PixelRNN ([Oord et al, 2016](https://arxiv.org/abs/1601.06759)) is a deep generative
     model for images. The image is generated one pixel at a time and each new pixel
     is sampled conditional on the pixels that have been seen before.
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: PixelRNN（[Oord等人，2016](https://arxiv.org/abs/1601.06759)）是用于图像的深度生成模型。图像逐像素生成，每个新像素都是在之前看到的像素的条件下抽样的。
 - en: Let’s consider an image of size $n \times n$, $\mathbf{x} = \{x_1, \dots, x_{n^2}\}$,
     the model starts generating pixels from the top left corner, from left to right
     and top to bottom (See Fig. 6).
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们考虑一个大小为 $n \times n$ 的图像，$\mathbf{x} = \{x_1, \dots, x_{n^2}\}$，模型从左上角开始逐像素生成像素，从左到右，从上到下（见图6）。
 - en: '![](../Images/41a840a31f850d39a1905d8e48f77e0d.png)'
+  id: totrans-110
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/41a840a31f850d39a1905d8e48f77e0d.png)'
 - en: 'Fig. 6\. The context for generating one pixel in PixelRNN. (Image source: [Oord
     et al, 2016](https://arxiv.org/abs/1601.06759))'
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 图6。PixelRNN中生成一个像素的上下文。（图片来源：[Oord等人，2016](https://arxiv.org/abs/1601.06759)）
 - en: 'Every pixel $x_i$ is sampled from a probability distribution conditional over
     the the past context: pixels above it or on the left of it when in the same row.
     The definition of such context looks pretty arbitrary, because how visual [attention](https://lilianweng.github.io/posts/2018-06-24-attention/)
     is attended to an image is more flexible. Somehow magically a generative model
     with such a strong assumption works.'
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 每个像素 $x_i$ 是从一个概率分布中抽样的，该分布是在过去的上下文条件下：在同一行时，它上方或左侧的像素。这种上下文的定义看起来相当任意，因为如何将视觉[注意力](https://lilianweng.github.io/posts/2018-06-24-attention/)放在图像上更加灵活。以某种神奇的方式，具有如此强烈假设的生成模型起作用。
 - en: One implementation that could capture the entire context is the *Diagonal BiLSTM*.
     First, apply the **skewing** operation by offsetting each row of the input feature
     map by one position with respect to the previous row, so that computation for
     each row can be parallelized. Then the LSTM states are computed with respect to
     the current pixel and the pixels on the left.
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个可以捕捉整个上下文的实现是*对角线双向LSTM*。首先，通过将输入特征图的每一行相对于前一行偏移一个位置来应用**偏移**操作，以便可以并行计算每一行。然后，LSTM状态是根据当前像素和左侧像素计算的。
 - en: '![](../Images/82e1a7e2c4fb631a249d58902ae89d46.png)'
+  id: totrans-114
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/82e1a7e2c4fb631a249d58902ae89d46.png)'
 - en: 'Fig. 7\. (a) PixelRNN with diagonal BiLSTM. (b) Skewing operation that offsets
     each row in the feature map by one with regards to the row above. (Image source:
     [Oord et al, 2016](https://arxiv.org/abs/1601.06759))'
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: 图7\. (a) 具有对角线BiLSTM的PixelRNN。 (b) 将每行在特征图中向上一行偏移一个的偏移操作。 (图片来源：[Oord et al,
+    2016](https://arxiv.org/abs/1601.06759))
 - en: $$ \begin{aligned} \lbrack \mathbf{o}_i, \mathbf{f}_i, \mathbf{i}_i, \mathbf{g}_i
     \rbrack &= \sigma(\mathbf{K}^{ss} \circledast \mathbf{h}_{i-1} + \mathbf{K}^{is}
     \circledast \mathbf{x}_i) & \scriptstyle{\text{; }\sigma\scriptstyle{\text{ is
@@ -601,33 +907,52 @@
     \odot \mathbf{g}_i & \scriptstyle{\text{; }}\odot\scriptstyle{\text{ is elementwise
     product.}}\\ \mathbf{h}_i &= \mathbf{o}_i \odot \tanh(\mathbf{c}_i) \end{aligned}
     $$
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \lbrack \mathbf{o}_i, \mathbf{f}_i, \mathbf{i}_i, \mathbf{g}_i
+    \rbrack &= \sigma(\mathbf{K}^{ss} \circledast \mathbf{h}_{i-1} + \mathbf{K}^{is}
+    \circledast \mathbf{x}_i) & \scriptstyle{\text{; }\sigma\scriptstyle{\text{ is
+    tanh for g, but otherwise sigmoid; }}\circledast\scriptstyle{\text{ is convolution
+    operation.}}} \\ \mathbf{c}_i &= \mathbf{f}_i \odot \mathbf{c}_{i-1} + \mathbf{i}_i
+    \odot \mathbf{g}_i & \scriptstyle{\text{; }}\odot\scriptstyle{\text{ is elementwise
+    product.}}\\ \mathbf{h}_i &= \mathbf{o}_i \odot \tanh(\mathbf{c}_i) \end{aligned}
+    $$
 - en: where $\circledast$ denotes the convolution operation and $\odot$ is the element-wise
     multiplication. The input-to-state component $\mathbf{K}^{is}$ is a 1x1 convolution,
     while the state-to-state recurrent component is computed with a column-wise convolution
     $\mathbf{K}^{ss}$ with a kernel of size 2x1.
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$\circledast$表示卷积操作，$\odot$是逐元素乘法。输入到状态组件$\mathbf{K}^{is}$是一个1x1卷积，而状态到状态的递归组件是使用大小为2x1的列卷积$\mathbf{K}^{ss}$计算的。
 - en: The diagonal BiLSTM layers are capable of processing an unbounded context field,
     but expensive to compute due to the sequential dependency between states. A faster
     implementation uses multiple convolutional layers without pooling to define a
     bounded context box. The convolution kernel is masked so that the future context
     is not seen, similar to [MADE](#MADE). This convolution version is called **PixelCNN**.
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: 对角线BiLSTM层能够处理无限上下文字段，但由于状态之间的顺序依赖关系，计算起来很昂贵。一种更快的实现方式是使用多个卷积层而不使用池化来定义一个有界上下文框。卷积核被掩盖，以便未来上下文不被看到，类似于[MADE](#MADE)。这个卷积版本被称为**PixelCNN**。
 - en: '![](../Images/3daf5e6b369a26c7e22cc2ab15bd2d0f.png)'
+  id: totrans-119
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3daf5e6b369a26c7e22cc2ab15bd2d0f.png)'
 - en: 'Fig. 8\. PixelCNN with masked convolution constructed by an elementwise product
     of a mask tensor and the convolution kernel before applying it. (Image source:
     http://slazebni.cs.illinois.edu/spring17/lec13_advanced.pdf)'
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: 图8\. 具有掩码卷积的PixelCNN，通过对掩码张量和卷积核进行元素乘积构造后应用。 (图片来源：http://slazebni.cs.illinois.edu/spring17/lec13_advanced.pdf)
 - en: WaveNet
+  id: totrans-121
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: WaveNet
 - en: '**WaveNet** ([Van Den Oord, et al. 2016](https://arxiv.org/abs/1609.03499))
     is very similar to PixelCNN but applied to 1-D audio signals. WaveNet consists
     of a stack of *causal convolution* which is a convolution operation designed to
@@ -636,100 +961,146 @@
     convolution is implemented by masked convolution kernel. The causal convolution
     in WaveNet is simply to shift the output by a number of timestamps to the future
     so that the output is aligned with the last input element.'
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: '**WaveNet**（[Van Den Oord, et al. 2016](https://arxiv.org/abs/1609.03499)）与PixelCNN非常相似，但应用于1-D音频信号。WaveNet由一堆*因果卷积*组成，这是一种设计用于尊重顺序的卷积操作：某个时间戳的预测只能使用过去观察到的数据，不依赖于未来。在PixelCNN中，因果卷积是通过掩码卷积核实现的。WaveNet中的因果卷积只是简单地将输出向未来的时间戳移动一定数量，以使输出与最后一个输入元素对齐。'
 - en: One big drawback of convolution layer is a very limited size of receptive field.
     The output can hardly depend on the input hundreds or thousands of timesteps ago,
     which can be a crucial requirement for modeling long sequences. WaveNet therefore
     adopts *dilated convolution* ([animation](https://github.com/vdumoulin/conv_arithmetic#dilated-convolution-animations)),
     where the kernel is applied to an evenly-distributed subset of samples in a much
     larger receptive field of the input.
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: 卷积层的一个很大的缺点是有限的感受野大小。输出几乎不可能依赖于数百或数千个时间步之前的输入，这对于建模长序列可能是一个至关重要的要求。因此，WaveNet采用了*扩张卷积*（[动画](https://github.com/vdumoulin/conv_arithmetic#dilated-convolution-animations)），其中卷积核应用于输入的一个远离均匀分布的样本子集的更大感受野。
 - en: '![](../Images/4a56aa9351233fdcceb10c274d24edff.png)'
+  id: totrans-124
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/4a56aa9351233fdcceb10c274d24edff.png)'
 - en: 'Fig. 9\. Visualization of WaveNet models with a stack of (top) causal convolution
     layers and (bottom) dilated convolution layers. (Image source: [Van Den Oord,
     et al. 2016](https://arxiv.org/abs/1609.03499))'
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: 图9. WaveNet模型的可视化，包括（顶部）因果卷积层和（底部）扩张卷积层的堆叠。 （图片来源：[Van Den Oord, et al. 2016](https://arxiv.org/abs/1609.03499))
 - en: WaveNet uses the gated activation unit as the non-linear layer, as it is found
     to work significantly better than ReLU for modeling 1-D audio data. The residual
     connection is applied after the gated activation.
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: WaveNet使用门控激活单元作为非线性层，因为发现它在建模1-D音频数据时明显优于ReLU。残差连接应用在门控激活之后。
 - en: $$ \mathbf{z} = \tanh(\mathbf{W}_{f,k}\circledast\mathbf{x})\odot\sigma(\mathbf{W}_{g,k}\circledast\mathbf{x})
     $$
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathbf{z} = \tanh(\mathbf{W}_{f,k}\circledast\mathbf{x})\odot\sigma(\mathbf{W}_{g,k}\circledast\mathbf{x})
+    $$
 - en: where $\mathbf{W}_{f,k}$ and $\mathbf{W}_{g,k}$ are convolution filter and gate
     weight matrix of the $k$-th layer, respectively; both are learnable.
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$\mathbf{W}_{f,k}$和$\mathbf{W}_{g,k}$是第$k$层的卷积滤波器和门控权重矩阵；两者都是可学习的。
 - en: Masked Autoregressive Flow
+  id: totrans-129
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 掩码自回归流
 - en: '**Masked Autoregressive Flow** (**MAF**; [Papamakarios et al., 2017](https://arxiv.org/abs/1705.07057))
     is a type of normalizing flows, where the transformation layer is built as an
     autoregressive neural network. MAF is very similar to **Inverse Autoregressive
     Flow** (IAF) introduced later. See more discussion on the relationship between
     MAF and IAF in the next section.'
+  id: totrans-130
   prefs: []
   type: TYPE_NORMAL
+  zh: '**掩码自回归流**（**MAF**；[Papamakarios et al., 2017](https://arxiv.org/abs/1705.07057)）是一种正规化流，其中变换层构建为自回归神经网络。MAF与稍后介绍的**逆自回归流**（IAF）非常相似。在下一节中更多讨论MAF和IAF之间的关系。'
 - en: Given two random variables, $\mathbf{z} \sim \pi(\mathbf{z})$ and $\mathbf{x}
     \sim p(\mathbf{x})$ and the probability density function $\pi(\mathbf{z})$ is
     known, MAF aims to learn $p(\mathbf{x})$. MAF generates each $x_i$ conditioned
     on the past dimensions $\mathbf{x}_{1:i-1}$.
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
+  zh: 给定两个随机变量，$\mathbf{z} \sim \pi(\mathbf{z})$ 和 $\mathbf{x} \sim p(\mathbf{x})$，以及已知的概率密度函数$\pi(\mathbf{z})$，MAF的目标是学习$p(\mathbf{x})$。MAF在过去的维度$\mathbf{x}_{1:i-1}$的条件下生成每个$x_i$。
 - en: Precisely the conditional probability is an affine transformation of $\mathbf{z}$,
     where the scale and shift terms are functions of the observed part of $\mathbf{x}$.
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: 精确地，条件概率是$\mathbf{z}$的仿射变换，其中比例和偏移项是观察到的$\mathbf{x}$的函数。
 - en: 'Data generation, producing a new $\mathbf{x}$:'
+  id: totrans-133
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 数据生成，产生一个新的$\mathbf{x}$：
 - en: $x_i \sim p(x_i\vert\mathbf{x}_{1:i-1}) = z_i \odot \sigma_i(\mathbf{x}_{1:i-1})
     + \mu_i(\mathbf{x}_{1:i-1})\text{, where }\mathbf{z} \sim \pi(\mathbf{z})$
+  id: totrans-134
   prefs: []
   type: TYPE_NORMAL
+  zh: $x_i \sim p(x_i\vert\mathbf{x}_{1:i-1}) = z_i \odot \sigma_i(\mathbf{x}_{1:i-1})
+    + \mu_i(\mathbf{x}_{1:i-1})\text{，其中 }\mathbf{z} \sim \pi(\mathbf{z})$
 - en: 'Density estimation, given a known $\mathbf{x}$:'
+  id: totrans-135
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 给定已知的$\mathbf{x}$的密度估计：
 - en: $p(\mathbf{x}) = \prod_{i=1}^D p(x_i\vert\mathbf{x}_{1:i-1})$
+  id: totrans-136
   prefs: []
   type: TYPE_NORMAL
+  zh: $p(\mathbf{x}) = \prod_{i=1}^D p(x_i\vert\mathbf{x}_{1:i-1})$
 - en: The generation procedure is sequential, so it is slow by design. While density
     estimation only needs one pass the network using architecture like [MADE](#MADE).
     The transformation function is trivial to inverse and the Jacobian determinant
     is easy to compute too.
+  id: totrans-137
   prefs: []
   type: TYPE_NORMAL
+  zh: 生成过程是顺序的，因此设计上是缓慢的。而密度估计只需要一次通过网络，使用类似[MADE](#MADE)的架构。变换函数易于反转，雅可比行列式也易于计算。
 - en: Inverse Autoregressive Flow
+  id: totrans-138
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 逆自回归流
 - en: Similar to MAF, **Inverse autoregressive flow** (**IAF**; [Kingma et al., 2016](https://arxiv.org/abs/1606.04934))
     models the conditional probability of the target variable as an autoregressive
     model too, but with a reversed flow, thus achieving a much efficient sampling
     process.
+  id: totrans-139
   prefs: []
   type: TYPE_NORMAL
+  zh: 类似于MAF，**逆自回归流**（**IAF**；[Kingma et al., 2016](https://arxiv.org/abs/1606.04934)）也将目标变量的条件概率建模为一个自回归模型，但流程是反向的，从而实现了更高效的采样过程。
 - en: 'First, let’s reverse the affine transformation in MAF:'
+  id: totrans-140
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，让我们反转MAF中的仿射变换：
 - en: $$ z_i = \frac{x_i - \mu_i(\mathbf{x}_{1:i-1})}{\sigma_i(\mathbf{x}_{1:i-1})}
     = -\frac{\mu_i(\mathbf{x}_{1:i-1})}{\sigma_i(\mathbf{x}_{1:i-1})} + x_i \odot
     \frac{1}{\sigma_i(\mathbf{x}_{1:i-1})} $$
+  id: totrans-141
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ z_i = \frac{x_i - \mu_i(\mathbf{x}_{1:i-1})}{\sigma_i(\mathbf{x}_{1:i-1})}
+    = -\frac{\mu_i(\mathbf{x}_{1:i-1})}{\sigma_i(\mathbf{x}_{1:i-1})} + x_i \odot
+    \frac{1}{\sigma_i(\mathbf{x}_{1:i-1})} $$
 - en: 'If let:'
+  id: totrans-142
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果让：
 - en: $$ \begin{aligned} & \tilde{\mathbf{x}} = \mathbf{z}\text{, }\tilde{p}(.) =
     \pi(.)\text{, }\tilde{\mathbf{x}} \sim \tilde{p}(\tilde{\mathbf{x}}) \\ & \tilde{\mathbf{z}}
     = \mathbf{x} \text{, }\tilde{\pi}(.) = p(.)\text{, }\tilde{\mathbf{z}} \sim \tilde{\pi}(\tilde{\mathbf{z}})\\
@@ -737,64 +1108,106 @@
     = -\frac{\mu_i(\mathbf{x}_{1:i-1})}{\sigma_i(\mathbf{x}_{1:i-1})} \\ & \tilde{\sigma}(\tilde{\mathbf{z}}_{1:i-1})
     = \tilde{\sigma}(\mathbf{x}_{1:i-1}) = \frac{1}{\sigma_i(\mathbf{x}_{1:i-1})}
     \end{aligned} $$
+  id: totrans-143
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} & \tilde{\mathbf{x}} = \mathbf{z}\text{, }\tilde{p}(.) =
+    \pi(.)\text{, }\tilde{\mathbf{x}} \sim \tilde{p}(\tilde{\mathbf{x}}) \\ & \tilde{\mathbf{z}}
+    = \mathbf{x} \text{, }\tilde{\pi}(.) = p(.)\text{, }\tilde{\mathbf{z}} \sim \tilde{\pi}(\tilde{\mathbf{z}})\\
+    & \tilde{\mu}_i(\tilde{\mathbf{z}}_{1:i-1}) = \tilde{\mu}_i(\mathbf{x}_{1:i-1})
+    = -\frac{\mu_i(\mathbf{x}_{1:i-1})}{\sigma_i(\mathbf{x}_{1:i-1})} \\ & \tilde{\sigma}(\tilde{\mathbf{z}}_{1:i-1})
+    = \tilde{\sigma}(\mathbf{x}_{1:i-1}) = \frac{1}{\sigma_i(\mathbf{x}_{1:i-1})}
+    \end{aligned} $$
 - en: Then we would have,
+  id: totrans-144
   prefs: []
   type: TYPE_NORMAL
+  zh: 那么我们会有，
 - en: $$ \tilde{x}_i \sim p(\tilde{x}_i\vert\tilde{\mathbf{z}}_{1:i}) = \tilde{z}_i
     \odot \tilde{\sigma}_i(\tilde{\mathbf{z}}_{1:i-1}) + \tilde{\mu}_i(\tilde{\mathbf{z}}_{1:i-1})
     \text{, where }\tilde{\mathbf{z}} \sim \tilde{\pi}(\tilde{\mathbf{z}}) $$
+  id: totrans-145
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \tilde{x}_i \sim p(\tilde{x}_i\vert\tilde{\mathbf{z}}_{1:i}) = \tilde{z}_i
+    \odot \tilde{\sigma}_i(\tilde{\mathbf{z}}_{1:i-1}) + \tilde{\mu}_i(\tilde{\mathbf{z}}_{1:i-1})
+    \text{, where }\tilde{\mathbf{z}} \sim \tilde{\pi}(\tilde{\mathbf{z}}) $$
 - en: IAF intends to estimate the probability density function of $\tilde{\mathbf{x}}$
     given that $\tilde{\pi}(\tilde{\mathbf{z}})$ is already known. The inverse flow
     is an autoregressive affine transformation too, same as in MAF, but the scale
     and shift terms are autoregressive functions of observed variables from the known
     distribution $\tilde{\pi}(\tilde{\mathbf{z}})$. See the comparison between MAF
     and IAF in Fig. 10.
+  id: totrans-146
   prefs: []
   type: TYPE_NORMAL
+  zh: IAF 旨在估计已知 $\tilde{\pi}(\tilde{\mathbf{z}})$ 的情况下 $\tilde{\mathbf{x}}$ 的概率密度函数。逆流也是自回归仿射变换，与
+    MAF 中相同，但比例和偏移项是已知分布 $\tilde{\pi}(\tilde{\mathbf{z}})$ 的观测变量的自回归函数。请参见图 10 中 MAF
+    和 IAF 的比较。
 - en: '![](../Images/cdbf92ccd6d28f1cdcc0b0093d37a337.png)'
+  id: totrans-147
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/cdbf92ccd6d28f1cdcc0b0093d37a337.png)'
 - en: Fig. 10\. Comparison of MAF and IAF. The variable with known density is in green
     while the unknown one is in red.
+  id: totrans-148
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 10\. MAF 和 IAF 的比较。已知密度的变量为绿色，未知的为红色。
 - en: Computations of the individual elements $\tilde{x}_i$ do not depend on each
     other, so they are easily parallelizable (only one pass using MADE). The density
     estimation for a known $\tilde{\mathbf{x}}$ is not efficient, because we have
     to recover the value of $\tilde{z}_i$ in a sequential order, $\tilde{z}_i = (\tilde{x}_i
     - \tilde{\mu}_i(\tilde{\mathbf{z}}_{1:i-1})) / \tilde{\sigma}_i(\tilde{\mathbf{z}}_{1:i-1})$,
     thus D times in total.
+  id: totrans-149
   prefs: []
   type: TYPE_NORMAL
+  zh: 计算各个元素 $\tilde{x}_i$ 不相互依赖，因此很容易并行化（只需一次使用 MADE）。对于已知的 $\tilde{\mathbf{x}}$
+    的密度估计并不高效，因为我们必须按顺序恢复 $\tilde{z}_i$ 的值，$\tilde{z}_i = (\tilde{x}_i - \tilde{\mu}_i(\tilde{\mathbf{z}}_{1:i-1}))
+    / \tilde{\sigma}_i(\tilde{\mathbf{z}}_{1:i-1})$，总共需要 D 次。
 - en: '|  | Base distribution | Target distribution | Model | Data generation | Density
     estimation |'
+  id: totrans-150
   prefs: []
   type: TYPE_TB
+  zh: '|  | 基础分布 | 目标分布 | 模型 | 数据生成 | 密度估计 |'
 - en: '| --- | --- | --- | --- | --- | --- |'
+  id: totrans-151
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- | --- | --- | --- | --- |'
 - en: '| MAF | $\mathbf{z}\sim\pi(\mathbf{z})$ | $\mathbf{x}\sim p(\mathbf{x})$ |
     $x_i = z_i \odot \sigma_i(\mathbf{x}_{1:i-1}) + \mu_i(\mathbf{x}_{1:i-1})$ | Sequential;
     slow | One pass; fast |'
+  id: totrans-152
   prefs: []
   type: TYPE_TB
+  zh: '| MAF | $\mathbf{z}\sim\pi(\mathbf{z})$ | $\mathbf{x}\sim p(\mathbf{x})$ |
+    $x_i = z_i \odot \sigma_i(\mathbf{x}_{1:i-1}) + \mu_i(\mathbf{x}_{1:i-1})$ | 顺序；缓慢
+    | 一次通过；快速 |'
 - en: '| IAF | $\tilde{\mathbf{z}}\sim\tilde{\pi}(\tilde{\mathbf{z}})$ | $\tilde{\mathbf{x}}\sim\tilde{p}(\tilde{\mathbf{x}})$
     | $\tilde{x}_i = \tilde{z}_i \odot \tilde{\sigma}_i(\tilde{\mathbf{z}}_{1:i-1})
     + \tilde{\mu}_i(\tilde{\mathbf{z}}_{1:i-1})$ | One pass; fast | Sequential; slow
     |'
+  id: totrans-153
   prefs: []
   type: TYPE_TB
+  zh: '| IAF | $\tilde{\mathbf{z}}\sim\tilde{\pi}(\tilde{\mathbf{z}})$ | $\tilde{\mathbf{x}}\sim\tilde{p}(\tilde{\mathbf{x}})$
+    | $\tilde{x}_i = \tilde{z}_i \odot \tilde{\sigma}_i(\tilde{\mathbf{z}}_{1:i-1})
+    + \tilde{\mu}_i(\tilde{\mathbf{z}}_{1:i-1})$ | 一次通过；快速 | 顺序；缓慢 |'
 - en: '| ———- | ———- | ———- | ———- | ———- | ———- |'
+  id: totrans-154
   prefs: []
   type: TYPE_TB
+  zh: '| ———- | ———- | ———- | ———- | ———- | ———- |'
 - en: VAE + Flows
+  id: totrans-155
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 变分自动编码器 + 流模型
 - en: In [Variational Autoencoder](https://lilianweng.github.io/posts/2018-08-12-vae/#vae-variational-autoencoder),
     if we want to model the posterior $p(\mathbf{z}\vert\mathbf{x})$ as a more complicated
     distribution rather than simple Gaussian. Intuitively we can use normalizing flow
@@ -802,83 +1215,136 @@
     would predict a set of scale and shift terms $(\mu_i, \sigma_i)$ which are all
     functions of input $\mathbf{x}$. Read the [paper](https://arxiv.org/abs/1809.05861)
     for more details if interested.
+  id: totrans-156
   prefs: []
   type: TYPE_NORMAL
+  zh: 在[变分自动编码器](https://lilianweng.github.io/posts/2018-08-12-vae/#vae-variational-autoencoder)中，如果我们想将后验分布$p(\mathbf{z}\vert\mathbf{x})$建模为一个更复杂的分布而不是简单的高斯分布。直观地，我们可以使用正规化流来转换基础高斯分布，以获得更好的密度逼近。然后编码器会预测一组尺度和偏移项$(\mu_i,
+    \sigma_i)$，这些项都是输入$\mathbf{x}$的函数。如果感兴趣，可以阅读[论文](https://arxiv.org/abs/1809.05861)获取更多细节。
 - en: '* * *'
+  id: totrans-157
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*If you notice mistakes and errors in this post, don’t hesitate to contact
     me at [lilian dot wengweng at gmail dot com] and I would be very happy to correct
     them right away!*'
+  id: totrans-158
   prefs: []
   type: TYPE_NORMAL
+  zh: '*如果您在这篇文章中发现错误，请随时通过[lilian dot wengweng at gmail dot com]与我联系，我将非常乐意立即更正！*'
 - en: See you in the next post :D
+  id: totrans-159
   prefs: []
   type: TYPE_NORMAL
+  zh: 下一篇文章见:D
 - en: '* * *'
+  id: totrans-160
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'Cited as:'
+  id: totrans-161
   prefs: []
   type: TYPE_NORMAL
+  zh: 引用为：
 - en: '[PRE0]'
+  id: totrans-162
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: Reference
+  id: totrans-163
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考
 - en: '[1] Danilo Jimenez Rezende, and Shakir Mohamed. [“Variational inference with
     normalizing flows.”](https://arxiv.org/abs/1505.05770) ICML 2015.'
+  id: totrans-164
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] Danilo Jimenez Rezende和Shakir Mohamed。[“使用正规化流进行变分推断。”](https://arxiv.org/abs/1505.05770)
+    ICML 2015。'
 - en: '[2] [Normalizing Flows Tutorial, Part 1: Distributions and Determinants](https://blog.evjang.com/2018/01/nf1.html)
     by Eric Jang.'
+  id: totrans-165
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] Eric Jang的[正规化流教程，第1部分：分布和行列式](https://blog.evjang.com/2018/01/nf1.html)。'
 - en: '[3] [Normalizing Flows Tutorial, Part 2: Modern Normalizing Flows](https://blog.evjang.com/2018/01/nf2.html)
     by Eric Jang.'
+  id: totrans-166
   prefs: []
   type: TYPE_NORMAL
+  zh: '[3] Eric Jang的[正规化流教程，第2部分：现代正规化流](https://blog.evjang.com/2018/01/nf2.html)。'
 - en: '[4] [Normalizing Flows](http://akosiorek.github.io/ml/2018/04/03/norm_flows.html)
     by Adam Kosiorek.'
+  id: totrans-167
   prefs: []
   type: TYPE_NORMAL
+  zh: '[4] Adam Kosiorek的[正规化流](http://akosiorek.github.io/ml/2018/04/03/norm_flows.html)。'
 - en: '[5] Laurent Dinh, Jascha Sohl-Dickstein, and Samy Bengio. [“Density estimation
     using Real NVP.”](https://arxiv.org/abs/1605.08803) ICLR 2017.'
+  id: totrans-168
   prefs: []
   type: TYPE_NORMAL
+  zh: '[5] Laurent Dinh，Jascha Sohl-Dickstein和Samy Bengio。[“使用Real NVP进行密度估计。”](https://arxiv.org/abs/1605.08803)
+    ICLR 2017。'
 - en: '[6] Laurent Dinh, David Krueger, and Yoshua Bengio. [“NICE: Non-linear independent
     components estimation.”](https://arxiv.org/abs/1410.8516) ICLR 2015 Workshop track.'
+  id: totrans-169
   prefs: []
   type: TYPE_NORMAL
+  zh: '[6] Laurent Dinh，David Krueger和Yoshua Bengio。[“NICE：非线性独立成分估计。”](https://arxiv.org/abs/1410.8516)
+    ICLR 2015研讨会论文集。'
 - en: '[7] Diederik P. Kingma, and Prafulla Dhariwal. [“Glow: Generative flow with
     invertible 1x1 convolutions.”](https://arxiv.org/abs/1807.03039) arXiv:1807.03039
     (2018).'
+  id: totrans-170
   prefs: []
   type: TYPE_NORMAL
+  zh: '[7] Diederik P. Kingma和Prafulla Dhariwal。[“Glow: 具有可逆1x1卷积的生成流。”](https://arxiv.org/abs/1807.03039)
+    arXiv:1807.03039 (2018)。'
 - en: '[8] Germain, Mathieu, Karol Gregor, Iain Murray, and Hugo Larochelle. [“Made:
     Masked autoencoder for distribution estimation.”](https://arxiv.org/abs/1502.03509)
     ICML 2015.'
+  id: totrans-171
   prefs: []
   type: TYPE_NORMAL
+  zh: '[8] Germain，Mathieu，Karol Gregor，Iain Murray和Hugo Larochelle。[“Made：用于分布估计的掩码自动编码器。”](https://arxiv.org/abs/1502.03509)
+    ICML 2015。'
 - en: '[9] Aaron van den Oord, Nal Kalchbrenner, and Koray Kavukcuoglu. [“Pixel recurrent
     neural networks.”](https://arxiv.org/abs/1601.06759) ICML 2016.'
+  id: totrans-172
   prefs: []
   type: TYPE_NORMAL
+  zh: '[9] Aaron van den Oord，Nal Kalchbrenner和Koray Kavukcuoglu。[“像素递归神经网络。”](https://arxiv.org/abs/1601.06759)
+    ICML 2016。'
 - en: '[10] Diederik P. Kingma, et al. [“Improved variational inference with inverse
     autoregressive flow.”](https://arxiv.org/abs/1606.04934) NIPS. 2016.'
+  id: totrans-173
   prefs: []
   type: TYPE_NORMAL
+  zh: '[10] Diederik P. Kingma等人。[“使用逆自回归流改进变分推断。”](https://arxiv.org/abs/1606.04934)
+    NIPS. 2016。'
 - en: '[11] George Papamakarios, Iain Murray, and Theo Pavlakou. [“Masked autoregressive
     flow for density estimation.”](https://arxiv.org/abs/1705.07057) NIPS 2017.'
+  id: totrans-174
   prefs: []
   type: TYPE_NORMAL
+  zh: '[11] George Papamakarios，Iain Murray和Theo Pavlakou。[“用于密度估计的掩码自回归流。”](https://arxiv.org/abs/1705.07057)
+    NIPS 2017。'
 - en: '[12] Jianlin Su, and Guang Wu. [“f-VAEs: Improve VAEs with Conditional Flows.”](https://arxiv.org/abs/1809.05861)
     arXiv:1809.05861 (2018).'
+  id: totrans-175
   prefs: []
   type: TYPE_NORMAL
+  zh: '[12] Jianlin Su和Guang Wu。[“f-VAEs：使用条件流改进VAEs。”](https://arxiv.org/abs/1809.05861)
+    arXiv:1809.05861 (2018)。'
 - en: '[13] Van Den Oord, Aaron, et al. [“WaveNet: A generative model for raw audio.”](https://arxiv.org/abs/1609.03499)
     SSW. 2016.'
+  id: totrans-176
   prefs: []
   type: TYPE_NORMAL
+  zh: '[13] Van Den Oord, Aaron等人。[“WaveNet: 用于原始音频的生成模型。”](https://arxiv.org/abs/1609.03499)
+    SSW. 2016。'

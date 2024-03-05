@@ -1,22 +1,30 @@
 - en: Are Deep Neural Networks Dramatically Overfitted?
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 深度神经网络是否存在严重的过拟合问题？
 - en: 原文：[https://lilianweng.github.io/posts/2019-03-14-overfit/](https://lilianweng.github.io/posts/2019-03-14-overfit/)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://lilianweng.github.io/posts/2019-03-14-overfit/](https://lilianweng.github.io/posts/2019-03-14-overfit/)
 - en: '[Updated on 2019-05-27: add the [section](#the-lottery-ticket-hypothesis) on
     Lottery Ticket Hypothesis.]'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2019-05-27更新：添加了[章节](#the-lottery-ticket-hypothesis)关于彩票票据假设。]'
 - en: 'If you are like me, entering into the field of deep learning with experience
     in traditional machine learning, you may often ponder over this question: Since
     a typical deep neural network has so many parameters and training error can easily
     be perfect, it should surely suffer from substantial overfitting. How could it
     be ever generalized to out-of-sample data points?'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你和我一样，以传统机器学习经验进入深度学习领域，你可能经常思考这个问题：由于典型的深度神经网络有如此多的参数，训练误差很容易完美，它肯定会受到严重的过拟合问题。它如何能够泛化到样本外的数据点呢？
 - en: The effort in understanding why deep neural networks can generalize somehow
     reminds me of this interesting paper on System Biology — [“Can a biologist fix
     a radio?”](https://www.cell.com/cancer-cell/pdf/S1535-6108(02)00133-2.pdf) (Lazebnik,
@@ -26,105 +34,148 @@
     can hardly present all the interactions within the system, let alone the entire
     working flow. No matter whether you think it is relevant to DL, it is a very fun
     read.
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: 为什么深度神经网络能够泛化的努力在某种程度上让我想起了这篇有趣的系统生物学论文 — [“一个生物学家能修理收音机吗？”](https://www.cell.com/cancer-cell/pdf/S1535-6108(02)00133-2.pdf)（Lazebnik,
+    2002）。如果一个生物学家打算像处理生物系统那样修理收音机，生活可能会很艰难。因为收音机系统的完整机制没有被揭示，戳一下小的局部功能可能会给出一些提示，但几乎不可能展示系统内所有的相互作用，更不用说整个工作流程了。无论你认为这与深度学习相关与否，这都是一篇非常有趣的阅读。
 - en: I would like to discuss a couple of papers on generalizability and complexity
     measurement of deep learning models in the post. Hopefully, it could shed light
     on your thinking path towards the understanding of why DNN can generalize.
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: 我想在这篇文章中讨论一些关于深度学习模型的泛化能力和复杂度测量的论文。希望它能为你的思考路径提供一些启示，帮助你理解为什么深度神经网络能够泛化。
 - en: Classic Theorems on Compression and Model Selection
+  id: totrans-6
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 压缩和模型选择的经典定理
 - en: Let’s say we have a classification problem and a dataset, we can develop many
     models to solve it, from fitting a simple linear regression to memorizing the
     full dataset in disk space. Which one is better? If we only care about the accuracy
     over training data (especially given that testing data is likely unknown), the
     memorization approach seems to be the best — well, it doesn’t sound right.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设我们有一个分类问题和一个数据集，我们可以开发许多模型来解决它，从拟合简单的线性回归到在磁盘空间中记忆整个数据集。哪一个更好？如果我们只关心训练数据的准确性（尤其是考虑到测试数据可能是未知的），记忆方法似乎是最好的
+    — 嗯，这听起来不对。
 - en: There are many classic theorems to guide us when deciding what types of properties
     a good model should possess in such scenarios.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这种情况下，有许多经典定理可以指导我们决定一个好模型应该具备什么类型的属性。
 - en: Occam’s Razor
+  id: totrans-9
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 奥卡姆剃刀
 - en: '[Occam’s Razor](http://pespmc1.vub.ac.be/OCCAMRAZ.html) is an informal principle
     for problem-solving, proposed by [William of Ockham](https://en.wikipedia.org/wiki/William_of_Ockham)
     in the 14th century:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: '[奥卡姆剃刀](http://pespmc1.vub.ac.be/OCCAMRAZ.html)是一个由14世纪的[奥卡姆的威廉](https://en.wikipedia.org/wiki/William_of_Ockham)提出的问题解决的非正式原则：'
 - en: “Simpler solutions are more likely to be correct than complex ones.”
+  id: totrans-11
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: “简单的解决方案比复杂的解决方案更有可能是正确的。”
 - en: The statement is extremely powerful when we are facing multiple candidates of
     underlying theories to explain the world and have to pick one. Too many unnecessary
     assumptions might seem to be plausible for one problem, but harder to be generalized
     to other complications or to eventually lead to the basic principles of the universe.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我们面对多个解释世界的潜在理论候选并且必须选择一个时，这个声明是非常强大的。对于一个问题，太多不必要的假设可能对一个问题来说似乎是合理的，但很难泛化到其他复杂情况，或者最终导致宇宙的基本原理。
 - en: Think of this, it took people hundreds of years to figure out that the sky is
     blue in the daytime but reddish at sunset are because of the same reason ([Rayleigh
     scattering](https://en.wikipedia.org/wiki/Rayleigh_scattering)), although two
     phenomena look very different. People must have proposed many other explanations
     for them separately but the unified and simple version won eventually.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 想想看，人们花了数百年的时间才弄清楚白天天空为什么是蓝色，日落时为什么是红色，这是因为同样的原因（[瑞利散射](https://en.wikipedia.org/wiki/Rayleigh_scattering)），尽管这两种现象看起来非常不同。人们一定提出了许多其他解释，但最终胜出的是统一而简单的版本。
 - en: Minimum Description Length principle
+  id: totrans-14
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 最小描述长度原则
 - en: The principle of Occam’s Razor can be similarly applied to machine learning
     models. A formalized version of such concept is called the *Minimum Description
     Length (MDL)* principle, used for comparing competing models / explanations given
     data observed.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 奥卡姆剃刀原则同样可以应用于机器学习模型。这种概念的形式化版本被称为*最小描述长度（MDL）*原则，用于比较给定观察数据的竞争模型/解释。
 - en: “Comprehension is compression.”
+  id: totrans-16
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: “理解即压缩。”
 - en: The fundamental idea in MDL is to *view learning as data compression*. By compressing
     the data, we need to discover regularity or patterns in the data with the high
     potentiality to generalize to unseen samples. [Information bottleneck](https://lilianweng.github.io/posts/2017-09-28-information-bottleneck/)
     theory believes that a deep neural network is trained first to represent the data
     by minimizing the generalization error and then learn to compress this representation
     by trimming noise.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: MDL中的基本思想是*将学习视为数据压缩*。通过压缩数据，我们需要发现数据中的规律或模式，具有高潜力泛化到未见样本。[信息瓶颈](https://lilianweng.github.io/posts/2017-09-28-information-bottleneck/)理论认为，首先训练深度神经网络以通过最小化泛化误差来表示数据，然后学习通过修剪噪声来压缩这种表示。
 - en: Meanwhile, MDL considers the model description as part of the compression delivery,
     so the model cannot be arbitrarily large.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 与此同时，MDL认为模型描述是压缩交付的一部分，因此模型不能任意庞大。
 - en: 'A *two-part version* of MDL principle states that: Let $\mathcal{H}^{(1)},
     \mathcal{H}^{(2)}, \dots$ be a list of models that can explain the dataset $\mathcal{D}$.
     The best hypothesis among them should be the one that minimizes the sum:'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: MDL原则的*两部分版本*表明：让$\mathcal{H}^{(1)}, \mathcal{H}^{(2)}, \dots$是可以解释数据集$\mathcal{D}$的模型列表。其中最佳假设应该是最小化以下总和的那个：
 - en: $$ \mathcal{H}^\text{best} = \arg\min_\mathcal{H} [L(\mathcal{H}) + L(\mathcal{D}\vert\mathcal{H})]
     $$
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathcal{H}^\text{best} = \arg\min_\mathcal{H} [L(\mathcal{H}) + L(\mathcal{D}\vert\mathcal{H})]
+    $$
 - en: $L(\mathcal{H})$ is the length of the description of model $\mathcal{H}$ in
     bits.
+  id: totrans-21
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $L(\mathcal{H})$是模型$\mathcal{H}$的描述长度（以比特为单位）。
 - en: $L(\mathcal{D}\vert\mathcal{H})$ is the length of the description of the data
     $\mathcal{D}$ in bits when encoded with $\mathcal{H}$.
+  id: totrans-22
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $L(\mathcal{D}\vert\mathcal{H})$是使用$\mathcal{H}$对数据$\mathcal{D}$进行编码时的描述长度（以比特为单位）。
 - en: In simple words, the *best* model is the *smallest* model containing the encoded
     data and the model itself. Following this criterion, the memorization approach
     I proposed at the beginning of the section sounds horrible no matter how good
     accuracy it can achieve on the training data.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 简单来说，*最佳*模型是包含编码数据和模型本身的*最小*模型。按照这个标准，我在本节开头提出的记忆方法无论在训练数据上能达到多高的准确性，听起来都很糟糕。
 - en: People might argue Occam’s Razor is wrong, as given the real world can be arbitrarily
     complicated, why do we have to find simple models? One interesting view by MDL
     is to consider models as **“languages”** instead of fundamental generative theorems.
@@ -132,75 +183,102 @@
     small set of samples, and they **do not have to be the “real” generative model**
     for explaining the phenomenon. Models can be wrong but still useful (i.e., think
     of any Bayesian prior).
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 人们可能会认为奥卡姆剃刀是错误的，因为考虑到现实世界可能非常复杂，为什么我们要找到简单的模型？MDL提出的一个有趣观点是将模型视为**“语言”**而不是基本的生成定理。我们希望找到良好的压缩策略来描述一小组样本中的规律性，它们**不必是用于解释现象的“真实”生成模型**。模型可能是错误的，但仍然有用（即，考虑任何贝叶斯先验）。
 - en: Kolmogorov Complexity
+  id: totrans-25
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 科尔莫哥洛夫复杂度
 - en: 'Kolmogorov Complexity relies on the concept of modern computers to define the
     algorithmic (descriptive) complexity of an object: It is *the length of the shortest
     binary computer program that describes the object*. Following MDL, a computer
     is essentially the most general form of data decompressor.'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 科尔莫哥洛夫复杂度依赖于现代计算机的概念来定义对象的算法（描述）复杂度：它是*描述对象的最短二进制计算机程序的长度*。根据MDL，计算机本质上是数据解压缩的最一般形式。
 - en: 'The formal definition of Kolmogorov Complexity states that: Given a universal
     computer $\mathcal{U}$ and a program $p$, let’s denote $\mathcal{U}(p)$ as the
     output of the computer processing the program and $L(p)$ as the descriptive length
     of the program. Then Kolmogorov Complexity $K_\mathcal{U}$ of a string $s$ with
     respect to a universal computer $\mathcal{U}$ is:'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 科尔莫哥洛夫复杂度的形式定义如下：给定一个通用计算机$\mathcal{U}$和一个程序$p$，我们将计算机处理该程序的输出表示为$\mathcal{U}(p)$，将程序的描述长度表示为$L(p)$。那么对于一个字符串$s$，相对于通用计算机$\mathcal{U}$的科尔莫哥洛夫复杂度$K_\mathcal{U}$为：
 - en: '$$ K_\mathcal{U}(s) = \min_{p: \mathcal{U}(p)=s} L(p) $$'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: '$$ K_\mathcal{U}(s) = \min_{p: \mathcal{U}(p)=s} L(p) $$'
 - en: Note that a universal computer is one that can mimic the actions of any other
     computers. All modern computers are universal as they can all be reduced to Turing
     machines. The definition is universal no matter which computers we are using,
     because another universal computer can always be programmed to clone the behavior
     of $\mathcal{U}$, while encoding this clone program is just a constant.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 请注意，通用计算机是可以模仿任何其他计算机操作的计算机。所有现代计算机都是通用的，因为它们都可以归纳为图灵机。该定义是通用的，无论我们使用哪种计算机，因为另一个通用计算机总是可以被编程来克隆$\mathcal{U$的行为，而编码这个克隆程序只是一个常数。
 - en: There are a lot of connections between Kolmogorov Complexity and Shannon Information
     Theory, as both are tied to universal coding. It is an amazing fact that the expected
     Kolmogorov Complexity of a random variable is approximately equal to its Shannon
     entropy (see Sec 2.3 of [the report](https://homepages.cwi.nl/~paulv/papers/info.pdf)).
     More on this topic is out of the scope here, but there are many interesting readings
     online. Help yourself :)
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 科尔莫哥洛夫复杂度与香农信息论之间有许多联系，因为两者都与通用编码有关。一个惊人的事实是，随机变量的期望科尔莫哥洛夫复杂度大约等于其香农熵（参见[报告的第2.3节](https://homepages.cwi.nl/~paulv/papers/info.pdf)）。关于这个主题的更多内容超出了此处的范围，但网上有许多有趣的阅读材料。自行查阅
+    :)
 - en: Solomonoff’s Inference Theory
+  id: totrans-31
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 所罗门诺夫的推理理论
 - en: Another mathematical formalization of Occam’s Razor is Solomonoff’s theory of
     universal inductive inference ([Solomonoff](https://www.sciencedirect.com/science/article/pii/S0019995864902232),
     [1964](https://www.sciencedirect.com/science/article/pii/S0019995864901317)).
     The principle is to favor models that correspond to the “shortest program” to
     produce the training data, based on its Kolmogorov complexity
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一个对奥卡姆剃刀的数学形式化是所罗门诺夫的普适归纳推理理论（[所罗门诺夫](https://www.sciencedirect.com/science/article/pii/S0019995864902232)，[1964](https://www.sciencedirect.com/science/article/pii/S0019995864901317)）。该原则是偏爱与“产生训练数据的最短程序”相对应的模型，基于其科尔莫哥洛夫复杂度。
 - en: Expressive Power of DL Models
+  id: totrans-33
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: DL模型的表达能力
 - en: Deep neural networks have an extremely large number of parameters compared to
     the traditional statistical models. If we use MDL to measure the complexity of
     a deep neural network and consider the number of parameters as the model description
     length, it would look awful. The model description $L(\mathcal{H})$ can easily
     grow out of control.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 深度神经网络与传统统计模型相比具有极其庞大的参数数量。如果我们使用MDL来衡量深度神经网络的复杂性，并将参数数量视为模型描述长度，那看起来会很糟糕。模型描述$L(\mathcal{H})$很容易失控。
 - en: However, having numerous parameters is *necessary* for a neural network to obtain
     high expressivity power. Because of its great capability to capture any flexible
     data representation, deep neural networks have achieved great success in many
     applications.
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，拥有大量参数对于神经网络获得高表达能力是*必要*的。由于其出色的能力捕捉任何灵活的数据表示，深度神经网络在许多应用中取得了巨大成功。
 - en: Universal Approximation Theorem
+  id: totrans-36
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 通用逼近定理
 - en: 'The *Universal Approximation Theorem* states that a feedforward network with:
     1) a linear output layer, 2) at least one hidden layer containing a finite number
     of neurons and 3) some activation function can approximate **any** continuous
@@ -209,89 +287,138 @@
     Later it was shown that the universal approximation property is not specific to
     the choice of activation ([Hornik, 1991](http://zmjones.com/static/statistical-learning/hornik-nn-1991.pdf))
     but the multilayer feedforward architecture.'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: '*通用逼近定理*表明，具有：1)线性输出层，2)至少包含有限数量神经元的隐藏层和3)某些激活函数的前馈网络可以以任意精度逼近$\mathbb{R}^n$的紧致子集上的任何连续函数。该定理最初是针对Sigmoid激活函数证明的([Cybenko,
+    1989](https://pdfs.semanticscholar.org/05ce/b32839c26c8d2cb38d5529cf7720a68c3fab.pdf))。后来证明了通用逼近性质并不特定于激活函数的选择([Hornik,
+    1991](http://zmjones.com/static/statistical-learning/hornik-nn-1991.pdf))，而是多层前馈架构。'
 - en: Although a feedforward network with a single layer is sufficient to represent
     any function, the width has to be exponentially large. The universal approximation
     theorem does not guarantee whether the model can be learned or generalized properly.
     Often, adding more layers helps to reduce the number of hidden neurons needed
     in a shallow network.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管具有单层的前馈网络足以表示任何函数，但宽度必须是指数级的大。通用逼近定理并不保证模型能够正确学习或泛化。通常，增加更多的层有助于减少浅层网络中所需的隐藏神经元数量。
 - en: To take advantage of the universal approximation theorem, we can always find
     a neural network to represent the target function with error under any desired
     threshold, but we need to pay the price — the network might grow super large.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 要利用通用逼近定理，我们总是可以找到一个神经网络来表示目标函数，使得误差在任何期望的阈值下，但我们需要付出代价——网络可能会变得非常庞大。
 - en: 'Proof: Finite Sample Expressivity of Two-layer NN'
+  id: totrans-40
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 证明：两层神经网络的有限样本表达能力
 - en: The Universal Approximation Theorem we have discussed so far does not consider
     a finite sample set. [Zhang, et al. (2017)](https://arxiv.org/abs/1611.03530)
     provided a neat proof on the finite-sample expressivity of two-layer neural networks.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们迄今为止讨论的通用逼近定理并未考虑有限样本集。[Zhang, et al. (2017)](https://arxiv.org/abs/1611.03530)提供了关于两层神经网络有限样本表达能力的简洁证明。
 - en: 'A neural network $C$ can represent any function given a sample size $n$ in
     $d$ dimensions if: For every finite sample set $S \subseteq \mathbb{R}^d$ with
     $\vert S \vert = n$ and every function defined on this sample set: $f: S \mapsto
     \mathbb{R}$, we can find a set of weight configuration for $C$ so that $C(\boldsymbol{x})
     = f(\boldsymbol{x}), \forall \boldsymbol{x} \in S$.'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: '如果给定一个大小为$n$的样本在$d$维度上，神经网络$C$可以表示任何函数，如果：对于每个有限样本集$S \subseteq \mathbb{R}^d$，其中$\vert
+    S \vert = n$，以及每个在该样本集上定义的函数：$f: S \mapsto \mathbb{R}$，我们可以找到一组权重配置使得$C(\boldsymbol{x})
+    = f(\boldsymbol{x}), \forall \boldsymbol{x} \in S$。'
 - en: 'The paper proposed a theorem:'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 该论文提出了一个定理：
 - en: There exists a two-layer neural network with ReLU activations and $2n + d$ weights
     that can represent any function on a sample of size $n$ in $d$ dimensions.
+  id: totrans-44
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 存在一个具有ReLU激活和$2n + d$权重的两层神经网络，可以在$d$维度的大小为$n$的样本上表示任何函数。
 - en: '*Proof.* First we would like to construct a two-layer neural network $C: \mathbb{R}^d
     \mapsto \mathbb{R}$. The input is a $d$-dimensional vector, $\boldsymbol{x} \in
     \mathbb{R}^d$. The hidden layer has $h$ hidden units, associated with a weight
     matrix $\mathbf{W} \in \mathbb{R}^{d\times h}$, a bias vector $-\mathbf{b} \in
     \mathbb{R}^h$ and ReLU activation function. The second layer outputs a scalar
     value with weight vector $\boldsymbol{v} \in \mathbb{R}^h$ and zero biases.'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: '*证明.* 首先，我们想构建一个两层神经网络$C: \mathbb{R}^d \mapsto \mathbb{R$。输入是一个$d$维向量，$\boldsymbol{x}
+    \in \mathbb{R}^d$。隐藏层有$h$个隐藏单元，与权重矩阵$\mathbf{W} \in \mathbb{R}^{d\times h}$，偏置向量$-\mathbf{b}
+    \in \mathbb{R}^h$和ReLU激活函数相关联。第二层输出一个标量值，带有权重向量$\boldsymbol{v} \in \mathbb{R}^h$和零偏置。'
 - en: 'The output of network $C$ for a input vector $\boldsymbol{x}$ can be represented
     as follows:'
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 网络$C$对于输入向量$\boldsymbol{x}$的输出可以表示如下：
 - en: $$ C(\boldsymbol{x}) = \boldsymbol{v} \max\{ \boldsymbol{x}\mathbf{W} - \boldsymbol{b},
     0\}^\top = \sum_{i=1}^h v_i \max\{\boldsymbol{x}\boldsymbol{W}_{(:,i)} - b_i,
     0\} $$
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ C(\boldsymbol{x}) = \boldsymbol{v} \max\{ \boldsymbol{x}\mathbf{W} - \boldsymbol{b},
+    0\}^\top = \sum_{i=1}^h v_i \max\{\boldsymbol{x}\boldsymbol{W}_{(:,i)} - b_i,
+    0\} $$
 - en: where $\boldsymbol{W}_{(:,i)}$ is the $i$-th column in the $d \times h$ matrix.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$\boldsymbol{W}_{(:,i)}$是$d \times h$矩阵中的第$i$列。
 - en: Given a sample set $S = \{\boldsymbol{x}_1, \dots, \boldsymbol{x}_n\}$ and target
     values $\boldsymbol{y} = \{y_1, \dots, y_n \}$, we would like to find proper weights
     $\mathbf{W} \in \mathbb{R}^{d\times h}$, $\boldsymbol{b}, \boldsymbol{v} \in \mathbb{R}^h$
     so that $C(\boldsymbol{x}_i) = y_i, \forall i=1,\dots,n$.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 给定一个样本集$S = \{\boldsymbol{x}_1, \dots, \boldsymbol{x}_n\}$和目标值$\boldsymbol{y}
+    = \{y_1, \dots, y_n \}$，我们希望找到适当的权重$\mathbf{W} \in \mathbb{R}^{d\times h}$，$\boldsymbol{b},
+    \boldsymbol{v} \in \mathbb{R}^h$，使得$C(\boldsymbol{x}_i) = y_i, \forall i=1,\dots,n$。
 - en: Let’s combine all sample points into one batch as one input matrix $\mathbf{X}
     \in \mathbb{R}^{n \times d}$. If set $h=n$, $\mathbf{X}\mathbf{W} - \boldsymbol{b}$
     would be a square matrix of size $n \times n$.
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们将所有样本点合并为一个批次，作为一个输入矩阵$\mathbf{X} \in \mathbb{R}^{n \times d}$。如果设置$h=n$，$\mathbf{X}\mathbf{W}
+    - \boldsymbol{b}$将是一个大小为$n \times n$的方阵。
 - en: $$ \mathbf{M}_\text{ReLU} = \max\{\mathbf{X}\mathbf{W} - \boldsymbol{b}, 0 \}
     = \begin{bmatrix} \boldsymbol{x}_1\mathbf{W} - \boldsymbol{b} \\ \dots \\ \boldsymbol{x}_n\mathbf{W}
     - \boldsymbol{b} \\ \end{bmatrix} = [\boldsymbol{x}_i\boldsymbol{W}_{(:,j)} -
     b_j]_{i \times j} $$
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathbf{M}_\text{ReLU} = \max\{\mathbf{X}\mathbf{W} - \boldsymbol{b}, 0 \}
+    = \begin{bmatrix} \boldsymbol{x}_1\mathbf{W} - \boldsymbol{b} \\ \dots \\ \boldsymbol{x}_n\mathbf{W}
+    - \boldsymbol{b} \\ \end{bmatrix} = [\boldsymbol{x}_i\boldsymbol{W}_{(:,j)} -
+    b_j]_{i \times j} $$
 - en: 'We can simplify $\mathbf{W}$ to have the same column vectors across all the
     columns:'
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以简化$\mathbf{W}$，使所有列向量在所有列中相同：
 - en: $$ \mathbf{W}_{(:,j)} = \boldsymbol{w} \in \mathbb{R}^{d}, \forall j = 1, \dots,
     n $$![](../Images/d981eeed5b34de43fc4208e773c2dca2.png)
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathbf{W}_{(:,j)} = \boldsymbol{w} \in \mathbb{R}^{d}, \forall j = 1, \dots,
+    n $$![](../Images/d981eeed5b34de43fc4208e773c2dca2.png)
 - en: 'Let $a_i = \boldsymbol{x}_i \boldsymbol{w}$, we would like to find a suitable
     $\boldsymbol{w}$ and $\boldsymbol{b}$ such that $b_1 < a_1 < b_2 < a_2 < \dots
     < b_n < a_n$. This is always achievable because we try to solve $n+d$ unknown
@@ -299,298 +426,424 @@
     a random $\boldsymbol{w}$, sort $\boldsymbol{x}_i \boldsymbol{w}$ and then set
     $b_j$’s as values in between). Then $\mathbf{M}_\text{ReLU}$ becomes a lower triangular
     matrix:'
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 让$a_i = \boldsymbol{x}_i \boldsymbol{w}$，我们希望找到一个合适的$\boldsymbol{w}$和$\boldsymbol{b}$，使得$b_1
+    < a_1 < b_2 < a_2 < \dots < b_n < a_n$。这总是可以实现的，因为我们试图用$n$个约束解决$n+d$个未知变量，并且$\boldsymbol{x}_i$是独立的（即选择一个随机的$\boldsymbol{w}$，对$\boldsymbol{x}_i
+    \boldsymbol{w}$进行排序，然后将$b_j$设置为中间值）。然后$\mathbf{M}_\text{ReLU}$变成一个下三角矩阵：
 - en: $$ \mathbf{M}_\text{ReLU} = [a_i - b_j]_{i \times j} = \begin{bmatrix} a_1 -
     b_1 & 0 & 0 & \dots & 0 \\ \vdots & \ddots & & & \vdots \\ a_i - b_1 & \dots &
     a_i - b_i & \dots & 0\\ \vdots & & & \ddots & \vdots \\ a_n - b_1 & a_n - b_2
     & \dots & \dots & a_n - b_n \\ \end{bmatrix} $$
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathbf{M}_\text{ReLU} = [a_i - b_j]_{i \times j} = \begin{bmatrix} a_1 -
+    b_1 & 0 & 0 & \dots & 0 \\ \vdots & \ddots & & & \vdots \\ a_i - b_1 & \dots &
+    a_i - b_i & \dots & 0\\ \vdots & & & \ddots & \vdots \\ a_n - b_1 & a_n - b_2
+    & \dots & \dots & a_n - b_n \\ \end{bmatrix} $$
 - en: It is a nonsingular square matrix as $\det(\mathbf{M}_\text{ReLU}) \neq 0$,
     so we can always find suitable $\boldsymbol{v}$ to solve $\boldsymbol{v}\mathbf{M}_\text{ReLU}=\boldsymbol{y}$
     (In other words, the column space of $\mathbf{M}_\text{ReLU}$ is all of $\mathbb{R}^n$
     and we can find a linear combination of column vectors to obtain any $\boldsymbol{y}$).
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于$\det(\mathbf{M}_\text{ReLU}) \neq 0$，它是一个非奇异方阵，因此我们总是可以找到合适的$\boldsymbol{v}$来解决$\boldsymbol{v}\mathbf{M}_\text{ReLU}=\boldsymbol{y}$（换句话说，$\mathbf{M}_\text{ReLU}$的列空间是$\mathbb{R}^n$的全部，我们可以找到列向量的线性组合以获得任何$\boldsymbol{y}$）。
 - en: Deep NN can Learn Random Noise
+  id: totrans-57
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 深度神经网络可以学习随机噪声
 - en: As we know two-layer neural networks are universal approximators, it is less
     surprising to see that they are able to learn unstructured random noise perfectly,
     as shown in [Zhang, et al. (2017)](https://arxiv.org/abs/1611.03530). If labels
     of image classification dataset are randomly shuffled, the high expressivity power
     of deep neural networks can still empower them to achieve near-zero training loss.
     These results do not change with regularization terms added.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 众所周知，双层神经网络是通用逼近器，看到它们能够完美地学习无结构的随机噪声并不奇怪，正如[Zhang等人（2017年）](https://arxiv.org/abs/1611.03530)所示。如果图像分类数据集的标签被随机洗牌，深度神经网络的高表达能力仍然可以使它们实现接近零的训练损失。这些结果不会因添加正则化项而改变。
 - en: '![](../Images/94c44918cf5fd69273e273115178fea3.png)'
+  id: totrans-59
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/94c44918cf5fd69273e273115178fea3.png)'
 - en: 'Fig. 1\. Fit models on CIFAR10 with random labels or random pixels: (a) learning
     curves; (b-c) label corruption ratio is the percentage of randomly shuffled labels.
     (Image source: [Zhang et al. 2017](https://arxiv.org/abs/1611.03530))'
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 图1. 在CIFAR10上拟合模型，使用随机标签或随机像素：（a）学习曲线；（b-c）标签损坏比例是随机洗牌标签的百分比。（图片来源：[Zhang等人2017](https://arxiv.org/abs/1611.03530)）
 - en: Are Deep Learning Models Dramatically Overfitted?
+  id: totrans-61
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 深度学习模型是否过度拟合？
 - en: Deep learning models are heavily over-parameterized and can often get to perfect
     results on training data. In the traditional view, like bias-variance trade-offs,
     this could be a disaster that nothing may generalize to the unseen test data.
     However, as is often the case, such “overfitted” (training error = 0) deep learning
     models still present a decent performance on out-of-sample test data. Hmm … interesting
     and why?
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 深度学习模型被过度参数化，并且通常可以在训练数据上获得完美的结果。在传统观点中，就像偏差-方差权衡一样，这可能是一场灾难，没有任何东西可能泛化到未见的测试数据。然而，通常情况下，这种“过拟合”（训练误差=0）的深度学习模型仍然在样本外的测试数据上表现良好。嗯...有趣，为什么呢？
 - en: Modern Risk Curve for Deep Learning
+  id: totrans-63
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 深度学习的现代风险曲线
 - en: The traditional machine learning uses the following U-shape risk curve to measure
     the bias-variance trade-offs and quantify how generalizable a model is. If I get
     asked how to tell whether a model is overfitted, this would be the first thing
     popping into my mind.
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 传统机器学习使用以下U形风险曲线来衡量偏差-方差权衡，并量化模型的泛化能力。如果有人问我如何判断模型是否过拟合，这将是我脑海中首先浮现的事情。
 - en: As the model turns larger (more parameters added), the training error decreases
     to close to zero, but the test error (generalization error) starts to increase
     once the model complexity grows to pass the threshold between “underfitting” and
     “overfitting”. In a way, this is well aligned with Occam’s Razor.
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 随着模型变得更大（增加更多参数），训练误差降低至接近零，但测试误差（泛化误差）一旦模型复杂度增加到“欠拟合”和“过拟合”之间的阈值，就开始增加。在某种程度上，这与奥卡姆剃刀是一致的。
 - en: '![](../Images/c7b4370710e2ec508cbefde0d03bc1f7.png)'
+  id: totrans-66
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c7b4370710e2ec508cbefde0d03bc1f7.png)'
 - en: 'Fig. 2\. U-shaped bias-variance risk curve. (Image source: (left) [paper](https://arxiv.org/abs/1812.11118)
     (right) [fig. 6 of this post](http://scott.fortmann-roe.com/docs/BiasVariance.html))'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 图2。U形偏差-方差风险曲线。 (图片来源：(左) [论文](https://arxiv.org/abs/1812.11118) (右) [本文第6图](http://scott.fortmann-roe.com/docs/BiasVariance.html))
 - en: Unfortunately this does not apply to deep learning models. [Belkin et al. (2018)](https://arxiv.org/abs/1812.11118)
     reconciled the traditional bias-variance trade-offs and proposed a new double-U-shaped
     risk curve for deep neural networks. Once the number of network parameters is
     high enough, the risk curve enters another regime.
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 遗憾的是，这并不适用于深度学习模型。[Belkin et al. (2018)](https://arxiv.org/abs/1812.11118)调和了传统的偏差-方差权衡，并为深度神经网络提出了一个新的双U形风险曲线。一旦网络参数的数量足够高，风险曲线就会进入另一个阶段。
 - en: '![](../Images/b58f12f8079a824eb2790cd415f332d1.png)'
+  id: totrans-69
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/b58f12f8079a824eb2790cd415f332d1.png)'
 - en: 'Fig. 3\. A new double-U-shaped bias-variance risk curve for deep neural networks.
     (Image source: [original paper](https://arxiv.org/abs/1812.11118))'
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 图3。深度神经网络的新双U形偏差-方差风险曲线。 (图片来源：[原始论文](https://arxiv.org/abs/1812.11118))
 - en: 'The paper claimed that it is likely due to two reasons:'
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 该论文声称这可能是由于两个原因：
 - en: The number of parameters is not a good measure of *inductive bias*, defined
     as the set of assumptions of a learning algorithm used to predict for unknown
     samples. See more discussion on DL model complexity in [later](#intrinsic-dimension)
     [sections](#heterogeneous-layer-robustness).
+  id: totrans-72
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 参数的数量并不是*归纳偏差*的良好度量，归纳偏差被定义为学习算法的一组假设，用于预测未知样本。在[后文](#intrinsic-dimension)的[章节](#heterogeneous-layer-robustness)中更多讨论深度学习模型的复杂性。
 - en: Equipped with a larger model, we might be able to discover larger function classes
     and further find interpolating functions that have smaller norm and are thus “simpler”.
+  id: totrans-73
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 配备更大的模型，我们可能能够发现更大的函数类，并进一步找到具有较小范数且因此“更简单”的插值函数。
 - en: The double-U-shaped risk curve was observed empirically, as shown in the paper.
     However I was struggling quite a bit to reproduce the results. There are some
     signs of life, but in order to generate a pretty smooth curve similar to the theorem,
     [many details](#experiments) in the experiment have to be taken care of.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 双U形风险曲线是根据实证观察得出的，如论文所示。然而，我在努力尝试重现结果时遇到了一些困难。虽然有一些迹象表明，但为了生成类似于定理中的漂亮平滑曲线，[实验](#experiments)中的许多细节必须被注意到。
 - en: '![](../Images/c70985fe318ddb9a09aef6f82b85bafe.png)'
+  id: totrans-75
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c70985fe318ddb9a09aef6f82b85bafe.png)'
 - en: 'Fig. 4\. Training and evaluation errors of a one hidden layer fc network of
     different numbers of hidden units, trained on 4000 data points sampled from MNIST.
     (Image source: [original paper](https://arxiv.org/abs/1812.11118))'
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 图4。训练和评估错误的一个隐藏层fc网络，训练了不同数量的隐藏单元，从MNIST中采样了4000个数据点。 (图片来源：[原始论文](https://arxiv.org/abs/1812.11118))
 - en: Regularization is not the Key to Generalization
+  id: totrans-77
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 正则化不是泛化的关键
 - en: Regularization is a common way to control overfitting and improve model generalization
     performance. Interestingly some research ([Zhang, et al. 2017](https://arxiv.org/abs/1611.03530))
     has shown that explicit regularization (i.e. data augmentation, weight decay and
     dropout) is neither necessary or sufficient for reducing generalization error.
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 正则化是控制过拟合和提高模型泛化性能的常见方法。有趣的是，一些研究（[Zhang等人，2017](https://arxiv.org/abs/1611.03530)）表明，显式正则化（即数据增强、权重衰减和丢弃）既不是必要的也不足以减少泛化误差。
 - en: Taking the Inception model trained on CIFAR10 as an example (see Fig. 5), regularization
     techniques help with out-of-sample generalization but not much. No single regularization
     seems to be critical independent of other terms. Thus, it is unlikely that regularizers
     are the *fundamental reason* for generalization.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 以在CIFAR10上训练的Inception模型为例（见图5），正则化技术有助于样本外泛化，但作用不大。没有单一的正则化似乎是关键的，独立于其他项。因此，正则化器不太可能是泛化的*根本原因*。
 - en: '![](../Images/41df0942706f1cd214a0e7a8883212c0.png)'
+  id: totrans-80
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/41df0942706f1cd214a0e7a8883212c0.png)'
 - en: 'Fig. 5\. The accuracy of Inception model trained on CIFAR10 with different
     combinations of taking on or off data augmentation and weight decay. (Image source:
     Table 1 in the [original paper](https://arxiv.org/abs/1611.03530))'
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 图5。在CIFAR10上训练的Inception模型的准确性，采用不同组合的数据增强和权重衰减。 （图片来源：原论文中的表1 [原始论文](https://arxiv.org/abs/1611.03530)）
 - en: Intrinsic Dimension
+  id: totrans-82
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 内在维度
 - en: The number of parameters is not correlated with model overfitting in the field
     of deep learning, suggesting that parameter counting cannot indicate the true
     complexity of deep neural networks.
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 参数数量与深度学习领域中模型过拟合无关，这表明参数计数不能指示深度神经网络的真实复杂性。
 - en: Apart from parameter counting, researchers have proposed many ways to quantify
     the complexity of these models, such as the number of degrees of freedom of models
     ([Gao & Jojic, 2016](https://arxiv.org/abs/1603.09260)), or prequential code ([Blier
     & Ollivier, 2018](https://arxiv.org/abs/1802.07044)).
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 除了参数计数外，研究人员提出了许多量化这些模型复杂性的方法，例如模型的自由度数量（[Gao＆Jojic，2016](https://arxiv.org/abs/1603.09260)）或预测代码（[Blier＆Ollivier，2018](https://arxiv.org/abs/1802.07044)）。
 - en: I would like to discuss a recent method on this matter, named **intrinsic dimension**
     ([Li et al, 2018](https://arxiv.org/abs/1804.08838)). Intrinsic dimension is intuitive,
     easy to measure, while still revealing many interesting properties of models of
     different sizes.
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 我想讨论一种最近在这个问题上的方法，名为**内在维度**（[Li等人，2018](https://arxiv.org/abs/1804.08838)）。内在维度直观易测量，同时仍揭示了不同规模模型的许多有趣属性。
 - en: Considering a neural network with a great number of parameters, forming a high-dimensional
     parameter space, the learning happens on this high-dimensional *objective landscape*.
     The shape of the parameter space manifold is critical. For example, a smoother
     manifold is beneficial for optimization by providing more predictive gradients
     and allowing for larger learning rates—this was claimed to be the reason why batch
     normalization has succeeded in stabilizing training ([Santurkar, et al, 2019](https://arxiv.org/abs/1805.11604)).
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 考虑到具有大量参数的神经网络形成了一个高维参数空间，学习发生在这个高维*目标景观*上。参数空间流形的形状至关重要。例如，更平滑的流形有利于通过提供更具预测性的梯度和允许更大的学习速率来进行优化——这被认为是批量归一化成功稳定训练的原因（[Santurkar等人，2019](https://arxiv.org/abs/1805.11604)）。
 - en: Even though the parameter space is huge, fortunately we don’t have to worry
     too much about the optimization process getting stuck in local optima, as it has
     been [shown](https://arxiv.org/abs/1406.2572) that local optimal points in the
     objective landscape almost always lay in saddle-points rather than valleys. In
     other words, there is always a subset of dimensions containing paths to leave
     local optima and keep on exploring.
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管参数空间很大，幸运的是我们不必太担心优化过程陷入局部最优解，因为已经[显示](https://arxiv.org/abs/1406.2572)目标景观中的局部最优点几乎总是位于鞍点而不是山谷中。换句话说，总是有一组包含路径的维度可以离开局部最优解并继续探索。
 - en: '![](../Images/d6cd1712c31dddc807809564c377e43c.png)'
+  id: totrans-88
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d6cd1712c31dddc807809564c377e43c.png)'
 - en: 'Fig. 6\. Illustrations of various types of critical points on the parameter
     optimization landscape. (Image source: [here](https://www.offconvex.org/2016/03/22/saddlepoints/))'
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 图6。参数优化景观上各种类型的临界点的插图。（图片来源：[这里](https://www.offconvex.org/2016/03/22/saddlepoints/)）
 - en: One intuition behind the measurement of intrinsic dimension is that, since the
     parameter space has such high dimensionality, it is probably not necessary to
     exploit all the dimensions to learn efficiently. If we only travel through a slice
     of objective landscape and still can learn a good solution, the complexity of
     the resulting model is likely lower than what it appears to be by parameter-counting.
     This is essentially what intrinsic dimension tries to assess.
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 内在维度测量背后的一个直觉是，由于参数空间具有如此高的维度，可能并不需要利用所有维度来有效学习。如果我们只在目标景观的一个切片上移动仍然可以学习到一个好的解决方案，那么由参数计数得出的结果模型复杂性可能比看起来要低。这本质上是内在维度试图评估的内容。
 - en: Say a model has $D$ dimensions and its parameters are denoted as $\theta^{(D)}$.
     For learning, a smaller $d$-dimensional subspace is randomly sampled, $\theta^{(d)}$,
     where $d < D$. During one optimization update, rather than taking a gradient step
     according to all $D$ dimensions, only the smaller subspace $\theta^{(d)}$ is used
     and remapped to update model parameters.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设一个模型有$D$个维度，其参数表示为$\theta^{(D)}$。为了学习，会随机抽样一个较小的$d$维子空间，$\theta^{(d)}$，其中$d
+    < D$。在一个优化更新期间，不是根据所有$D$个维度采取梯度步骤，而是仅使用较小的子空间$\theta^{(d)}$并重新映射以更新模型参数。
 - en: '![](../Images/f3d20546eb6f9774aebd8e8c983e519a.png)'
+  id: totrans-92
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f3d20546eb6f9774aebd8e8c983e519a.png)'
 - en: 'Fig. 7\. Illustration of parameter vectors for direct optimization when $D=3$.
     (Image source: [original paper](https://arxiv.org/abs/1804.08838))'
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 图7。当$D=3$时，直接优化的参数向量示意图。（图片来源：[原始论文](https://arxiv.org/abs/1804.08838)）
 - en: 'The gradient update formula looks like the follows:'
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 梯度更新公式如下所示：
 - en: $$ \theta^{(D)} = \theta_0^{(D)} + \mathbf{P} \theta^{(d)} $$
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \theta^{(D)} = \theta_0^{(D)} + \mathbf{P} \theta^{(d)} $$
 - en: where $\theta_0^{(D)}$ are the initialization values and $\mathbf{P}$ is a $D
     \times d$ projection matrix that is randomly sampled before training. Both $\theta_0^{(D)}$
     and $\mathbf{P}$ are not trainable and fixed during training. $\theta^{(d)}$ is
     initialized as all zeros.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$\theta_0^{(D)}$是初始化值，$\mathbf{P}$是一个$D \times d$的投影矩阵，在训练之前随机抽样。$\theta_0^{(D)}$和$\mathbf{P}$在训练期间都是不可训练的，固定的。$\theta^{(d)}$初始化为全零。
 - en: By searching through the value of $d = 1, 2, \dots, D$, the corresponding $d$
     when the solution emerges is defined as the *intrinsic dimension*.
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过搜索$d = 1, 2, \dots, D$的取值，当解决方案出现时对应的$d$被定义为*内在维度*。
 - en: It turns out many problems have much smaller intrinsic dimensions than the number
     of parameters. For example, on CIFAR10 image classification, a fully-connected
     network with 650k+ parameters has only 9k intrinsic dimension and a convolutional
     network containing 62k parameters has an even lower intrinsic dimension of 2.9k.
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 结果表明，许多问题的内在维度远小于参数数量。例如，在CIFAR10图像分类中，一个具有650k+参数的全连接网络仅具有9k的内在维度，而包含62k参数的卷积网络甚至具有更低的内在维度2.9k。
 - en: '![](../Images/9b294fa7aa2533867f377d87db29e0bd.png)'
+  id: totrans-99
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9b294fa7aa2533867f377d87db29e0bd.png)'
 - en: 'Fig. 8\. The measured intrinsic dimensions $d$ for various models achieving
     90% of the best performance. (Image source: [original paper](https://arxiv.org/abs/1804.08838))'
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 图8。实现90%最佳性能的各种模型的测得内在维度$d$。（图片来源：[原始论文](https://arxiv.org/abs/1804.08838)）
 - en: The measurement of intrinsic dimensions suggests that deep learning models are
     significantly simpler than what they might appear to be.
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 内在维度的测量表明，深度学习模型比它们看起来要简单得多。
 - en: Heterogeneous Layer Robustness
+  id: totrans-102
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 异构层鲁棒性
 - en: '[Zhang et al. (2019)](https://arxiv.org/abs/1902.01996) investigated the role
     of parameters in different layers. The fundamental question raised by the paper
     is: *“are all layers created equal?”* The short answer is: No. The model is more
     sensitive to changes in some layers but not others.'
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Zhang等人（2019）](https://arxiv.org/abs/1902.01996)研究了不同层参数的作用。论文提出的基本问题是：“所有层是否平等？”简短的答案是：不。模型对某些层的变化更敏感，而对其他层则不敏感。'
 - en: 'The paper proposed two types of operations that can be applied to parameters
     of the $\ell$-th layer, $\ell = 1, \dots, L$, at time $t$, $\theta^{(\ell)}_t$
     to test their impacts on model robustness:'
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 该论文提出了两种操作类型，可以应用于第$\ell$层的参数，$\ell = 1, \dots, L$，在时间$t$，$\theta^{(\ell)}_t$，以测试它们对模型鲁棒性的影响：
 - en: '**Re-initialization**: Reset the parameters to the initial values, $\theta^{(\ell)}_t
     \leftarrow \theta^{(\ell)}_0$. The performance of a network in which layer $\ell$
     was re-initialized is referred to as the *re-initialization robustness* of layer
     $\ell$.'
+  id: totrans-105
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**重新初始化**：将参数重置为初始值，$\theta^{(\ell)}_t \leftarrow \theta^{(\ell)}_0$。层$\ell$重新初始化后网络的性能被称为层$\ell$的*重新初始化稳健性*。'
 - en: '**Re-randomization**: Re-sampling the layer’s parameters at random, $\theta^{(\ell)}_t
     \leftarrow \tilde{\theta}^{(\ell)} \sim \mathcal{P}^{(\ell)}$. The corresponding
     network performance is called the *re-randomization robustness* of layer $\ell$.'
+  id: totrans-106
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**重新随机化**：随机重新采样层的参数，$\theta^{(\ell)}_t \leftarrow \tilde{\theta}^{(\ell)}
+    \sim \mathcal{P}^{(\ell)}$。相应的网络性能称为层$\ell$的*重新随机化稳健性*。'
 - en: 'Layers can be categorized into two categories with the help of these two operations:'
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 可以通过这两种操作将层分为两类：
 - en: '**Robust Layers**: The network has no or only negligible performance degradation
     after re-initializing or re-randomizing the layer.'
+  id: totrans-108
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**稳健层**：在重新初始化或重新随机化层后，网络没有或只有微不足道的性能下降。'
 - en: '**Critical Layers**: Otherwise.'
+  id: totrans-109
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**关键层**：其他情况。'
 - en: Similar patterns are observed on fully-connected and convolutional networks.
     Re-randomizing any of the layers *completely destroys* the model performance,
     as the prediction drops to random guessing immediately. More interestingly and
     surprisingly, when applying re-initialization, only the first or the first few
     layers (those closest to the input layer) are critical, while re-initializing
     higher levels causes *only negligible decrease* in performance.
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: 在全连接和卷积网络上观察到类似的模式。重新随机化任何一层*完全破坏*了模型性能，因为预测立即降至随机猜测。更有趣和令人惊讶的是，当应用重新初始化时，只有第一层或前几层（最接近输入层的层）是关键的，而重新初始化更高层导致性能*仅微不足道*的下降。
 - en: '![](../Images/76ad165e9578b61285dd7d262dc4344e.png)'
+  id: totrans-111
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/76ad165e9578b61285dd7d262dc4344e.png)'
 - en: 'Fig. 9\. (a) A fc network trained on MNIST. Each row corresponds to one layer
     in the network. The first column is re-randomization robustness of each layer
     and the rest of the columns indicate re-initialization robustness at different
     training time. (b) VGG11 model (conv net) trained on CIFAR 10\. Similar representation
     as in (a) but rows and columns are transposed. (Image source: [original paper](https://arxiv.org/abs/1902.01996))'
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 图9\. (a) 在MNIST上训练的fc网络。每一行对应网络中的一层。第一列是每一层的重新随机化稳健性，其余列表示不同训练时间下的重新初始化稳健性。(b)
+    在CIFAR 10上训练的VGG11模型（卷积网络）。与(a)中类似的表示，但行和列被转置了。(图片来源：[原始论文](https://arxiv.org/abs/1902.01996))
 - en: ResNet is able to use shortcuts between non-adjacent layers to re-distribute
     the sensitive layers across the networks rather than just at the bottom. With
     the help of residual block architecture, the network can *evenly be robust to
@@ -598,35 +851,49 @@
     to both re-initialization and re-randomization. If we consider each residual block
     as a local sub-network, the robustness pattern resembles the fc and conv nets
     above.
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: ResNet能够在非相邻层之间使用快捷方式重新分配敏感层，而不仅仅是在底部。借助残差块架构，网络可以*均匀地对重新随机化保持稳健*。每个残差块的第一层仍然对重新初始化和重新随机化敏感。如果我们将每个残差块视为一个局部子网络，那么稳健性模式类似于上述的fc和卷积网络。
 - en: '![](../Images/b095932e14c94be00a186560ad07c6b0.png)'
+  id: totrans-114
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/b095932e14c94be00a186560ad07c6b0.png)'
 - en: 'Fig. 10\. Re-randomization (first row) and re-initialization (the reset rows)
     robustness of layers in ResNet-50 model trained on CIFAR10\. (Image source: [original
     paper](https://arxiv.org/abs/1902.01996))'
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: 图10\. 在CIFAR10上训练的ResNet-50模型中层的重新随机化（第一行）和重新初始化（重置行）稳健性。(图片来源：[原始论文](https://arxiv.org/abs/1902.01996))
 - en: 'Based on the fact that many top layers in deep neural networks are not critical
     to the model performance after re-initialization, the paper loosely concluded
     that:'
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 基于深度神经网络中许多顶层在重新初始化后对模型性能并不关键的事实，该论文粗略地得出结论：
 - en: “Over-capacitated deep networks trained with stochastic gradient have low-complexity
     due to self-restricting the number of critical layers.”
+  id: totrans-117
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: “使用随机梯度下降训练的过度容量深度网络由于自我限制关键层的数量而具有低复杂性。”
 - en: We can consider re-initialization as a way to reduce the effective number of
     parameters, and thus the observation is aligned with what intrinsic dimension
     has demonstrated.
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以将重新初始化视为减少有效参数数量的一种方式，因此这一观察结果与内在维度所展示的一致。
 - en: The Lottery Ticket Hypothesis
+  id: totrans-119
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 中彩票假设
 - en: The lottery ticket hypothesis ([Frankle & Carbin, 2019](https://arxiv.org/abs/1803.03635))
     is another intriguing and inspiring discovery, supporting that only a subset of
     network parameters have impact on the model performance and thus the network is
@@ -634,8 +901,11 @@
     dense, feed-forward network contains a pool of subnetworks and among them only
     a subset are *“winning tickets”* which can achieve the optimal performance when
     *trained in isolation*.
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: “中奖票”假设（[Frankle & Carbin, 2019](https://arxiv.org/abs/1803.03635)）是另一个引人入胜且鼓舞人心的发现，支持只有网络参数的一个子集对模型性能有影响，因此网络不会过拟合。
+    “中奖票”假设表明，随机初始化的密集前馈网络包含一个子网络池，其中只有一个子集是*“中奖票”*，当*单独训练*时可以实现最佳性能。
 - en: The idea is motivated by network pruning techniques — removing unnecessary weights
     (i.e. tiny weights that are almost negligible) without harming the model performance.
     Although the final network size can be reduced dramatically, it is hard to train
@@ -643,190 +913,283 @@
     order to successfully train a neural network, we need a large number of parameters,
     but we don’t need that many parameters to keep the accuracy high once the model
     is trained. Why is that?
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个想法受到网络修剪技术的启发 —— 移除不必要的权重（即几乎可以忽略的微小权重），而不影响模型性能。尽管最终网络大小可以大幅减小，但从头开始成功训练这样一个被修剪的网络架构是困难的。这感觉就像为了成功训练神经网络，我们需要大量的参数，但一旦模型训练好了，我们并不需要那么多参数来保持准确性。为什么会这样呢？
 - en: 'The lottery ticket hypothesis did the following experiments:'
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: “中奖票”假设进行了以下实验：
 - en: Randomly initialize a dense feed-forward network with initialization values
     $\theta_0$;
+  id: totrans-123
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 随机初始化一个具有初始化值 $\theta_0$ 的密集前馈网络；
 - en: Train the network for multiple iterations to achieve a good performance with
     parameter config $\theta$;
+  id: totrans-124
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 对网络进行多次迭代训练，以获得参数配置 $\theta$ 的良好性能；
 - en: Run pruning on $\theta$ and creating a mask $m$.
+  id: totrans-125
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在 $\theta$ 上运行修剪，并创建一个掩码 $m$。
 - en: The “winning ticket” initialization config is $m \odot \theta_0$.
+  id: totrans-126
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: “中奖票”初始化配置为 $m \odot \theta_0$。
 - en: Only training the small “winning ticket” subset of parameters with the initial
     values as found in step 1, the model is able to achieve the same level of accuracy
     as in step 2\. It turns out a large parameter space is not needed in the final
     solution representation, but needed for training as it provides a big pool of
     initialization configs of many much smaller subnetworks.
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: 只训练具有步骤1中找到的初始值的小“中奖票”参数子集，模型能够实现与步骤2中相同水平的准确性。结果表明，最终解表示中不需要大的参数空间，但在训练中需要，因为它提供了许多更小子网络的初始化配置的大池。
 - en: The lottery ticket hypothesis opens a new perspective about interpreting and
     dissecting deep neural network results. Many interesting following-up works are
     on the way.
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: “中奖票”假设为解释和剖析深度神经网络结果开辟了新的视角。许多有趣的后续工作正在进行中。
 - en: Experiments
+  id: totrans-129
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 实验
 - en: After seeing all the interesting findings above, it should be pretty fun to
     reproduce them. Some results are easily to reproduce than others. Details are
     described below. My code is available on github [lilianweng/generalization-experiment](https://github.com/lilianweng/generalization-experiment).
+  id: totrans-130
   prefs: []
   type: TYPE_NORMAL
+  zh: 在看到以上所有有趣的发现之后，复现它们应该是非常有趣的。有些结果比其他结果更容易复现。具体细节如下。我的代码可以在 github 上找到 [lilianweng/generalization-experiment](https://github.com/lilianweng/generalization-experiment)。
 - en: '**New Risk Curve for DL Models**'
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
+  zh: '**DL 模型的新风险曲线**'
 - en: 'This is the trickiest one to reproduce. The authors did give me a lot of good
     advice and I appreciate it a lot. Here are a couple of noticeable settings in
     their experiments:'
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是最棘手的一个要复现。作者们给了我很多好建议，我非常感激。以下是他们实验中一些值得注意的设置：
 - en: There are no regularization terms like weight decay, dropout.
+  id: totrans-133
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 没有像权重衰减、dropout 这样的正则化项。
 - en: In Fig 3, the training set contains 4k samples. It is only sampled once and
     fixed for all the models. The evaluation uses the full MNIST test set.
+  id: totrans-134
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在图3中，训练集包含4k个样本。只进行一次采样，并对所有模型固定。评估使用完整的 MNIST 测试集。
 - en: Each network is trained for a long time to achieve near-zero training risk.
     The learning rate is adjusted differently for models of different sizes.
+  id: totrans-135
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 每个网络都经过长时间训练，以实现接近零的训练风险。学习率针对不同大小的模型进行了不同的调整。
 - en: 'To make the model less sensitive to the initialization in the under-parameterization
     region, their experiments adopted a *“weight reuse”* scheme: the parameters obtained
     from training a smaller neural network are used as initialization for training
     larger networks.'
+  id: totrans-136
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 为了使模型在欠参数化区域对初始化不那么敏感，他们的实验采用了*“重复利用权重”*方案：从训练较小的神经网络获得的参数被用作训练较大网络的初始化。
 - en: I did not train or tune each model long enough to get perfect training performance,
     but evaluation error indeed shows a special twist around the interpolation threshold,
     different from training error. For example, for MNIST, the threshold is the number
     of training samples times the number of classes (10), that is 40000.
+  id: totrans-137
   prefs: []
   type: TYPE_NORMAL
+  zh: 我没有训练或调整每个模型足够长的时间以获得完美的训练性能，但评估错误确实显示了在插值阈值周围的特殊转折，与训练错误不同。例如，对于MNIST，阈值是训练样本数乘以类别数（10），即40000。
 - en: 'The x-axis is the number of model parameters: (28 * 28 + 1) * num. units +
     num. units * 10, in logarithm.'
+  id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: x轴是模型参数的数量：（28 * 28 + 1）* num. units + num. units * 10，取对数。
 - en: '![](../Images/9078e18c15ef86ff337a1b3183ca48cb.png)'
+  id: totrans-139
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9078e18c15ef86ff337a1b3183ca48cb.png)'
 - en: '**Layers are not Created Equal**'
+  id: totrans-140
   prefs: []
   type: TYPE_NORMAL
+  zh: '**层并非一视同仁**'
 - en: This one is fairly easy to reproduce. See my implementation [here](https://github.com/lilianweng/generalization-experiment/blob/master/layer_equality.py).
+  id: totrans-141
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个实验很容易复现。查看我的实现[这里](https://github.com/lilianweng/generalization-experiment/blob/master/layer_equality.py)。
 - en: In the first experiment, I used a three-layer fc networks with 256 units in
     each layer. Layer 0 is the input layer while layer 3 is the output. The network
     is trained on MNIST for 100 epochs.
+  id: totrans-142
   prefs: []
   type: TYPE_NORMAL
+  zh: 在第一个实验中，我使用了每层有256个单元的三层全连接网络。第0层是输入层，第3层是输出层。该网络在MNIST上进行了100个epochs的训练。
 - en: '![](../Images/7baf0fcb1323b2110cc0e66dbe001c76.png)'
+  id: totrans-143
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/7baf0fcb1323b2110cc0e66dbe001c76.png)'
 - en: In the second experiment, I used a four-layer fc networks with 128 units in
     each layer. Other settings are the same as experiment 1.
+  id: totrans-144
   prefs: []
   type: TYPE_NORMAL
+  zh: 在第二个实验中，我使用了每层有128个单元的四层全连接网络。其他设置与实验1相同。
 - en: '![](../Images/c962003bfe971bdd492e82b7e5118591.png)'
+  id: totrans-145
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/c962003bfe971bdd492e82b7e5118591.png)'
 - en: '**Intrinsic Dimension Measurement**'
+  id: totrans-146
   prefs: []
   type: TYPE_NORMAL
+  zh: '**内在维度测量**'
 - en: To correctly map the $d$-dimensional subspace to the full parameter space, the
     projection matrix $\mathbf{P}$ should have orthogonal columns. Because the production
     $\mathbf{P}\theta^{(d)}$ is the sum of columns of $\mathbf{P}$ scaled by corresponding
     scalar values in the $d$-dim vector, $\sum_{i=1}^d \theta^{(d)}_i \mathbf{P}^\top_{(:,i)}$,
     it is better to fully utilize the subspace with orthogonal columns in $\mathbf{P}$.
+  id: totrans-147
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了正确地将$d$维子空间映射到完整的参数空间，投影矩阵$\mathbf{P}$应具有正交列。因为乘积$\mathbf{P}\theta^{(d)}$是$\mathbf{P}$的列的和，乘以$d$维向量中相应的标量值，$\sum_{i=1}^d
+    \theta^{(d)}_i \mathbf{P}^\top_{(:,i)}$，最好充分利用具有正交列的$\mathbf{P}$中的子空间。
 - en: My implementation follows a naive approach by sampling a large matrix with independent
     entries from a standard normal distribution. The columns are expected to be independent
     in a high dimension space and thus to be orthogonal. This works when the dimension
     is not too large. When exploring with a large $d$, there are methods for creating
     sparse projection matrices, which is what the intrinsic dimension paper suggested.
+  id: totrans-148
   prefs: []
   type: TYPE_NORMAL
+  zh: 我的实现采用了一种朴素的方法，通过从标准正态分布中抽取独立条目的大矩阵。在高维空间中，预期列是独立的，因此是正交的。当维度不太大时，这种方法有效。当探索大的$d$时，有一些方法可以创建稀疏投影矩阵，这正是内在维度论文建议的。
 - en: 'Here are experiment runs on two networks: (left) a two-layer fc network with
     64 units in each layer and (right) a one-layer fc network with 128 hidden units,
     trained on 10% of MNIST. For every $d$, the model is trained for 100 epochs. See
     the [code](https://github.com/lilianweng/generalization-experiment/blob/master/intrinsic_dimensions.py)
     [here](https://github.com/lilianweng/generalization-experiment/blob/master/intrinsic_dimensions_measurement.py).'
+  id: totrans-149
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里展示了两个网络的实验运行结果：（左）每层有64个单元的两层全连接网络和（右）隐藏单元为128个的单层全连接网络，在MNIST的10%数据上进行训练。对于每个$d$，模型训练了100个epochs。查看[这里](https://github.com/lilianweng/generalization-experiment/blob/master/intrinsic_dimensions.py)的代码和[这里](https://github.com/lilianweng/generalization-experiment/blob/master/intrinsic_dimensions_measurement.py)。
 - en: '![](../Images/dafb7b4f68c894885c6a5ff98514d846.png)'
+  id: totrans-150
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/dafb7b4f68c894885c6a5ff98514d846.png)'
 - en: '* * *'
+  id: totrans-151
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'Cited as:'
+  id: totrans-152
   prefs: []
   type: TYPE_NORMAL
+  zh: '引用为:'
 - en: '[PRE0]'
+  id: totrans-153
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: References
+  id: totrans-154
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: '[1] Wikipedia page on [Occam’s Razor](https://en.wikipedia.org/wiki/Occam%27s_razor).'
+  id: totrans-155
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] 维基百科关于[奥卡姆剃刀](https://en.wikipedia.org/wiki/Occam%27s_razor)的页面。'
 - en: '[2] [Occam’s Razor](http://pespmc1.vub.ac.be/OCCAMRAZ.html) on Principia Cybernetica
     Web.'
+  id: totrans-156
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] [奥卡姆剃刀](http://pespmc1.vub.ac.be/OCCAMRAZ.html) 在 Principia Cybernetica
+    网站上的页面。'
 - en: '[3] Peter Grunwald. [“A Tutorial Introduction to the Minimum Description Length
     Principle”](https://arxiv.org/abs/math/0406077). 2004.'
+  id: totrans-157
   prefs: []
   type: TYPE_NORMAL
+  zh: '[3] Peter Grunwald。[“最小描述长度原理的教程介绍”](https://arxiv.org/abs/math/0406077)。2004。'
 - en: '[4] Ian Goodfellow, et al. [Deep Learning](https://www.deeplearningbook.org/).
     2016\. [Sec 6.4.1](https://www.deeplearningbook.org/contents/mlp.html).'
+  id: totrans-158
   prefs: []
   type: TYPE_NORMAL
+  zh: '[4] Ian Goodfellow等人。[深度学习](https://www.deeplearningbook.org/)。2016。[Sec 6.4.1](https://www.deeplearningbook.org/contents/mlp.html)。'
 - en: '[5] Zhang, Chiyuan, et al. [“Understanding deep learning requires rethinking
     generalization.”](https://arxiv.org/abs/1611.03530) ICLR 2017.'
+  id: totrans-159
   prefs: []
   type: TYPE_NORMAL
+  zh: '[5] 张赤远等人。[“理解深度学习需要重新思考泛化。”](https://arxiv.org/abs/1611.03530) ICLR 2017。'
 - en: '[6] Shibani Santurkar, et al. [“How does batch normalization help optimization?.”](https://arxiv.org/abs/1805.11604)
     NIPS 2018.'
+  id: totrans-160
   prefs: []
   type: TYPE_NORMAL
+  zh: '[6] Shibani Santurkar等人。[“批量归一化如何帮助优化？”](https://arxiv.org/abs/1805.11604)
+    NIPS 2018。'
 - en: '[7] Mikhail Belkin, et al. [“Reconciling modern machine learning and the bias-variance
     trade-off.”](https://arxiv.org/abs/1812.11118) arXiv:1812.11118, 2018.'
+  id: totrans-161
   prefs: []
   type: TYPE_NORMAL
+  zh: '[7] Mikhail Belkin等人。[“调和现代机器学习和偏差-方差权衡。”](https://arxiv.org/abs/1812.11118)
+    arXiv:1812.11118，2018。'
 - en: '[8] Chiyuan Zhang, et al. [“Are All Layers Created Equal?”](https://arxiv.org/abs/1902.01996)
     arXiv:1902.01996, 2019.'
+  id: totrans-162
   prefs: []
   type: TYPE_NORMAL
+  zh: '[8] Chiyuan Zhang等人。[“所有层是否平等？”](https://arxiv.org/abs/1902.01996) arXiv:1902.01996，2019。'
 - en: '[9] Chunyuan Li, et al. [“Measuring the intrinsic dimension of objective landscapes.”](https://arxiv.org/abs/1804.08838)
     ICLR 2018.'
+  id: totrans-163
   prefs: []
   type: TYPE_NORMAL
+  zh: '[9] Chunyuan Li等人。[“测量客观景观的内在维度。”](https://arxiv.org/abs/1804.08838) ICLR 2018。'
 - en: '[10] Jonathan Frankle and Michael Carbin. [“The lottery ticket hypothesis:
     Finding sparse, trainable neural networks.”](https://arxiv.org/abs/1803.03635)
     ICLR 2019.'
+  id: totrans-164
   prefs: []
   type: TYPE_NORMAL
+  zh: '[10] Jonathan Frankle和Michael Carbin。[“彩票票据假设：寻找稀疏、可训练的神经网络。”](https://arxiv.org/abs/1803.03635)
+    ICLR 2019。'

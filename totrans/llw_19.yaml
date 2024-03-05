@@ -1,15 +1,21 @@
 - en: Exploration Strategies in Deep Reinforcement Learning
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 深度强化学习中的探索策略
 - en: 原文：[https://lilianweng.github.io/posts/2020-06-07-exploration-drl/](https://lilianweng.github.io/posts/2020-06-07-exploration-drl/)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://lilianweng.github.io/posts/2020-06-07-exploration-drl/](https://lilianweng.github.io/posts/2020-06-07-exploration-drl/)
 - en: '[Updated on 2020-06-17: Add [“exploration via disagreement”](#exploration-via-disagreement)
     in the “Forward Dynamics” [section](#forward-dynamics).'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2020-06-17更新：在“前向动力学”[部分](#forward-dynamics)中添加[“通过分歧进行探索”](#exploration-via-disagreement)。'
 - en: '[Exploitation versus exploration](https://lilianweng.github.io/posts/2018-01-23-multi-armed-bandit/)
     is a critical topic in Reinforcement Learning. We’d like the RL agent to find
     the best solution as fast as possible. However, in the meantime, committing to
@@ -18,192 +24,273 @@
     [algorithms](https://lilianweng.github.io/posts/2018-04-08-policy-gradient/) that
     optimize for the best returns can achieve good exploitation quite efficiently,
     while exploration remains more like an open topic.'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[开发与探索](https://lilianweng.github.io/posts/2018-01-23-multi-armed-bandit/)是强化学习中的一个关键主题。我们希望RL代理尽快找到最佳解决方案。然而，同时过快地承诺解决方案而没有足够的探索听起来相当糟糕，因为这可能导致局部最小值或完全失败。现代[RL](https://lilianweng.github.io/posts/2018-02-19-rl-overview/)
+    [算法](https://lilianweng.github.io/posts/2018-04-08-policy-gradient/)优化以获得最佳回报可以相当有效地实现良好的开发，而探索仍然更像是一个开放性主题。'
 - en: I would like to discuss several common exploration strategies in Deep RL here.
     As this is a very big topic, my post by no means can cover all the important subtopics.
     I plan to update it periodically and keep further enriching the content gradually
     in time.
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: 我想在这里讨论深度RL中几种常见的探索策略。由于这是一个非常大的主题，我的帖子绝对不能涵盖所有重要的子主题。我计划定期更新，并逐渐丰富内容。
 - en: Classic Exploration Strategies
+  id: totrans-5
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 经典探索策略
 - en: As a quick recap, let’s first go through several classic exploration algorithms
     that work out pretty well in the multi-armed bandit problem or simple tabular
     RL.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 作为一个快速回顾，让我们首先看看在多臂老虎机问题或简单的表格RL中表现相当不错的几种经典探索算法。
 - en: '**Epsilon-greedy**: The agent does random exploration occasionally with probability
     $\epsilon$ and takes the optimal action most of the time with probability $1-\epsilon$.'
+  id: totrans-7
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**ε-贪心**：代理偶尔以概率 $\epsilon$ 进行随机探索，并大部分时间以概率 $1-\epsilon$ 采取最优行动。'
 - en: '**Upper confidence bounds**: The agent selects the greediest action to maximize
     the upper confidence bound $\hat{Q}_t(a) + \hat{U}_t(a)$, where $\hat{Q}_t(a)$
     is the average rewards associated with action $a$ up to time $t$ and $\hat{U}_t(a)$
     is a function reversely proportional to how many times action $a$ has been taken.
     See [here](https://lilianweng.github.io/posts/2018-01-23-multi-armed-bandit/#upper-confidence-bounds)
     for more details.'
+  id: totrans-8
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**上置信界**：代理人选择最贪婪的行动以最大化上置信界 $\hat{Q}_t(a) + \hat{U}_t(a)$，其中 $\hat{Q}_t(a)$
+    是与行动 $a$ 相关的平均奖励，直到时间 $t$，而 $\hat{U}_t(a)$ 是一个与行动 $a$ 被采取的次数反比的函数。更多细节请参见[这里](https://lilianweng.github.io/posts/2018-01-23-multi-armed-bandit/#upper-confidence-bounds)。'
 - en: '**Boltzmann exploration**: The agent draws actions from a [boltzmann distribution](https://en.wikipedia.org/wiki/Boltzmann_distribution)
     (softmax) over the learned Q values, regulated by a temperature parameter $\tau$.'
+  id: totrans-9
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**玻尔兹曼探索**：代理从学习到的Q值上的[玻尔兹曼分布](https://en.wikipedia.org/wiki/Boltzmann_distribution)（softmax）中抽取行动，由温度参数
+    $\tau$ 调节。'
 - en: '**Thompson sampling**: The agent keeps track of a belief over the probability
     of optimal actions and samples from this distribution. See [here](https://lilianweng.github.io/posts/2018-01-23-multi-armed-bandit/#thompson-sampling)
     for more details.'
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**汤普森抽样**：代理人跟踪对最优行动概率的信念，并从该分布中抽样。更多细节请参见[这里](https://lilianweng.github.io/posts/2018-01-23-multi-armed-bandit/#thompson-sampling)。'
 - en: 'The following strategies could be used for better exploration in deep RL training
     when neural networks are used for function approximation:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 当神经网络用于函数逼近时，以下策略可用于深度RL训练中更好的探索：
 - en: '**Entropy loss term**: Add an entropy term $H(\pi(a \vert s))$ into the loss
     function, encouraging the policy to take diverse actions.'
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**熵损失项**：在损失函数中添加一个熵项 $H(\pi(a \vert s))$，鼓励策略采取多样化的行动。'
 - en: '**Noise-based Exploration**: Add noise into the observation, action or even
     parameter space ([Fortunato, et al. 2017](https://arxiv.org/abs/1706.10295), [Plappert,
     et al. 2017](https://arxiv.org/abs/1706.01905)).'
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**基于噪音的探索**：向观察、行动甚至参数空间添加噪音（[Fortunato等人，2017](https://arxiv.org/abs/1706.10295)，[Plappert等人，2017](https://arxiv.org/abs/1706.01905)）。'
 - en: Key Exploration Problems
+  id: totrans-14
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 关键探索问题
 - en: Good exploration becomes especially hard when the environment rarely provides
     rewards as feedback or the environment has distracting noise. Many exploration
     strategies are proposed to solve one or both of the following problems.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 当环境很少提供奖励作为反馈或环境存在干扰噪音时，良好的探索变得特别困难。许多探索策略被提出来解决以下一个或两个问题。
 - en: The Hard-Exploration Problem
+  id: totrans-16
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 难探索问题
 - en: The “hard-exploration” problem refers to exploration in an environment with
     very sparse or even deceptive reward. It is difficult because random exploration
     in such scenarios can rarely discover successful states or obtain meaningful feedback.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: “难探索”问题指的是在具有非常稀疏甚至具有欺骗性奖励的环境中进行探索。这很困难，因为在这种情况下的随机探索很少能发现成功的状态或获得有意义的反馈。
 - en: '[Montezuma’s Revenge](https://en.wikipedia.org/wiki/Montezuma%27s_Revenge_(video_game))
     is a concrete example for the hard-exploration problem. It remains as a few challenging
     games in Atari for DRL to solve. Many papers use Montezuma’s Revenge to benchmark
     their results.'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: '[蒙特祖玛的复仇](https://en.wikipedia.org/wiki/Montezuma%27s_Revenge_(video_game))是难探索问题的一个具体例子。它仍然是Atari中几个具有挑战性的游戏之一，供深度强化学习解决。许多论文使用蒙特祖玛的复仇来评估他们的结果。'
 - en: The Noisy-TV Problem
+  id: totrans-19
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 嘈杂电视问题
 - en: The “Noisy-TV” problem started as a thought experiment in [Burda, et al (2018)](https://arxiv.org/abs/1810.12894).
     Imagine that an RL agent is rewarded with seeking novel experience, a TV with
     uncontrollable & unpredictable random noise outputs would be able to attract the
     agent’s attention forever. The agent obtains new rewards from noisy TV consistently,
     but it fails to make any meaningful progress and becomes a “couch potato”.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: “嘈杂电视”问题起初是在[Burda等人（2018）](https://arxiv.org/abs/1810.12894)的思想实验中提出的。想象一下，一个强化学习代理被奖励寻找新颖的体验，一个带有不可控制和不可预测随机噪音输出的电视能够永远吸引代理的注意力。代理持续从嘈杂的电视中获得新奖励，但它无法取得任何有意义的进展，变成了一个“沙发土豆”。
 - en: '![](../Images/44e3b606abfd6d00ad3580e63a53ba59.png)'
+  id: totrans-21
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/44e3b606abfd6d00ad3580e63a53ba59.png)'
 - en: 'Fig. 1\. An agent is rewarded with novel experience in the experiment. If a
     maze has a noisy TC set up, the agent would be attracted and stop moving in the
     maze. (Image source: OpenAI Blog: ["Reinforcement Learning with Prediction-Based
     Rewards"](https://openai.com/blog/reinforcement-learning-with-prediction-based-rewards/))'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 图1\. 在实验中，一个代理被奖励获得新颖的体验。如果一个迷宫设置了一个嘈杂的电视，代理将被吸引并停止在迷宫中移动。（图片来源：OpenAI博客：["基于预测奖励的强化学习"](https://openai.com/blog/reinforcement-learning-with-prediction-based-rewards/)）
 - en: Intrinsic Rewards as Exploration Bonuses
+  id: totrans-23
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 作为探索奖励的内在奖励
 - en: One common approach to better exploration, especially for solving the [hard-exploration](#the-hard-exploration-problem)
     problem, is to augment the environment reward with an additional bonus signal
     to encourage extra exploration. The policy is thus trained with a reward composed
     of two terms, $r_t = r^e_t + \beta r^i_t$, where $\beta$ is a hyperparameter adjusting
     the balance between exploitation and exploration.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个常见的改进探索方法，特别是用于解决[难探索](#the-hard-exploration-problem)问题的方法，是通过额外的奖励信号增加环境奖励，以鼓励额外的探索。因此，策略是通过由两个项组成的奖励进行训练的，$r_t
+    = r^e_t + \beta r^i_t$，其中 $\beta$ 是调整开发和探索之间平衡的超参数。
 - en: $r^e_t$ is an *extrinsic* reward from the environment at time $t$, defined according
     to the task in hand.
+  id: totrans-25
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $r^e_t$ 是时间 $t$ 环境中的*外在*奖励，根据手头的任务定义。
 - en: $r^i_t$ is an *intrinsic* exploration bonus at time $t$.
+  id: totrans-26
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $r^i_t$ 是时间 $t$ 的*内在*探索奖励。
 - en: This intrinsic reward is somewhat inspired by *intrinsic motivation* in psychology
     ([Oudeyer & Kaplan, 2008](https://www.researchgate.net/profile/Pierre-Yves_Oudeyer/publication/29614795_How_can_we_define_intrinsic_motivation/links/09e415107f1b4c8041000000/How-can-we-define-intrinsic-motivation.pdf)).
     Exploration driven by curiosity might be an important way for children to grow
     and learn. In other words, exploratory activities should be rewarding intrinsically
     in the human mind to encourage such behavior. The intrinsic rewards could be correlated
     with curiosity, surprise, familiarity of the state, and many other factors.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种内在奖励在一定程度上受到了心理学中*内在动机*的启发（[Oudeyer & Kaplan, 2008](https://www.researchgate.net/profile/Pierre-Yves_Oudeyer/publication/29614795_How_can_we_define_intrinsic_motivation/links/09e415107f1b4c8041000000/How-can-we-define-intrinsic-motivation.pdf)）。由好奇心驱动的探索可能是孩子成长和学习的重要方式。换句话说，在人类心智中，探索性活动应该在内在上具有奖励性，以鼓励这种行为。内在奖励可能与好奇心、惊讶、状态的熟悉度以及许多其他因素相关。
 - en: 'Same ideas can be applied to RL algorithms. In the following sections, methods
     of bonus-based exploration rewards are roughly grouped into two categories:'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 相同的思想可以应用于强化学习算法。在接下来的章节中，基于奖励的探索方法大致分为两类：
 - en: Discovery of novel states
+  id: totrans-29
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 发现新领域
 - en: Improvement of the agent’s knowledge about the environment.
+  id: totrans-30
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 改善代理对环境的知识。
 - en: Count-based Exploration
+  id: totrans-31
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 基于计数的探索
 - en: If we consider intrinsic rewards as rewarding conditions that surprise us, we
     need a way to measure whether a state is novel or appears often. One intuitive
     way is to count how many times a state has been encountered and to assign a bonus
     accordingly. The bonus guides the agent’s behavior to prefer rarely visited states
     to common states. This is known as the **count-based exploration** method.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们将内在奖励视为让我们感到惊讶的奖励条件，我们需要一种方法来衡量一个状态是新颖的还是经常出现的。一种直观的方法是计算一个状态被遇到的次数，并相应地分配一个奖励。这个奖励引导代理的行为，使其更倾向于罕见的状态而不是常见的状态。这被称为**基于计数的探索**方法。
 - en: Let $N_n(s)$ be the *empirical count* function that tracks the real number of
     visits of a state $s$ in the sequence of $s_{1:n}$. Unfortunately, using $N_n(s)$
     for exploration directly is not practical, because most of the states would have
     $N_n(s)=0$, especially considering that the state space is often continuous or
     high-dimensional. We need an non-zero count for most states, even when they haven’t
     been seen before.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 让 $N_n(s)$ 是跟踪状态 $s$ 在序列 $s_{1:n}$ 中实际访问次数的*经验计数*函数。不幸的是，直接使用 $N_n(s)$ 进行探索是不切实际的，因为大多数状态的
+    $N_n(s)=0$，特别是考虑到状态空间通常是连续或高维的。即使这些状态以前从未见过，大多数状态都需要一个非零计数。
 - en: Counting by Density Model
+  id: totrans-34
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 通过密度模型计数
 - en: '[Bellemare, et al. (2016)](https://arxiv.org/abs/1606.01868) used a **density
     model** to approximate the frequency of state visits and a novel algorithm for
     deriving a *pseudo-count* from this density model. Let’s first define a conditional
     probability over the state space, $\rho_n(s) = \rho(s \vert s_{1:n})$ as the probability
     of the $(n+1)$-th state being $s$ given the first $n$ states are $s_{1:n}$. To
     measure this empirically, we can simply use $N_n(s)/n$.'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Bellemare等人（2016）](https://arxiv.org/abs/1606.01868) 使用了一个**密度模型**来近似状态访问的频率，并提出了一种从这个密度模型中导出*伪计数*的新算法。让我们首先定义一个关于状态空间的条件概率，$\rho_n(s)
+    = \rho(s \vert s_{1:n})$，表示给定前 $n$ 个状态为 $s_{1:n}$ 时第 $(n+1)$ 个状态为 $s$ 的概率。为了在经验上衡量这一点，我们可以简单地使用
+    $N_n(s)/n$。'
 - en: Let’s also define a *recoding probability* of a state $s$ as the probability
     assigned by the density model to $s$ *after observing a new occurrence of* $s$,
     $\rho’_n(s) = \rho(s \vert s_{1:n}s)$.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们还定义一个状态 $s$ 的*重新编码概率*，即在观察到 $s$ 的新出现后，密度模型分配给 $s$ 的概率，$\rho’_n(s) = \rho(s
+    \vert s_{1:n}s)$。
 - en: 'The paper introduced two concepts to better regulate the density model, a *pseudo-count*
     function $\hat{N}_n(s)$ and a *pseudo-count total* $\hat{n}$. As they are designed
     to imitate an empirical count function, we would have:'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 该论文引入了两个概念来更好地调节密度模型，一个是*伪计数*函数 $\hat{N}_n(s)$，另一个是*伪计数总数* $\hat{n}$。由于它们旨在模拟一个经验计数函数，我们会有：
 - en: $$ \rho_n(s) = \frac{\hat{N}_n(s)}{\hat{n}} \leq \rho'_n(s) = \frac{\hat{N}_n(s)
     + 1}{\hat{n} + 1} $$
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \rho_n(s) = \frac{\hat{N}_n(s)}{\hat{n}} \leq \rho'_n(s) = \frac{\hat{N}_n(s)
+    + 1}{\hat{n} + 1} $$
 - en: 'The relationship between $\rho_n(x)$ and $\rho’_n(x)$ requires the density
     model to be *learning-positive*: for all $s_{1:n} \in \mathcal{S}^n$ and all $s
     \in \mathcal{S}$, $\rho_n(s) \leq \rho’_n(s)$. In other words, After observing
@@ -211,29 +298,46 @@
     Apart from being learning-positive, the density model should be trained completely
     *online* with non-randomized mini-batches of experienced states, so naturally
     we have $\rho’_n = \rho_{n+1}$.'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: $\rho_n(x)$ 和 $\rho’_n(x)$ 之间的关系要求密度模型是*学习正向*的：对于所有 $s_{1:n} \in \mathcal{S}^n$
+    和所有 $s \in \mathcal{S}$，$\rho_n(s) \leq \rho’_n(s)$。 换句话说，观察到一个 $s$ 实例后，密度模型对相同的
+    $s$ 的预测应该增加。 除了是学习正向外，密度模型应该完全*在线*训练，使用非随机的经验状态小批次，因此自然地我们有 $\rho’_n = \rho_{n+1}$。
 - en: 'The pseudo-count can be computed from $\rho_n(s)$ and $\rho’_n(s)$ after solving
     the above linear system:'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 伪计数可以通过解决上述线性系统后从 $\rho_n(s)$ 和 $\rho’_n(s)$ 计算得出：
 - en: $$ \hat{N}_n(s) = \hat{n} \rho_n(s) = \frac{\rho_n(s)(1 - \rho'_n(s))}{\rho'_n(s)
     - \rho_n(s)} $$
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \hat{N}_n(s) = \hat{n} \rho_n(s) = \frac{\rho_n(s)(1 - \rho'_n(s))}{\rho'_n(s)
+    - \rho_n(s)} $$
 - en: 'Or estimated by the *prediction gain (PG)*:'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 或者通过*预测增益（PG）*估计：
 - en: $$ \hat{N}_n(s) \approx (e^{\text{PG}_n(s)} - 1)^{-1} = (e^{\log \rho'_n(s)
     - \log \rho(s)} - 1)^{-1} $$
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \hat{N}_n(s) \approx (e^{\text{PG}_n(s)} - 1)^{-1} = (e^{\log \rho'_n(s)
+    - \log \rho(s)} - 1)^{-1} $$
 - en: A common choice of a count-based intrinsic bonus is $r^i_t = N(s_t, a_t)^{-1/2}$
     (as in MBIE-EB; [Strehl & Littman, 2008](https://www.ics.uci.edu/~dechter/courses/ics-295/fall-2019/papers/2008-littman-aij-main.pdf)).
     The pseudo-count-based exploration bonus is shaped in a similar form, $r^i_t =
     \big(\hat{N}_n(s_t, a_t) + 0.01 \big)^{-1/2}$.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 基于计数的内在奖励的常见选择是 $r^i_t = N(s_t, a_t)^{-1/2}$（如MBIE-EB中；[Strehl & Littman, 2008](https://www.ics.uci.edu/~dechter/courses/ics-295/fall-2019/papers/2008-littman-aij-main.pdf)）。基于伪计数的探索奖励以类似形式塑造，$r^i_t
+    = \big(\hat{N}_n(s_t, a_t) + 0.01 \big)^{-1/2}$。
 - en: Experiments in [Bellemare et al., (2016)](https://arxiv.org/abs/1606.01868)
     adopted a simple [CTS](http://proceedings.mlr.press/v32/bellemare14.html) (Context
     Tree Switching) density model to estimate pseudo-counts. The CTS model takes as
@@ -244,18 +348,28 @@
     al. (2017)](https://arxiv.org/abs/1703.01310) improved the approach by training
     a PixelCNN ([van den Oord et al., 2016](https://arxiv.org/abs/1606.05328)) as
     the density model.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Bellemare等人（2016）](https://arxiv.org/abs/1606.01868)的实验采用了一个简单的[CTS](http://proceedings.mlr.press/v32/bellemare14.html)（上下文树切换）密度模型来估计伪计数。
+    CTS模型以2D图像作为输入，并根据位置相关的L形滤波器的乘积为其分配概率，其中每个滤波器的预测由在过去图像上训练的CTS算法给出。 CTS模型简单但在表达能力、可扩展性和数据效率方面受到限制。
+    在随后的一篇论文中，[Georg Ostrovski等人（2017）](https://arxiv.org/abs/1703.01310)通过训练PixelCNN（[van
+    den Oord等人，2016](https://arxiv.org/abs/1606.05328)）作为密度模型改进了该方法。'
 - en: The density model can also be a Gaussian Mixture Model as in [Zhao & Tresp (2018)](https://arxiv.org/abs/1902.08039).
     They used a variational GMM to estimate the density of trajectories (e.g. concatenation
     of a sequence of states) and its predicted probabilities to guide prioritization
     in experience replay in off-policy setting.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 密度模型也可以是高斯混合模型，就像[Zhao & Tresp (2018)](https://arxiv.org/abs/1902.08039)中所述。
+    他们使用变分GMM来估计轨迹的密度（例如状态序列的串联）及其预测概率，以指导经验重播中的优先级设置。
 - en: Counting after Hashing
+  id: totrans-47
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 哈希计数
 - en: 'Another idea to make it possible to count high-dimensional states is to map
     states into **hash codes** so that the occurrences of states become trackable
     ([Tang et al. 2017](https://arxiv.org/abs/1611.04717)). The state space is discretized
@@ -263,8 +377,13 @@
     bonus $r^{i}: \mathcal{S} \mapsto \mathbb{R}$ is added to the reward function,
     defined as $r^{i}(s) = {N(\phi(s))}^{-1/2}$, where $N(\phi(s))$ is an empirical
     count of occurrences of $\phi(s)$.'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: '使高维状态可计数的另一个想法是将状态映射到**哈希码**中，以便状态的出现变得可跟踪（[Tang等人，2017](https://arxiv.org/abs/1611.04717)）。
+    状态空间通过哈希函数 $\phi: \mathcal{S} \mapsto \mathbb{Z}^k$ 离散化。 探索奖励 $r^{i}: \mathcal{S}
+    \mapsto \mathbb{R}$ 被添加到奖励函数中，定义为 $r^{i}(s) = {N(\phi(s))}^{-1/2}$，其中 $N(\phi(s))$
+    是 $\phi(s)$ 出现次数的经验计数。'
 - en: '[Tang et al. (2017)](https://arxiv.org/abs/1611.04717) proposed to use *Locality-Sensitive
     Hashing* ([*LSH*](https://en.wikipedia.org/wiki/Locality-sensitive_hashing)) to
     convert continuous, high-dimensional data to discrete hash codes. LSH is a popular
@@ -276,25 +395,37 @@
     if interested.) [SimHash](https://www.cs.princeton.edu/courses/archive/spr04/cos598B/bib/CharikarEstim.pdf)
     is a type of computationally efficient LSH and it measures similarity by angular
     distance:'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: '[唐等人（2017）](https://arxiv.org/abs/1611.04717)提出使用*局部敏感哈希*（[*LSH*](https://en.wikipedia.org/wiki/Locality-sensitive_hashing))将连续的高维数据转换为离散的哈希码。LSH是一种用于基于某些相似性度量查询最近邻居的哈希函数的流行类别。如果哈希方案$x
+    \mapsto h(x)$保留数据点之间的距离信息，则称其为局部敏感，这样，接近的向量获得相似的哈希，而远离的向量具有非常不同的哈希。（如果感兴趣，可以查看[Transformer改进](https://lilianweng.github.io/posts/2020-04-07-the-transformer-family/#LSH)中如何使用LSH。）[SimHash](https://www.cs.princeton.edu/courses/archive/spr04/cos598B/bib/CharikarEstim.pdf)是一种计算效率高的LSH类型，通过角度距离来衡量相似性：'
 - en: $$ \phi(s) = \text{sgn}(A g(s)) \in \{-1, 1\}^k $$
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \phi(s) = \text{sgn}(A g(s)) \in \{-1, 1\}^k $$
 - en: 'where $A \in \mathbb{R}^{k \times D}$ is a matrix with each entry drawn i.i.d.
     from a standard Gaussian and $g: \mathcal{S} \mapsto \mathbb{R}^D$ is an optional
     preprocessing function. The dimension of binary codes is $k$, controlling the
     granularity of the state space discretization. A higher $k$ leads to higher granularity
     and fewer collisions.'
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: '其中$A \in \mathbb{R}^{k \times D}$是一个矩阵，每个条目都从标准高斯分布中独立绘制，$g: \mathcal{S} \mapsto
+    \mathbb{R}^D$是一个可选的预处理函数。二进制码的维度为$k$，控制状态空间离散化的粒度。更高的$k$会导致更高的粒度和更少的碰撞。'
 - en: '![](../Images/ddd3ab2d543ac06a9a65a2c0d88674fb.png)'
+  id: totrans-52
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ddd3ab2d543ac06a9a65a2c0d88674fb.png)'
 - en: 'Fig. 2\. Algorithm of count-based exploration through hashing high-dimensional
     states by SimHash. (Image source: [Tang et al. 2017](https://arxiv.org/abs/1611.04717))'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 图2\. 通过SimHash对高维状态进行哈希计数探索的算法。 （图片来源：[唐等人2017](https://arxiv.org/abs/1611.04717)）
 - en: 'For high-dimensional images, SimHash may not work well on the raw pixel level.
     [Tang et al. (2017)](https://arxiv.org/abs/1611.04717) designed an autoencoder
     (AE) which takes as input states $s$ to learn hash codes. It has one special dense
@@ -302,37 +433,53 @@
     then the sigmoid activation values $b(s)$ of this layer are binarized by rounding
     to their closest binary numbers $\lfloor b(s)\rceil \in \{0, 1\}^D$ as the binary
     hash codes for state $s$. The AE loss over $n$ states includes two terms:'
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于高维图像，SimHash在原始像素级别上可能效果不佳。[唐等人（2017）](https://arxiv.org/abs/1611.04717)设计了一个自动编码器（AE），其输入为状态$s$以学习哈希码。它具有一个特殊的稠密层，由$k$个sigmoid函数组成，作为中间的潜在状态，然后该层的sigmoid激活值$b(s)$通过舍入到最接近的二进制数$\lfloor
+    b(s)\rceil \in \{0, 1\}^D$作为状态$s$的二进制哈希码。对于$n$个状态的AE损失包括两个项：
 - en: $$ \mathcal{L}(\{s_n\}_{n=1}^N) = \underbrace{-\frac{1}{N} \sum_{n=1}^N \log
     p(s_n)}_\text{reconstruction loss} + \underbrace{\frac{1}{N} \frac{\lambda}{K}
     \sum_{n=1}^N\sum_{i=1}^k \min \big \{ (1-b_i(s_n))^2, b_i(s_n)^2 \big\}}_\text{sigmoid
     activation being closer to binary} $$
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathcal{L}(\{s_n\}_{n=1}^N) = \underbrace{-\frac{1}{N} \sum_{n=1}^N \log
+    p(s_n)}_\text{重构损失} + \underbrace{\frac{1}{N} \frac{\lambda}{K} \sum_{n=1}^N\sum_{i=1}^k
+    \min \big \{ (1-b_i(s_n))^2, b_i(s_n)^2 \big\}}_\text{sigmoid 激活更接近二进制} $$
 - en: One problem with this approach is that dissimilar inputs $s_i, s_j$ may be mapped
     to identical hash codes but the AE still reconstructs them perfectly. One can
     imagine replacing the bottleneck layer $b(s)$ with the hash codes $\lfloor b(s)\rceil$,
     but then gradients cannot be back-propagated through the rounding function. Injecting
     uniform noise could mitigate this effect, as the AE has to learn to push the latent
     variable far apart to counteract the noise.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种方法的一个问题是，不相似的输入$s_i, s_j$可能被映射到相同的哈希码，但自动编码器仍然完美地重构它们。可以想象用哈希码$\lfloor b(s)\rceil$替换瓶颈层$b(s)$，但是梯度无法通过舍入函数反向传播。注入均匀噪声可以减轻这种效应，因为自动编码器必须学会将潜变量远离以抵消噪声。
 - en: Prediction-based Exploration
+  id: totrans-57
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 基于预测的探索
 - en: The second category of intrinsic exploration bonuses are rewarded for improvement
     of the agent’s knowledge about the environment. The agent’s familiarity with the
     environment dynamics can be estimated through a prediction model. This idea of
     using a prediction model to measure *curiosity* was actually proposed quite a
     long time ago ([Schmidhuber, 1991](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.45.957)).
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 第二类内在探索奖励是为了奖励代理对环境知识的改进。代理对环境动态的熟悉程度可以通过预测模型估计。使用预测模型来衡量*好奇心*的想法实际上是相当久远的（[Schmidhuber,
+    1991](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.45.957)）。
 - en: Forward Dynamics
+  id: totrans-59
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 前向动力学
 - en: 'Learning a **forward dynamics prediction model** is a great way to approximate
     how much knowledge our model has obtained about the environment and the task MDPs.
     It captures an agent’s capability of predicting the consequence of its own behavior,
@@ -341,13 +488,19 @@
     for providing intrinsic exploration rewards. The higher the prediction error,
     the less familiar we are with that state. The faster the error rate drops, the
     more learning progress signals we acquire.'
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: '学习一个**前向动力学预测模型**是一种很好的途径，可以近似评估我们的模型对环境和任务MDP的了解程度。它捕捉了一个代理预测其行为后果的能力，$f:
+    (s_t, a_t) \mapsto s_{t+1}$。这样的模型不可能完美（例如由于部分观测），误差$e(s_t, a_t) = | f(s_t, a_t)
+    - s_{t+1} |^2_2$可用于提供内在探索奖励。预测误差越高，我们对该状态的熟悉程度就越低。误差率下降得越快，我们获得的学习进展信号就越多。'
 - en: '*Intelligent Adaptive Curiosity* (**IAC**; [Oudeyer, et al. 2007](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.177.7661&rep=rep1&type=pdf))
     sketched an idea of using a forward dynamics prediction model to estimate learning
     progress and assigned intrinsic exploration reward accordingly.'
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: '*智能自适应好奇心*（**IAC**；[Oudeyer, et al. 2007](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.177.7661&rep=rep1&type=pdf)）勾勒了使用前向动力学预测模型估计学习进展并相应分配内在探索奖励的想法。'
 - en: 'IAC relies on a memory which stores all the experiences encountered by the
     robot, $M=\{(s_t, a_t, s_{t+1})\}$ and a forward dynamics model $f$. IAC incrementally
     splits the state space (i.e. sensorimotor space in the context of robotics, as
@@ -356,8 +509,10 @@
     the number of samples is larger than a threshold, and the variance of states in
     each leaf should be minimal. Each tree node is characterized by its exclusive
     set of samples and has its own forward dynamics predictor $f$, named “expert”.'
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: IAC依赖一个存储机器人遇到的所有经验的记忆$M=\{(s_t, a_t, s_{t+1})\}$和一个前向动力学模型$f$。IAC逐步将状态空间（即在机器人技术背景下的感知运动空间，如论文中所讨论的）根据转换样本分割成不同区域，使用类似于决策树分割的过程：当样本数量大于阈值时进行分割，每个叶子中状态的方差应该最小。每个树节点由其独有的样本集特征化，并有自己的前向动力学预测器$f`，称为“专家”。
 - en: 'The prediction error $e_t$ of an expert is pushed into a list associated with
     each region. The *learning progress* is then measured as the difference between
     the mean error rate of a moving window with offset $\tau$ and the current moving
@@ -366,24 +521,36 @@
     window size. So the larger prediction error rate decrease we can achieve, the
     higher intrinsic reward we would assign to the agent. In other words, the agent
     is encouraged to take actions to quickly learn about the environment.'
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 专家的预测误差$e_t$被推送到与每个区域相关联的列表中。然后通过移动窗口的平均误差率与当前移动窗口之间的差异来衡量*学习进展*。内在奖励被定义为跟踪学习进展：$r^i_t
+    = \frac{1}{k}\sum_{i=0}^{k-1}(e_{t-i-\tau} - e_{t-i})$，其中$k$是移动窗口大小。因此，我们能够实现更大的预测误差率下降，我们就会给予代理更高的内在奖励。换句话说，鼓励代理采取行动快速了解环境。
 - en: '![](../Images/846edb389ca86749ca18541c1f242c04.png)'
+  id: totrans-64
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/846edb389ca86749ca18541c1f242c04.png)'
 - en: 'Fig. 3\. Architecture of the IAC (Intelligent Adaptive Curiosity) module: the
     intrinsic reward is assigned w.r.t the learning progress in reducing prediction
     error of the dynamics model. (Image source: [Oudeyer, et al. 2007](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.177.7661&rep=rep1&type=pdf)))'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 图3\. IAC（智能自适应好奇心）模块的架构：内在奖励是根据减少动力学模型预测误差的学习进展而分配的。（图片来源：[Oudeyer, et al. 2007](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.177.7661&rep=rep1&type=pdf)）
 - en: '[Stadie et al. (2015)](https://arxiv.org/abs/1507.00814) trained a forward
     dynamics model in the encoding space defined by $\phi$, $f_\phi: (\phi(s_t), a_t)
     \mapsto \phi(s_{t+1})$. The model’s prediction error at time $T$ is normalized
     by the maximum error up to time $t$, $\bar{e}_t = \frac{e_t}{\max_{i \leq t} e_i}$,
     so it is always between 0 and 1\. The intrinsic reward is defined accordingly:
     $r^i_t = (\frac{\bar{e}_t(s_t, a_t)}{t \cdot C})$, where $C > 0$ is a decay constant.'
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Stadie等人（2015）](https://arxiv.org/abs/1507.00814)在由$\phi$定义的编码空间中训练了一个前向动力学模型，$f_\phi:
+    (\phi(s_t), a_t) \mapsto \phi(s_{t+1})$。该模型在时间$T$的预测误差被时间$t$之前的最大误差归一化，$\bar{e}_t
+    = \frac{e_t}{\max_{i \leq t} e_i}$，因此始终在0和1之间。相应地定义了内在奖励：$r^i_t = (\frac{\bar{e}_t(s_t,
+    a_t)}{t \cdot C})$，其中$C > 0$是一个衰减常数。'
 - en: Encoding the state space via $\phi(.)$ is necessary, as experiments in the paper
     have shown that a dynamics model trained directly on raw pixels has *very poor*
     behavior — assigning same exploration bonuses to all the states. In [Stadie et
@@ -392,8 +559,10 @@
     The AE can be statically trained using a set of images collected by a random agent,
     or dynamically trained together with the policy where the early frames are gathered
     using [$\epsilon$-greedy](#classic-exploration-strategies) exploration.
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过$\phi(.)$对状态空间进行编码是必要的，因为论文中的实验表明，直接在原始像素上训练的动力学模型行为非常糟糕——为所有状态分配相同的探索奖励。在[Stadie等人（2015）](https://arxiv.org/abs/1507.00814)中，编码函数$\phi$是通过自编码器（AE）学习的，$\phi(.)$是AE中的一个输出层。AE可以使用由随机代理收集的一组图像进行静态训练，也可以与策略一起动态训练，其中早期帧是通过[$\epsilon$-贪心](#classic-exploration-strategies)探索收集的。
 - en: 'Instead of autoencoder, *Intrinsic Curiosity Module* (**ICM**; [Pathak, et
     al., 2017](https://arxiv.org/abs/1705.05363)) learns the state space encoding
     $\phi(.)$ with a self-supervised **inverse dynamics** model. Predicting the next
@@ -404,30 +573,45 @@
     incentive for learning them*. By learning an inverse dynamics model $g: (\phi(s_t),
     \phi(s_{t+1})) \mapsto a_t$, the feature space only captures those changes in
     the environment related to the actions of our agent, and ignores the rest.'
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: '*内在好奇心模块*（**ICM**；[Pathak等人，2017](https://arxiv.org/abs/1705.05363)）学习了状态空间编码$\phi(.)$，而不是自编码器。通过自监督的**逆动力学**模型来预测给定代理自身动作的下一个状态并不容易，特别是考虑到环境中的一些因素不能被代理控制或不影响代理。ICM认为，一个良好的状态特征空间应该排除这些因素，因为*它们不能影响代理的行为，因此代理没有学习它们的动机*。通过学习一个逆动力学模型$g:
+    (\phi(s_t), \phi(s_{t+1})) \mapsto a_t$，特征空间只捕捉与我们代理的行为相关的环境变化，忽略其余部分。'
 - en: 'Given a forward model $f$, an inverse dynamics model $g$ and an observation
     $(s_t, a_t, s_{t+1})$:'
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 鉴于前向模型$f$，逆动力学模型$g$和观察$(s_t, a_t, s_{t+1})$：
 - en: $$ g_{\psi_I}(\phi(s_t), \phi(s_{t+1})) = \hat{a}_t \quad f_{\psi_F}(\phi(s_t),
     a_t) = \hat{\phi}(s_{t+1}) \quad r_t^i = \| \hat{\phi}(s_{t+1}) - \phi(s_{t+1})
     \|_2^2 $$
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ g_{\psi_I}(\phi(s_t), \phi(s_{t+1})) = \hat{a}_t \quad f_{\psi_F}(\phi(s_t),
+    a_t) = \hat{\phi}(s_{t+1}) \quad r_t^i = \| \hat{\phi}(s_{t+1}) - \phi(s_{t+1})
+    \|_2^2 $$
 - en: Such $\phi(.)$ is expected to be robust to uncontrollable aspects of the environment.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 这样的$\phi(.)$预计对环境中不可控制的方面具有鲁棒性。
 - en: '![](../Images/12d18eeb42413bed56ddea8168a97c74.png)'
+  id: totrans-72
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/12d18eeb42413bed56ddea8168a97c74.png)'
 - en: 'Fig. 4\. ICM (Intrinsic Curiosity Module) assigns the forward dynamics prediction
     error to the agent as the intrinsic reward. This dynamics model operates in a
     state encoding space learned through an inverse dynamics model to exclude environmental
     factors that do not affect the agent''s behavior. (Image source: [Pathak, et al.
     2017](https://arxiv.org/abs/1705.05363))'
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 图4。ICM（内在好奇心模块）将前向动力学预测误差分配给代理作为内在奖励。该动力学模型在通过逆动力学模型学习的状态编码空间中运行，以排除不影响代理行为的环境因素。（图片来源：[Pathak等人，2017](https://arxiv.org/abs/1705.05363)）
 - en: '[Burda, Edwards & Pathak, et al. (2018)](https://arxiv.org/abs/1808.04355)
     did a set of large-scale comparison experiments on purely curiosity-driven learning,
     meaning that only intrinsic rewards are provided to the agent. In this study,
@@ -435,75 +619,110 @@
     of $\phi$ is crucial to learning forward dynamics, which is expected to be *compact*,
     *sufficient* and *stable*, making the prediction task more tractable and filtering
     out irrelevant observation.'
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Burda, Edwards & Pathak, et al. (2018)](https://arxiv.org/abs/1808.04355)进行了一系列纯好奇驱动学习的大规模比较实验，意味着只向代理提供内在奖励。在这项研究中，奖励为$r_t
+    = r^i_t = | f(s_t, a_t) - \phi(s_{t+1})|_2^2$。选择好的$\phi$对于学习前向动态至关重要，预计应该是*紧凑*、*充分*和*稳定*的，使得预测任务更易处理并过滤掉不相关的观察。'
 - en: 'In comparison of 4 encoding functions:'
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 在比较4种编码函数时：
 - en: 'Raw image pixels: No encoding, $\phi(x) = x$.'
+  id: totrans-76
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 原始图像像素：无编码，$\phi(x) = x$。
 - en: 'Random features (RF): Each state is compressed through a fixed random neural
     network.'
+  id: totrans-77
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 随机特征（RF）：每个状态通过固定的随机神经网络进行压缩。
 - en: '[VAE](https://lilianweng.github.io/posts/2018-08-12-vae/#vae-variational-autoencoder):
     The probabilistic encoder is used for encoding, $\phi(x) = q(z \vert x)$.'
+  id: totrans-78
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[VAE](https://lilianweng.github.io/posts/2018-08-12-vae/#vae-variational-autoencoder):
+    概率编码器用于编码，$\phi(x) = q(z \vert x)$。'
 - en: 'Inverse dynamic features (IDF): The same feature space as used in [ICM](#ICM).'
+  id: totrans-79
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 逆动态特征（IDF）：与[ICM](#ICM)中使用的相同特征空间。
 - en: All the experiments have the reward signals normalized by a running estimation
     of standard deviation of the cumulative returns. And all the experiments are running
     in an infinite horizon setting to avoid “done” flag leaking information.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 所有实验中，奖励信号都通过对累积回报的标准差的运行估计进行归一化。所有实验都在无限地平线设置中运行，以避免“完成”标志泄露信息。
 - en: '![](../Images/f4c61e3737c93cf062e52210a5d6d30a.png)'
+  id: totrans-81
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f4c61e3737c93cf062e52210a5d6d30a.png)'
 - en: 'Fig. 5\. The mean reward in different games when training with only curiosity
     signals, generated by different state encoding functions. (Image source: [Burda,
     Edwards & Pathak, et al. 2018](https://arxiv.org/abs/1808.04355))'
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 图5。在只使用好奇信号训练时，不同状态编码函数生成的不同游戏中的平均奖励。（图片来源：[Burda, Edwards & Pathak, et al.
+    2018](https://arxiv.org/abs/1808.04355)）
 - en: Interestingly *random features* turn out to be quite competitive, but in feature
     transfer experiments (i.e. train an agent in Super Mario Bros level 1-1 and then
     test it in another level), learned IDF features can generalize better.
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 有趣的是*随机特征*竟然相当有竞争力，但在特征转移实验中（即在超级马里奥兄弟1-1级中训练一个代理，然后在另一个级别中测试），学习的IDF特征可以更好地泛化。
 - en: They also compared RF and IDF in an environment with a [noisy TV](#the-noisy-tv-problem)
     on. Unsurprisingly the noisy TV drastically slows down the learning and extrinsic
     rewards are much lower in time.
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 他们还在一个有[嘈杂电视](#the-noisy-tv-problem)的环境中比较了RF和IDF。不出所料，嘈杂的电视大大减慢了学习速度，外部奖励在时间上要低得多。
 - en: '![](../Images/3503766466a5a3d08aed14d44e98cc3b.png)'
+  id: totrans-85
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3503766466a5a3d08aed14d44e98cc3b.png)'
 - en: 'Fig. 6\. Experiments using RF and IDF feature encoding in an environment with
     noisy TV on or off. The plot tracks extrinsic reward per episode as the training
     progresses. (Image source: [Burda, Edwards & Pathak, et al. 2018](https://arxiv.org/abs/1808.04355))'
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 图6。在有嘈杂电视开启或关闭的环境中使用RF和IDF特征编码的实验。绘图跟踪了训练过程中每集的外部奖励。（图片来源：[Burda, Edwards &
+    Pathak, et al. 2018](https://arxiv.org/abs/1808.04355)）
 - en: The forward dynamics optimization can be modeled via variational inference as
     well. **VIME** (short for *“Variational information maximizing exploration”*;
     [Houthooft, et al. 2017](https://arxiv.org/abs/1605.09674)) is an exploration
     strategy based on maximization of *information gain* about the agent’s belief
     of environment dynamics. How much additional information has been obtained about
     the forward dynamics can be measured as the reduction in entropy.
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 前向动态优化也可以通过变分推断建模。**VIME**（缩写为*“变分信息最大化探索”*；[Houthooft, et al. 2017](https://arxiv.org/abs/1605.09674)）是一种基于最大化关于代理对环境动态信念的*信息增益*的探索策略。关于前向动态的额外信息量可以通过熵的减少来衡量。
 - en: 'Let $\mathcal{P}$ be the environment transition function, $p(s_{t+1}\vert s_t,
     a_t; \theta)$ be the forward prediction model, parameterized by $\theta \in \Theta$,
     and $\xi_t = \{s_1, a_1, \dots, s_t\}$ be the trajectory history. We would like
     to reduce the entropy after taking a new action and observing the next state,
     which is to maximize the following:'
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 让$\mathcal{P}$表示环境转移函数，$p(s_{t+1}\vert s_t, a_t; \theta)$表示由$\theta \in \Theta$参数化的前向预测模型，$\xi_t
+    = \{s_1, a_1, \dots, s_t\}$表示轨迹历史。我们希望在采取新动作并观察下一个状态后减少熵，即最大化以下内容：
 - en: $$ \begin{aligned} &\sum_t H(\Theta \vert \xi_t, a_t) - H(\Theta \vert S_{t+1},
     \xi_t, a_t) \\ =& I(\Theta; S_{t+1} \vert \xi_t, a_t) \quad \scriptstyle{\text{;
     because } I(X; Y) = I(X) - I(X \vert Y)} \\ =& \mathbb{E}_{s_{t+1} \sim \mathcal{P}(.\vert\xi_t,a_t)}
@@ -513,19 +732,33 @@
     [D_\text{KL}(p(\theta \vert \xi_t, a_t, s_{t+1}) \| p(\theta \vert \xi_t))] \quad
     \scriptstyle{\text{; because } \theta \text{ does not depend on } a_t} \end{aligned}
     $$
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} &\sum_t H(\Theta \vert \xi_t, a_t) - H(\Theta \vert S_{t+1},
+    \xi_t, a_t) \\ =& I(\Theta; S_{t+1} \vert \xi_t, a_t) \quad \scriptstyle{\text{;
+    因为 } I(X; Y) = I(X) - I(X \vert Y)} \\ =& \mathbb{E}_{s_{t+1} \sim \mathcal{P}(.\vert\xi_t,a_t)}
+    [D_\text{KL}(p(\theta \vert \xi_t, a_t, s_{t+1}) \| p(\theta \vert \xi_t, a_t))]
+    \quad \scriptstyle{\text{; 因为 } I(X; Y) = \mathbb{E}_Y [D_\text{KL} (p_{X \vert
+    Y} \| p_X)]} \\ =& \mathbb{E}_{s_{t+1} \sim \mathcal{P}(.\vert\xi_t,a_t)} [D_\text{KL}(p(\theta
+    \vert \xi_t, a_t, s_{t+1}) \| p(\theta \vert \xi_t))] \quad \scriptstyle{\text{;
+    因为 } \theta \text{ 不依赖于 } a_t} \end{aligned} $$
 - en: 'While taking expectation over the new possible states, the agent is expected
     to take a new action to increase the KL divergence (*“information gain”*) between
     its new belief over the prediction model to the old one. This term can be added
     into the reward function as an intrinsic reward: $r^i_t = D_\text{KL} [p(\theta
     \vert \xi_t, a_t, s_{t+1}) | p(\theta \vert \xi_t))]$.'
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 在对新可能状态进行期望时，期望代理采取新动作以增加其对预测模型的新信念与旧信念之间的KL散度（*“信息增益”*）。这个术语可以作为内在奖励添加到奖励函数中：$r^i_t
+    = D_\text{KL} [p(\theta \vert \xi_t, a_t, s_{t+1}) | p(\theta \vert \xi_t))]$。
 - en: However, computing the posterior $p(\theta \vert \xi_t, a_t, s_{t+1})$ is generally
     intractable.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，计算后验$p(\theta \vert \xi_t, a_t, s_{t+1})$通常是不可行的。
 - en: $$ \begin{aligned} p(\theta \vert \xi_t, a_t, s_{t+1}) &= \frac{p(\theta \vert
     \xi_t, a_t) p(s_{t+1} \vert \xi_t, a_t; \theta)}{p(s_{t+1}\vert\xi_t, a_t)} \\
     &= \frac{p(\theta \vert \xi_t) p(s_{t+1} \vert \xi_t, a_t; \theta)}{p(s_{t+1}\vert\xi_t,
@@ -533,25 +766,42 @@
     \frac{\color{red}{p(\theta \vert \xi_t)} p(s_{t+1} \vert \xi_t, a_t; \theta)}{\int_\Theta
     p(s_{t+1}\vert\xi_t, a_t; \theta) \color{red}{p(\theta \vert \xi_t)} d\theta}
     & \scriptstyle{\text{; red part is hard to compute directly.}} \end{aligned} $$
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} p(\theta \vert \xi_t, a_t, s_{t+1}) &= \frac{p(\theta \vert
+    \xi_t, a_t) p(s_{t+1} \vert \xi_t, a_t; \theta)}{p(s_{t+1}\vert\xi_t, a_t)} \\
+    &= \frac{p(\theta \vert \xi_t) p(s_{t+1} \vert \xi_t, a_t; \theta)}{p(s_{t+1}\vert\xi_t,
+    a_t)} & \scriptstyle{\text{; 因为动作不影响信念。}} \\ &= \frac{\color{red}{p(\theta \vert
+    \xi_t)} p(s_{t+1} \vert \xi_t, a_t; \theta)}{\int_\Theta p(s_{t+1}\vert\xi_t,
+    a_t; \theta) \color{red}{p(\theta \vert \xi_t)} d\theta} & \scriptstyle{\text{;
+    红色部分直接计算困难。}} \end{aligned} $$
 - en: Since it is difficult to compute $p(\theta\vert\xi_t)$ directly, a natural choice
     is to approximate it with an alternative distribution $q_\phi(\theta)$. With variational
     lower bound, we know the maximization of $q_\phi(\theta)$ is equivalent to maximizing
     $p(\xi_t\vert\theta)$ and minimizing $D_\text{KL}[q_\phi(\theta) | p(\theta)]$.
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于直接计算$p(\theta\vert\xi_t)$很困难，一个自然的选择是用另一个分布$q_\phi(\theta)$来近似。通过变分下界，我们知道最大化$q_\phi(\theta)$等价于最大化$p(\xi_t\vert\theta)$并最小化$D_\text{KL}[q_\phi(\theta)
+    | p(\theta)]$。
 - en: 'Using the approximation distribution $q$, the intrinsic reward becomes:'
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用近似分布$q$，内在奖励变为：
 - en: $$ r^i_t = D_\text{KL} [q_{\phi_{t+1}}(\theta) \| q_{\phi_t}(\theta))] $$
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ r^i_t = D_\text{KL} [q_{\phi_{t+1}}(\theta) \| q_{\phi_t}(\theta))] $$
 - en: where $\phi_{t+1}$ represents $q$’s parameters associated with the new relief
     after seeing $a_t$ and $s_{t+1}$. When used as an exploration bonus, it is normalized
     by division by the moving median of this KL divergence value.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$\phi_{t+1}$代表在看到$a_t$和$s_{t+1}$后与新信念相关的$q$的参数。当用作探索奖励时，通过这个KL散度值的移动中位数除以进行归一化。
 - en: Here the dynamics model is parameterized as a [Bayesian neural network](https://link.springer.com/book/10.1007/978-1-4612-0745-0)
     (BNN), as it maintains a distribution over its weights. The BNN weight distribution
     $q_\phi(\theta)$ is modeled as a fully *factorized* Gaussian with $\phi = \{\mu,
@@ -561,8 +811,12 @@
     $\mathbf{F}_\phi$, which is easy to compute, because $q_\phi$ is factorized Gaussian
     and thus the covariance matrix is only a diagonal matrix. See more details in
     [the paper](https://arxiv.org/abs/1605.09674), especially section 2.3-2.5.
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里的动力学模型被参数化为[贝叶斯神经网络](https://link.springer.com/book/10.1007/978-1-4612-0745-0)（BNN），因为它维护着其权重的分布。BNN权重分布$q_\phi(\theta)$被建模为完全*因子化*的高斯分布，其中$\phi
+    = \{\mu, \sigma\}$，我们可以轻松地从$q_\phi(.)$中采样$\theta$。在应用二阶泰勒展开后，KL项$D_\text{KL}[q_{\phi
+    + \lambda \Delta\phi}(\theta) | q_{\phi}(\theta)]$可以使用[费舍尔信息矩阵](https://lilianweng.github.io/posts/2019-09-05-evolution-strategies/#estimation-using-fisher-information-matrix)$\mathbf{F}_\phi$来估计，这很容易计算，因为$q_\phi$是因子化高斯分布，因此协方差矩阵只是一个对角矩阵。更多细节请参见[论文](https://arxiv.org/abs/1605.09674)，特别是第2.3-2.5节。
 - en: All the methods above depend on a single prediction model. If we have multiple
     such models, we could use the disagreement among models to set the exploration
     bonus ([Pathak, et al. 2019](https://arxiv.org/abs/1906.04161)). High disagreement
@@ -571,59 +825,83 @@
     dynamics models and to use the variance over the ensemble of model outputs as
     $r_t^i$. Precisely, they encode the state space with [random feature](#random-feature)
     and learn 5 models in the ensemble.
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 上述所有方法都依赖于单个预测模型。如果我们有多个这样的模型，我们可以利用模型之间的分歧来设置探索奖励（[Pathak等人，2019](https://arxiv.org/abs/1906.04161)）。高分歧表示对预测的信心较低，因此需要更多的探索。[Pathak等人（2019）](https://arxiv.org/abs/1906.04161)建议训练一组前向动力学模型，并使用模型输出集合的方差作为$r_t^i$。准确地说，他们用[随机特征](#random-feature)对状态空间进行编码，并在集合中学习5个模型。
 - en: '![](../Images/591365d67e91dfbe40afd95bcd190224.png)'
+  id: totrans-99
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/591365d67e91dfbe40afd95bcd190224.png)'
 - en: 'Fig. 7\. Illustration of training architecture for self-supervised exploration
     via disagreement. (Image source: [Pathak, et al. 2019](https://arxiv.org/abs/1906.04161))'
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 图7。通过分歧进行自监督探索的训练架构示意图。（图片来源：[Pathak等人，2019](https://arxiv.org/abs/1906.04161)）
 - en: Because $r^i_t$ is differentiable, the intrinsic reward in the model could be
     directly optimized through gradient descent so as to inform the policy agent to
     change actions. This differentiable exploration approach is very efficient but
     limited by having a short exploration horizon.
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于$r^i_t$是可微的，模型中的内在奖励可以通过梯度下降直接优化，以通知策略代理改变动作。这种可微探索方法非常高效，但受到探索范围短的限制。
 - en: Random Networks
+  id: totrans-102
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 随机网络
 - en: But, what if the prediction task is not about the environment dynamics at all?
     It turns out when the prediction is for a random task, it still can help exploration.
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 但是，如果预测任务根本不涉及环境动态呢？事实证明，当预测是针对一个随机任务时，它仍然可以帮助探索。
 - en: '**DORA** (short for *“Directed Outreaching Reinforcement Action-Selection”*;
     [Fox & Choshen, et al. 2018](https://arxiv.org/abs/1804.04012)) is a novel framework
     that injects exploration signals based on a newly introduced, **task-independent**
     MDP. The idea of DORA depends on two parallel MDPs:'
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: '**DORA**（简称为*“Directed Outreaching Reinforcement Action-Selection”*；[Fox＆Choshen等人，2018](https://arxiv.org/abs/1804.04012)）是一个新颖的框架，根据一个新引入的**与任务无关**的MDP注入探索信号。DORA的思想依赖于两个并行的MDP：'
 - en: One is the original task MDP;
+  id: totrans-105
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一个是原始任务MDP；
 - en: 'The other is an identical MDP but with *no reward attached*: Rather, every
     state-action pair is designed to have value 0\. The Q-value learned for the second
     MDP is called *E-value*. If the model cannot perfectly predict E-value to be zero,
     it is still missing information.'
+  id: totrans-106
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 另一个是一个相同的MDP，但*没有奖励附加*：相反，每个状态-动作对都被设计为价值为0。为第二个MDP学习的Q值被称为*E值*。如果模型无法完美预测E值为零，那么它仍然缺少信息。
 - en: Initially E-value is assigned with value 1\. Such positive initialization can
     encourage directed exploration for better E-value prediction. State-action pairs
     with high E-value estimation don’t have enough information gathered yet, at least
     not enough to exclude their high E-values. To some extent, the logarithm of E-values
     can be considered as a generalization of *visit counters*.
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 最初，E值被赋予值1。 这种积极的初始化可以鼓励为更好的E值预测进行定向探索。 具有高E值估计的状态-动作对尚未收集足够的信息，至少还不足以排除它们的高E值。
+    在某种程度上，E值的对数可以被认为是*访问计数器*的一种泛化。
 - en: When using a neural network to do function approximation for E-value, another
     value head is added to predict E-value and it is simply expected to predict zero.
     Given a predicted E-value $E(s_t, a_t)$, the exploration bonus is $r^i_t = \frac{1}{\sqrt{-\log
     E(s_t, a_t)}}$.
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 当使用神经网络进行E值的函数逼近时，另一个值头被添加以预测E值，它只需预测为零。 给定预测的E值$E(s_t, a_t)$，探索奖励为$r^i_t =
+    \frac{1}{\sqrt{-\log E(s_t, a_t)}}$。
 - en: Similar to DORA, **Random Network Distillation** (**RND**; [Burda, et al. 2018](https://arxiv.org/abs/1810.12894))
     introduces a prediction task *independent of the main task*. The RND exploration
     bonus is defined as the error of a neural network $\hat{f}(s_t)$ predicting features
@@ -631,64 +909,91 @@
     The motivation is that given a new state, if similar states have been visited
     many times in the past, the prediction should be easier and thus has lower error.
     The exploration bonus is $r^i(s_t) = |\hat{f}(s_t; \theta) - f(s_t) |_2^2$.
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 与DORA类似，**随机网络蒸馏**（**RND**；[Burda, et al. 2018](https://arxiv.org/abs/1810.12894)）引入了一个与主要任务*独立的预测任务*。
+    RND探索奖励被定义为神经网络$\hat{f}(s_t)$预测由*固定随机初始化*的神经网络$f(s_t)$给出的观察特征的误差。 动机是，给定一个新状态，如果过去访问过许多类似状态，那么预测应该更容易，因此误差更低。
+    探索奖励为$r^i(s_t) = |\hat{f}(s_t; \theta) - f(s_t) |_2^2$。
 - en: '![](../Images/7227eff8496b1f234fd3c77d9d21a767.png)'
+  id: totrans-110
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/7227eff8496b1f234fd3c77d9d21a767.png)'
 - en: 'Fig. 8\. How RND (Random Network Distillation) works for providing an intrinsic
     reward. The features $O_{i+1} \mapsto f_{i+1}$ are generated by a fixed random
     neural network. (Image source: OpenAI Blog: ["Reinforcement Learning with Prediction-Based
     Rewards"](https://openai.com/blog/reinforcement-learning-with-prediction-based-rewards/))'
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 图8。RND（随机网络蒸馏）如何提供内在奖励的工作原理。 特征$O_{i+1} \mapsto f_{i+1}$由固定的随机神经网络生成。（图片来源：OpenAI博客：["基于预测奖励的强化学习"](https://openai.com/blog/reinforcement-learning-with-prediction-based-rewards/)）
 - en: 'Two factors are important in RND experiments:'
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: RND实验中有两个重要因素：
 - en: Non-episodic setting results in better exploration, especially when not using
     any extrinsic rewards. It means that the return is not truncated at “Game over”
     and intrinsic return can spread across multiple episodes.
+  id: totrans-113
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 非情节性设置导致更好的探索，特别是当不使用任何外部奖励时。 这意味着回报不会在“游戏结束”时截断，内在回报可以跨越多个情节。
 - en: Normalization is important since the scale of the reward is tricky to adjust
     given a random neural network as a prediction target. The intrinsic reward is
     normalized by division by a running estimate of the standard deviations of the
     intrinsic return.
+  id: totrans-114
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 标准化很重要，因为奖励的规模很难调整，特别是考虑到随机神经网络作为预测目标。 内在奖励通过除以内在回报的标准差的运行估计来标准化。
 - en: The RND setup works well for resolving the hard-exploration problem. For example,
     maximizing the RND exploration bonus consistently finds more than half of the
     rooms in Montezuma’s Revenge.
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: RND设置很好地解决了难以探索的问题。 例如，最大化RND探索奖励始终能找到蒙特祖玛复仇游戏中超过一半的房间。
 - en: Physical Properties
+  id: totrans-116
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 物理属性
 - en: Different from games in simulators, some RL applications like Robotics need
     to understand objects and intuitive reasoning in the physical world. Some prediction
     tasks require the agent to perform a sequence of interactions with the environment
     and to observe the corresponding consequences, such as estimating some hidden
     properties in physics (e.g. mass, friction, etc).
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: 与模拟器中的游戏不同，一些RL应用程序如机器人学需要理解物体和在物理世界中的直觉推理。 一些预测任务要求代理执行一系列与环境的交互，并观察相应的后果，例如估计物理中的一些隐藏属性（例如质量，摩擦力等）。
 - en: 'Motivated by such ideas, [Denil, et al. (2017)](https://arxiv.org/abs/1611.01843)
     found that DRL agents can learn to perform necessary exploration to discover such
     hidden properties. Precisely they considered two experiments:'
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: 受到这些想法的启发，[Denil, et al. (2017)](https://arxiv.org/abs/1611.01843) 发现DRL代理可以学会执行必要的探索以发现这些隐藏属性。
+    他们精确地考虑了两个实验：
 - en: '*“Which is heavier?”* — The agent has to interact with the blocks and infer
     which one is heavier.'
+  id: totrans-119
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*“哪个更重？”* — 代理必须与方块互动并推断哪个更重。'
 - en: '*“Towers”* — The agent needs to infer how many rigid bodies a tower is composed
     of by knocking it down.'
+  id: totrans-120
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*“塔”* — 代理需要推断一个塔由多少个刚体组成，通过将其推倒。'
 - en: The agent in the experiments first goes through an exploration phase to interact
     with the environment and to collect information. Once the exploration phase ends,
     the agent is asked to output a *labeling* action to answer the question. Then
@@ -697,111 +1002,161 @@
     with items in the scene, the agent has to learn to efficiently play around so
     as to figure out the physics and the correct answer. The exploration naturally
     happens.
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: 在实验中，代理首先经历一个探索阶段与环境互动并收集信息。一旦探索阶段结束，代理被要求输出一个*标记*动作来回答问题。如果答案正确，则给予代理正面奖励；否则给予负面奖励。因为答案需要与场景中的物品进行大量互动，代理必须学会有效地玩耍以找出物理规律和正确答案。探索自然而然地发生。
 - en: In their experiments, the agent is able to learn in both tasks with performance
     varied by the difficulty of the task. Although the paper didn’t use the physics
     prediction task to provide intrinsic reward bonus along with extrinsic reward
     associated with another learning task, rather it focused on the exploration tasks
     themselves. I do enjoy the idea of encouraging sophisticated exploration behavior
     by predicting hidden physics properties in the environment.
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: 在他们的实验中，代理能够在两个任务中学习，表现因任务难度而异。尽管论文没有使用物理预测任务来提供内在奖励奖励，而是专注于探索任务本身。我喜欢通过预测环境中隐藏的物理属性来鼓励复杂的探索行为的想法。
 - en: Memory-based Exploration
+  id: totrans-123
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 基于记忆的探索
 - en: 'Reward-based exploration suffers from several drawbacks:'
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: 基于奖励的探索存在一些缺点：
 - en: Function approximation is slow to catch up.
+  id: totrans-125
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 函数逼近慢于跟上。
 - en: Exploration bonus is non-stationary.
+  id: totrans-126
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 探索奖励是非稳态的。
 - en: Knowledge fading, meaning that states cease to be novel and cannot provide intrinsic
     reward signals in time.
+  id: totrans-127
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 知识衰减，意味着状态不再新颖，无法及时提供内在奖励信号。
 - en: Methods in this section rely on external memory to resolve disadvantages of
     reward bonus-based exploration.
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: 本节中的方法依赖于外部记忆来解决基于奖励奖励的探索的缺点。
 - en: Episodic Memory
+  id: totrans-129
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: episodic memory
 - en: As mentioned above, [RND](#RND) is better running in an non-episodic setting,
     meaning the prediction knowledge is accumulated across multiple episodes. The
     exploration strategy, **Never Give Up** (**NGU**; [Badia, et al. 2020a](https://arxiv.org/abs/2002.06038)),
     combines an episodic novelty module that can rapidly adapt within one episode
     with RND as a lifelong novelty module.
+  id: totrans-130
   prefs: []
   type: TYPE_NORMAL
+  zh: 如上所述，[RND](#RND)更适合在非episodic设置中运行，意味着预测知识在多个episode中累积。探索策略**永不放弃**（**NGU**；[Badia,
+    et al. 2020a](https://arxiv.org/abs/2002.06038)）结合了一个可以在一个episode内快速适应的episodic
+    novelty module和RND作为终身新颖性模块。
 - en: Precisely, the intrinsic reward in NGU consists of two exploration bonuses from
     two modules, *within one episode* and *across multiple episodes*, respectively.
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
+  zh: 在NGU中，内在奖励由两个模块的探索奖励组成，分别是*在一个episode内*和*跨多个episode*。
 - en: The short-term per-episode reward is provided by an *episodic novelty module*.
     It contains an episodic memory $M$, a dynamically-sized slot-based memory, and
     an IDF (inverse dynamics features) embedding function $\phi$, same as the feature
     encoding in [ICM](#ICM)
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: 短期每个episode的奖励由一个*episodic novelty module*提供。它包含一个episodic memory $M$，一个动态大小的基于槽位的记忆，以及一个IDF（逆动力学特征）嵌入函数$\phi$，与[ICM](#ICM)中的特征编码相同。
 - en: At every step the current state embedding $\phi(s_t)$ is added into $M$.
+  id: totrans-133
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 每一步当前状态嵌入$\phi(s_t)$都被添加到$M$中。
 - en: The intrinsic bonus is determined by comparing how similar the current observation
     is to the content of $M$. A larger difference results in a larger bonus.
+  id: totrans-134
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 内在奖励由比较当前观察与$M$内容的相似程度来确定。差异越大，奖励越大。
 - en: $$ r^\text{episodic}_t \approx \frac{1}{\sqrt{\sum_{\phi_i \in N_k} K(\phi(x_t),
     \phi_i)} + c} $$
+  id: totrans-135
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: $$ r^\text{episodic}_t \approx \frac{1}{\sqrt{\sum_{\phi_i \in N_k} K(\phi(x_t),
+    \phi_i)} + c} $$
 - en: 'where $K(x, y)$ is a kernel function for measuring the distance between two
     samples. $N_k$ is a set of $k$ nearest neighbors in $M$ according to $K(., .)$.
     $c$ is a small constant to keep the denominator non-zero. In the paper, $K(x,
     y)$ is configured to be the inverse kernel:'
+  id: totrans-136
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 其中$K(x, y)$是用于衡量两个样本之间距离的核函数。$N_k$是根据$K(., .)$在$M$中的$k$个最近邻样本集合。$c$是一个小常数，用于保持分母非零。在论文中，$K(x,
+    y)$被配置为逆核函数：
 - en: $$ K(x, y) = \frac{\epsilon}{\frac{d^2(x, y)}{d^2_m} + \epsilon} $$
+  id: totrans-137
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: $$ K(x, y) = \frac{\epsilon}{\frac{d^2(x, y)}{d^2_m} + \epsilon} $$
 - en: where $d(.,.)$ is Euclidean distance between two samples and $d_m$ is a running
     average of the squared Euclidean distance of the k-th nearest neighbors for better
     robustness. $\epsilon$ is a small constant.
+  id: totrans-138
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 其中$d(.,.)$是两个样本之间的欧氏距离，$d_m$是第k个最近邻的平方欧氏距离的运行平均值，以提高鲁棒性。$\epsilon$是一个小常数。
 - en: '![](../Images/42a95996148ec1682966cd0d85f04b5b.png)'
+  id: totrans-139
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/42a95996148ec1682966cd0d85f04b5b.png)'
 - en: 'Fig. 9\. The architecture of NGU''s embedding function (left) and reward generator
     (right). (Image source: [Badia, et al. 2020a](https://arxiv.org/abs/2002.06038))'
+  id: totrans-140
   prefs: []
   type: TYPE_NORMAL
+  zh: 图9. NGU嵌入函数（左）和奖励生成器（右）的架构。（图片来源：[Badia等，2020a](https://arxiv.org/abs/2002.06038)）
 - en: The long-term across-episode novelty relies on RND prediction error in *life-long
     novelty module*. The exploration bonus is $\alpha_t = 1 + \frac{e^\text{RND}(s_t)
     - \mu_e}{\sigma_e}$ where $\mu_e$ and $\sigma_e$ are running mean and std dev
     for RND error $e^\text{RND}(s_t)$.
+  id: totrans-141
   prefs: []
   type: TYPE_NORMAL
+  zh: 跨集数目新奇性依赖于*终身新奇性模块*中的RND预测误差。探索奖励为$\alpha_t = 1 + \frac{e^\text{RND}(s_t) -
+    \mu_e}{\sigma_e}$，其中$\mu_e$和$\sigma_e$分别为RND误差$e^\text{RND}(s_t)$的运行均值和标准差。
 - en: 'However in the conclusion section of the [RND paper](https://arxiv.org/abs/1810.12894),
     I noticed the following statement:'
+  id: totrans-142
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 然而，在[RND论文](https://arxiv.org/abs/1810.12894)的结论部分，我注意到以下声明：
 - en: ''
+  id: totrans-143
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
@@ -810,39 +1165,54 @@
     with a particular object, or avoid it. However global exploration that involves
     coordinated decisions over long time horizons is beyond the reach of our method.
     "
+  id: totrans-144
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: “我们发现RND探索奖励足以处理局部探索，即探索短期决策的后果，比如是否与特定对象交互，或者避开它。然而，涉及长时间跨度协调决策的全局探索超出了我们方法的范围。”
 - en: ''
+  id: totrans-145
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: And this confuses me a bit how RND can be used as a good life-long novelty bonus
     provider. If you know why, feel free to leave a comment below.
+  id: totrans-146
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 这让我有点困惑，RND如何作为一个良好的终身新奇奖励提供者。如果你知道原因，请随时在下面留言。
 - en: The final combined intrinsic reward is $r^i_t = r^\text{episodic}_t \cdot \text{clip}(\alpha_t,
     1, L)$, where $L$ is a constant maximum reward scalar.
+  id: totrans-147
   prefs: []
   type: TYPE_NORMAL
+  zh: 最终的综合内在奖励是$r^i_t = r^\text{episodic}_t \cdot \text{clip}(\alpha_t, 1, L)$，其中$L$是一个常数最大奖励标量。
 - en: 'The design of NGU enables it to have two nice properties:'
+  id: totrans-148
   prefs: []
   type: TYPE_NORMAL
+  zh: NGU的设计使其具有两个良好的特性：
 - en: '*Rapidly discourages* revisiting the same state *within* the same episode;'
+  id: totrans-149
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*快速地*在同一集数内*阻止*重访相同状态；'
 - en: '*Slowly discourages* revisiting states that have been visited many times *across*
     episodes.'
+  id: totrans-150
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*缓慢地*在跨集数目*阻止*多次访问过的状态。'
 - en: 'Later, built on top of NGU, DeepMind proposed “Agent57” ([Badia, et al. 2020b](https://arxiv.org/abs/2003.13350)),
     the first deep RL agent that outperforms the standard human benchmark on *all*
     57 Atari games. Two major improvements in Agent57 over NGU are:'
+  id: totrans-151
   prefs: []
   type: TYPE_NORMAL
+  zh: 后来，DeepMind在NGU的基础上提出了“Agent57”（[Badia等，2020b](https://arxiv.org/abs/2003.13350)），这是第一个在*所有*57个Atari游戏上表现优于标准人类基准的深度RL代理。Agent57相对于NGU的两个主要改进是：
 - en: A *population* of policies are trained in Agent57, each equipped with a different
     exploration parameter pair $\{(\beta_j, \gamma_j)\}_{j=1}^N$. Recall that given
     $\beta_j$, the reward is constructed as $r_{j,t} = r_t^e + \beta_j r^i_t$ and
@@ -851,62 +1221,88 @@
     while the opposite would be expected as training progresses. A meta-controller
     ([sliding-window UCB bandit algorithm](https://arxiv.org/pdf/0805.3415.pdf)) is
     trained to select which policies should be prioritized.
+  id: totrans-152
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在Agent57中训练了一组策略，每个策略配备不同的探索参数对$\{(\beta_j, \gamma_j)\}_{j=1}^N$。回想一下，给定$\beta_j$，奖励构造为$r_{j,t}
+    = r_t^e + \beta_j r^i_t$，$\gamma_j$是奖励折扣因子。自然地期望具有更高$\beta_j$和较低$\gamma_j$的策略在训练初期取得更多进展，而随着训练的进行，预期情况将相反。训练一个元控制器（[滑动窗口UCB赌博算法](https://arxiv.org/pdf/0805.3415.pdf)）来选择应该优先考虑哪些策略。
 - en: 'The second improvement is a new parameterization of Q-value function that decomposes
     the contributions of the intrinsic and extrinsic rewards in a similar form as
     the bundled reward: $Q(s, a; \theta_j) = Q(s, a; \theta_j^e) + \beta_j Q(s, a;
     \theta_j^i)$. During training, $Q(s, a; \theta_j^e)$ and $Q(s, a; \theta_j^i)$
     are optimized separately with rewards $r_j^e$ and $r_j^i$, respectively.'
+  id: totrans-153
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 第二个改进是Q值函数的新参数化，将内在和外在奖励的贡献分解为与捆绑奖励类似的形式：$Q(s, a; \theta_j) = Q(s, a; \theta_j^e)
+    + \beta_j Q(s, a; \theta_j^i)$。在训练过程中，$Q(s, a; \theta_j^e)$和$Q(s, a; \theta_j^i)$分别使用奖励$r_j^e$和$r_j^i$进行优化。
 - en: '![](../Images/ac80e39059b3399b78853728083bb3c6.png)'
+  id: totrans-154
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ac80e39059b3399b78853728083bb3c6.png)'
 - en: 'Fig. 10\. A pretty cool illustration of techniques developed in time since
     DQN in 2015, eventually leading to Agent57\. (Image source: DeepMind Blog: ["Agent57:
     Outperforming the human Atari benchmark"](https://deepmind.com/blog/article/Agent57-Outperforming-the-human-Atari-benchmark))'
+  id: totrans-155
   prefs: []
   type: TYPE_NORMAL
+  zh: '图 10\. 展示了自2015年DQN以来发展的技术，最终导致Agent57的一个很酷的插图。 (图片来源：DeepMind博客：["Agent57:
+    Outperforming the human Atari benchmark"](https://deepmind.com/blog/article/Agent57-Outperforming-the-human-Atari-benchmark))'
 - en: Instead of using the Euclidean distance to measure closeness of states in episodic
     memory, [Savinov, et al. (2019)](https://arxiv.org/abs/1810.02274) took the transition
     between states into consideration and proposed a method to measure the number
     of steps needed to visit one state from other states in memory, named **Episodic
     Curiosity (EC)** module. The novelty bonus depends on reachability between states.
+  id: totrans-156
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Savinov等人（2019）](https://arxiv.org/abs/1810.02274)提出了一种名为**情节好奇（EC）**模块的方法，该方法考虑了情节性记忆中状态之间的接近度，而不是使用欧氏距离，并提出了一种测量从记忆中的其他状态访问一个状态所需步数的方法。新奇奖励取决于状态之间的可达性。'
 - en: At the beginning of each episode, the agent starts with an empty episodic memory
     $M$.
+  id: totrans-157
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 每一集开始时，代理人从一个空的情节性记忆$M$开始。
 - en: 'At every step, the agent compares the current state with saved states in memory
     to determine novelty bonus: If the current state is novel (i.e., takes more steps
     to reach from observations in memory than a threshold), the agent gets a bonus.'
+  id: totrans-158
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 每一步，代理人将当前状态与记忆中保存的状态进行比较，以确定新奇奖励：如果当前状态是新颖的（即，从记忆中的观察到达需要更多步骤），代理人将获得奖励。
 - en: The current state is added into the episodic memory if the novelty bonus is
     high enough. (Imagine that if all the states were added into memory, any new state
     could be added within 1 step.)
+  id: totrans-159
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 如果新奇奖励足够高，当前状态将被添加到情节性记忆中。（想象一下，如果所有状态都被添加到记忆中，任何新状态都可以在1步内添加。）
 - en: Repeat 1-3 until the end of this episode.
+  id: totrans-160
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 重复1-3直到本集结束。
 - en: '![](../Images/31afaee3015003577265edede5f9496f.png)'
+  id: totrans-161
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/31afaee3015003577265edede5f9496f.png)'
 - en: 'Fig. 11\. The nodes in the graph are states, the edges are possible transitions.
     The blue nodes are states in memory. The green nodes are reachable from the memory
     within $k = 2$ steps (not novel). The orange nodes are further away, so they are
     considered as novel states. (Image source: [Savinov, et al. 2019](https://arxiv.org/abs/1810.02274))'
+  id: totrans-162
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 11\. 图中的节点是状态，边是可能的转换。蓝色节点是记忆中的状态。绿色节点是从记忆中在$k = 2$步内可达的状态（非新颖）。橙色节点距离更远，因此被视为新颖状态。
+    (图片来源：[Savinov等人，2019](https://arxiv.org/abs/1810.02274))
 - en: 'In order to estimate reachability between states, we need to access the transition
     graph, which is unfortunately not entirely known. Thus, [Savinov, et al. (2019)](https://arxiv.org/abs/1810.02274)
     trained a [siamese](https://lilianweng.github.io/posts/2018-11-30-meta-learning/#convolutional-siamese-neural-network)
@@ -916,8 +1312,13 @@
     \mathbb{R}^n \mapsto [0, 1]$ to output a binary label on whether two states are
     close enough (i.e., reachable within $k$ steps) in the transition graph, $C(\phi(s_i),
     \phi(s_j)) \mapsto [0, 1]$.'
+  id: totrans-163
   prefs: []
   type: TYPE_NORMAL
+  zh: '为了估计状态之间的可达性，我们需要访问转换图，但遗憾的是并非完全了解。因此，[Savinov等人（2019）](https://arxiv.org/abs/1810.02274)训练了一个[连体](https://lilianweng.github.io/posts/2018-11-30-meta-learning/#convolutional-siamese-neural-network)神经网络来预测两个状态之间相隔多少步。它包含一个嵌入网络$\phi:
+    \mathcal{S} \mapsto \mathbb{R}^n$，首先将状态编码为特征向量，然后一个比较器网络$C: \mathbb{R}^n \times
+    \mathbb{R}^n \mapsto [0, 1]$，输出两个状态是否足够接近（即，在转换图中在$k$步内可达）的二进制标签，$C(\phi(s_i),
+    \phi(s_j)) \mapsto [0, 1]$。'
 - en: An episodic memory buffer $M$ stores embeddings of some past observations within
     the same episode. A new observation will be compared with existing state embeddings
     via $C$ and the results are aggregated (e.g. max, 90th percentile) to provide
@@ -926,28 +1327,41 @@
     sign of the reward (e.g. $C’=0.5$ works well for fixed-duration episodes). High
     bonus is awarded to new states when they are not easily reachable from states
     in the memory buffer.
+  id: totrans-164
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个情节性记忆缓冲器$M$存储着同一情节内一些过去观察的嵌入。新的观察将通过$C$与现有状态嵌入进行比较，结果将被聚合（例如最大值，90th百分位数），以提供可达性分数$C^M(\phi(s_t))$。探索奖励为$r^i_t
+    = \big(C’ - C^M(f(s_t))\big)$，其中$C’$是用于确定奖励符号的预定义阈值（例如，$C’=0.5$对于固定持续时间的情节效果很好）。当新状态不容易从记忆缓冲器中的状态到达时，高奖励将授予新状态。
 - en: They claimed that the EC module can overcome the [noisy-TV](#the-noisy-tv-problem)
     problem.
+  id: totrans-165
   prefs: []
   type: TYPE_NORMAL
+  zh: 他们声称，EC模块可以克服[嘈杂电视](#the-noisy-tv-problem)问题。
 - en: '![](../Images/aa2fa6b2965cb72e335b63c019ab8b48.png)'
+  id: totrans-166
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/aa2fa6b2965cb72e335b63c019ab8b48.png)'
 - en: 'Fig. 12\. The architecture of episodic curiosity (EC) module for intrinsic
     reward generation. (Image source: [Savinov, et al. 2019](https://arxiv.org/abs/1810.02274))'
+  id: totrans-167
   prefs: []
   type: TYPE_NORMAL
+  zh: 图12。内在奖励生成的情节好奇（EC）模块的架构。（图片来源：[Savinov等人，2019](https://arxiv.org/abs/1810.02274)）
 - en: Direct Exploration
+  id: totrans-168
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 直接探索
 - en: '**Go-Explore** ([Ecoffet, et al., 2019](https://arxiv.org/abs/1901.10995))
     is an algorithm aiming to solve the “hard-exploration” problem. It is composed
     of the following two phases.'
+  id: totrans-169
   prefs: []
   type: TYPE_NORMAL
+  zh: '**Go-Explore**（[Ecoffet等人，2019](https://arxiv.org/abs/1901.10995)）是一个旨在解决“难以探索”问题的算法。它由以下两个阶段组成。'
 - en: '**Phase 1 (“Explore until solved”)** feels quite like [Dijkstra’s algorithm](https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm)
     for finding shortest paths in a graph. Indeed, no neural network is involved in
     phase 1\. By maintaining a memory of interesting states as well as trajectories
@@ -959,128 +1373,178 @@
     in the memory uniformly or according to heuristics like recency, visit count,
     count of neighbors in the memory, etc. This process is repeated until the task
     is solved and at least one solution trajectory is found.'
+  id: totrans-170
   prefs: []
   type: TYPE_NORMAL
+  zh: '**阶段1（“探索直到解决”）**感觉很像[Dijkstra算法](https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm)用于在图中寻找最短路径。事实上，阶段1中没有涉及神经网络。通过保持有趣状态以及通往这些状态的轨迹的记忆，代理可以返回（假设模拟器是*确定性*的）到有前途的状态，并从那里继续进行*随机*探索。状态被映射为短离散代码（称为“单元”）以便被记忆。如果出现新状态或找到更好/更短的轨迹，则更新记忆。在选择要返回的过去状态时，代理可能均匀选择记忆中的一个或根据启发式方法选择，如最近性，访问计数，记忆中邻居的计数等。这个过程重复进行，直到任务解决并找到至少一条解决路径。'
 - en: The above found high-performance trajectories would not work well on evaluation
     envs with any stochasticity. Thus, **Phase 2 (“Robustification”)** is needed to
     robustify the solution via imitation learning. They adopted [Backward Algorithm](https://arxiv.org/abs/1812.03381),
     in which the agent is started near the last state in the trajectory and then runs
     RL optimization from there.
+  id: totrans-171
   prefs: []
   type: TYPE_NORMAL
+  zh: 上述找到的高性能轨迹在具有任何随机性的评估环境中效果不佳。因此，**阶段2（“鲁棒化”）**需要通过模仿学习来增强解决方案。他们采用了[Backward
+    Algorithm](https://arxiv.org/abs/1812.03381)，其中代理从轨迹中的最后状态附近开始，并从那里运行RL优化。
 - en: 'One important note in phase 1 is: In order to go back to a state deterministically
     without exploration, Go-Explore depends on a resettable and deterministic simulator,
     which is a big disadvantage.'
+  id: totrans-172
   prefs: []
   type: TYPE_NORMAL
+  zh: 阶段1中的一个重要说明是：为了在没有探索的情况下确定性地返回到一个状态，Go-Explore依赖于可重置和确定性的模拟器，这是一个很大的劣势。
 - en: To make the algorithm more generally useful to environments with stochasticity,
     an enhanced version of Go-Explore ([Ecoffet, et al., 2020](https://arxiv.org/abs/2004.12919)),
     named **policy-based Go-Explore** was proposed later.
+  id: totrans-173
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了使算法更普遍适用于具有随机性的环境，后来提出了Go-Explore的增强版本（[Ecoffet等人，2020](https://arxiv.org/abs/2004.12919)），名为**基于策略的Go-Explore**。
 - en: Instead of resetting the simulator state effortlessly, the policy-based Go-Explore
     learns a *goal-conditioned policy* and uses that to access a known state in memory
     repeatedly. The goal-conditioned policy is trained to follow the best trajectory
     that previously led to the selected states in memory. They include a **Self-Imitation
     Learning** (**SIL**; [Oh, et al. 2018](https://arxiv.org/abs/1806.05635)) loss
     to help extract as much information as possible from successful trajectories.
+  id: totrans-174
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 与轻松重置模拟器状态不同，基于策略的Go-Explore学习了一个*目标条件策略*，并重复使用它来访问内存中的已知状态。目标条件策略被训练为沿着先前导致所选内存状态的最佳轨迹。他们包括一个**自我模仿学习**（**SIL**；[Oh,
+    et al. 2018](https://arxiv.org/abs/1806.05635)）损失，以帮助从成功轨迹中提取尽可能多的信息。
 - en: Also, they found sampling from policy works better than random actions when
     the agent returns to promising states to continue exploration.
+  id: totrans-175
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 此外，他们发现当智能体返回有前途的状态继续探索时，从策略中采样比随机行动效果更好。
 - en: Another improvement in policy-based Go-Explore is to make the downscaling function
     of images to cells adjustable. It is optimized so that there would be neither
     too many nor too few cells in the memory.
+  id: totrans-176
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 基于策略的Go-Explore的另一个改进是使图像到单元格的缩放函数可调整。它被优化，以便内存中既不会有太多也不会有太少的单元格。
 - en: '![](../Images/ff70c9c9b39c104fd6b30c6990343c05.png)'
+  id: totrans-177
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ff70c9c9b39c104fd6b30c6990343c05.png)'
 - en: 'Fig. 13\. An overview of the Go-Explore algorithm. (Image source: [Ecoffet,
     et al., 2020](https://arxiv.org/abs/2004.12919))'
+  id: totrans-178
   prefs: []
   type: TYPE_NORMAL
+  zh: 图13。Go-Explore算法概述。 （图片来源：[Ecoffet等人，2020](https://arxiv.org/abs/2004.12919)）
 - en: After vanilla Go-Explore, [Yijie Guo, et al. (2019)](https://arxiv.org/abs/1907.10247)
     proposed **DTSIL** (Diverse Trajectory-conditioned Self-Imitation Learning), which
     shared a similar idea as policy-based Go-Explore above. DTSIL maintains a memory
     of diverse demonstrations collected during training and uses them to train a trajectory-conditioned
     policy via [SIL](https://arxiv.org/abs/1806.05635). They prioritize trajectories
     that end with a rare state during sampling.
+  id: totrans-179
   prefs: []
   type: TYPE_NORMAL
+  zh: 在普通的Go-Explore之后，[郭一杰等人（2019）](https://arxiv.org/abs/1907.10247)提出了**DTSIL**（多样轨迹条件自我模仿学习），其与上述基于策略的Go-Explore有相似的想法。DTSIL在训练过程中维护了一组多样化演示的内存，并使用它们来通过[SIL](https://arxiv.org/abs/1806.05635)训练轨迹条件策略。他们在采样过程中优先考虑以罕见状态结束的轨迹。
 - en: '![](../Images/a134226d5608c9a8b96ffef7a4e6fbff.png)'
+  id: totrans-180
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a134226d5608c9a8b96ffef7a4e6fbff.png)'
 - en: 'Fig. 14\. Algorithm of DTSIL (Diverse Trajectory-conditioned Self-Imitation
     Learning). (Image source: [Yijie Guo, et al. 2019](https://arxiv.org/abs/1907.10247))'
+  id: totrans-181
   prefs: []
   type: TYPE_NORMAL
+  zh: 图14。DTSIL（多样轨迹条件自我模仿学习）算法。 （图片来源：[郭一杰等人，2019](https://arxiv.org/abs/1907.10247)）
 - en: The similar approach is also seen in [Guo, et al. (2019)](https://arxiv.org/abs/1906.07805).
     The main idea is to store goals with *high uncertainty* in memory so that later
     the agent can revisit these goal states with a goal-conditioned policy repeatedly.
     In each episode, the agent flips a coin (probability 0.5) to decide whether it
     will act greedily w.r.t. the policy or do directed exploration by sampling goals
     from the memory.
+  id: totrans-182
   prefs: []
   type: TYPE_NORMAL
+  zh: 相似的方法也出现在[郭等人（2019）](https://arxiv.org/abs/1906.07805)的研究中。主要思想是将具有*高不确定性*的目标存储在内存中，以便智能体可以通过目标条件策略重复访问这些目标状态。在每一集中，智能体会抛硬币（概率为0.5）来决定是按照策略贪婪行事，还是通过从内存中采样目标进行定向探索。
 - en: '![](../Images/cbd292c1a541cab9e0c5d3b143148074.png)'
+  id: totrans-183
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/cbd292c1a541cab9e0c5d3b143148074.png)'
 - en: 'Fig. 15\. Different components in directed exploration with function approximation.
     (Image source: [Guo, et al. 2019](https://arxiv.org/abs/1906.07805))'
+  id: totrans-184
   prefs: []
   type: TYPE_NORMAL
+  zh: 图15。带有函数逼近的定向探索中的不同组件。 （图片来源：[郭等人，2019](https://arxiv.org/abs/1906.07805)）
 - en: The uncertainty measure of a state can be something simple like count-based
     bonuses or something complex like density or bayesian models. The paper trained
     a forward dynamics model and took its prediction error as the uncertainty metric.
+  id: totrans-185
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个状态的不确定性度量可以是简单的基于计数的奖励，也可以是复杂的密度或贝叶斯模型。该论文训练了一个前向动力学模型，并将其预测误差作为不确定性度量。
 - en: Q-Value Exploration
+  id: totrans-186
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Q值探索
 - en: Inspired by [Thompson sampling](https://lilianweng.github.io/posts/2018-01-23-multi-armed-bandit/#thompson-sampling),
     **Bootstrapped DQN** ([Osband, et al. 2016](https://arxiv.org/abs/1602.04621))
     introduces a notion of uncertainty in Q-value approximation in classic [DQN](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#deep-q-network)
     by using the [bootstrapping](https://en.wikipedia.org/wiki/Bootstrapping_(statistics))
     method. Bootstrapping is to approximate a distribution by sampling with replacement
     from the same population multiple times and then aggregate the results.
+  id: totrans-187
   prefs: []
   type: TYPE_NORMAL
+  zh: 受[汤普森抽样](https://lilianweng.github.io/posts/2018-01-23-multi-armed-bandit/#thompson-sampling)启发，**自举DQN**（[Osband等，2016](https://arxiv.org/abs/1602.04621)）通过使用[自举法](https://en.wikipedia.org/wiki/Bootstrapping_(statistics))在经典[DQN](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#deep-q-network)中引入了Q值近似的不确定性概念。自举法是通过从同一总体中多次有放回地抽样来近似分布，然后聚合结果。
 - en: Multiple Q-value heads are trained in parallel but each only consumes a bootstrapped
     sub-sampled set of data and each has its own corresponding target network. All
     the Q-value heads share the same backbone network.
+  id: totrans-188
   prefs: []
   type: TYPE_NORMAL
+  zh: 多个Q值头并行训练，但每个头只消耗一个自举子采样数据集，并且每个头都有自己对应的目标网络。所有的Q值头共享相同的主干网络。
 - en: '![](../Images/ed982f97449cb1d67b832ca93119117c.png)'
+  id: totrans-189
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ed982f97449cb1d67b832ca93119117c.png)'
 - en: 'Fig. 16\. The algorithm of Bootstrapped DQN. (Image source: [Osband, et al.
     2016](https://arxiv.org/abs/1602.04621))'
+  id: totrans-190
   prefs: []
   type: TYPE_NORMAL
+  zh: 图16。自举DQN算法。（图片来源：[Osband等，2016](https://arxiv.org/abs/1602.04621)）
 - en: At the beginning of one episode, one Q-value head is sampled uniformly and acts
     for collecting experience data in this episode. Then a binary mask is sampled
     from the masking distribution $m \sim \mathcal{M}$ and decides which heads can
     use this data for training. The choice of masking distribution $\mathcal{M}$ determines
     how bootstrapped samples are generated; For example,
+  id: totrans-191
   prefs: []
   type: TYPE_NORMAL
+  zh: 在一个episode开始时，均匀采样一个Q值头并用于在该episode中收集经验数据。然后从掩码分布$m \sim \mathcal{M}$中采样一个二进制掩码，决定哪些头可以使用这些数据进行训练。掩码分布$\mathcal{M}$的选择决定了如何生成自举样本；例如，
 - en: If $\mathcal{M}$ is an independent Bernoulli distribution with $p=0.5$, this
     corresponds to the double-or-nothing bootstrap.
+  id: totrans-192
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如果$\mathcal{M}$是独立的伯努利分布，$p=0.5$，这对应于双倍或无的自举法。
 - en: If $\mathcal{M}$ always returns an all-one mask, the algorithm reduces to an
     ensemble method.
+  id: totrans-193
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如果$\mathcal{M}$总是返回全为1的掩码，该算法将简化为一个集成方法。
 - en: 'However, this kind of exploration is still restricted, because uncertainty
     introduced by bootstrapping fully relies on the training data. It is better to
     inject some prior information independent of the data. This “noisy” prior is expected
@@ -1089,28 +1553,40 @@
     et al. 2018](https://arxiv.org/abs/1806.03335)) depends on Bayesian linear regression.
     The core idea of Bayesian regression is: We can *“generate posterior samples by
     training on noisy versions of the data, together with some random regularization”*.'
+  id: totrans-194
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，这种探索仍然受限，因为自举引入的不确定性完全依赖于训练数据。最好注入一些独立于数据的先验信息。这种“嘈杂”的先验预期能够在奖励稀疏时驱使代理继续探索。将随机先验添加到自举DQN以实现更好探索的算法（[Osband等，2018](https://arxiv.org/abs/1806.03335)）依赖于贝叶斯线性回归。贝叶斯回归的核心思想是：我们可以通过在数据的嘈杂版本上进行训练，再加上一些随机正则化，*“生成后验样本”*。
 - en: 'Let $\theta$ be the Q function parameter and $\theta^-$ for the target Q, the
     loss function using a randomized prior function $p$ is:'
+  id: totrans-195
   prefs: []
   type: TYPE_NORMAL
+  zh: 让$\theta$为Q函数参数，$\theta^-$为目标Q，使用随机化先验函数$p$的损失函数为：
 - en: $$ \mathcal{L}(\theta, \theta^{-}, p, \mathcal{D}; \gamma) = \sum_{t\in\mathcal{D}}\Big(
     r_t + \gamma \max_{a'\in\mathcal{A}} (\underbrace{Q_{\theta^-} + p)}_\text{target
     Q}(s'_t, a') - \underbrace{(Q_\theta + p)}_\text{Q to optimize}(s_t, a_t) \Big)^2
     $$
+  id: totrans-196
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathcal{L}(\theta, \theta^{-}, p, \mathcal{D}; \gamma) = \sum_{t\in\mathcal{D}}\Big(
+    r_t + \gamma \max_{a'\in\mathcal{A}} (\underbrace{Q_{\theta^-} + p)}_\text{目标Q}(s'_t,
+    a') - \underbrace{(Q_\theta + p)}_\text{要优化的Q}(s_t, a_t) \Big)^2 $$
 - en: Varitional Options
+  id: totrans-197
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 变分选项
 - en: Options are policies with termination conditions. There are a large set of options
     available in the search space and they are independent of an agent’s intentions.
     By explicitly including intrinsic options into modeling, the agent can obtain
     intrinsic rewards for exploration.
+  id: totrans-198
   prefs: []
   type: TYPE_NORMAL
+  zh: 选项是带有终止条件的策略。在搜索空间中有大量可用的选项，它们与代理的意图无关。通过明确将内在选项纳入建模，代理可以获得用于探索的内在奖励。
 - en: '**VIC** (short for *“Variational Intrinsic Control”*; [Gregor, et al. 2017](https://arxiv.org/abs/1611.07507))
     is such a framework for providing the agent with intrinsic exploration bonuses
     based on modeling options and learning policies conditioned on options. Let $\Omega$
@@ -1120,39 +1596,63 @@
     $p^C(\Omega \vert s_0)$ defines the probability distribution of options we can
     sample from. And by definition we have $p(s_f, \Omega \vert s_0) = p^J(s_f \vert
     s_0, \Omega) p^C(\Omega \vert s_0)$.'
+  id: totrans-199
   prefs: []
   type: TYPE_NORMAL
+  zh: '**VIC**（“Variational Intrinsic Control”的缩写；[Gregor, et al. 2017](https://arxiv.org/abs/1611.07507)）是一个为代理提供基于建模选项和学习条件选项的策略的内在探索奖励的框架。让
+    $\Omega$ 表示从 $s_0$ 开始并在 $s_f$ 结束的选项。一个环境概率分布 $p^J(s_f \vert s_0, \Omega)$ 定义了在给定起始状态
+    $s_0$ 的情况下选项 $\Omega$ 终止的位置。一个可控性分布 $p^C(\Omega \vert s_0)$ 定义了我们可以从中采样的选项的概率分布。根据定义，我们有
+    $p(s_f, \Omega \vert s_0) = p^J(s_f \vert s_0, \Omega) p^C(\Omega \vert s_0)$。'
 - en: 'While choosing options, we would like to achieve two goals:'
+  id: totrans-200
   prefs: []
   type: TYPE_NORMAL
+  zh: 在选择选项时，我们希望实现两个目标：
 - en: Achieve a diverse set of the final states from $s_0$ ⇨ Maximization of $H(s_f
     \vert s_0)$.
+  id: totrans-201
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 从 $s_0$ 实现一组多样的最终状态 ⇨ 最大化 $H(s_f \vert s_0)$。
 - en: Know precisely which state a given option $\Omega$ can end with ⇨ Minimization
     of $H(s_f \vert s_0, \Omega)$.
+  id: totrans-202
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 精确了解给定选项 $\Omega$ 可以以哪种状态结束 ⇨ 最小化 $H(s_f \vert s_0, \Omega)$。
 - en: 'Combining them, we get mutual information $I(\Omega; s_f \vert s_0)$ to maximize:'
+  id: totrans-203
   prefs: []
   type: TYPE_NORMAL
+  zh: 结合它们，我们得到要最大化的互信息 $I(\Omega; s_f \vert s_0)$：
 - en: $$ \begin{aligned} I(\Omega; s_f \vert s_0) &= H(s_f \vert s_0) - H(s_f \vert
     s_0, \Omega) \\ &= - \sum_{s_f} p(s_f \vert s_0) \log p(s_f \vert s_0) + \sum_{s_f,
     \Omega} p(s_f, \Omega \vert s_0) \log \frac{p(s_f, \Omega \vert s_0)}{p^C(\Omega
     \vert s_0)} \\ &= - \sum_{s_f} p(s_f \vert s_0) \log p(s_f \vert s_0) + \sum_{s_f,
     \Omega} p^J(s_f \vert s_0, \Omega) p^C(\Omega \vert s_0) \log p^J(s_f \vert s_0,
     \Omega) \\ \end{aligned} $$
+  id: totrans-204
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} I(\Omega; s_f \vert s_0) &= H(s_f \vert s_0) - H(s_f \vert
+    s_0, \Omega) \\ &= - \sum_{s_f} p(s_f \vert s_0) \log p(s_f \vert s_0) + \sum_{s_f,
+    \Omega} p(s_f, \Omega \vert s_0) \log \frac{p(s_f, \Omega \vert s_0)}{p^C(\Omega
+    \vert s_0)} \\ &= - \sum_{s_f} p(s_f \vert s_0) \log p(s_f \vert s_0) + \sum_{s_f,
+    \Omega} p^J(s_f \vert s_0, \Omega) p^C(\Omega \vert s_0) \log p^J(s_f \vert s_0,
+    \Omega) \\ \end{aligned} $$
 - en: Because mutual information is symmetric, we can switch $s_f$ and $\Omega$ in
     several places without breaking the equivalence. Also because $p(\Omega \vert
     s_0, s_f)$ is difficult to observe, let us replace it with an approximation distribution
     $q$. According to the variational lower bound, we would have $I(\Omega; s_f \vert
     s_0) \geq I^{VB}(\Omega; s_f \vert s_0)$.
+  id: totrans-205
   prefs: []
   type: TYPE_NORMAL
+  zh: 因为互信息是对称的，我们可以在几个地方交换 $s_f$ 和 $\Omega$ 而不会破坏等价性。另外，由于 $p(\Omega \vert s_0, s_f)$
+    很难观察到，让我们用近似分布 $q$ 替换它。根据变分下界，我们有 $I(\Omega; s_f \vert s_0) \geq I^{VB}(\Omega;
+    s_f \vert s_0)$。
 - en: $$ \begin{aligned} I(\Omega; s_f \vert s_0) &= I(s_f; \Omega \vert s_0) \\ &=
     - \sum_{\Omega} p(\Omega \vert s_0) \log p(\Omega \vert s_0) + \sum_{s_f, \Omega}
     p^J(s_f \vert s_0, \Omega) p^C(\Omega \vert s_0) \log \color{red}{p(\Omega \vert
@@ -1160,12 +1660,22 @@
     \log p(\Omega \vert s_0) + \sum_{s_f, \Omega} p^J(s_f \vert s_0, \Omega) p^C(\Omega
     \vert s_0) \log \color{red}{q(\Omega \vert s_0, s_f)} \\ I(\Omega; s_f \vert s_0)
     &\geq I^{VB}(\Omega; s_f \vert s_0) \end{aligned} $$![](../Images/c77a296a5282f10c5f70006c39fa6cb9.png)
+  id: totrans-206
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} I(\Omega; s_f \vert s_0) &= I(s_f; \Omega \vert s_0) \\ &=
+    - \sum_{\Omega} p(\Omega \vert s_0) \log p(\Omega \vert s_0) + \sum_{s_f, \Omega}
+    p^J(s_f \vert s_0, \Omega) p^C(\Omega \vert s_0) \log \color{red}{p(\Omega \vert
+    s_0, s_f)}\\ I^{VB}(\Omega; s_f \vert s_0) &= - \sum_{\Omega} p(\Omega \vert s_0)
+    \log p(\Omega \vert s_0) + \sum_{s_f, \Omega} p^J(s_f \vert s_0, \Omega) p^C(\Omega
+    \vert s_0) \log \color{red}{q(\Omega \vert s_0, s_f)} \\ I(\Omega; s_f \vert s_0)
+    &\geq I^{VB}(\Omega; s_f \vert s_0) \end{aligned} $$![](../Images/c77a296a5282f10c5f70006c39fa6cb9.png)
 - en: 'Fig. 17\. The algorithm for VIC (Variational Intrinsic Control). (Image source:
     [Gregor, et al. 2017](https://arxiv.org/abs/1611.07507))'
+  id: totrans-207
   prefs: []
   type: TYPE_NORMAL
+  zh: 图17\. VIC（Variational Intrinsic Control）的算法。（图片来源：[Gregor, et al. 2017](https://arxiv.org/abs/1611.07507)）
 - en: Here $\pi(a \vert \Omega, s)$ can be optimized with any RL algorithm. The option
     inference function $q(\Omega \vert s_0, s_f)$ is doing supervised learning. The
     prior $p^C$ is updated so that it tends to choose $\Omega$ with higher rewards.
@@ -1174,192 +1684,309 @@
     observed that it is difficult to make VIC with explicit options work in practice
     with function approximation and therefore they also proposed another version of
     VIC with implicit options.
+  id: totrans-208
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里的$\pi(a \vert \Omega, s)$可以通过任何强化学习算法进行优化。选项推断函数$q(\Omega \vert s_0, s_f)$是进行监督学习。先验$p^C$被更新，以便更倾向于选择具有更高奖励的$\Omega$。请注意，$p^C$也可以固定（例如高斯）。通过学习，不同的$\Omega$将导致不同的行为。此外，[Gregor等人（2017）](https://arxiv.org/abs/1611.07507)观察到，使用显式选项使VIC在具有函数逼近的情况下难以实际运作，因此他们还提出了另一种具有隐式选项的VIC版本。
 - en: 'Different from VIC which models $\Omega$ conditioned only on the start and
     end states, **VALOR** (short for *“Variational Auto-encoding Learning of Options
     by Reinforcement”*; [Achiam, et al. 2018](https://arxiv.org/abs/1807.10299)) relies
     on the whole trajectory to extract the option context $c$, which is sampled from
     a fixed Gaussian distribution. In VALOR:'
+  id: totrans-209
   prefs: []
   type: TYPE_NORMAL
+  zh: 与VIC不同，**VALOR**（简称*“通过强化学习学习选项的变分自动编码”*；[Achiam等人，2018](https://arxiv.org/abs/1807.10299)）依赖于整个轨迹来提取选项上下文$c$，该上下文从固定的高斯分布中采样。在VALOR中：
 - en: A policy acts as an encoder, translating contexts from a noise distribution
     into trajectories
+  id: totrans-210
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 策略充当编码器，将来自噪声分布的上下文转换为轨迹
 - en: A decoder attempts to recover the contexts from the trajectories, and rewards
     the policies for making contexts easier to distinguish. The decoder never sees
     the actions during training, so the agent has to interact with the environment
     in a way that facilitates communication with the decoder for better prediction.
     Also, the decoder recurrently takes in a sequence of steps in one trajectory to
     better model the correlation between timesteps.
+  id: totrans-211
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 解码器试图从轨迹中恢复上下文，并奖励策略使上下文更容易区分。在训练期间，解码器从未看到动作，因此代理必须以一种有助于与解码器进行更好预测的方式与环境互动。此外，解码器反复接收一条轨迹中的一系列步骤，以更好地建模时间步之间的相关性。
 - en: '![](../Images/ceb40a07eda23b150308e58fba3a79a6.png)'
+  id: totrans-212
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ceb40a07eda23b150308e58fba3a79a6.png)'
 - en: 'Fig. 18\. The decoder of VALOR is a biLSTM which takes $N = 11$ equally spaced
     observations from one trajectory as inputs. (Image source: [Achiam, et al. 2018](https://arxiv.org/abs/1807.10299))'
+  id: totrans-213
   prefs: []
   type: TYPE_NORMAL
+  zh: 图18。 VALOR的解码器是一个双向LSTM，它将来自一条轨迹的$N = 11$等间隔观察作为输入。（图片来源：[Achiam等人，2018](https://arxiv.org/abs/1807.10299)）
 - en: DIAYN (“Diversity is all you need”; [Eysenbach, et al. 2018](https://arxiv.org/abs/1802.06070))
     has the idea lying in the same direction, although with a different name — DIAYN
     models the policies conditioned on a latent *skill* variable. See my [previous
     post](https://lilianweng.github.io/posts/2019-06-23-meta-rl/#learning-with-random-rewards)
     for more details.
+  id: totrans-214
   prefs: []
   type: TYPE_NORMAL
+  zh: DIAYN（“多样性就是你所需要的一切”；[Eysenbach等人，2018](https://arxiv.org/abs/1802.06070)）的想法与此类似，尽管名称不同
+    — DIAYN模型是基于潜在*技能*变量的策略。更多细节请参阅我的[先前的帖子](https://lilianweng.github.io/posts/2019-06-23-meta-rl/#learning-with-random-rewards)。
 - en: Citation
+  id: totrans-215
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 引用
 - en: 'Cited as:'
+  id: totrans-216
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Cited as:'
 - en: Weng, Lilian. (Jun 2020). Exploration strategies in deep reinforcement learning.
     Lil’Log. https://lilianweng.github.io/posts/2020-06-07-exploration-drl/.
+  id: totrans-217
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: Weng，Lilian。 （2020年6月）。 深度强化学习中的探索策略。 Lil’Log。 https://lilianweng.github.io/posts/2020-06-07-exploration-drl/。
 - en: Or
+  id: totrans-218
   prefs: []
   type: TYPE_NORMAL
+  zh: 或
 - en: '[PRE0]'
+  id: totrans-219
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: Reference
+  id: totrans-220
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考
 - en: '[1] Pierre-Yves Oudeyer & Frederic Kaplan. [“How can we define intrinsic motivation?”](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.567.6524&rep=rep1&type=pdf)
     Conf. on Epigenetic Robotics, 2008.'
+  id: totrans-221
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] Pierre-Yves Oudeyer & Frederic Kaplan. [“我们如何定义内在动机？”](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.567.6524&rep=rep1&type=pdf)
+    2008年表观遗传机器人会议。'
 - en: '[2] Marc G. Bellemare, et al. [“Unifying Count-Based Exploration and Intrinsic
     Motivation”](https://arxiv.org/abs/1606.01868). NIPS 2016.'
+  id: totrans-222
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] Marc G. Bellemare等人 [“统一基于计数的探索和内在动机”](https://arxiv.org/abs/1606.01868)。NIPS
+    2016。'
 - en: '[3] Georg Ostrovski, et al. [“Count-Based Exploration with Neural Density Models”](https://arxiv.org/abs/1703.01310).
     PMLR 2017.'
+  id: totrans-223
   prefs: []
   type: TYPE_NORMAL
+  zh: '[3] Georg Ostrovski等人 [“使用神经密度模型进行基于计数的探索”](https://arxiv.org/abs/1703.01310)。PMLR
+    2017。'
 - en: '[4] Rui Zhao & Volker Tresp. [“Curiosity-Driven Experience Prioritization via
     Density Estimation”](https://arxiv.org/abs/1902.08039). NIPS 2018.'
+  id: totrans-224
   prefs: []
   type: TYPE_NORMAL
+  zh: '[4] Rui Zhao & Volker Tresp。 [“通过密度估计驱动好奇心导向的经验优先级”](https://arxiv.org/abs/1902.08039)。NIPS
+    2018。'
 - en: '[5] Haoran Tang, et al. ["#Exploration: A Study of Count-Based Exploration
     for Deep Reinforcement Learning”](https://arxiv.org/abs/1611.04717). NIPS 2017.'
+  id: totrans-225
   prefs: []
   type: TYPE_NORMAL
+  zh: '[5] Haoran Tang等人。[“＃探索：深度强化学习的基于计数的探索研究”](https://arxiv.org/abs/1611.04717)。NIPS
+    2017。'
 - en: '[6] Jürgen Schmidhuber. [“A possibility for implementing curiosity and boredom
     in model-building neural controllers”](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.45.957)
     1991.'
+  id: totrans-226
   prefs: []
   type: TYPE_NORMAL
+  zh: '[6] Jürgen Schmidhuber。[“在模型构建神经控制器中实现好奇心和无聊的可能性”](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.45.957)
+    1991年。'
 - en: '[7] Pierre-Yves Oudeyer, et al. [“Intrinsic Motivation Systems for Autonomous
     Mental Development”](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.177.7661&rep=rep1&type=pdf)
     IEEE Transactions on Evolutionary Computation, 2007.'
+  id: totrans-227
   prefs: []
   type: TYPE_NORMAL
+  zh: '[7] Pierre-Yves Oudeyer等人。[“自主心智发展的内在动机系统”](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.177.7661&rep=rep1&type=pdf)
+    IEEE进化计算交易，2007年。'
 - en: '[8] Bradly C. Stadie, et al. [“Incentivizing Exploration In Reinforcement Learning
     With Deep Predictive Models”](https://arxiv.org/abs/1507.00814). ICLR 2016.'
+  id: totrans-228
   prefs: []
   type: TYPE_NORMAL
+  zh: '[8] Bradly C. Stadie等人。[“用深度预测模型激励探索的强化学习”](https://arxiv.org/abs/1507.00814)。ICLR
+    2016。'
 - en: '[9] Deepak Pathak, et al. [“Curiosity-driven Exploration by Self-supervised
     Prediction”](https://arxiv.org/abs/1705.05363). CVPR 2017.'
+  id: totrans-229
   prefs: []
   type: TYPE_NORMAL
+  zh: '[9] Deepak Pathak等人。[“自监督预测驱动的好奇心探索”](https://arxiv.org/abs/1705.05363)。CVPR
+    2017。'
 - en: '[10] Yuri Burda, Harri Edwards & Deepak Pathak, et al. [“Large-Scale Study
     of Curiosity-Driven Learning”](https://arxiv.org/abs/1808.04355). arXiv 1808.04355
     (2018).'
+  id: totrans-230
   prefs: []
   type: TYPE_NORMAL
+  zh: '[10] Yuri Burda，Harri Edwards和Deepak Pathak等人。[“好奇驱动学习的大规模研究”](https://arxiv.org/abs/1808.04355)。arXiv
+    1808.04355（2018年）。'
 - en: '[11] Joshua Achiam & Shankar Sastry. [“Surprise-Based Intrinsic Motivation
     for Deep Reinforcement Learning”](https://arxiv.org/abs/1703.01732) NIPS 2016
     Deep RL Workshop.'
+  id: totrans-231
   prefs: []
   type: TYPE_NORMAL
+  zh: '[11] Joshua Achiam和Shankar Sastry。[“基于惊喜的深度强化学习内在动机”](https://arxiv.org/abs/1703.01732)。NIPS
+    2016深度RL研讨会。'
 - en: '[12] Rein Houthooft, et al. [“VIME: Variational information maximizing exploration”](https://arxiv.org/abs/1605.09674).
     NIPS 2016.'
+  id: totrans-232
   prefs: []
   type: TYPE_NORMAL
+  zh: '[12] Rein Houthooft等人。[“VIME：变分信息最大化探索”](https://arxiv.org/abs/1605.09674)。NIPS
+    2016。'
 - en: '[13] Leshem Choshen, Lior Fox & Yonatan Loewenstein. [“DORA the explorer: Directed
     outreaching reinforcement action-selection”](https://arxiv.org/abs/1804.04012).
     ICLR 2018'
+  id: totrans-233
   prefs: []
   type: TYPE_NORMAL
+  zh: '[13] Leshem Choshen，Lior Fox和Yonatan Loewenstein。[“探险家多拉：定向外展强化行动选择”](https://arxiv.org/abs/1804.04012)。ICLR
+    2018'
 - en: '[14] Yuri Burda, et al. [“Exploration by Random Network Distillation”](https://arxiv.org/abs/1810.12894)
     ICLR 2019.'
+  id: totrans-234
   prefs: []
   type: TYPE_NORMAL
+  zh: '[14] Yuri Burda等人。[“通过随机网络蒸馏进行探索”](https://arxiv.org/abs/1810.12894)。ICLR 2019。'
 - en: '[15] OpenAI Blog: [“Reinforcement Learning with Prediction-Based Rewards”](https://openai.com/blog/reinforcement-learning-with-prediction-based-rewards/)
     Oct, 2018.'
+  id: totrans-235
   prefs: []
   type: TYPE_NORMAL
+  zh: '[15] OpenAI博客：[“基于预测奖励的强化学习”](https://openai.com/blog/reinforcement-learning-with-prediction-based-rewards/)
+    2018年10月。'
 - en: '[16] Misha Denil, et al. [“Learning to Perform Physics Experiments via Deep
     Reinforcement Learning”](https://arxiv.org/abs/1611.01843). ICLR 2017.'
+  id: totrans-236
   prefs: []
   type: TYPE_NORMAL
+  zh: '[16] Misha Denil等人。[“通过深度强化学习学习执行物理实验”](https://arxiv.org/abs/1611.01843)。ICLR
+    2017。'
 - en: '[17] Ian Osband, et al. [“Deep Exploration via Bootstrapped DQN”](https://arxiv.org/abs/1602.04621).
     NIPS 2016.'
+  id: totrans-237
   prefs: []
   type: TYPE_NORMAL
+  zh: '[17] Ian Osband等人。[“通过引导DQN进行深度探索”](https://arxiv.org/abs/1602.04621)。NIPS
+    2016。'
 - en: '[18] Ian Osband, John Aslanides & Albin Cassirer. [“Randomized Prior Functions
     for Deep Reinforcement Learning”](https://arxiv.org/abs/1806.03335). NIPS 2018.'
+  id: totrans-238
   prefs: []
   type: TYPE_NORMAL
+  zh: '[18] Ian Osband，John Aslanides和Albin Cassirer。[“用于深度强化学习的随机化先验函数”](https://arxiv.org/abs/1806.03335)。NIPS
+    2018。'
 - en: '[19] Karol Gregor, Danilo Jimenez Rezende & Daan Wierstra. [“Variational Intrinsic
     Control”](https://arxiv.org/abs/1611.07507). ICLR 2017.'
+  id: totrans-239
   prefs: []
   type: TYPE_NORMAL
+  zh: '[19] Karol Gregor，Danilo Jimenez Rezende和Daan Wierstra。[“变分内在控制”](https://arxiv.org/abs/1611.07507)。ICLR
+    2017。'
 - en: '[20] Joshua Achiam, et al. [“Variational Option Discovery Algorithms”](https://arxiv.org/abs/1807.10299).
     arXiv 1807.10299 (2018).'
+  id: totrans-240
   prefs: []
   type: TYPE_NORMAL
+  zh: '[20] Joshua Achiam等人。[“变分选项发现算法”](https://arxiv.org/abs/1807.10299)。arXiv 1807.10299（2018年）。'
 - en: '[21] Benjamin Eysenbach, et al. [“Diversity is all you need: Learning skills
     without a reward function.”](https://arxiv.org/abs/1802.06070). ICLR 2019.'
+  id: totrans-241
   prefs: []
   type: TYPE_NORMAL
+  zh: '[21] Benjamin Eysenbach等人。[“多样性就是你所需要的：学习无需奖励函数的技能。”](https://arxiv.org/abs/1802.06070)。ICLR
+    2019。'
 - en: '[22] Adrià Puigdomènech Badia, et al. [“Never Give Up (NGU): Learning Directed
     Exploration Strategies”](https://arxiv.org/abs/2002.06038) ICLR 2020.'
+  id: totrans-242
   prefs: []
   type: TYPE_NORMAL
+  zh: '[22] Adrià Puigdomènech Badia等人。[“永不放弃（NGU）：学习定向探索策略”](https://arxiv.org/abs/2002.06038)。ICLR
+    2020。'
 - en: '[23] Adrià Puigdomènech Badia, et al. [“Agent57: Outperforming the Atari Human
     Benchmark”](https://arxiv.org/abs/2003.13350). arXiv 2003.13350 (2020).'
+  id: totrans-243
   prefs: []
   type: TYPE_NORMAL
+  zh: '[23] Adrià Puigdomènech Badia等人。[“Agent57：超越Atari人类基准”](https://arxiv.org/abs/2003.13350)。arXiv
+    2003.13350（2020年）。'
 - en: '[24] DeepMind Blog: [“Agent57: Outperforming the human Atari benchmark”](https://deepmind.com/blog/article/Agent57-Outperforming-the-human-Atari-benchmark)
     Mar 2020.'
+  id: totrans-244
   prefs: []
   type: TYPE_NORMAL
+  zh: '[24] DeepMind 博客: [“Agent57: 超越人类 Atari 基准”](https://deepmind.com/blog/article/Agent57-Outperforming-the-human-Atari-benchmark)
+    2020年3月.'
 - en: '[25] Nikolay Savinov, et al. [“Episodic Curiosity through Reachability”](https://arxiv.org/abs/1810.02274)
     ICLR 2019.'
+  id: totrans-245
   prefs: []
   type: TYPE_NORMAL
+  zh: '[25] Nikolay Savinov 等. [“通过可达性实现情节好奇心”](https://arxiv.org/abs/1810.02274)
+    ICLR 2019.'
 - en: '[26] Adrien Ecoffet, et al. [“Go-Explore: a New Approach for Hard-Exploration
     Problems”](https://arxiv.org/abs/1901.10995). arXiv 1901.10995 (2019).'
+  id: totrans-246
   prefs: []
   type: TYPE_NORMAL
+  zh: '[26] Adrien Ecoffet 等. [“Go-Explore: 解决难度探索问题的新方法”](https://arxiv.org/abs/1901.10995).
+    arXiv 1901.10995 (2019).'
 - en: '[27] Adrien Ecoffet, et al. [“First return then explore”](https://arxiv.org/abs/2004.12919).
     arXiv 2004.12919 (2020).'
+  id: totrans-247
   prefs: []
   type: TYPE_NORMAL
+  zh: '[27] Adrien Ecoffet 等. [“先回归再探索”](https://arxiv.org/abs/2004.12919). arXiv
+    2004.12919 (2020).'
 - en: '[28] Junhyuk Oh, et al. [“Self-Imitation Learning”](https://arxiv.org/abs/1806.05635).
     ICML 2018.'
+  id: totrans-248
   prefs: []
   type: TYPE_NORMAL
+  zh: '[28] Junhyuk Oh 等. [“自我模仿学习”](https://arxiv.org/abs/1806.05635). ICML 2018.'
 - en: '[29] Yijie Guo, et al. [“Self-Imitation Learning via Trajectory-Conditioned
     Policy for Hard-Exploration Tasks”](https://arxiv.org/abs/1907.10247). arXiv 1907.10247
     (2019).'
+  id: totrans-249
   prefs: []
   type: TYPE_NORMAL
+  zh: '[29] 郭一杰 等. [“通过轨迹条件策略进行自我模仿学习以解决难度探索任务”](https://arxiv.org/abs/1907.10247).
+    arXiv 1907.10247 (2019).'
 - en: '[30] Zhaohan Daniel Guo & Emma Brunskill. [“Directed Exploration for Reinforcement
     Learning”](https://arxiv.org/abs/1906.07805). arXiv 1906.07805 (2019).'
+  id: totrans-250
   prefs: []
   type: TYPE_NORMAL
+  zh: '[30] 郭兆瀚 & Emma Brunskill. [“强化学习的定向探索”](https://arxiv.org/abs/1906.07805).
+    arXiv 1906.07805 (2019).'
 - en: '[31] Deepak Pathak, et al. [“Self-Supervised Exploration via Disagreement.”](https://arxiv.org/abs/1906.04161)
     ICML 2019.'
+  id: totrans-251
   prefs: []
   type: TYPE_NORMAL
+  zh: '[31] Deepak Pathak 等. [“通过不一致性进行自监督探索”](https://arxiv.org/abs/1906.04161) ICML
+    2019.'

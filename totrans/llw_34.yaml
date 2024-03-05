@@ -1,146 +1,223 @@
 - en: Policy Gradient Algorithms
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 策略梯度算法
 - en: 原文：[https://lilianweng.github.io/posts/2018-04-08-policy-gradient/](https://lilianweng.github.io/posts/2018-04-08-policy-gradient/)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://lilianweng.github.io/posts/2018-04-08-policy-gradient/](https://lilianweng.github.io/posts/2018-04-08-policy-gradient/)
 - en: '[Updated on 2018-06-30: add two new policy gradient methods, [SAC](#sac) and
     [D4PG](#d4pg).]'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: '[更新于2018-06-30：添加了两种新的策略梯度方法，[SAC](#sac)和[D4PG](#d4pg)。]'
 - en: '[Updated on 2018-09-30: add a new policy gradient method, [TD3](#td3).]'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[更新于2018-09-30：添加了一种新的策略梯度方法，[TD3](#td3)。]'
 - en: '[Updated on 2019-02-09: add [SAC with automatically adjusted temperature](#sac-with-automatically-adjusted-temperature)].'
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: '[更新于2019-02-09：添加了[SAC自动调整温度](#sac-with-automatically-adjusted-temperature)。]'
 - en: '[Updated on 2019-06-26: Thanks to Chanseok, we have a version of this post
     in [Korean](https://talkingaboutme.tistory.com/entry/RL-Policy-Gradient-Algorithms)].'
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: '[更新于2019-06-26：感谢Chanseok，我们有一篇[韩文版本](https://talkingaboutme.tistory.com/entry/RL-Policy-Gradient-Algorithms)的这篇文章。]'
 - en: '[Updated on 2019-09-12: add a new policy gradient method [SVPG](#svpg).]'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: '[更新于2019-09-12：添加了一种新的策略梯度方法[SVPG](#svpg)。]'
 - en: '[Updated on 2019-12-22: add a new policy gradient method [IMPALA](#impala).]'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '[更新于2019-12-22：添加了一种新的策略梯度方法[IMPALA](#impala)。]'
 - en: '[Updated on 2020-10-15: add a new policy gradient method [PPG](#ppg) & some
     new discussion in [PPO](#ppo).]'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: '[更新于2020-10-15：添加了一种新的策略梯度方法[PPG](#ppg)和一些关于[PPO](#ppo)的新讨论。]'
 - en: '[Updated on 2021-09-19: Thanks to Wenhao & 爱吃猫的鱼, we have this post in [Chinese1](https://tomaxent.com/2019/04/14/%E7%AD%96%E7%95%A5%E6%A2%AF%E5%BA%A6%E6%96%B9%E6%B3%95/)
     & [Chinese2](https://paperexplained.cn/articles/article/detail/31/)].'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: '[更新于2021-09-19：感谢Wenhao & 爱吃猫的鱼，我们有这篇文章的[中文1](https://tomaxent.com/2019/04/14/%E7%AD%96%E7%95%A5%E6%A2%AF%E5%BA%A6%E6%96%B9%E6%B3%95/)
+    & [中文2](https://paperexplained.cn/articles/article/detail/31/)版本。]'
 - en: What is Policy Gradient
+  id: totrans-10
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 什么是策略梯度
 - en: Policy gradient is an approach to solve reinforcement learning problems. If
     you haven’t looked into the field of reinforcement learning, please first read
     the section [“A (Long) Peek into Reinforcement Learning » Key Concepts”](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#key-concepts)
     for the problem definition and key concepts.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 策略梯度是解决强化学习问题的一种方法。如果您还没有了解强化学习领域，请先阅读本文中关于问题定义和关键概念的部分[“深入了解强化学习 » 关键概念”](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#key-concepts)。
 - en: Notations
+  id: totrans-12
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 符号
 - en: Here is a list of notations to help you read through equations in the post easily.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里是一个符号列表，帮助您轻松阅读文章中的方程式。
 - en: '| Symbol | Meaning |'
+  id: totrans-14
   prefs: []
   type: TYPE_TB
+  zh: '| 符号 | 含义 |'
 - en: '| --- | --- |'
+  id: totrans-15
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- |'
 - en: '| $s \in \mathcal{S}$ | States. |'
+  id: totrans-16
   prefs: []
   type: TYPE_TB
+  zh: '| $s \in \mathcal{S}$ | 状态。|'
 - en: '| $a \in \mathcal{A}$ | Actions. |'
+  id: totrans-17
   prefs: []
   type: TYPE_TB
+  zh: '| $a \in \mathcal{A}$ | 动作。|'
 - en: '| $r \in \mathcal{R}$ | Rewards. |'
+  id: totrans-18
   prefs: []
   type: TYPE_TB
+  zh: '| $r \in \mathcal{R}$ | 奖励。|'
 - en: '| $S_t, A_t, R_t$ | State, action, and reward at time step $t$ of one trajectory.
     I may occasionally use $s_t, a_t, r_t$ as well. |'
+  id: totrans-19
   prefs: []
   type: TYPE_TB
+  zh: '| $S_t, A_t, R_t$ | 一个轨迹在时间步$t$的状态、动作和奖励。我有时也会使用$s_t, a_t, r_t$。|'
 - en: '| $\gamma$ | Discount factor; penalty to uncertainty of future rewards; $0<\gamma
     \leq 1$. |'
+  id: totrans-20
   prefs: []
   type: TYPE_TB
+  zh: '| $\gamma$ | 折现因子；对未来奖励的不确定性进行惩罚；$0<\gamma \leq 1$。|'
 - en: '| $G_t$ | Return; or discounted future reward; $G_t = \sum_{k=0}^{\infty} \gamma^k
     R_{t+k+1}$. |'
+  id: totrans-21
   prefs: []
   type: TYPE_TB
+  zh: '| $G_t$ | 返回值；或者折现未来奖励；$G_t = \sum_{k=0}^{\infty} \gamma^k R_{t+k+1}$。|'
 - en: '| $P(s’, r \vert s, a)$ | Transition probability of getting to the next state
     $s’$ from the current state $s$ with action $a$ and reward $r$. |'
+  id: totrans-22
   prefs: []
   type: TYPE_TB
+  zh: '| $P(s’, r \vert s, a)$ | 从当前状态$s$经过动作$a$和奖励$r$到达下一个状态$s’$的转移概率。|'
 - en: '| $\pi(a \vert s)$ | Stochastic policy (agent behavior strategy); $\pi_\theta(.)$
     is a policy parameterized by $\theta$. |'
+  id: totrans-23
   prefs: []
   type: TYPE_TB
+  zh: '| $\pi(a \vert s)$ | 随机策略（代理行为策略）；$\pi_\theta(.)$是一个由$\theta$参数化的策略。|'
 - en: '| $\mu(s)$ | Deterministic policy; we can also label this as $\pi(s)$, but
     using a different letter gives better distinction so that we can easily tell when
     the policy is stochastic or deterministic without further explanation. Either
     $\pi$ or $\mu$ is what a reinforcement learning algorithm aims to learn. |'
+  id: totrans-24
   prefs: []
   type: TYPE_TB
+  zh: '| $\mu(s)$ | 确定性策略；我们也可以将其标记为$\pi(s)$，但使用不同的字母可以更好地区分，以便我们可以轻松区分策略是随机的还是确定性的，而无需进一步解释。$\pi$或$\mu$是强化学习算法的学习目标。|'
 - en: '| $V(s)$ | State-value function measures the expected return of state $s$;
     $V_w(.)$ is a value function parameterized by $w$. |'
+  id: totrans-25
   prefs: []
   type: TYPE_TB
+  zh: '| $V(s)$ | 状态值函数衡量状态$s$的期望回报；$V_w(.)$是一个由$w$参数化的值函数。|'
 - en: '| $V^\pi(s)$ | The value of state $s$ when we follow a policy $\pi$; $V^\pi
     (s) = \mathbb{E}_{a\sim \pi} [G_t \vert S_t = s]$. |'
+  id: totrans-26
   prefs: []
   type: TYPE_TB
+  zh: '| $V^\pi(s)$ | 当我们遵循策略$\pi$时状态$s$的值；$V^\pi (s) = \mathbb{E}_{a\sim \pi} [G_t
+    \vert S_t = s]$。|'
 - en: '| $Q(s, a)$ | Action-value function is similar to $V(s)$, but it assesses the
     expected return of a pair of state and action $(s, a)$; $Q_w(.)$ is a action value
     function parameterized by $w$. |'
+  id: totrans-27
   prefs: []
   type: TYPE_TB
+  zh: '| $Q(s, a)$ | 行动值函数类似于 $V(s)$，但评估的是状态和动作对 $(s, a)$ 的预期回报；$Q_w(.)$ 是由 $w$ 参数化的行动值函数。'
 - en: '| $Q^\pi(s, a)$ | Similar to $V^\pi(.)$, the value of (state, action) pair
     when we follow a policy $\pi$; $Q^\pi(s, a) = \mathbb{E}_{a\sim \pi} [G_t \vert
     S_t = s, A_t = a]$. |'
+  id: totrans-28
   prefs: []
   type: TYPE_TB
+  zh: '| $Q^\pi(s, a)$ | 类似于 $V^\pi(.)$，当我们遵循策略 $\pi$ 时，（状态，动作）对的值；$Q^\pi(s, a) =
+    \mathbb{E}_{a\sim \pi} [G_t \vert S_t = s, A_t = a]$。'
 - en: '| $A(s, a)$ | Advantage function, $A(s, a) = Q(s, a) - V(s)$; it can be considered
     as another version of Q-value with lower variance by taking the state-value off
     as the baseline. |'
+  id: totrans-29
   prefs: []
   type: TYPE_TB
+  zh: '| $A(s, a)$ | 优势函数，$A(s, a) = Q(s, a) - V(s)$；可以将其视为以状态值为基准的 Q 值的另一版本，具有更低的方差。'
 - en: Policy Gradient
+  id: totrans-30
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 策略梯度
 - en: The goal of reinforcement learning is to find an optimal behavior strategy for
     the agent to obtain optimal rewards. The **policy gradient** methods target at
     modeling and optimizing the policy directly. The policy is usually modeled with
     a parameterized function respect to $\theta$, $\pi_\theta(a \vert s)$. The value
     of the reward (objective) function depends on this policy and then various algorithms
     can be applied to optimize $\theta$ for the best reward.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 强化学习的目标是为代理找到一种获取最优奖励的行为策略。**策略梯度**方法旨在直接对策略进行建模和优化。策略通常用关于 $\theta$ 的参数化函数来建模，$\pi_\theta(a
+    \vert s)$。奖励（目标）函数的值取决于这个策略，然后可以应用各种算法来优化 $\theta$ 以获得最佳奖励。
 - en: 'The reward function is defined as:'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 奖励函数定义如下：
 - en: $$ J(\theta) = \sum_{s \in \mathcal{S}} d^\pi(s) V^\pi(s) = \sum_{s \in \mathcal{S}}
     d^\pi(s) \sum_{a \in \mathcal{A}} \pi_\theta(a \vert s) Q^\pi(s, a) $$
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ J(\theta) = \sum_{s \in \mathcal{S}} d^\pi(s) V^\pi(s) = \sum_{s \in \mathcal{S}}
+    d^\pi(s) \sum_{a \in \mathcal{A}} \pi_\theta(a \vert s) Q^\pi(s, a) $$
 - en: where $d^\pi(s)$ is the stationary distribution of Markov chain for $\pi_\theta$
     (on-policy state distribution under $\pi$). For simplicity, the parameter $\theta$
     would be omitted for the policy $\pi_\theta$ when the policy is present in the
     subscript of other functions; for example, $d^{\pi}$ and $Q^\pi$ should be $d^{\pi_\theta}$
     and $Q^{\pi_\theta}$ if written in full.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 $d^\pi(s)$ 是 $\pi_\theta$ 的马尔可夫链的稳态分布（在 $\pi$ 下的策略状态分布）。为简单起见，当策略出现在其他函数的下标中时，策略
+    $\pi_\theta$ 的参数 $\theta$ 将被省略；例如，如果完整书写，则 $d^{\pi}$ 和 $Q^\pi$ 应该是 $d^{\pi_\theta}$
+    和 $Q^{\pi_\theta}$。
 - en: Imagine that you can travel along the Markov chain’s states forever, and eventually,
     as the time progresses, the probability of you ending up with one state becomes
     unchanged — this is the stationary probability for $\pi_\theta$. $d^\pi(s) = \lim_{t
@@ -148,56 +225,84 @@
     when starting from $s_0$ and following policy $\pi_\theta$ for t steps. Actually,
     the existence of the stationary distribution of Markov chain is one main reason
     for why PageRank algorithm works. If you want to read more, check [this](https://jeremykun.com/2015/04/06/markov-chain-monte-carlo-without-all-the-bullshit/).
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 想象一下，你可以永远沿着马尔可夫链的状态旅行，随着时间的推移，你最终停留在某个状态的概率保持不变 —— 这就是 $\pi_\theta$ 的稳态概率。$d^\pi(s)
+    = \lim_{t \to \infty} P(s_t = s \vert s_0, \pi_\theta)$ 是从 $s_0$ 开始，按照策略 $\pi_\theta$
+    进行 t 步后，$s_t=s$ 的概率。实际上，马尔可夫链的稳态分布的存在是 PageRank 算法有效的主要原因之一。如果想要了解更多，请查看[这里](https://jeremykun.com/2015/04/06/markov-chain-monte-carlo-without-all-the-bullshit/)。
 - en: It is natural to expect policy-based methods are more useful in the continuous
     space. Because there is an infinite number of actions and (or) states to estimate
     the values for and hence value-based approaches are way too expensive computationally
     in the continuous space. For example, in [generalized policy iteration](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#policy-iteration),
     the policy improvement step $\arg\max_{a \in \mathcal{A}} Q^\pi(s, a)$ requires
     a full scan of the action space, suffering from the [curse of dimensionality](https://en.wikipedia.org/wiki/Curse_of_dimensionality).
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 自然而然地期望基于策略的方法在连续空间中更有用。因为有无限数量的动作和（或）状态需要估计值，因此在连续空间中价值为基础的方法在计算上过于昂贵。例如，在[广义策略迭代](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#policy-iteration)中，策略改进步骤
+    $\arg\max_{a \in \mathcal{A}} Q^\pi(s, a)$ 需要对动作空间进行全面扫描，受到[维度诅咒](https://en.wikipedia.org/wiki/Curse_of_dimensionality)的困扰。
 - en: Using *gradient ascent*, we can move $\theta$ toward the direction suggested
     by the gradient $\nabla_\theta J(\theta)$ to find the best $\theta$ for $\pi_\theta$
     that produces the highest return.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用*梯度上升*，我们可以将$\theta$沿着梯度$\nabla_\theta J(\theta)$建议的方向移动，以找到产生最高回报的$\pi_\theta$的最佳$\theta$。
 - en: Policy Gradient Theorem
+  id: totrans-38
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 策略梯度定理
 - en: Computing the gradient $\nabla_\theta J(\theta)$ is tricky because it depends
     on both the action selection (directly determined by $\pi_\theta$) and the stationary
     distribution of states following the target selection behavior (indirectly determined
     by $\pi_\theta$). Given that the environment is generally unknown, it is difficult
     to estimate the effect on the state distribution by a policy update.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 计算梯度$\nabla_\theta J(\theta)$很棘手，因为它取决于动作选择（直接由$\pi_\theta$确定）和遵循目标选择行为的状态稳态分布（间接由$\pi_\theta$确定）。鉴于环境通常是未知的，很难估计通过策略更新对状态分布的影响。
 - en: Luckily, the **policy gradient theorem** comes to save the world! Woohoo! It
     provides a nice reformation of the derivative of the objective function to not
     involve the derivative of the state distribution $d^\pi(.)$ and simplify the gradient
     computation $\nabla_\theta J(\theta)$ a lot.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 幸运的是，**策略梯度定理**来拯救世界了！哇哦！它提供了一个很好的改写目标函数的导数，不涉及状态分布的导数$d^\pi(.)$，并且大大简化了梯度计算$\nabla_\theta
+    J(\theta)$。
 - en: $$ \begin{aligned} \nabla_\theta J(\theta) &= \nabla_\theta \sum_{s \in \mathcal{S}}
     d^\pi(s) \sum_{a \in \mathcal{A}} Q^\pi(s, a) \pi_\theta(a \vert s) \\ &\propto
     \sum_{s \in \mathcal{S}} d^\pi(s) \sum_{a \in \mathcal{A}} Q^\pi(s, a) \nabla_\theta
     \pi_\theta(a \vert s) \end{aligned} $$
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \nabla_\theta J(\theta) &= \nabla_\theta \sum_{s \in \mathcal{S}}
+    d^\pi(s) \sum_{a \in \mathcal{A}} Q^\pi(s, a) \pi_\theta(a \vert s) \\ &\propto
+    \sum_{s \in \mathcal{S}} d^\pi(s) \sum_{a \in \mathcal{A}} Q^\pi(s, a) \nabla_\theta
+    \pi_\theta(a \vert s) \end{aligned} $$
 - en: Proof of Policy Gradient Theorem
+  id: totrans-42
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 策略梯度定理的证明
 - en: This session is pretty dense, as it is the time for us to go through the proof
     ([Sutton & Barto, 2017](http://incompleteideas.net/book/bookdraft2017nov5.pdf);
     Sec. 13.1) and figure out why the policy gradient theorem is correct.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 这一部分非常密集，因为现在是我们通过证明（[Sutton & Barto, 2017](http://incompleteideas.net/book/bookdraft2017nov5.pdf);
+    Sec. 13.1）来弄清楚为什么策略梯度定理是正确的时候了。
 - en: 'We first start with the derivative of the state value function:'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们首先从状态值函数的导数开始：
 - en: $$ \begin{aligned} & \nabla_\theta V^\pi(s) \\ =& \nabla_\theta \Big(\sum_{a
     \in \mathcal{A}} \pi_\theta(a \vert s)Q^\pi(s, a) \Big) & \\ =& \sum_{a \in \mathcal{A}}
     \Big( \nabla_\theta \pi_\theta(a \vert s)Q^\pi(s, a) + \pi_\theta(a \vert s) \color{red}{\nabla_\theta
@@ -212,57 +317,97 @@
     \vert s)Q^\pi(s, a) + \pi_\theta(a \vert s) \color{red}{\sum_{s'} P(s' \vert s,a)
     \nabla_\theta V^\pi(s')} \Big) & \scriptstyle{\text{; Because } P(s' \vert s,
     a) = \sum_r P(s', r \vert s, a)} \end{aligned} $$
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} & \nabla_\theta V^\pi(s) \\ =& \nabla_\theta \Big(\sum_{a
+    \in \mathcal{A}} \pi_\theta(a \vert s)Q^\pi(s, a) \Big) & \\ =& \sum_{a \in \mathcal{A}}
+    \Big( \nabla_\theta \pi_\theta(a \vert s)Q^\pi(s, a) + \pi_\theta(a \vert s) \color{red}{\nabla_\theta
+    Q^\pi(s, a)} \Big) & \scriptstyle{\text{; 导数乘积法则。}} \\ =& \sum_{a \in \mathcal{A}}
+    \Big( \nabla_\theta \pi_\theta(a \vert s)Q^\pi(s, a) + \pi_\theta(a \vert s) \color{red}{\nabla_\theta
+    \sum_{s', r} P(s',r \vert s,a)(r + V^\pi(s'))} \Big) & \scriptstyle{\text{; 将}
+    Q^\pi \text{扩展为未来状态值。}} \\ =& \sum_{a \in \mathcal{A}} \Big( \nabla_\theta \pi_\theta(a
+    \vert s)Q^\pi(s, a) + \pi_\theta(a \vert s) \color{red}{\sum_{s', r} P(s',r \vert
+    s,a) \nabla_\theta V^\pi(s')} \Big) & \scriptstyle{P(s',r \vert s,a) \text{或}
+    r \text{不是}\theta\text{的函数}}\\ =& \sum_{a \in \mathcal{A}} \Big( \nabla_\theta
+    \pi_\theta(a \vert s)Q^\pi(s, a) + \pi_\theta(a \vert s) \color{red}{\sum_{s'}
+    P(s' \vert s,a) \nabla_\theta V^\pi(s')} \Big) & \scriptstyle{\text{; 因为} P(s'
+    \vert s, a) = \sum_r P(s', r \vert s, a)} \end{aligned} $$
 - en: 'Now we have:'
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们有：
 - en: $$ \color{red}{\nabla_\theta V^\pi(s)} = \sum_{a \in \mathcal{A}} \Big( \nabla_\theta
     \pi_\theta(a \vert s)Q^\pi(s, a) + \pi_\theta(a \vert s) \sum_{s'} P(s' \vert
     s,a) \color{red}{\nabla_\theta V^\pi(s')} \Big) $$
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \color{red}{\nabla_\theta V^\pi(s)} = \sum_{a \in \mathcal{A}} \Big( \nabla_\theta
+    \pi_\theta(a \vert s)Q^\pi(s, a) + \pi_\theta(a \vert s) \sum_{s'} P(s' \vert
+    s,a) \color{red}{\nabla_\theta V^\pi(s')} \Big) $$
 - en: This equation has a nice recursive form (see the red parts!) and the future
     state value function $V^\pi(s’)$ can be repeated unrolled by following the same
     equation.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个方程有一个很好的递归形式（看红色部分！），未来状态值函数$V^\pi(s’)$可以通过遵循相同方程重复展开。
 - en: Let’s consider the following visitation sequence and label the probability of
     transitioning from state s to state x with policy $\pi_\theta$ after k step as
     $\rho^\pi(s \to x, k)$.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们考虑以下访问序列，并将从状态s到状态x的概率标记为$\pi_\theta$策略下经过k步的$\rho^\pi(s \to x, k)$。
 - en: $$ s \xrightarrow[]{a \sim \pi_\theta(.\vert s)} s' \xrightarrow[]{a \sim \pi_\theta(.\vert
     s')} s'' \xrightarrow[]{a \sim \pi_\theta(.\vert s'')} \dots $$
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ s \xrightarrow[]{a \sim \pi_\theta(.\vert s)} s' \xrightarrow[]{a \sim \pi_\theta(.\vert
+    s')} s'' \xrightarrow[]{a \sim \pi_\theta(.\vert s'')} \dots $$
 - en: 'When k = 0: $\rho^\pi(s \to s, k=0) = 1$.'
+  id: totrans-51
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 当k = 0时：$\rho^\pi(s \to s, k=0) = 1$。
 - en: 'When k = 1, we scan through all possible actions and sum up the transition
     probabilities to the target state: $\rho^\pi(s \to s’, k=1) = \sum_a \pi_\theta(a
     \vert s) P(s’ \vert s, a)$.'
+  id: totrans-52
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 当k = 1时，我们遍历所有可能的动作，并将过渡概率相加到目标状态：$\rho^\pi(s \to s’, k=1) = \sum_a \pi_\theta(a
+    \vert s) P(s’ \vert s, a)$。
 - en: 'Imagine that the goal is to go from state s to x after k+1 steps while following
     policy $\pi_\theta$. We can first travel from s to a middle point s’ (any state
     can be a middle point, $s’ \in \mathcal{S}$) after k steps and then go to the
     final state x during the last step. In this way, we are able to update the visitation
     probability recursively: $\rho^\pi(s \to x, k+1) = \sum_{s’} \rho^\pi(s \to s’,
     k) \rho^\pi(s’ \to x, 1)$.'
+  id: totrans-53
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 想象一下，目标是在遵循策略$\pi_\theta$的情况下，在k+1步后从状态s到x。我们可以先在k步后从s移动到一个中间点s'（任何状态都可以是中间点，$s'
+    \in \mathcal{S}$），然后在最后一步到达最终状态x。通过这种方式，我们能够递归更新访问概率：$\rho^\pi(s \to x, k+1) =
+    \sum_{s'} \rho^\pi(s \to s', k) \rho^\pi(s’ \to x, 1)$。
 - en: Then we go back to unroll the recursive representation of $\nabla_\theta V^\pi(s)$!
     Let $\phi(s) = \sum_{a \in \mathcal{A}} \nabla_\theta \pi_\theta(a \vert s)Q^\pi(s,
     a)$ to simplify the maths. If we keep on extending $\nabla_\theta V^\pi(.)$ infinitely,
     it is easy to find out that we can transition from the starting state s to any
     state after any number of steps in this unrolling process and by summing up all
     the visitation probabilities, we get $\nabla_\theta V^\pi(s)$!
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后我们回到展开$\nabla_\theta V^\pi(s)$的递归表示！让$\phi(s) = \sum_{a \in \mathcal{A}} \nabla_\theta
+    \pi_\theta(a \vert s)Q^\pi(s, a)$来简化数学问题。如果我们不断延伸$\nabla_\theta V^\pi(.)$，很容易发现我们可以在这个展开过程中从起始状态s过渡到任何状态，并通过累加所有访问概率，我们得到$\nabla_\theta
+    V^\pi(s)$！
 - en: $$ \begin{aligned} & \color{red}{\nabla_\theta V^\pi(s)} \\ =& \phi(s) + \sum_a
     \pi_\theta(a \vert s) \sum_{s'} P(s' \vert s,a) \color{red}{\nabla_\theta V^\pi(s')}
     \\ =& \phi(s) + \sum_{s'} \sum_a \pi_\theta(a \vert s) P(s' \vert s,a) \color{red}{\nabla_\theta
@@ -277,13 +422,29 @@
     V^\pi(s''')} \\ =& \dots \scriptstyle{\text{; Repeatedly unrolling the part of
     }\nabla_\theta V^\pi(.)} \\ =& \sum_{x\in\mathcal{S}}\sum_{k=0}^\infty \rho^\pi(s
     \to x, k) \phi(x) \end{aligned} $$
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} & \color{red}{\nabla_\theta V^\pi(s)} \\ =& \phi(s) + \sum_a
+    \pi_\theta(a \vert s) \sum_{s'} P(s' \vert s,a) \color{red}{\nabla_\theta V^\pi(s')}
+    \\ =& \phi(s) + \sum_{s'} \sum_a \pi_\theta(a \vert s) P(s' \vert s,a) \color{red}{\nabla_\theta
+    V^\pi(s')} \\ =& \phi(s) + \sum_{s'} \rho^\pi(s \to s', 1) \color{red}{\nabla_\theta
+    V^\pi(s')} \\ =& \phi(s) + \sum_{s'} \rho^\pi(s \to s', 1) \color{red}{\nabla_\theta
+    V^\pi(s')} \\ =& \phi(s) + \sum_{s'} \rho^\pi(s \to s', 1) \color{red}{[ \phi(s')
+    + \sum_{s''} \rho^\pi(s' \to s'', 1) \nabla_\theta V^\pi(s'')]} \\ =& \phi(s)
+    + \sum_{s'} \rho^\pi(s \to s', 1) \phi(s') + \sum_{s''} \rho^\pi(s \to s'', 2)\color{red}{\nabla_\theta
+    V^\pi(s'')} \scriptstyle{\text{ ; 将}s'\text{视为}s \to s''\text{的中间点}\\ =& \phi(s)
+    + \sum_{s'} \rho^\pi(s \to s', 1) \phi(s') + \sum_{s''} \rho^\pi(s \to s'', 2)\phi(s'')
+    + \sum_{s'''} \rho^\pi(s \to s''', 3)\color{red}{\nabla_\theta V^\pi(s''')} \\
+    =& \dots \scriptstyle{\text{; 反复展开}\nabla_\theta V^\pi(.)\text{的部分}} \\ =& \sum_{x\in\mathcal{S}}\sum_{k=0}^\infty
+    \rho^\pi(s \to x, k) \phi(x) \end{aligned} $$
 - en: 'The nice rewriting above allows us to exclude the derivative of Q-value function,
     $\nabla_\theta Q^\pi(s, a)$. By plugging it into the objective function $J(\theta)$,
     we are getting the following:'
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 上面的良好重写使我们能够排除Q值函数的导数，$\nabla_\theta Q^\pi(s, a)$。将其代入目标函数$J(\theta)$，我们得到以下结果：
 - en: $$ \begin{aligned} \nabla_\theta J(\theta) &= \nabla_\theta V^\pi(s_0) & \scriptstyle{\text{;
     Starting from a random state } s_0} \\ &= \sum_{s}\color{blue}{\sum_{k=0}^\infty
     \rho^\pi(s_0 \to s, k)} \phi(s) &\scriptstyle{\text{; Let }\color{blue}{\eta(s)
@@ -294,106 +455,170 @@
     \eta(s)\text{ is a constant}} \\ &= \sum_s d^\pi(s) \sum_a \nabla_\theta \pi_\theta(a
     \vert s)Q^\pi(s, a) & \scriptstyle{d^\pi(s) = \frac{\eta(s)}{\sum_s \eta(s)}\text{
     is stationary distribution.}} \end{aligned} $$
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \nabla_\theta J(\theta) &= \nabla_\theta V^\pi(s_0) & \scriptstyle{\text{；从一个随机状态
+    } s_0 \text{ 开始}} \\ &= \sum_{s}\color{blue}{\sum_{k=0}^\infty \rho^\pi(s_0 \to
+    s, k)} \phi(s) &\scriptstyle{\text{；让 }\color{blue}{\eta(s) = \sum_{k=0}^\infty
+    \rho^\pi(s_0 \to s, k)} } \\ &= \sum_{s}\eta(s) \phi(s) & \\ &= \Big( {\sum_s
+    \eta(s)} \Big)\sum_{s}\frac{\eta(s)}{\sum_s \eta(s)} \phi(s) & \scriptstyle{\text{；将
+    }\eta(s) \text{ 规范化为概率分布。}}\\ &\propto \sum_s \frac{\eta(s)}{\sum_s \eta(s)} \phi(s)
+    & \scriptstyle{\sum_s \eta(s) \text{ 是一个常数}} \\ &= \sum_s d^\pi(s) \sum_a \nabla_\theta
+    \pi_\theta(a \vert s)Q^\pi(s, a) & \scriptstyle{d^\pi(s) = \frac{\eta(s)}{\sum_s
+    \eta(s)}\text{ 是稳态分布。}} \end{aligned} $$
 - en: 'In the episodic case, the constant of proportionality ($\sum_s \eta(s)$) is
     the average length of an episode; in the continuing case, it is 1 ([Sutton & Barto,
     2017](http://incompleteideas.net/book/bookdraft2017nov5.pdf); Sec. 13.2). The
     gradient can be further written as:'
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 在情节性案例中，比例常数（$\sum_s \eta(s)$）是一个情节的平均长度；在连续性案例中，它是1（[Sutton & Barto, 2017](http://incompleteideas.net/book/bookdraft2017nov5.pdf);
+    Sec. 13.2）。梯度可以进一步写为：
 - en: $$ \begin{aligned} \nabla_\theta J(\theta) &\propto \sum_{s \in \mathcal{S}}
     d^\pi(s) \sum_{a \in \mathcal{A}} Q^\pi(s, a) \nabla_\theta \pi_\theta(a \vert
     s) &\\ &= \sum_{s \in \mathcal{S}} d^\pi(s) \sum_{a \in \mathcal{A}} \pi_\theta(a
     \vert s) Q^\pi(s, a) \frac{\nabla_\theta \pi_\theta(a \vert s)}{\pi_\theta(a \vert
     s)} &\\ &= \mathbb{E}_\pi [Q^\pi(s, a) \nabla_\theta \ln \pi_\theta(a \vert s)]
     & \scriptstyle{\text{; Because } (\ln x)' = 1/x} \end{aligned} $$
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \nabla_\theta J(\theta) &\propto \sum_{s \in \mathcal{S}}
+    d^\pi(s) \sum_{a \in \mathcal{A}} Q^\pi(s, a) \nabla_\theta \pi_\theta(a \vert
+    s) &\\ &= \sum_{s \in \mathcal{S}} d^\pi(s) \sum_{a \in \mathcal{A}} \pi_\theta(a
+    \vert s) Q^\pi(s, a) \frac{\nabla_\theta \pi_\theta(a \vert s)}{\pi_\theta(a \vert
+    s)} &\\ &= \mathbb{E}_\pi [Q^\pi(s, a) \nabla_\theta \ln \pi_\theta(a \vert s)]
+    & \scriptstyle{\text{；因为 } (\ln x)' = 1/x} \end{aligned} $$
 - en: Where $\mathbb{E}_\pi$ refers to $\mathbb{E}_{s \sim d_\pi, a \sim \pi_\theta}$
     when both state and action distributions follow the policy $\pi_\theta$ (on policy).
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 当状态和动作分布都遵循策略 $\pi_\theta$ 时，$\mathbb{E}_\pi$ 指的是 $\mathbb{E}_{s \sim d_\pi,
+    a \sim \pi_\theta}$（在策略上）。
 - en: The policy gradient theorem lays the theoretical foundation for various policy
     gradient algorithms. This vanilla policy gradient update has no bias but high
     variance. Many following algorithms were proposed to reduce the variance while
     keeping the bias unchanged.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 策略梯度定理为各种策略梯度算法奠定了理论基础。这种基本策略梯度更新没有偏差，但方差很高。许多后续算法被提出来降低方差，同时保持偏差不变。
 - en: $$ \nabla_\theta J(\theta) = \mathbb{E}_\pi [Q^\pi(s, a) \nabla_\theta \ln \pi_\theta(a
     \vert s)] $$
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \nabla_\theta J(\theta) = \mathbb{E}_\pi [Q^\pi(s, a) \nabla_\theta \ln \pi_\theta(a
+    \vert s)] $$
 - en: Here is a nice summary of a general form of policy gradient methods borrowed
     from the [GAE](https://arxiv.org/pdf/1506.02438.pdf) (general advantage estimation)
     paper ([Schulman et al., 2016](https://arxiv.org/abs/1506.02438)) and this [post](https://danieltakeshi.github.io/2017/04/02/notes-on-the-generalized-advantage-estimation-paper/)
     thoroughly discussed several components in GAE , highly recommended.
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里有一个关于从 [GAE](https://arxiv.org/pdf/1506.02438.pdf)（general advantage estimation）论文（[Schulman
+    et al., 2016](https://arxiv.org/abs/1506.02438)）借鉴的策略梯度方法的一般形式的精彩总结，这篇 [文章](https://danieltakeshi.github.io/2017/04/02/notes-on-the-generalized-advantage-estimation-paper/)
+    对 GAE 中的几个组成部分进行了深入讨论，强烈推荐阅读。
 - en: '![](../Images/e9dd593bfd38e06951fe744cc484b05d.png)'
+  id: totrans-64
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e9dd593bfd38e06951fe744cc484b05d.png)'
 - en: 'Fig. 1\. A general form of policy gradient methods. (Image source: [Schulman
     et al., 2016](https://arxiv.org/abs/1506.02438))'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 图1\. 策略梯度方法的一般形式。（图片来源：[Schulman et al., 2016](https://arxiv.org/abs/1506.02438)）
 - en: Policy Gradient Algorithms
+  id: totrans-66
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 策略梯度算法
 - en: Tons of policy gradient algorithms have been proposed during recent years and
     there is no way for me to exhaust them. I’m introducing some of them that I happened
     to know and read about.
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 近年来提出了大量的策略梯度算法，我无法逐一列举。我将介绍一些我偶然了解和阅读过的算法。
 - en: REINFORCE
+  id: totrans-68
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: REINFORCE
 - en: '**REINFORCE** (Monte-Carlo policy gradient) relies on an estimated return by
     [Monte-Carlo](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#monte-carlo-methods)
     methods using episode samples to update the policy parameter $\theta$. REINFORCE
     works because the expectation of the sample gradient is equal to the actual gradient:'
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: '**REINFORCE**（蒙特卡洛政策梯度）依赖于使用剧集样本的蒙特卡洛方法估计的回报来更新政策参数 $\theta$。REINFORCE之所以有效是因为样本梯度的期望等于实际梯度：'
 - en: $$ \begin{aligned} \nabla_\theta J(\theta) &= \mathbb{E}_\pi [Q^\pi(s, a) \nabla_\theta
     \ln \pi_\theta(a \vert s)] & \\ &= \mathbb{E}_\pi [G_t \nabla_\theta \ln \pi_\theta(A_t
     \vert S_t)] & \scriptstyle{\text{; Because } Q^\pi(S_t, A_t) = \mathbb{E}_\pi[G_t
     \vert S_t, A_t]} \end{aligned} $$
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \nabla_\theta J(\theta) &= \mathbb{E}_\pi [Q^\pi(s, a) \nabla_\theta
+    \ln \pi_\theta(a \vert s)] & \\ &= \mathbb{E}_\pi [G_t \nabla_\theta \ln \pi_\theta(A_t
+    \vert S_t)] & \scriptstyle{\text{; 因为 } Q^\pi(S_t, A_t) = \mathbb{E}_\pi[G_t \vert
+    S_t, A_t]} \end{aligned} $$
 - en: Therefore we are able to measure $G_t$ from real sample trajectories and use
     that to update our policy gradient. It relies on a full trajectory and that’s
     why it is a Monte-Carlo method.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，我们能够从真实样本轨迹中测量 $G_t$ 并用它来更新我们的政策梯度。它依赖于完整的轨迹，这就是为什么它是一种蒙特卡洛方法。
 - en: 'The process is pretty straightforward:'
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 过程非常简单：
 - en: Initialize the policy parameter $\theta$ at random.
+  id: totrans-73
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 随机初始化策略参数 $\theta`。
 - en: 'Generate one trajectory on policy $\pi_\theta$: $S_1, A_1, R_2, S_2, A_2, \dots,
     S_T$.'
+  id: totrans-74
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在策略 $\pi_\theta$ 上生成一个轨迹：$S_1, A_1, R_2, S_2, A_2, \dots, S_T$。
 - en: 'For t=1, 2, … , T:'
+  id: totrans-75
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '对于 t=1, 2, … , T:'
 - en: Estimate the the return $G_t$;
+  id: totrans-76
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 估计回报 $G_t$;
 - en: 'Update policy parameters: $\theta \leftarrow \theta + \alpha \gamma^t G_t \nabla_\theta
     \ln \pi_\theta(A_t \vert S_t)$'
+  id: totrans-77
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 更新策略参数：$\theta \leftarrow \theta + \alpha \gamma^t G_t \nabla_\theta \ln \pi_\theta(A_t
+    \vert S_t)$
 - en: A widely used variation of REINFORCE is to subtract a baseline value from the
     return $G_t$ to *reduce the variance of gradient estimation while keeping the
     bias unchanged* (Remember we always want to do this when possible). For example,
@@ -402,130 +627,187 @@
     This [post](https://danieltakeshi.github.io/2017/03/28/going-deeper-into-reinforcement-learning-fundamentals-of-policy-gradients/)
     nicely explained why a baseline works for reducing the variance, in addition to
     a set of fundamentals of policy gradient.
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: REINFORCE的一个广泛使用的变体是从回报 $G_t$ 中减去一个基线值，*以减少梯度估计的方差同时保持偏差不变*（记住，我们总是在可能的情况下要这样做）。例如，一个常见的基线是从动作值中减去状态值，如果应用，我们将在梯度上升更新中使用优势
+    $A(s, a) = Q(s, a) - V(s)$。这篇[文章](https://danieltakeshi.github.io/2017/03/28/going-deeper-into-reinforcement-learning-fundamentals-of-policy-gradients/)很好地解释了为什么基线可以减少方差，除了一组政策梯度基础知识。
 - en: Actor-Critic
+  id: totrans-79
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 演员-评论家
 - en: Two main components in policy gradient are the policy model and the value function.
     It makes a lot of sense to learn the value function in addition to the policy,
     since knowing the value function can assist the policy update, such as by reducing
     gradient variance in vanilla policy gradients, and that is exactly what the **Actor-Critic**
     method does.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 政策梯度中的两个主要组成部分是政策模型和价值函数。学习价值函数除了学习政策外是有很多意义的，因为了解价值函数可以辅助政策更新，例如通过减少香草政策梯度中的梯度方差，这正是**演员-评论家**方法所做的。
 - en: 'Actor-critic methods consist of two models, which may optionally share parameters:'
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 演员-评论家方法由两个模型组成，这两个模型可以选择性地共享参数：
 - en: '**Critic** updates the value function parameters w and depending on the algorithm
     it could be action-value $Q_w(a \vert s)$ or state-value $V_w(s)$.'
+  id: totrans-82
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**评论家**更新价值函数参数 w，根据算法的不同，它可以是动作值 $Q_w(a \vert s)$ 或状态值 $V_w(s)$。'
 - en: '**Actor** updates the policy parameters $\theta$ for $\pi_\theta(a \vert s)$,
     in the direction suggested by the critic.'
+  id: totrans-83
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**演员**根据评论家建议的方向更新策略参数 $\theta$ 为 $\pi_\theta(a \vert s)$。'
 - en: Let’s see how it works in a simple action-value actor-critic algorithm.
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们看看它是如何在一个简单的动作值演员-评论家算法中运作的。
 - en: Initialize $s, \theta, w$ at random; sample $a \sim \pi_\theta(a \vert s)$.
+  id: totrans-85
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 随机初始化 $s, \theta, w$; 采样 $a \sim \pi_\theta(a \vert s)$.
 - en: 'For $t = 1 \dots T$:'
+  id: totrans-86
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '对于 $t = 1 \dots T$:'
 - en: Sample reward $r_t \sim R(s, a)$ and next state $s’ \sim P(s’ \vert s, a)$;
+  id: totrans-87
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 采样奖励 $r_t \sim R(s, a)$ 和下一个状态 $s’ \sim P(s’ \vert s, a)$;
 - en: Then sample the next action $a’ \sim \pi_\theta(a’ \vert s’)$;
+  id: totrans-88
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 然后采样下一个动作 $a’ \sim \pi_\theta(a’ \vert s’)$;
 - en: 'Update the policy parameters: $\theta \leftarrow \theta + \alpha_\theta Q_w(s,
     a) \nabla_\theta \ln \pi_\theta(a \vert s)$;'
+  id: totrans-89
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 更新策略参数：$\theta \leftarrow \theta + \alpha_\theta Q_w(s, a) \nabla_\theta \ln
+    \pi_\theta(a \vert s)$;
 - en: 'Compute the correction (TD error) for action-value at time t:'
+  id: totrans-90
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 计算时间 t 的动作值的校正（TD误差）：
 - en: $\delta_t = r_t + \gamma Q_w(s’, a’) - Q_w(s, a)$
+  id: totrans-91
   prefs:
   - PREF_IND
   - PREF_IND
   type: TYPE_NORMAL
+  zh: $\delta_t = r_t + \gamma Q_w(s’, a’) - Q_w(s, a)$
 - en: 'and use it to update the parameters of action-value function:'
+  id: totrans-92
   prefs:
   - PREF_IND
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 并将其用于更新动作值函数的参数：
 - en: $w \leftarrow w + \alpha_w \delta_t \nabla_w Q_w(s, a)$
+  id: totrans-93
   prefs:
   - PREF_IND
   - PREF_IND
   type: TYPE_NORMAL
+  zh: $w \leftarrow w + \alpha_w \delta_t \nabla_w Q_w(s, a)$
 - en: Update $a \leftarrow a’$ and $s \leftarrow s’$.
+  id: totrans-94
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 更新 $a \leftarrow a’$ 和 $s \leftarrow s’$。
 - en: Two learning rates, $\alpha_\theta$ and $\alpha_w$, are predefined for policy
     and value function parameter updates respectively.
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 两个学习率，$\alpha_\theta$ 和 $\alpha_w$，分别预定义用于策略和值函数参数更新。
 - en: Off-Policy Policy Gradient
+  id: totrans-96
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 离策略策略梯度
 - en: 'Both REINFORCE and the vanilla version of actor-critic method are on-policy:
     training samples are collected according to the target policy — the very same
     policy that we try to optimize for. Off policy methods, however, result in several
     additional advantages:'
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: REINFORCE 和演员-评论方法的基本版本都是在策略上的：训练样本是根据目标策略收集的 —— 我们试图优化的完全相同的策略。然而，离策略方法带来了几个额外的优势：
 - en: The off-policy approach does not require full trajectories and can reuse any
     past episodes ([“experience replay”](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#deep-q-network))
     for much better sample efficiency.
+  id: totrans-98
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 离策略方法不需要完整的轨迹，并且可以重复使用任何过去的经验（[“经验重放”](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#deep-q-network)）以提高样本效率。
 - en: The sample collection follows a behavior policy different from the target policy,
     bringing better [exploration](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#exploration-exploitation-dilemma).
+  id: totrans-99
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 样本收集遵循与目标策略不同的行为策略，带来更好的[探索](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#exploration-exploitation-dilemma)。
 - en: 'Now let’s see how off-policy policy gradient is computed. The behavior policy
     for collecting samples is a known policy (predefined just like a hyperparameter),
     labelled as $\beta(a \vert s)$. The objective function sums up the reward over
     the state distribution defined by this behavior policy:'
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们看看如何计算离策略策略梯度。用于收集样本的行为策略是一个已知策略（像一个超参数一样预定义），标记为$\beta(a \vert s)$。目标函数将奖励在由该行为策略定义的状态分布上求和：
 - en: $$ J(\theta) = \sum_{s \in \mathcal{S}} d^\beta(s) \sum_{a \in \mathcal{A}}
     Q^\pi(s, a) \pi_\theta(a \vert s) = \mathbb{E}_{s \sim d^\beta} \big[ \sum_{a
     \in \mathcal{A}} Q^\pi(s, a) \pi_\theta(a \vert s) \big] $$
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ J(\theta) = \sum_{s \in \mathcal{S}} d^\beta(s) \sum_{a \in \mathcal{A}}
+    Q^\pi(s, a) \pi_\theta(a \vert s) = \mathbb{E}_{s \sim d^\beta} \big[ \sum_{a
+    \in \mathcal{A}} Q^\pi(s, a) \pi_\theta(a \vert s) \big] $$
 - en: where $d^\beta(s)$ is the stationary distribution of the behavior policy $\beta$;
     recall that $d^\beta(s) = \lim_{t \to \infty} P(S_t = s \vert S_0, \beta)$; and
     $Q^\pi$ is the action-value function estimated with regard to the target policy
     $\pi$ (not the behavior policy!).
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 $d^\beta(s)$ 是行为策略 $\beta$ 的稳态分布；请记住 $d^\beta(s) = \lim_{t \to \infty} P(S_t
+    = s \vert S_0, \beta)$；而 $Q^\pi$ 是针对目标策略 $\pi$ 估计的动作值函数（不是行为策略！）。
 - en: 'Given that the training observations are sampled by $a \sim \beta(a \vert s)$,
     we can rewrite the gradient as:'
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 鉴于训练观察是由 $a \sim \beta(a \vert s)$ 抽样的，我们可以将梯度重写为：
 - en: '$$ \begin{aligned} \nabla_\theta J(\theta) &= \nabla_\theta \mathbb{E}_{s \sim
     d^\beta} \Big[ \sum_{a \in \mathcal{A}} Q^\pi(s, a) \pi_\theta(a \vert s) \Big]
     & \\ &= \mathbb{E}_{s \sim d^\beta} \Big[ \sum_{a \in \mathcal{A}} \big( Q^\pi(s,
@@ -540,8 +822,22 @@
     \vert s)}}{\color{blue}{\beta(a \vert s)}} Q^\pi(s, a) \nabla_\theta \ln \pi_\theta(a
     \vert s) \Big] & \scriptstyle{\text{; The blue part is the importance weight.}}
     \end{aligned} $$'
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \nabla_\theta J(\theta) &= \nabla_\theta \mathbb{E}_{s \sim
+    d^\beta} \Big[ \sum_{a \in \mathcal{A}} Q^\pi(s, a) \pi_\theta(a \vert s) \Big]
+    & \\ &= \mathbb{E}_{s \sim d^\beta} \Big[ \sum_{a \in \mathcal{A}} \big( Q^\pi(s,
+    a) \nabla_\theta \pi_\theta(a \vert s) + \color{red}{\pi_\theta(a \vert s) \nabla_\theta
+    Q^\pi(s, a)} \big) \Big] & \scriptstyle{\text{; 求导乘积法则。}}\\ &\stackrel{(i)}{\approx}
+    \mathbb{E}_{s \sim d^\beta} \Big[ \sum_{a \in \mathcal{A}} Q^\pi(s, a) \nabla_\theta
+    \pi_\theta(a \vert s) \Big] & \scriptstyle{\text{; 忽略红色部分：} \color{red}{\pi_\theta(a
+    \vert s) \nabla_\theta Q^\pi(s, a)}}. \\ &= \mathbb{E}_{s \sim d^\beta} \Big[
+    \sum_{a \in \mathcal{A}} \beta(a \vert s) \frac{\pi_\theta(a \vert s)}{\beta(a
+    \vert s)} Q^\pi(s, a) \frac{\nabla_\theta \pi_\theta(a \vert s)}{\pi_\theta(a
+    \vert s)} \Big] & \\ &= \mathbb{E}_\beta \Big[\frac{\color{blue}{\pi_\theta(a
+    \vert s)}}{\color{blue}{\beta(a \vert s)}} Q^\pi(s, a) \nabla_\theta \ln \pi_\theta(a
+    \vert s) \Big] & \scriptstyle{\text{; 蓝色部分是重要性权重。}} \end{aligned} $$
 - en: where $\frac{\pi_\theta(a \vert s)}{\beta(a \vert s)}$ is the [importance weight](http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/).
     Because $Q^\pi$ is a function of the target policy and thus a function of policy
     parameter $\theta$, we should take the derivative of $\nabla_\theta Q^\pi(s, a)$
@@ -550,119 +846,171 @@
     gradient of Q ignored, we still guarantee the policy improvement and eventually
     achieve the true local minimum. This is justified in the proof [here](https://arxiv.org/pdf/1205.4839.pdf)
     (Degris, White & Sutton, 2012).
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$\frac{\pi_\theta(a \vert s)}{\beta(a \vert s)}$是[重要性权重](http://timvieira.github.io/blog/post/2014/12/21/importance-sampling)。因为$Q^\pi$是目标策略的函数，因此也是策略参数$\theta$的函数，我们应该根据乘积法则对$\nabla_\theta
+    Q^\pi(s, a)$进行求导。然而，在现实中计算$\nabla_\theta Q^\pi(s, a)$非常困难。幸运的是，如果我们使用一个忽略了Q梯度的近似梯度，我们仍然可以保证策略改进，并最终实现真正的局部最小值。这在证明中得到了证实[这里](https://arxiv.org/pdf/1205.4839.pdf)（Degris,
+    White & Sutton, 2012）。
 - en: In summary, when applying policy gradient in the off-policy setting, we can
     simple adjust it with a weighted sum and the weight is the ratio of the target
     policy to the behavior policy, $\frac{\pi_\theta(a \vert s)}{\beta(a \vert s)}$.
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 总之，在离策略设置中应用策略梯度时，我们可以通过加权和进行简单调整，权重是目标策略与行为策略的比值，$\frac{\pi_\theta(a \vert
+    s)}{\beta(a \vert s)}$。
 - en: A3C
+  id: totrans-107
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: A3C
 - en: '[[paper](https://arxiv.org/abs/1602.01783)|[code](https://github.com/dennybritz/reinforcement-learning/tree/master/PolicyGradient/a3c)]'
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: '[[论文](https://arxiv.org/abs/1602.01783)|[代码](https://github.com/dennybritz/reinforcement-learning/tree/master/PolicyGradient/a3c)]'
 - en: '**Asynchronous Advantage Actor-Critic** ([Mnih et al., 2016](https://arxiv.org/abs/1602.01783)),
     short for **A3C**, is a classic policy gradient method with a special focus on
     parallel training.'
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: '**异步优势演员-评论家**（[Mnih等人，2016](https://arxiv.org/abs/1602.01783)），简称**A3C**，是一种经典的策略梯度方法，特别关注并行训练。'
 - en: In A3C, the critics learn the value function while multiple actors are trained
     in parallel and get synced with global parameters from time to time. Hence, A3C
     is designed to work well for parallel training.
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: 在A3C中，评论家学习价值函数，而多个演员并行训练，并不时与全局参数同步。因此，A3C被设计为适用于并行训练。
 - en: Let’s use the state-value function as an example. The loss function for state
     value is to minimize the mean squared error, $J_v(w) = (G_t - V_w(s))^2$ and gradient
     descent can be applied to find the optimal w. This state-value function is used
     as the baseline in the policy gradient update.
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们以状态值函数为例。状态值的损失函数是最小化均方误差，$J_v(w) = (G_t - V_w(s))^2$，可以应用梯度下降找到最优的w。这个状态值函数被用作策略梯度更新中的基准。
 - en: 'Here is the algorithm outline:'
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是算法概述：
 - en: We have global parameters, $\theta$ and $w$; similar thread-specific parameters,
     $\theta’$ and $w’$.
+  id: totrans-113
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 我们有全局参数 $\theta$ 和 $w$；类似的线程特定参数 $\theta’$ 和 $w’$。
 - en: Initialize the time step $t = 1$
+  id: totrans-114
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 初始化时间步 $t = 1$
 - en: 'While $T \leq T_\text{MAX}$:'
+  id: totrans-115
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 当 $T \leq T_\text{MAX}$ 时：
 - en: 'Reset gradient: $\mathrm{d}\theta = 0$ and $\mathrm{d}w = 0$.'
+  id: totrans-116
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 重置梯度：$\mathrm{d}\theta = 0$ 和 $\mathrm{d}w = 0$。
 - en: 'Synchronize thread-specific parameters with global ones: $\theta’ = \theta$
     and $w’ = w$.'
+  id: totrans-117
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将线程特定参数与全局参数同步：$\theta’ = \theta$ 和 $w’ = w$。
 - en: $t_\text{start}$ = t and sample a starting state $s_t$.
+  id: totrans-118
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: $t_\text{start}$ = t 并采样一个起始状态 $s_t$。
 - en: 'While ($s_t$ != TERMINAL) and $t - t_\text{start} \leq t_\text{max}$:'
+  id: totrans-119
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 当 ($s_t$ != 终止状态) 且 $t - t_\text{start} \leq t_\text{max}$ 时：
 - en: Pick the action $A_t \sim \pi_{\theta’}(A_t \vert S_t)$ and receive a new reward
     $R_t$ and a new state $s_{t+1}$.
+  id: totrans-120
   prefs:
   - PREF_IND
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 选择动作 $A_t \sim \pi_{\theta’}(A_t \vert S_t)$ 并接收新奖励 $R_t$ 和新状态 $s_{t+1}$。
 - en: Update $t = t + 1$ and $T = T + 1$
+  id: totrans-121
   prefs:
   - PREF_IND
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 更新 $t = t + 1$ 和 $T = T + 1$
 - en: 'Initialize the variable that holds the return estimation$$ R = \begin{cases}
     0 & \text{if } s_t \text{ is TERMINAL} \\ V_{w''}(s_t) & \text{otherwise} \end{cases}
     $$6\. For $i = t-1, \dots, t\_\text{start}$: 1\. $R \leftarrow \gamma R + R\_i$;
     here R is a MC measure of $G\_i$. 2\. Accumulate gradients w.r.t. $\theta''$:
     $d\theta \leftarrow d\theta + \nabla\_{\theta''} \log \pi\_{\theta''}(a\_i \vert
     s\_i)(R - V\_{w''}(s\_i))$;'
+  id: totrans-122
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 初始化保存回报估计的变量$$ R = \begin{cases} 0 & \text{如果 } s_t \text{ 是终止状态} \\ V_{w'}(s_t)
+    & \text{否则} \end{cases} $$6\. 对于 $i = t-1, \dots, t\_\text{start}$： 1\. $R \leftarrow
+    \gamma R + R\_i$；这里的 R 是 $G\_i$ 的 MC 测量。 2\. 累积关于 $\theta'$ 的梯度：$d\theta \leftarrow
+    d\theta + \nabla\_{\theta'} \log \pi\_{\theta'}(a\_i \vert s\_i)(R - V\_{w'}(s\_i))$；
 - en: 'Accumulate gradients w.r.t. w'': $dw \leftarrow dw + 2 (R - V\_{w''}(s\_i))
     \nabla\_{w''} (R - V\_{w''}(s\_i))$.'
+  id: totrans-123
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 累积关于 $w'$ 的梯度：$dw \leftarrow dw + 2 (R - V\_{w'}(s\_i)) \nabla\_{w'} (R - V\_{w'}(s\_i))$。
 - en: Update asynchronously $\theta$ using $\mathrm{d}\theta$, and $w$ using $\mathrm{d}w$.
+  id: totrans-124
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 异步更新 $\theta$ 使用 $\mathrm{d}\theta$，$w$ 使用 $\mathrm{d}w$。
 - en: 'A3C enables the parallelism in multiple agent training. The gradient accumulation
     step (6.2) can be considered as a parallelized reformation of minibatch-based
     stochastic gradient update: the values of $w$ or $\theta$ get corrected by a little
     bit in the direction of each training thread independently.'
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: A3C 实现了多代理训练中的并行性。梯度累积步骤（6.2）可以被视为基于小批量随机梯度更新的并行化改进：$w$ 或 $\theta$ 的值在每个训练线程中独立地稍微调整。
 - en: A2C
+  id: totrans-126
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: A2C
 - en: '[[paper](https://arxiv.org/abs/1602.01783)|[code](https://github.com/openai/baselines/blob/master/baselines/a2c/a2c.py)]'
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: '[[论文](https://arxiv.org/abs/1602.01783)|[代码](https://github.com/openai/baselines/blob/master/baselines/a2c/a2c.py)]'
 - en: '**A2C** is a synchronous, deterministic version of A3C; that’s why it is named
     as “A2C” with the first “A” (“asynchronous”) removed. In A3C each agent talks
     to the global parameters independently, so it is possible sometimes the thread-specific
@@ -672,69 +1020,106 @@
     the global parameters and then in the next iteration parallel actors starts from
     the same policy. The synchronized gradient update keeps the training more cohesive
     and potentially to make convergence faster.'
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: '**A2C** 是 A3C 的同步、确定性版本；这就是为什么它被命名为“A2C”，第一个“A”（“异步”）被移除。在 A3C 中，每个代理独立与全局参数交流，因此有时线程特定代理可能会使用不同版本的策略，因此聚合更新可能不是最优的。为了解决不一致性，A2C
+    中的协调员会等待所有并行执行者完成工作，然后在下一次迭代中，所有并行执行者从相同的策略开始。同步的梯度更新使训练更加连贯，可能使收敛速度更快。'
 - en: A2C has been [shown](https://blog.openai.com/baselines-acktr-a2c/) to be able
     to utilize GPUs more efficiently and work better with large batch sizes while
     achieving same or better performance than A3C.
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
+  zh: 已经显示 A2C 能够更有效地利用 GPU，并且在使用大批量大小时能够达到与 A3C 相同或更好的性能。
 - en: '![](../Images/3ee668004dd949c7fbc4b03b52fd316c.png)'
+  id: totrans-130
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3ee668004dd949c7fbc4b03b52fd316c.png)'
 - en: Fig. 2\. The architecture of A3C versus A2C.
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 2\. A3C 与 A2C 的架构对比。
 - en: DPG
+  id: totrans-132
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: DPG
 - en: '[[paper](https://hal.inria.fr/file/index/docid/938992/filename/dpg-icml2014.pdf)|code]'
+  id: totrans-133
   prefs: []
   type: TYPE_NORMAL
+  zh: '[[论文](https://hal.inria.fr/file/index/docid/938992/filename/dpg-icml2014.pdf)|[代码](https://github.com/openai/baselines/blob/master/baselines/a2c/a2c.py)]'
 - en: 'In methods described above, the policy function $\pi(. \vert s)$ is always
     modeled as a probability distribution over actions $\mathcal{A}$ given the current
     state and thus it is *stochastic*. **Deterministic policy gradient (DPG)** instead
     models the policy as a deterministic decision: $a = \mu(s)$. It may look bizarre
     — how can you calculate the gradient of the action probability when it outputs
     a single action? Let’s look into it step by step.'
+  id: totrans-134
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上述描述的方法中，策略函数 $\pi(. \vert s)$ 总是被建模为在当前状态下给定动作 $\mathcal{A}$ 的概率分布，因此它是*随机的*。**确定性策略梯度（DPG）**
+    相反将策略建模为确定性决策：$a = \mu(s)$。这可能看起来很奇怪 — 当输出单个动作时，你如何计算动作概率的梯度呢？让我们一步一步来看。
 - en: 'Refresh on a few notations to facilitate the discussion:'
+  id: totrans-135
   prefs: []
   type: TYPE_NORMAL
+  zh: 刷新一下一些符号以便讨论：
 - en: '$\rho_0(s)$: The initial distribution over states'
+  id: totrans-136
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $\rho_0(s)$：初始状态分布
 - en: '$\rho^\mu(s \to s’, k)$: Starting from state s, the visitation probability
     density at state s’ after moving k steps by policy $\mu$.'
+  id: totrans-137
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $\rho^\mu(s \to s’, k)$：从状态 s 开始，经过策略 $\mu$ 移动 k 步后到达状态 s’ 的访问概率密度。
 - en: '$\rho^\mu(s’)$: Discounted state distribution, defined as $\rho^\mu(s’) = \int_\mathcal{S}
     \sum_{k=1}^\infty \gamma^{k-1} \rho_0(s) \rho^\mu(s \to s’, k) ds$.'
+  id: totrans-138
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $\rho^\mu(s’)$：折扣状态分布，定义为 $\rho^\mu(s’) = \int_\mathcal{S} \sum_{k=1}^\infty
+    \gamma^{k-1} \rho_0(s) \rho^\mu(s \to s’, k) ds$。
 - en: 'The objective function to optimize for is listed as follows:'
+  id: totrans-139
   prefs: []
   type: TYPE_NORMAL
+  zh: 要优化的目标函数列如下：
 - en: $$ J(\theta) = \int_\mathcal{S} \rho^\mu(s) Q(s, \mu_\theta(s)) ds $$
+  id: totrans-140
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ J(\theta) = \int_\mathcal{S} \rho^\mu(s) Q(s, \mu_\theta(s)) ds $$
 - en: '**Deterministic policy gradient theorem**: Now it is the time to compute the
     gradient! According to the chain rule, we first take the gradient of Q w.r.t.
     the action a and then take the gradient of the deterministic policy function $\mu$
     w.r.t. $\theta$:'
+  id: totrans-141
   prefs: []
   type: TYPE_NORMAL
+  zh: '**确定性策略梯度定理**：现在是计算梯度的时候了！根据链式法则，我们首先对 Q 关于动作 a 求梯度，然后对确定性策略函数 $\mu$ 关于 $\theta$
+    求梯度：'
 - en: $$ \begin{aligned} \nabla_\theta J(\theta) &= \int_\mathcal{S} \rho^\mu(s) \nabla_a
     Q^\mu(s, a) \nabla_\theta \mu_\theta(s) \rvert_{a=\mu_\theta(s)} ds \\ &= \mathbb{E}_{s
     \sim \rho^\mu} [\nabla_a Q^\mu(s, a) \nabla_\theta \mu_\theta(s) \rvert_{a=\mu_\theta(s)}]
     \end{aligned} $$
+  id: totrans-142
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \nabla_\theta J(\theta) &= \int_\mathcal{S} \rho^\mu(s) \nabla_a
+    Q^\mu(s, a) \nabla_\theta \mu_\theta(s) \rvert_{a=\mu_\theta(s)} ds \\ &= \mathbb{E}_{s
+    \sim \rho^\mu} [\nabla_a Q^\mu(s, a) \nabla_\theta \mu_\theta(s) \rvert_{a=\mu_\theta(s)}]
+    \end{aligned} $$
 - en: We can consider the deterministic policy as a *special case* of the stochastic
     one, when the probability distribution contains only one extreme non-zero value
     over one action. Actually, in the DPG [paper](https://hal.inria.fr/file/index/docid/938992/filename/dpg-icml2014.pdf),
@@ -744,43 +1129,66 @@
     case when $\sigma=0$. Compared to the deterministic policy, we expect the stochastic
     policy to require more samples as it integrates the data over the whole state
     and action space.
+  id: totrans-143
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以将确定性策略视为随机策略的*特殊情况*，当概率分布仅包含一个极端非零值的动作时。实际上，在DPG [论文](https://hal.inria.fr/file/index/docid/938992/filename/dpg-icml2014.pdf)
+    中，作者已经表明，如果将随机策略 $\pi_{\mu_\theta, \sigma}$ 重新参数化为确定性策略 $\mu_\theta$ 和变化变量 $\sigma$，当
+    $\sigma=0$ 时，随机策略最终等效于确定性情况。与确定性策略相比，我们期望随机策略需要更多样本，因为它整合了整个状态和动作空间的数据。
 - en: The deterministic policy gradient theorem can be plugged into common policy
     gradient frameworks.
+  id: totrans-144
   prefs: []
   type: TYPE_NORMAL
+  zh: 确定性策略梯度定理可以嵌入常见的策略梯度框架中。
 - en: 'Let’s consider an example of on-policy actor-critic algorithm to showcase the
     procedure. In each iteration of on-policy actor-critic, two actions are taken
     deterministically $a = \mu_\theta(s)$ and the [SARSA](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#sarsa-on-policy-td-control)
     update on policy parameters relies on the new gradient that we just computed above:'
+  id: totrans-145
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们考虑一个基于策略的演员-评论家算法的示例来展示该过程。在每次策略的演员-评论家迭代中，两个动作被确定性地采取 $a = \mu_\theta(s)$，并且对策略参数的[SARSA](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#sarsa-on-policy-td-control)更新依赖于我们刚刚计算的新梯度：
 - en: $$ \begin{aligned} \delta_t &= R_t + \gamma Q_w(s_{t+1}, a_{t+1}) - Q_w(s_t,
     a_t) & \small{\text{; TD error in SARSA}}\\ w_{t+1} &= w_t + \alpha_w \delta_t
     \nabla_w Q_w(s_t, a_t) & \\ \theta_{t+1} &= \theta_t + \alpha_\theta \color{red}{\nabla_a
     Q_w(s_t, a_t) \nabla_\theta \mu_\theta(s) \rvert_{a=\mu_\theta(s)}} & \small{\text{;
     Deterministic policy gradient theorem}} \end{aligned} $$
+  id: totrans-146
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \delta_t &= R_t + \gamma Q_w(s_{t+1}, a_{t+1}) - Q_w(s_t,
+    a_t) & \small{\text{; SARSA中的TD误差}}\\ w_{t+1} &= w_t + \alpha_w \delta_t \nabla_w
+    Q_w(s_t, a_t) & \\ \theta_{t+1} &= \theta_t + \alpha_\theta \color{red}{\nabla_a
+    Q_w(s_t, a_t) \nabla_\theta \mu_\theta(s) \rvert_{a=\mu_\theta(s)}} & \small{\text{;
+    确定性策略梯度定理}} \end{aligned} $$
 - en: However, unless there is sufficient noise in the environment, it is very hard
     to guarantee enough [exploration](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#exploration-exploitation-dilemma)
     due to the determinacy of the policy. We can either add noise into the policy
     (ironically this makes it nondeterministic!) or learn it off-policy-ly by following
     a different stochastic behavior policy to collect samples.
+  id: totrans-147
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，除非环境中有足够的噪音，由于策略的确定性，很难保证足够的[探索](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#exploration-exploitation-dilemma)。我们可以将噪音添加到策略中（具有讽刺意味的是，这使其变得非确定性！）或者通过遵循不同的随机行为策略进行离策略学习来收集样本。
 - en: 'Say, in the off-policy approach, the training trajectories are generated by
     a stochastic policy $\beta(a \vert s)$ and thus the state distribution follows
     the corresponding discounted state density $\rho^\beta$:'
+  id: totrans-148
   prefs: []
   type: TYPE_NORMAL
+  zh: 换句话说，在离策略方法中，训练轨迹由随机策略 $\beta(a \vert s)$ 生成，因此状态分布遵循相应的折扣状态密度 $\rho^\beta$：
 - en: $$ \begin{aligned} J_\beta(\theta) &= \int_\mathcal{S} \rho^\beta Q^\mu(s, \mu_\theta(s))
     ds \\ \nabla_\theta J_\beta(\theta) &= \mathbb{E}_{s \sim \rho^\beta} [\nabla_a
     Q^\mu(s, a) \nabla_\theta \mu_\theta(s) \rvert_{a=\mu_\theta(s)} ] \end{aligned}
     $$
+  id: totrans-149
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} J_\beta(\theta) &= \int_\mathcal{S} \rho^\beta Q^\mu(s, \mu_\theta(s))
+    ds \\ \nabla_\theta J_\beta(\theta) &= \mathbb{E}_{s \sim \rho^\beta} [\nabla_a
+    Q^\mu(s, a) \nabla_\theta \mu_\theta(s) \rvert_{a=\mu_\theta(s)} ] \end{aligned}
+    $$
 - en: Note that because the policy is deterministic, we only need $Q^\mu(s, \mu_\theta(s))$
     rather than $\sum_a \pi(a \vert s) Q^\pi(s, a)$ as the estimated reward of a given
     state s. In the off-policy approach with a stochastic policy, importance sampling
@@ -788,15 +1196,22 @@
     what we have described [above](#off-policy-policy-gradient). However, because
     the deterministic policy gradient removes the integral over actions, we can avoid
     importance sampling.
+  id: totrans-150
   prefs: []
   type: TYPE_NORMAL
+  zh: 请注意，由于策略是确定性的，我们只需要 $Q^\mu(s, \mu_\theta(s))$ 而不是 $\sum_a \pi(a \vert s) Q^\pi(s,
+    a)$ 作为给定状态 s 的估计奖励。在具有随机策略的离策略方法中，通常使用重要性采样来纠正行为和目标策略之间的不匹配，就像我们在[上文](#off-policy-policy-gradient)中描述的那样。然而，由于确定性策略梯度消除了对动作的积分，我们可以避免重要性采样。
 - en: DDPG
+  id: totrans-151
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: DDPG
 - en: '[[paper](https://arxiv.org/pdf/1509.02971.pdf)|[code](https://github.com/openai/baselines/tree/master/baselines/ddpg)]'
+  id: totrans-152
   prefs: []
   type: TYPE_NORMAL
+  zh: '[[论文](https://arxiv.org/pdf/1509.02971.pdf)|[代码](https://github.com/openai/baselines/tree/master/baselines/ddpg)]'
 - en: '**DDPG** ([Lillicrap, et al., 2015](https://arxiv.org/pdf/1509.02971.pdf)),
     short for **Deep Deterministic Policy Gradient**, is a model-free off-policy actor-critic
     algorithm, combining [DPG](#dpg) with [DQN](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#deep-q-network).
@@ -804,110 +1219,166 @@
     replay and the frozen target network. The original DQN works in discrete space,
     and DDPG extends it to continuous space with the actor-critic framework while
     learning a deterministic policy.'
+  id: totrans-153
   prefs: []
   type: TYPE_NORMAL
+  zh: '**DDPG**（[Lillicrap等人，2015](https://arxiv.org/pdf/1509.02971.pdf)），简称**Deep
+    Deterministic Policy Gradient**，是一种无模型的离策略actor-critic算法，将[DPG](#dpg)与[DQN](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#deep-q-network)结合起来。回想一下，DQN（Deep
+    Q-Network）通过经验重放和冻结目标网络稳定了Q函数的学习。原始的DQN在离散空间中工作，而DDPG通过actor-critic框架将其扩展到连续空间，同时学习确定性策略。'
 - en: 'In order to do better exploration, an exploration policy $\mu’$ is constructed
     by adding noise $\mathcal{N}$:'
+  id: totrans-154
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了更好地进行探索，通过添加噪音 $\mathcal{N}$ 构建了一个探索策略 $\mu’$：
 - en: $$ \mu'(s) = \mu_\theta(s) + \mathcal{N} $$
+  id: totrans-155
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mu'(s) = \mu_\theta(s) + \mathcal{N} $$
 - en: 'In addition, DDPG does soft updates (“conservative policy iteration”) on the
     parameters of both actor and critic, with $\tau \ll 1$: $\theta’ \leftarrow \tau
     \theta + (1 - \tau) \theta’$. In this way, the target network values are constrained
     to change slowly, different from the design in DQN that the target network stays
     frozen for some period of time.'
+  id: totrans-156
   prefs: []
   type: TYPE_NORMAL
+  zh: 另外，DDPG对actor和critic的参数进行软更新（“保守策略迭代”），其中 $\tau \ll 1$：$\theta’ \leftarrow \tau
+    \theta + (1 - \tau) \theta’。这样，目标网络的值被限制为缓慢变化，与DQN设计不同，DQN中目标网络在一段时间内保持冻结。
 - en: One detail in the paper that is particularly useful in robotics is on how to
     normalize the different physical units of low dimensional features. For example,
     a model is designed to learn a policy with the robot’s positions and velocities
     as input; these physical statistics are different by nature and even statistics
     of the same type may vary a lot across multiple robots. [Batch normalization](http://proceedings.mlr.press/v37/ioffe15.pdf)
     is applied to fix it by normalizing every dimension across samples in one minibatch.
+  id: totrans-157
   prefs: []
   type: TYPE_NORMAL
+  zh: 论文中一个特别有用的细节是如何规范低维特征的不同物理单位。例如，设计一个模型来学习以机器人的位置和速度作为输入的策略；这些物理统计数据本质上是不同的，即使是相同类型的统计数据在多个机器人之间也可能有很大差异。[批归一化](http://proceedings.mlr.press/v37/ioffe15.pdf)被应用来通过在一个小批量样本中规范化每个维度来修复这个问题。
 - en: '![](../Images/d7e957ea93bf40f96411e9800ec6b613.png)'
+  id: totrans-158
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d7e957ea93bf40f96411e9800ec6b613.png)'
 - en: 'Fig 3\. DDPG Algorithm. (Image source: [Lillicrap, et al., 2015](https://arxiv.org/pdf/1509.02971.pdf))'
+  id: totrans-159
   prefs: []
   type: TYPE_NORMAL
+  zh: 图3\. DDPG算法（图片来源：[Lillicrap等人，2015](https://arxiv.org/pdf/1509.02971.pdf)）
 - en: D4PG
+  id: totrans-160
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: D4PG
 - en: '[[paper](https://openreview.net/forum?id=SyZipzbCb)|code (Search “github d4pg”
     and you will see a few.)]'
+  id: totrans-161
   prefs: []
   type: TYPE_NORMAL
+  zh: '[[论文](https://openreview.net/forum?id=SyZipzbCb)|代码（搜索“github d4pg”就会看到一些。)]'
 - en: '**Distributed Distributional DDPG (D4PG)** applies a set of improvements on
     DDPG to make it run in the distributional fashion.'
+  id: totrans-162
   prefs: []
   type: TYPE_NORMAL
+  zh: '**分布式分布式DDPG（D4PG）**对DDPG进行了一系列改进，使其以分布方式运行。'
 - en: '(1) **Distributional Critic**: The critic estimates the expected Q value as
     a random variable ~ a distribution $Z_w$ parameterized by $w$ and therefore $Q_w(s,
     a) = \mathbb{E} Z_w(x, a)$. The loss for learning the distribution parameter is
     to minimize some measure of the distance between two distributions — distributional
     TD error: $L(w) = \mathbb{E}[d(\mathcal{T}_{\mu_\theta}, Z_{w’}(s, a), Z_w(s,
     a)]$, where $\mathcal{T}_{\mu_\theta}$ is the Bellman operator.'
+  id: totrans-163
   prefs: []
   type: TYPE_NORMAL
+  zh: (1) **分布式评论家**：评论家将期望的Q值估计为一个由$w$参数化的分布$Z_w$的随机变量，因此$Q_w(s, a) = \mathbb{E}
+    Z_w(x, a)$。学习分布参数的损失是最小化两个分布之间的距离的某种度量 — 分布式TD误差：$L(w) = \mathbb{E}[d(\mathcal{T}_{\mu_\theta},
+    Z_{w’}(s, a), Z_w(s, a)]$，其中$\mathcal{T}_{\mu_\theta}$是Bellman算子。
 - en: 'The deterministic policy gradient update becomes:'
+  id: totrans-164
   prefs: []
   type: TYPE_NORMAL
+  zh: 确定性策略梯度更新如下：
 - en: $$ \begin{aligned} \nabla_\theta J(\theta) &\approx \mathbb{E}_{\rho^\mu} [\nabla_a
     Q_w(s, a) \nabla_\theta \mu_\theta(s) \rvert_{a=\mu_\theta(s)}] & \scriptstyle{\text{;
     gradient update in DPG}} \\ &= \mathbb{E}_{\rho^\mu} [\mathbb{E}[\nabla_a Z_w(s,
     a)] \nabla_\theta \mu_\theta(s) \rvert_{a=\mu_\theta(s)}] & \scriptstyle{\text{;
     expectation of the Q-value distribution.}} \end{aligned} $$
+  id: totrans-165
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \nabla_\theta J(\theta) &\approx \mathbb{E}_{\rho^\mu} [\nabla_a
+    Q_w(s, a) \nabla_\theta \mu_\theta(s) \rvert_{a=\mu_\theta(s)}] & \scriptstyle{\text{;
+    DPG中的梯度更新}} \\ &= \mathbb{E}_{\rho^\mu} [\mathbb{E}[\nabla_a Z_w(s, a)] \nabla_\theta
+    \mu_\theta(s) \rvert_{a=\mu_\theta(s)}] & \scriptstyle{\text{; Q值分布的期望。}} \end{aligned}
+    $$
 - en: '(2) **$N$-step returns**: When calculating the TD error, D4PG computes $N$-step
     TD target rather than one-step to incorporate rewards in more future steps. Thus
     the new TD target is:'
+  id: totrans-166
   prefs: []
   type: TYPE_NORMAL
+  zh: (2) **$N$步回报**：在计算TD误差时，D4PG计算$N$步TD目标，而不是一步，以纳入更多未来步骤的奖励。因此，新的TD目标是：
 - en: $$ r(s_0, a_0) + \mathbb{E}[\sum_{n=1}^{N-1} r(s_n, a_n) + \gamma^N Q(s_N, \mu_\theta(s_N))
     \vert s_0, a_0 ] $$
+  id: totrans-167
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ r(s_0, a_0) + \mathbb{E}[\sum_{n=1}^{N-1} r(s_n, a_n) + \gamma^N Q(s_N, \mu_\theta(s_N))
+    \vert s_0, a_0 ] $$
 - en: '(3) **Multiple Distributed Parallel Actors**: D4PG utilizes $K$ independent
     actors, gathering experience in parallel and feeding data into the same replay
     buffer.'
+  id: totrans-168
   prefs: []
   type: TYPE_NORMAL
+  zh: (3) **多分布式并行执行者**：D4PG利用$K$个独立执行者并行收集经验，并将数据输入相同的重播缓冲区。
 - en: '(4) **Prioritized Experience Replay ([PER](https://arxiv.org/abs/1511.05952))**:
     The last piece of modification is to do sampling from the replay buffer of size
     $R$ with an non-uniform probability $p_i$. In this way, a sample $i$ has the probability
     $(Rp_i)^{-1}$ to be selected and thus the importance weight is $(Rp_i)^{-1}$.'
+  id: totrans-169
   prefs: []
   type: TYPE_NORMAL
+  zh: (4) **优先经验重播（[PER](https://arxiv.org/abs/1511.05952)）**：最后一项修改是从大小为$R$的重播缓冲区中以非均匀概率$p_i$进行抽样。这样，样本$i$被选中的概率为$(Rp_i)^{-1}$，因此重要性权重为$(Rp_i)^{-1}$。
 - en: '![](../Images/71a5150ac141cde2038e55c8255ddf62.png)'
+  id: totrans-170
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/71a5150ac141cde2038e55c8255ddf62.png)'
 - en: 'Fig. 4\. D4PG algorithm (Image source: [Barth-Maron, et al. 2018](https://openreview.net/forum?id=SyZipzbCb));
     Note that in the original paper, the variable letters are chosen slightly differently
     from what in the post; i.e. I use $\mu(.)$ for representing a deterministic policy
     instead of $\pi(.)$.'
+  id: totrans-171
   prefs: []
   type: TYPE_NORMAL
+  zh: 图4\. D4PG算法（图片来源：[Barth-Maron等人，2018](https://openreview.net/forum?id=SyZipzbCb)）；请注意，在原始论文中，变量字母的选择与帖子中略有不同；即我使用$\mu(.)$来表示确定性策略，而不是$\pi(.)$。
 - en: MADDPG
+  id: totrans-172
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: MADDPG
 - en: '[[paper](https://arxiv.org/pdf/1706.02275.pdf)|[code](https://github.com/openai/maddpg)]'
+  id: totrans-173
   prefs: []
   type: TYPE_NORMAL
+  zh: '[[论文](https://arxiv.org/pdf/1706.02275.pdf)|[代码](https://github.com/openai/maddpg)]'
 - en: '**Multi-agent DDPG** (**MADDPG**) ([Lowe et al., 2017](https://arxiv.org/pdf/1706.02275.pdf))
     extends DDPG to an environment where multiple agents are coordinating to complete
     tasks with only local information. In the viewpoint of one agent, the environment
     is non-stationary as policies of other agents are quickly upgraded and remain
     unknown. MADDPG is an actor-critic model redesigned particularly for handling
     such a changing environment and interactions between agents.'
+  id: totrans-174
   prefs: []
   type: TYPE_NORMAL
+  zh: '**多智能体 DDPG** (**MADDPG**)（[Lowe 等人，2017](https://arxiv.org/pdf/1706.02275.pdf)）将
+    DDPG 扩展到一个环境中，多个代理协调完成任务，只有局部信息。 从一个代理的角度来看，环境是非静态的，因为其他代理的策略很快就会升级并保持未知。 MADDPG
+    是一个演员-评论家模型，专门重新设计用于处理这种不断变化的环境和代理之间的交互。'
 - en: 'The problem can be formalized in the multi-agent version of MDP, also known
     as *Markov games*. MADDPG is proposed for partially observable Markov games. Say,
     there are N agents in total with a set of states $\mathcal{S}$. Each agent owns
@@ -919,12 +1390,22 @@
     \times \mathcal{A}_i \mapsto [0, 1]$, a probability distribution over actions
     given its own observation, or a deterministic policy: $\mu_{\theta_i}: \mathcal{O}_i
     \mapsto \mathcal{A}_i$.'
+  id: totrans-175
   prefs: []
   type: TYPE_NORMAL
+  zh: '问题可以在多智能体版本的 MDP 中形式化，也称为 *马尔可夫博弈*。 MADDPG 被提出用于部分可观察的马尔可夫博弈。 假设总共有 N 个代理，具有一组状态
+    $\mathcal{S}$。 每个代理拥有一组可能的动作，$\mathcal{A}_1, \dots, \mathcal{A}_N$，以及一组观察，$\mathcal{O}_1,
+    \dots, \mathcal{O}_N$。 状态转移函数涉及所有状态、动作和观察空间 $\mathcal{T}: \mathcal{S} \times \mathcal{A}_1
+    \times \dots \mathcal{A}_N \mapsto \mathcal{S}$。 每个代理的随机策略只涉及自己的状态和动作：$\pi_{\theta_i}:
+    \mathcal{O}_i \times \mathcal{A}_i \mapsto [0, 1]$，给定自己的观察，动作的概率分布，或确定性策略：$\mu_{\theta_i}:
+    \mathcal{O}_i \mapsto \mathcal{A}_i$。'
 - en: Let $\vec{o} = {o_1, \dots, o_N}$, $\vec{\mu} = {\mu_1, \dots, \mu_N}$ and the
     policies are parameterized by $\vec{\theta} = {\theta_1, \dots, \theta_N}$.
+  id: totrans-176
   prefs: []
   type: TYPE_NORMAL
+  zh: 让 $\vec{o} = {o_1, \dots, o_N}$，$\vec{\mu} = {\mu_1, \dots, \mu_N}$，策略由 $\vec{\theta}
+    = {\theta_1, \dots, \theta_N}$ 参数化。
 - en: The critic in MADDPG learns a centralized action-value function $Q^\vec{\mu}_i(\vec{o},
     a_1, \dots, a_N)$ for the i-th agent, where $a_1 \in \mathcal{A}_1, \dots, a_N
     \in \mathcal{A}_N$ are actions of all agents. Each $Q^\vec{\mu}_i$ is learned
@@ -932,102 +1413,156 @@
     reward structures, including conflicting rewards in a competitive setting. Meanwhile,
     multiple actors, one for each agent, are exploring and upgrading the policy parameters
     $\theta_i$ on their own.
+  id: totrans-177
   prefs: []
   type: TYPE_NORMAL
+  zh: MADDPG中的评论家学习一个集中的动作值函数 $Q^\vec{\mu}_i(\vec{o}, a_1, \dots, a_N)$，其中 $a_1 \in
+    \mathcal{A}_1, \dots, a_N \in \mathcal{A}_N$ 是所有代理的动作。 每个 $Q^\vec{\mu}_i$ 都是独立学习的，因此多个代理可以具有任意的奖励结构，包括在竞争环境中的冲突奖励。
+    同时，多个演员，每个代理一个，正在探索并独立升级策略参数 $\theta_i$。
 - en: '**Actor update**:'
+  id: totrans-178
   prefs: []
   type: TYPE_NORMAL
+  zh: '**演员更新**：'
 - en: $$ \nabla_{\theta_i} J(\theta_i) = \mathbb{E}_{\vec{o}, a \sim \mathcal{D}}
     [\nabla_{a_i} Q^{\vec{\mu}}_i (\vec{o}, a_1, \dots, a_N) \nabla_{\theta_i} \mu_{\theta_i}(o_i)
     \rvert_{a_i=\mu_{\theta_i}(o_i)} ] $$
+  id: totrans-179
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \nabla_{\theta_i} J(\theta_i) = \mathbb{E}_{\vec{o}, a \sim \mathcal{D}}
+    [\nabla_{a_i} Q^{\vec{\mu}}_i (\vec{o}, a_1, \dots, a_N) \nabla_{\theta_i} \mu_{\theta_i}(o_i)
+    \rvert_{a_i=\mu_{\theta_i}(o_i)} ] $$
 - en: Where $\mathcal{D}$ is the memory buffer for experience replay, containing multiple
     episode samples $(\vec{o}, a_1, \dots, a_N, r_1, \dots, r_N, \vec{o}’)$ — given
     current observation $\vec{o}$, agents take action $a_1, \dots, a_N$ and get rewards
     $r_1, \dots, r_N$, leading to the new observation $\vec{o}’$.
+  id: totrans-180
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 $\mathcal{D}$ 是用于经验重放的内存缓冲区，包含多个剧集样本 $(\vec{o}, a_1, \dots, a_N, r_1, \dots,
+    r_N, \vec{o}’)$ — 给定当前观察 $\vec{o}$，代理执行动作 $a_1, \dots, a_N$ 并获得奖励 $r_1, \dots,
+    r_N$，导致新观察 $\vec{o}’$。
 - en: '**Critic update**:'
+  id: totrans-181
   prefs: []
   type: TYPE_NORMAL
+  zh: '**评论家更新**：'
 - en: $$ \begin{aligned} \mathcal{L}(\theta_i) &= \mathbb{E}_{\vec{o}, a_1, \dots,
     a_N, r_1, \dots, r_N, \vec{o}'}[ (Q^{\vec{\mu}}_i(\vec{o}, a_1, \dots, a_N) -
     y)^2 ] & \\ \text{where } y &= r_i + \gamma Q^{\vec{\mu}'}_i (\vec{o}', a'_1,
     \dots, a'_N) \rvert_{a'_j = \mu'_{\theta_j}} & \scriptstyle{\text{; TD target!}}
     \end{aligned} $$
+  id: totrans-182
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \mathcal{L}(\theta_i) &= \mathbb{E}_{\vec{o}, a_1, \dots,
+    a_N, r_1, \dots, r_N, \vec{o}'}[ (Q^{\vec{\mu}}_i(\vec{o}, a_1, \dots, a_N) -
+    y)^2 ] & \\ \text{其中 } y &= r_i + \gamma Q^{\vec{\mu}'}_i (\vec{o}', a'_1, \dots,
+    a'_N) \rvert_{a'_j = \mu'_{\theta_j}} & \scriptstyle{\text{; TD 目标！}} \end{aligned}
+    $$
 - en: where $\vec{\mu}’$ are the target policies with delayed softly-updated parameters.
+  id: totrans-183
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$\vec{\mu}’$是具有延迟软更新参数的目标策略。
 - en: If the policies $\vec{\mu}$ are unknown during the critic update, we can ask
     each agent to learn and evolve its own approximation of others’ policies. Using
     the approximated policies, MADDPG still can learn efficiently although the inferred
     policies might not be accurate.
+  id: totrans-184
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果在评论家更新期间策略$\vec{\mu}$是未知的，我们可以要求每个代理学习和演变其它代理的近似策略。使用近似策略，MADDPG仍然可以高效学习，尽管推断的策略可能不准确。
 - en: 'To mitigate the high variance triggered by the interaction between competing
     or collaborating agents in the environment, MADDPG proposed one more element -
     *policy ensembles*:'
+  id: totrans-185
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了减少环境中竞争或合作代理之间互动引起的高方差，MADDPG提出了一个额外的元素 - *策略集合*：
 - en: Train K policies for one agent;
+  id: totrans-186
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 为一个代理训练K个策略;
 - en: Pick a random policy for episode rollouts;
+  id: totrans-187
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 为剧集展开选择一个随机策略;
 - en: Take an ensemble of these K policies to do gradient update.
+  id: totrans-188
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 采用这K个策略的集合进行梯度更新。
 - en: 'In summary, MADDPG added three additional ingredients on top of DDPG to make
     it adapt to the multi-agent environment:'
+  id: totrans-189
   prefs: []
   type: TYPE_NORMAL
+  zh: 总之，MADDPG在DDPG的基础上增加了三个额外的要素，使其适应多智能体环境：
 - en: Centralized critic + decentralized actors;
+  id: totrans-190
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 中心化评论家 + 分散化演员;
 - en: Actors are able to use estimated policies of other agents for learning;
+  id: totrans-191
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 演员可以使用其他代理的估计策略进行学习;
 - en: Policy ensembling is good for reducing variance.
+  id: totrans-192
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 策略集合对于减少方差是有益的。
 - en: '![](../Images/8c1a156d8eae7445d87906d636c23bf6.png)'
+  id: totrans-193
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8c1a156d8eae7445d87906d636c23bf6.png)'
 - en: 'Fig. 5\. The architecture design of MADDPG. (Image source: [Lowe et al., 2017](https://arxiv.org/pdf/1706.02275.pdf))'
+  id: totrans-194
   prefs: []
   type: TYPE_NORMAL
+  zh: 图5. MADDPG的架构设计。（图片来源：[Lowe等，2017](https://arxiv.org/pdf/1706.02275.pdf)）
 - en: TRPO
+  id: totrans-195
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: TRPO
 - en: '[[paper](https://arxiv.org/pdf/1502.05477.pdf)|[code](https://github.com/openai/baselines/tree/master/baselines/trpo_mpi)]'
+  id: totrans-196
   prefs: []
   type: TYPE_NORMAL
+  zh: '[[论文](https://arxiv.org/pdf/1502.05477.pdf)|[代码](https://github.com/openai/baselines/tree/master/baselines/trpo_mpi)]'
 - en: To improve training stability, we should avoid parameter updates that change
     the policy too much at one step. **Trust region policy optimization (TRPO)** ([Schulman,
     et al., 2015](https://arxiv.org/pdf/1502.05477.pdf)) carries out this idea by
     enforcing a [KL divergence](https://lilianweng.github.io/posts/2017-08-20-gan/#kullbackleibler-and-jensenshannon-divergence)
     constraint on the size of policy update at each iteration.
+  id: totrans-197
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了提高训练稳定性，我们应该避免在一步中过度改变策略的参数更新。**信任区域策略优化（TRPO）**（[Schulman等，2015](https://arxiv.org/pdf/1502.05477.pdf)）通过在每次迭代中对策略更新的大小强制执行[KL散度](https://lilianweng.github.io/posts/2017-08-20-gan/#kullbackleibler-and-jensenshannon-divergence)约束来实现这一想法。
 - en: 'Consider the case when we are doing off-policy RL, the policy $\beta$ used
     for collecting trajectories on rollout workers is different from the policy $\pi$
     to optimize for. The objective function in an off-policy model measures the total
     advantage over the state visitation distribution and actions, while the mismatch
     between the training data distribution and the true policy state distribution
     is compensated by importance sampling estimator:'
+  id: totrans-198
   prefs: []
   type: TYPE_NORMAL
+  zh: 考虑当我们进行离线策略强化学习时，用于在展开工作者上收集轨迹的策略$\beta$与用于优化的策略$\pi$不同。离线模型中的目标函数衡量了状态访问分布和动作的总优势，而训练数据分布与真实策略状态分布之间的不匹配由重要性采样估计器来补偿：
 - en: $$ \begin{aligned} J(\theta) &= \sum_{s \in \mathcal{S}} \rho^{\pi_{\theta_\text{old}}}
     \sum_{a \in \mathcal{A}} \big( \pi_\theta(a \vert s) \hat{A}_{\theta_\text{old}}(s,
     a) \big) & \\ &= \sum_{s \in \mathcal{S}} \rho^{\pi_{\theta_\text{old}}} \sum_{a
@@ -1036,147 +1571,228 @@
     sampling}} \\ &= \mathbb{E}_{s \sim \rho^{\pi_{\theta_\text{old}}}, a \sim \beta}
     \big[ \frac{\pi_\theta(a \vert s)}{\beta(a \vert s)} \hat{A}_{\theta_\text{old}}(s,
     a) \big] & \end{aligned} $$
+  id: totrans-199
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} J(\theta) &= \sum_{s \in \mathcal{S}} \rho^{\pi_{\theta_\text{old}}}
+    \sum_{a \in \mathcal{A}} \big( \pi_\theta(a \vert s) \hat{A}_{\theta_\text{old}}(s,
+    a) \big) & \\ &= \sum_{s \in \mathcal{S}} \rho^{\pi_{\theta_\text{old}}} \sum_{a
+    \in \mathcal{A}} \big( \beta(a \vert s) \frac{\pi_\theta(a \vert s)}{\beta(a \vert
+    s)} \hat{A}_{\theta_\text{old}}(s, a) \big) & \scriptstyle{\text{; 重要性采样}} \\
+    &= \mathbb{E}_{s \sim \rho^{\pi_{\theta_\text{old}}}, a \sim \beta} \big[ \frac{\pi_\theta(a
+    \vert s)}{\beta(a \vert s)} \hat{A}_{\theta_\text{old}}(s, a) \big] & \end{aligned}
+    $$
 - en: where $\theta_\text{old}$ is the policy parameters before the update and thus
     known to us; $\rho^{\pi_{\theta_\text{old}}}$ is defined in the same way as [above](#dpg);
     $\beta(a \vert s)$ is the behavior policy for collecting trajectories. Noted that
     we use an estimated advantage $\hat{A}(.)$ rather than the true advantage function
     $A(.)$ because the true rewards are usually unknown.
+  id: totrans-200
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 $\theta_\text{old}$ 是更新之前的策略参数，因此我们已知；$\rho^{\pi_{\theta_\text{old}}}$ 的定义与[上文](#dpg)相同；$\beta(a
+    \vert s)$ 是用于收集轨迹的行为策略。请注意，我们使用估计的优势 $\hat{A}(.)$ 而不是真实的优势函数 $A(.)$，因为真实奖励通常是未知的。
 - en: 'When training on policy, theoretically the policy for collecting data is same
     as the policy that we want to optimize. However, when rollout workers and optimizers
     are running in parallel asynchronously, the behavior policy can get stale. TRPO
     considers this subtle difference: It labels the behavior policy as $\pi_{\theta_\text{old}}(a
     \vert s)$ and thus the objective function becomes:'
+  id: totrans-201
   prefs: []
   type: TYPE_NORMAL
+  zh: 在策略训练时，理论上用于收集数据的策略与我们要优化的策略相同。然而，当回滚工作程序和优化器异步并行运行时，行为策略可能会过时。TRPO考虑到这种微妙的差异：它将行为策略标记为
+    $\pi_{\theta_\text{old}}(a \vert s)$，因此目标函数变为：
 - en: $$ J(\theta) = \mathbb{E}_{s \sim \rho^{\pi_{\theta_\text{old}}}, a \sim \pi_{\theta_\text{old}}}
     \big[ \frac{\pi_\theta(a \vert s)}{\pi_{\theta_\text{old}}(a \vert s)} \hat{A}_{\theta_\text{old}}(s,
     a) \big] $$
+  id: totrans-202
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ J(\theta) = \mathbb{E}_{s \sim \rho^{\pi_{\theta_\text{old}}}, a \sim \pi_{\theta_\text{old}}}
+    \big[ \frac{\pi_\theta(a \vert s)}{\pi_{\theta_\text{old}}(a \vert s)} \hat{A}_{\theta_\text{old}}(s,
+    a) \big] $$
 - en: 'TRPO aims to maximize the objective function $J(\theta)$ subject to, *trust
     region constraint* which enforces the distance between old and new policies measured
     by [KL-divergence](https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence)
     to be small enough, within a parameter δ:'
+  id: totrans-203
   prefs: []
   type: TYPE_NORMAL
+  zh: TRPO旨在最大化目标函数 $J(\theta)$，同时受到*信任区域约束*的约束，该约束强制旧策略和新策略之间的距离（由[KL散度](https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence)测量）足够小，即在参数
+    δ 内：
 - en: $$ \mathbb{E}_{s \sim \rho^{\pi_{\theta_\text{old}}}} [D_\text{KL}(\pi_{\theta_\text{old}}(.\vert
     s) \| \pi_\theta(.\vert s)] \leq \delta $$
+  id: totrans-204
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathbb{E}_{s \sim \rho^{\pi_{\theta_\text{old}}}} [D_\text{KL}(\pi_{\theta_\text{old}}(.\vert
+    s) \| \pi_\theta(.\vert s)] \leq \delta $$
 - en: In this way, the old and new policies would not diverge too much when this hard
     constraint is met. While still, TRPO can guarantee a monotonic improvement over
     policy iteration (Neat, right?). Please read the proof in the [paper](https://arxiv.org/pdf/1502.05477.pdf)
     if interested :)
+  id: totrans-205
   prefs: []
   type: TYPE_NORMAL
+  zh: 这样，当满足这个硬约束时，旧策略和新策略之间不会发散太多。尽管如此，TRPO仍然可以保证在策略迭代上的单调改进（很棒，对吧？）。如果感兴趣，请阅读[论文](https://arxiv.org/pdf/1502.05477.pdf)中的证明
+    :)
 - en: PPO
+  id: totrans-206
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: PPO
 - en: '[[paper](https://arxiv.org/pdf/1707.06347.pdf)|[code](https://github.com/openai/baselines/tree/master/baselines/ppo1)]'
+  id: totrans-207
   prefs: []
   type: TYPE_NORMAL
+  zh: '[[论文](https://arxiv.org/pdf/1707.06347.pdf)|[代码](https://github.com/openai/baselines/tree/master/baselines/ppo1)]'
 - en: Given that TRPO is relatively complicated and we still want to implement a similar
     constraint, **proximal policy optimization (PPO)** simplifies it by using a clipped
     surrogate objective while retaining similar performance.
+  id: totrans-208
   prefs: []
   type: TYPE_NORMAL
+  zh: 鉴于TRPO相对复杂，而我们仍希望实现类似的约束，**近端策略优化（PPO）**通过使用剪切的替代目标简化了它，同时保持类似的性能。
 - en: 'First, let’s denote the probability ratio between old and new policies as:'
+  id: totrans-209
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，让我们将旧策略和新策略之间的概率比率表示为：
 - en: $$ r(\theta) = \frac{\pi_\theta(a \vert s)}{\pi_{\theta_\text{old}}(a \vert
     s)} $$
+  id: totrans-210
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ r(\theta) = \frac{\pi_\theta(a \vert s)}{\pi_{\theta_\text{old}}(a \vert
+    s)} $$
 - en: 'Then, the objective function of TRPO (on policy) becomes:'
+  id: totrans-211
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，TRPO的目标函数（在策略上）变为：
 - en: $$ J^\text{TRPO} (\theta) = \mathbb{E} [ r(\theta) \hat{A}_{\theta_\text{old}}(s,
     a) ] $$
+  id: totrans-212
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ J^\text{TRPO} (\theta) = \mathbb{E} [ r(\theta) \hat{A}_{\theta_\text{old}}(s,
+    a) ] $$
 - en: Without a limitation on the distance between $\theta_\text{old}$ and $\theta$,
     to maximize $J^\text{TRPO} (\theta)$ would lead to instability with extremely
     large parameter updates and big policy ratios. PPO imposes the constraint by forcing
     $r(\theta)$ to stay within a small interval around 1, precisely $[1-\epsilon,
     1+\epsilon]$, where $\epsilon$ is a hyperparameter.
+  id: totrans-213
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果没有对 $\theta_\text{old}$ 和 $\theta$ 之间的距离施加限制，最大化 $J^\text{TRPO} (\theta)$
+    将导致极大的参数更新和大的策略比率，从而导致不稳定性。PPO通过强制 $r(\theta)$ 保持在1周围的一个小区间内，即精确地 $[1-\epsilon,
+    1+\epsilon]$，来施加约束，其中 $\epsilon$ 是一个超参数。
 - en: $$ J^\text{CLIP} (\theta) = \mathbb{E} [ \min( r(\theta) \hat{A}_{\theta_\text{old}}(s,
     a), \text{clip}(r(\theta), 1 - \epsilon, 1 + \epsilon) \hat{A}_{\theta_\text{old}}(s,
     a))] $$
+  id: totrans-214
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ J^\text{CLIP} (\theta) = \mathbb{E} [ \min( r(\theta) \hat{A}_{\theta_\text{old}}(s,
+    a), \text{clip}(r(\theta), 1 - \epsilon, 1 + \epsilon) \hat{A}_{\theta_\text{old}}(s,
+    a))] $$
 - en: The function $\text{clip}(r(\theta), 1 - \epsilon, 1 + \epsilon)$ clips the
     ratio to be no more than $1+\epsilon$ and no less than $1-\epsilon$. The objective
     function of PPO takes the minimum one between the original value and the clipped
     version and therefore we lose the motivation for increasing the policy update
     to extremes for better rewards.
+  id: totrans-215
   prefs: []
   type: TYPE_NORMAL
+  zh: 函数$\text{clip}(r(\theta), 1 - \epsilon, 1 + \epsilon)$将比率剪切为不超过$1+\epsilon$且不少于$1-\epsilon$。PPO的目标函数取原始值和剪切版本之间的最小值，因此我们失去了为了更好的奖励而将策略更新增加到极端的动机。
 - en: When applying PPO on the network architecture with shared parameters for both
     policy (actor) and value (critic) functions, in addition to the clipped reward,
     the objective function is augmented with an error term on the value estimation
     (formula in red) and an entropy term (formula in blue) to encourage sufficient
     exploration.
+  id: totrans-216
   prefs: []
   type: TYPE_NORMAL
+  zh: 在应用PPO于共享参数的网络架构中，用于策略（演员）和价值（评论家）函数的，除了截断奖励外，目标函数还增加了一个关于价值估计的误差项（红色公式）和一个熵项（蓝色公式），以鼓励充分的探索。
 - en: $$ J^\text{CLIP'} (\theta) = \mathbb{E} [ J^\text{CLIP} (\theta) - \color{red}{c_1
     (V_\theta(s) - V_\text{target})^2} + \color{blue}{c_2 H(s, \pi_\theta(.))} ] $$
+  id: totrans-217
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ J^\text{CLIP'} (\theta) = \mathbb{E} [ J^\text{CLIP} (\theta) - \color{red}{c_1
+    (V_\theta(s) - V_\text{target})^2} + \color{blue}{c_2 H(s, \pi_\theta(.))} ] $$
 - en: where Both $c_1$ and $c_2$ are two hyperparameter constants.
+  id: totrans-218
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$c_1$和$c_2$都是两个超参数常数。
 - en: PPO has been tested on a set of benchmark tasks and proved to produce awesome
     results with much greater simplicity.
+  id: totrans-219
   prefs: []
   type: TYPE_NORMAL
+  zh: PPO已经在一组基准任务上进行了测试，并证明以更简单的方式产生了令人印象深刻的结果。
 - en: In a later paper by [Hsu et al., 2020](https://arxiv.org/abs/2009.10897), two
     common design choices in PPO are revisited, precisely (1) clipped probability
     ratio for policy regularization and (2) parameterize policy action space by continuous
     Gaussian or discrete softmax distribution. They first identified three failure
     modes in PPO and proposed replacements for these two designs.
+  id: totrans-220
   prefs: []
   type: TYPE_NORMAL
+  zh: 在[Hsu等人，2020年](https://arxiv.org/abs/2009.10897)的一篇后续论文中，重新审视了PPO中的两个常见设计选择，即（1）用于策略正则化的截断概率比和（2）通过连续高斯或离散softmax分布参数化策略动作空间。他们首先确定了PPO中的三种失败模式，并提出了这两种设计的替代方案。
 - en: 'The failure modes are:'
+  id: totrans-221
   prefs: []
   type: TYPE_NORMAL
+  zh: 失败模式包括：
 - en: On continuous action spaces, standard PPO is unstable when rewards vanish outside
     bounded support.
+  id: totrans-222
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在连续动作空间上，当奖励在有界支持之外消失时，标准PPO是不稳定的。
 - en: On discrete action spaces with sparse high rewards, standard PPO often gets
     stuck at suboptimal actions.
+  id: totrans-223
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在具有稀疏高奖励的离散动作空间中，标准PPO经常会陷入次优动作。
 - en: The policy is sensitive to initialization when there are locally optimal actions
     close to initialization.
+  id: totrans-224
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 当初始化时存在接近初始化的局部最优动作时，策略对初始化非常敏感。
 - en: Discretizing the action space or use Beta distribution helps avoid failure mode
     1&3 associated with Gaussian policy. Using KL regularization (same motivation
     as in [TRPO](#trpo)) as an alternative surrogate model helps resolve failure mode
     1&2.
+  id: totrans-225
   prefs: []
   type: TYPE_NORMAL
+  zh: 将动作空间离散化或使用Beta分布有助于避免与高斯策略相关的失败模式1和3。使用KL正则化（与[TRPO](#trpo)中的动机相同）作为替代的替代模型有助于解决失败模式1和2。
 - en: '![](../Images/1b37282921906208d9fe2d4d2124c768.png)'
+  id: totrans-226
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/1b37282921906208d9fe2d4d2124c768.png)'
 - en: PPG
+  id: totrans-227
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: PPG
 - en: '[[paper](https://arxiv.org/abs/2009.04416)|[code](https://github.com/openai/phasic-policy-gradient)]'
+  id: totrans-228
   prefs: []
   type: TYPE_NORMAL
+  zh: '[[论文](https://arxiv.org/abs/2009.04416)|[代码](https://github.com/openai/phasic-policy-gradient)]'
 - en: 'Sharing parameters between policy and value networks have pros and cons. It
     allows policy and value functions to share the learned features with each other,
     but it may cause conflicts between competing objectives and demands the same data
@@ -1185,75 +1801,112 @@
     on-policy [actor-critic](#actor-critic) policy gradient algorithm. precisely [PPO](#ppo),
     to have separate training phases for policy and value functions. In two alternating
     phases:'
+  id: totrans-229
   prefs: []
   type: TYPE_NORMAL
+  zh: 在策略和价值网络之间共享参数有利有弊。它允许策略和价值函数彼此共享学习到的特征，但可能导致竞争目标之间的冲突，并要求同时训练两个网络使用相同的数据。**阶段性策略梯度**（**PPG**；[Cobbe等人，2020年](https://arxiv.org/abs/2009.04416)）修改了传统的在线策略梯度算法，准确地说是[PPO](#ppo)，为策略和价值函数分别设置了训练阶段。在两个交替阶段中：
 - en: 'The *policy phase*: updates the policy network by optimizing the PPO [objective](#ppo_loss)
     $L^\text{CLIP} (\theta)$;'
+  id: totrans-230
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*策略阶段*：通过优化PPO的[目标](#ppo_loss) $L^\text{CLIP} (\theta)$来更新策略网络；'
 - en: 'The *auxiliary phase*: optimizes an auxiliary objective alongside a behavioral
     cloning loss. In the paper, value function error is the sole auxiliary objective,
     but it can be quite general and includes any other additional auxiliary losses.'
+  id: totrans-231
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*辅助阶段*：优化辅助目标与行为克隆损失一起。在论文中，价值函数误差是唯一的辅助目标，但它可以非常通用，并包括任何其他额外的辅助损失。'
 - en: $$ \begin{aligned} L^\text{joint} &= L^\text{aux} + \beta_\text{clone} \cdot
     \mathbb{E}_t[\text{KL}[\pi_{\theta_\text{old}}(\cdot\mid s_t), \pi_\theta(\cdot\mid
     s_t)]] \\ L^\text{aux} &= L^\text{value} = \mathbb{E}_t \big[\frac{1}{2}\big(
     V_w(s_t) - \hat{V}_t^\text{targ} \big)^2\big] \end{aligned} $$
+  id: totrans-232
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} L^\text{joint} &= L^\text{aux} + \beta_\text{clone} \cdot
+    \mathbb{E}_t[\text{KL}[\pi_{\theta_\text{old}}(\cdot\mid s_t), \pi_\theta(\cdot\mid
+    s_t)]] \\ L^\text{aux} &= L^\text{value} = \mathbb{E}_t \big[\frac{1}{2}\big(
+    V_w(s_t) - \hat{V}_t^\text{targ} \big)^2\big] \end{aligned} $$
 - en: where $\beta_\text{clone}$ is a hyperparameter for controlling how much we would
     like to keep the policy not diverge too much from its original behavior while
     optimizing the auxiliary objectives.
+  id: totrans-233
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$\beta_\text{clone}$是一个超参数，用于控制我们希望策略在优化辅助目标时不要与其原始行为相差太远。
 - en: '![](../Images/6be2cd73e233a78f1ddc177b93c34bc6.png)'
+  id: totrans-234
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6be2cd73e233a78f1ddc177b93c34bc6.png)'
 - en: 'Fig. 6\. The algorithm of PPG. (Image source: [Cobbe, et al 2020](https://arxiv.org/abs/2009.04416))'
+  id: totrans-235
   prefs: []
   type: TYPE_NORMAL
+  zh: 图6。PPG的算法。（图片来源：[Cobbe, et al 2020](https://arxiv.org/abs/2009.04416)）
 - en: where
+  id: totrans-236
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中
 - en: $N_\pi$ is the number of policy update iterations in the policy phase. Note
     that the policy phase performs multiple iterations of updates per single auxiliary
     phase.
+  id: totrans-237
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $N_\pi$是策略阶段中策略更新迭代次数。请注意，策略阶段对每个单独的辅助阶段执行多次更新迭代。
 - en: $E_\pi$ and $E_V$ control the sample reuse (i.e. the number of training epochs
     performed across data in the reply buffer) for the policy and value functions,
     respectively. Note that this happens within the policy phase and thus $E_V$ affects
     the learning of true value function not the auxiliary value function.
+  id: totrans-238
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $E_\pi$和$E_V$控制策略和价值函数的样本重用（即在回放缓冲区中执行的训练时期数量）；请注意，这发生在策略阶段内，因此$E_V$影响真实价值函数的学习而不是辅助价值函数。
 - en: $E_\text{aux}$ defines the sample reuse in the auxiliary phrase. In PPG, value
     function optimization can tolerate a much higher level sample reuse; for example,
     in the experiments of the paper, $E_\text{aux} = 6$ while $E_\pi = E_V = 1$.
+  id: totrans-239
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $E_\text{aux}$定义了辅助阶段中的样本重用。在PPG中，价值函数优化可以容忍更高水平的样本重用；例如，在论文的实验中，$E_\text{aux}
+    = 6$，而$E_\pi = E_V = 1$。
 - en: PPG leads to a significant improvement on sample efficiency compared to PPO.
+  id: totrans-240
   prefs: []
   type: TYPE_NORMAL
+  zh: PPG相对于PPO在样本效率上有显著改进。
 - en: '![](../Images/4984a4af9d77dbdbb0c0a7eda961430a.png)'
+  id: totrans-241
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/4984a4af9d77dbdbb0c0a7eda961430a.png)'
 - en: 'Fig. 7\. The mean normalized performance of PPG vs PPO on the [Procgen](https://arxiv.org/abs/1912.01588)
     benchmark. (Image source: [Cobbe, et al 2020](https://arxiv.org/abs/2009.04416))'
+  id: totrans-242
   prefs: []
   type: TYPE_NORMAL
+  zh: 图7。PPG与PPO在[Procgen](https://arxiv.org/abs/1912.01588)基准测试上的平均标准化性能。（图片来源：[Cobbe,
+    et al 2020](https://arxiv.org/abs/2009.04416))
 - en: ACER
+  id: totrans-243
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: ACER
 - en: '[[paper](https://arxiv.org/pdf/1611.01224.pdf)|[code](https://github.com/openai/baselines/tree/master/baselines/acer)]'
+  id: totrans-244
   prefs: []
   type: TYPE_NORMAL
+  zh: '[[论文](https://arxiv.org/pdf/1611.01224.pdf)|[代码](https://github.com/openai/baselines/tree/master/baselines/acer)]'
 - en: '**ACER**, short for **actor-critic with experience replay** ([Wang, et al.,
     2017](https://arxiv.org/pdf/1611.01224.pdf)), is an off-policy actor-critic model
     with experience replay, greatly increasing the sample efficiency and decreasing
@@ -1261,76 +1914,116 @@
     ACER is A3C’s off-policy counterpart. The major obstacle to making A3C off policy
     is how to control the stability of the off-policy estimator. ACER proposes three
     designs to overcome it:'
+  id: totrans-245
   prefs: []
   type: TYPE_NORMAL
+  zh: '**ACER**，全称**带经验回放的演员-评论家**（[Wang, et al., 2017](https://arxiv.org/pdf/1611.01224.pdf)），是一种带有经验回放的离线演员-评论家模型，极大地提高了样本效率并减少了数据相关性。A3C为ACER奠定了基础，但它是在线的；ACER是A3C的离线对应物。使A3C离线的主要障碍是如何控制离线估计器的稳定性。ACER提出了三种设计来克服这一障碍：'
 - en: Use Retrace Q-value estimation;
+  id: totrans-246
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用回溯Q值估计；
 - en: Truncate the importance weights with bias correction;
+  id: totrans-247
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用偏差校正截断重要性权重；
 - en: Apply efficient TRPO.
+  id: totrans-248
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 应用高效的TRPO。
 - en: '**Retrace Q-value Estimation**'
+  id: totrans-249
   prefs: []
   type: TYPE_NORMAL
+  zh: '**回溯Q值估计**'
 - en: '[*Retrace*](http://papers.nips.cc/paper/6538-safe-and-efficient-off-policy-reinforcement-learning.pdf)
     is an off-policy return-based Q-value estimation algorithm with a nice guarantee
     for convergence for any target and behavior policy pair $(\pi, \beta)$, plus good
     data efficiency.'
+  id: totrans-250
   prefs: []
   type: TYPE_NORMAL
+  zh: '[*Retrace*](http://papers.nips.cc/paper/6538-safe-and-efficient-off-policy-reinforcement-learning.pdf)是一种基于离线回报的Q值估计算法，对于任何目标和行为策略对$(\pi,
+    \beta)$都有很好的收敛保证，同时具有良好的数据效率。'
 - en: 'Recall how TD learning works for prediction:'
+  id: totrans-251
   prefs: []
   type: TYPE_NORMAL
+  zh: 回想一下 TD 学习用于预测的工作原理：
 - en: 'Compute TD error: $\delta_t = R_t + \gamma \mathbb{E}_{a \sim \pi} Q(S_{t+1},
     a) - Q(S_t, A_t)$; the term $r_t + \gamma \mathbb{E}_{a \sim \pi} Q(s_{t+1}, a)
     $ is known as “TD target”. The expectation $\mathbb{E}_{a \sim \pi}$ is used because
     for the future step the best estimation we can make is what the return would be
     if we follow the current policy $\pi$.'
+  id: totrans-252
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 计算 TD 误差：$\delta_t = R_t + \gamma \mathbb{E}_{a \sim \pi} Q(S_{t+1}, a) - Q(S_t,
+    A_t)$；术语 $r_t + \gamma \mathbb{E}_{a \sim \pi} Q(s_{t+1}, a) $ 被称为“TD 目标”。期望值
+    $\mathbb{E}_{a \sim \pi}$ 被用来因为对于未来步骤，我们能做出的最好估计是如果我们遵循当前策略 $\pi$ 时的回报。
 - en: 'Update the value by correcting the error to move toward the goal: $Q(S_t, A_t)
     \leftarrow Q(S_t, A_t) + \alpha \delta_t$. In other words, the incremental update
     on Q is proportional to the TD error: $\Delta Q(S_t, A_t) = \alpha \delta_t$.'
+  id: totrans-253
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 通过纠正错误来更新值以朝着目标前进：$Q(S_t, A_t) \leftarrow Q(S_t, A_t) + \alpha \delta_t$。换句话说，Q
+    的增量更新与 TD 误差成正比：$\Delta Q(S_t, A_t) = \alpha \delta_t$。
 - en: 'When the rollout is off policy, we need to apply importance sampling on the
     Q update:'
+  id: totrans-254
   prefs: []
   type: TYPE_NORMAL
+  zh: 当回滚不符合策略时，我们需要在 Q 更新上应用重要性采样：
 - en: $$ \Delta Q^\text{imp}(S_t, A_t) = \gamma^t \prod_{1 \leq \tau \leq t} \frac{\pi(A_\tau
     \vert S_\tau)}{\beta(A_\tau \vert S_\tau)} \delta_t $$
+  id: totrans-255
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \Delta Q^\text{imp}(S_t, A_t) = \gamma^t \prod_{1 \leq \tau \leq t} \frac{\pi(A_\tau
+    \vert S_\tau)}{\beta(A_\tau \vert S_\tau)} \delta_t $$
 - en: 'The product of importance weights looks pretty scary when we start imagining
     how it can cause super high variance and even explode. Retrace Q-value estimation
     method modifies $\Delta Q$ to have importance weights truncated by no more than
     a constant $c$:'
+  id: totrans-256
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我们开始想象重要性权重的乘积时，它看起来非常可怕，可能会导致超高的方差甚至爆炸。Retrace Q 值估计方法修改 $\Delta Q$，使重要性权重被截断不超过一个常数
+    $c$：
 - en: $$ \Delta Q^\text{ret}(S_t, A_t) = \gamma^t \prod_{1 \leq \tau \leq t} \min(c,
     \frac{\pi(A_\tau \vert S_\tau)}{\beta(A_\tau \vert S_\tau)}) \delta_t $$
+  id: totrans-257
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \Delta Q^\text{ret}(S_t, A_t) = \gamma^t \prod_{1 \leq \tau \leq t} \min(c,
+    \frac{\pi(A_\tau \vert S_\tau)}{\beta(A_\tau \vert S_\tau)}) \delta_t $$
 - en: 'ACER uses $Q^\text{ret}$ as the target to train the critic by minimizing the
     L2 error term: $(Q^\text{ret}(s, a) - Q(s, a))^2$.'
+  id: totrans-258
   prefs: []
   type: TYPE_NORMAL
+  zh: ACER 使用 $Q^\text{ret}$ 作为目标来训练批评家，通过最小化 L2 误差项：$(Q^\text{ret}(s, a) - Q(s, a))^2$。
 - en: '**Importance weights truncation**'
+  id: totrans-259
   prefs: []
   type: TYPE_NORMAL
+  zh: '**重要性权重截断**'
 - en: To reduce the high variance of the policy gradient $\hat{g}$, ACER truncates
     the importance weights by a constant c, plus a correction term. The label $\hat{g}_t^\text{acer}$
     is the ACER policy gradient at time t.
+  id: totrans-260
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了减少策略梯度 $\hat{g}$ 的高方差，ACER 通过一个常数 c 截断重要性权重，再加上一个修正项。标签 $\hat{g}_t^\text{acer}$
+    是时间 t 的 ACER 策略梯度。
 - en: $$ \begin{aligned} \hat{g}_t^\text{acer} = & \omega_t \big( Q^\text{ret}(S_t,
     A_t) - V_{\theta_v}(S_t) \big) \nabla_\theta \ln \pi_\theta(A_t \vert S_t) & \scriptstyle{\text{;
     Let }\omega_t=\frac{\pi(A_t \vert S_t)}{\beta(A_t \vert S_t)}} \\ = & \color{blue}{\min(c,
@@ -1339,37 +2032,60 @@
     - c}{\omega_t(a)}) \big( Q_w(S_t, a) - V_w(S_t) \big) \nabla_\theta \ln \pi_\theta(a
     \vert S_t) \big]} & \scriptstyle{\text{; Let }\omega_t (a) =\frac{\pi(a \vert
     S_t)}{\beta(a \vert S_t)}} \end{aligned} $$
+  id: totrans-261
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \hat{g}_t^\text{acer} = & \omega_t \big( Q^\text{ret}(S_t,
+    A_t) - V_{\theta_v}(S_t) \big) \nabla_\theta \ln \pi_\theta(A_t \vert S_t) & \scriptstyle{\text{；令
+    }\omega_t=\frac{\pi(A_t \vert S_t)}{\beta(A_t \vert S_t)}} \\ = & \color{blue}{\min(c,
+    \omega_t) \big( Q^\text{ret}(S_t, A_t) - V_w(S_t) \big) \nabla_\theta \ln \pi_\theta(A_t
+    \vert S_t)} \\ & + \color{red}{\mathbb{E}_{a \sim \pi} \big[ \max(0, \frac{\omega_t(a)
+    - c}{\omega_t(a)}) \big( Q_w(S_t, a) - V_w(S_t) \big) \nabla_\theta \ln \pi_\theta(a
+    \vert S_t) \big]} & \scriptstyle{\text{；令 }\omega_t (a) =\frac{\pi(a \vert S_t)}{\beta(a
+    \vert S_t)}} \end{aligned} $$
 - en: where $Q_w(.)$ and $V_w(.)$ are value functions predicted by the critic with
     parameter w. The first term (blue) contains the clipped important weight. The
     clipping helps reduce the variance, in addition to subtracting state value function
     $V_w(.)$ as a baseline. The second term (red) makes a correction to achieve unbiased
     estimation.
+  id: totrans-262
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 $Q_w(.)$ 和 $V_w(.)$ 是由批评家预测的值函数，参数为 w。第一项（蓝色）包含剪切的重要权重。剪切有助于减少方差，除了减去状态值函数
+    $V_w(.)$ 作为基准。第二项（红色）进行修正以实现无偏估计。
 - en: '**Efficient TRPO**'
+  id: totrans-263
   prefs: []
   type: TYPE_NORMAL
+  zh: '**高效的 TRPO**'
 - en: 'Furthermore, ACER adopts the idea of TRPO but with a small adjustment to make
     it more computationally efficient: rather than measuring the KL divergence between
     policies before and after one update, ACER maintains a running average of past
     policies and forces the updated policy to not deviate far from this average.'
+  id: totrans-264
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，ACER 采用了 TRPO 的思想，但进行了一些小的调整以使其在计算上更加高效：ACER 不是在一次更新之前和之后测量策略之间的 KL 散度，而是维护过去策略的平均值，并强制更新后的策略不偏离这个平均值太远。
 - en: The ACER [paper](https://arxiv.org/pdf/1611.01224.pdf) is pretty dense with
     many equations. Hopefully, with the prior knowledge on TD learning, Q-learning,
     importance sampling and TRPO, you will find the [paper](https://arxiv.org/pdf/1611.01224.pdf)
     slightly easier to follow :)
+  id: totrans-265
   prefs: []
   type: TYPE_NORMAL
+  zh: ACER [论文](https://arxiv.org/pdf/1611.01224.pdf)非常密集，包含许多方程式。希望在有关TD学习、Q学习、重要性采样和TRPO的先前知识的基础上，您会发现跟随[论文](https://arxiv.org/pdf/1611.01224.pdf)会稍微容易些
+    :)
 - en: ACTKR
+  id: totrans-266
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: ACTKR
 - en: '[[paper](https://arxiv.org/pdf/1708.05144.pdf)|[code](https://github.com/openai/baselines/tree/master/baselines/acktr)]'
+  id: totrans-267
   prefs: []
   type: TYPE_NORMAL
+  zh: '[[论文](https://arxiv.org/pdf/1708.05144.pdf)|[代码](https://github.com/openai/baselines/tree/master/baselines/acktr)]'
 - en: '**ACKTR (actor-critic using Kronecker-factored trust region)** ([Yuhuai Wu,
     et al., 2017](https://arxiv.org/pdf/1708.05144.pdf)) proposed to use Kronecker-factored
     approximation curvature ([K-FAC](https://arxiv.org/pdf/1503.05671.pdf)) to do
@@ -1378,56 +2094,81 @@
     gradient*. [Here](http://kvfrans.com/a-intuitive-explanation-of-natural-gradient-descent/)
     is a nice, intuitive explanation of natural gradient. One sentence summary is
     probably:'
+  id: totrans-268
   prefs: []
   type: TYPE_NORMAL
+  zh: '**ACKTR（使用Kronecker分解信任区域的演员-评论家）** ([Yuhuai Wu等人，2017](https://arxiv.org/pdf/1708.05144.pdf))
+    提出使用Kronecker分解近似曲率（[K-FAC](https://arxiv.org/pdf/1503.05671.pdf)) 来对评论家和演员进行梯度更新。
+    K-FAC对*自然梯度*的计算进行了改进，这与我们的*标准梯度*有很大不同。[这里](http://kvfrans.com/a-intuitive-explanation-of-natural-gradient-descent/)有一个很好的、直观的自然梯度解释。一个句子的总结可能是：'
 - en: “we first consider all combinations of parameters that result in a new network
     a constant KL divergence away from the old network. This constant value can be
     viewed as the step size or learning rate. Out of all these possible combinations,
     we choose the one that minimizes our loss function.”
+  id: totrans-269
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: “我们首先考虑所有参数组合，使得新网络与旧网络的KL散度恒定。这个恒定值可以看作是步长或学习率。在所有可能的组合中，我们选择最小化损失函数的组合。”
 - en: 'I listed ACTKR here mainly for the completeness of this post, but I would not
     dive into details, as it involves a lot of theoretical knowledge on natural gradient
     and optimization methods. If interested, check these papers/posts, before reading
     the ACKTR paper:'
+  id: totrans-270
   prefs: []
   type: TYPE_NORMAL
+  zh: 我在这里列出ACTKR主要是为了完整性起见，但我不会深入细节，因为这涉及许多关于自然梯度和优化方法的理论知识。如果感兴趣，请在阅读ACKTR论文之前查阅这些论文/帖子：
 - en: Amari. [Natural Gradient Works Efficiently in Learning](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.452.7280&rep=rep1&type=pdf).
     1998
+  id: totrans-271
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Amari. [自然梯度在学习中的高效性](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.452.7280&rep=rep1&type=pdf).
+    1998
 - en: Kakade. [A Natural Policy Gradient](https://papers.nips.cc/paper/2073-a-natural-policy-gradient.pdf).
     2002
+  id: totrans-272
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Kakade. [自然策略梯度](https://papers.nips.cc/paper/2073-a-natural-policy-gradient.pdf).
+    2002
 - en: '[A intuitive explanation of natural gradient descent](http://kvfrans.com/a-intuitive-explanation-of-natural-gradient-descent/)'
+  id: totrans-273
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[自然梯度下降的直观解释](http://kvfrans.com/a-intuitive-explanation-of-natural-gradient-descent/)'
 - en: '[Wiki: Kronecker product](https://en.wikipedia.org/wiki/Kronecker_product)'
+  id: totrans-274
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[维基：Kronecker乘积](https://en.wikipedia.org/wiki/Kronecker_product)'
 - en: Martens & Grosse. [Optimizing neural networks with kronecker-factored approximate
     curvature.](http://proceedings.mlr.press/v37/martens15.pdf) 2015.
+  id: totrans-275
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Martens & Grosse. [使用Kronecker分解近似曲率优化神经网络。](http://proceedings.mlr.press/v37/martens15.pdf)
+    2015.
 - en: 'Here is a high level summary from the K-FAC [paper](https://arxiv.org/pdf/1503.05671.pdf):'
+  id: totrans-276
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里是K-FAC [论文](https://arxiv.org/pdf/1503.05671.pdf)的高层摘要：
 - en: “This approximation is built in two stages. In the first, the rows and columns
     of the Fisher are divided into groups, each of which corresponds to all the weights
     in a given layer, and this gives rise to a block-partitioning of the matrix. These
     blocks are then approximated as Kronecker products between much smaller matrices,
     which we show is equivalent to making certain approximating assumptions regarding
     the statistics of the network’s gradients.
+  id: totrans-277
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: “这种近似是通过两个阶段构建的。首先，Fisher的行和列被分成组，每个组对应于给定层中的所有权重，这导致矩阵的块划分。然后，这些块被近似为更小矩阵之间的Kronecker乘积，我们表明这等效于对网络梯度的统计做出某些近似假设。
 - en: In the second stage, this matrix is further approximated as having an inverse
     which is either block-diagonal or block-tridiagonal. We justify this approximation
     through a careful examination of the relationships between inverse covariances,
@@ -1435,121 +2176,186 @@
     doesn’t apply to the Fisher itself, and our experiments confirm that while the
     inverse Fisher does indeed possess this structure (approximately), the Fisher
     itself does not.”
+  id: totrans-278
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 在第二阶段，这个矩阵进一步近似为具有逆矩阵的块对角线或块三对角线形式。我们通过仔细研究逆协方差、树结构图模型和线性回归之间的关系来证明这种近似。值得注意的是，这种证明并不适用于
+    Fisher 本身，我们的实验证实，虽然逆 Fisher 确实具有这种结构（近似），但 Fisher 本身并不具备这种结构。
 - en: SAC
+  id: totrans-279
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: SAC
 - en: '[[paper](https://arxiv.org/abs/1801.01290)|[code](https://github.com/haarnoja/sac)]'
+  id: totrans-280
   prefs: []
   type: TYPE_NORMAL
+  zh: '[[论文](https://arxiv.org/abs/1801.01290)|[代码](https://github.com/haarnoja/sac)]'
 - en: '**Soft Actor-Critic (SAC)** ([Haarnoja et al. 2018](https://arxiv.org/abs/1801.01290))
     incorporates the entropy measure of the policy into the reward to encourage exploration:
     we expect to learn a policy that acts as randomly as possible while it is still
     able to succeed at the task. It is an off-policy actor-critic model following
     the maximum entropy reinforcement learning framework. A precedent work is [Soft
     Q-learning](https://arxiv.org/abs/1702.08165).'
+  id: totrans-281
   prefs: []
   type: TYPE_NORMAL
+  zh: '**软演员评论家（SAC）**（[Haarnoja 等人 2018](https://arxiv.org/abs/1801.01290)）将策略的熵度量整合到奖励中以鼓励探索：我们期望学习一个尽可能随机行动但仍能成功完成任务的策略。这是遵循最大熵强化学习框架的离线演员评论家模型。一个先前的工作是
+    [软 Q 学习](https://arxiv.org/abs/1702.08165)。'
 - en: 'Three key components in SAC:'
+  id: totrans-282
   prefs: []
   type: TYPE_NORMAL
+  zh: SAC 中的三个关键组成部分：
 - en: An [actor-critic](#actor-critic) architecture with separate policy and value
     function networks;
+  id: totrans-283
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一个带有独立策略和值函数网络的 [演员-评论家](#actor-critic) 架构；
 - en: An [off-policy](#off-policy-policy-gradient) formulation that enables reuse
     of previously collected data for efficiency;
+  id: totrans-284
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一种 [离线策略](#off-policy-policy-gradient) 的制定，可以有效地重复使用先前收集的数据；
 - en: Entropy maximization to enable stability and exploration.
+  id: totrans-285
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 最大化熵以实现稳定性和探索性。
 - en: 'The policy is trained with the objective to maximize the expected return and
     the entropy at the same time:'
+  id: totrans-286
   prefs: []
   type: TYPE_NORMAL
+  zh: 该策略被训练的目标是同时最大化预期回报和熵：
 - en: $$ J(\theta) = \sum_{t=1}^T \mathbb{E}_{(s_t, a_t) \sim \rho_{\pi_\theta}} [r(s_t,
     a_t) + \alpha \mathcal{H}(\pi_\theta(.\vert s_t))] $$
+  id: totrans-287
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ J(\theta) = \sum_{t=1}^T \mathbb{E}_{(s_t, a_t) \sim \rho_{\pi_\theta}} [r(s_t,
+    a_t) + \alpha \mathcal{H}(\pi_\theta(.\vert s_t))] $$
 - en: where $\mathcal{H}(.)$ is the entropy measure and $\alpha$ controls how important
     the entropy term is, known as *temperature* parameter. The entropy maximization
     leads to policies that can (1) explore more and (2) capture multiple modes of
     near-optimal strategies (i.e., if there exist multiple options that seem to be
     equally good, the policy should assign each with an equal probability to be chosen).
+  id: totrans-288
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 $\mathcal{H}(.)$ 是熵度量，$\alpha$ 控制熵项的重要性，被称为 *温度* 参数。最大化熵导致策略可以（1）更多地探索和（2）捕捉多种接近最优策略的模式（即，如果存在多个看似同样优秀的选项，策略应该分配相等的概率来选择每个）。
 - en: 'Precisely, SAC aims to learn three functions:'
+  id: totrans-289
   prefs: []
   type: TYPE_NORMAL
+  zh: 具体来说，SAC 的目标是学习三个函数：
 - en: The policy with parameter $\theta$, $\pi_\theta$.
+  id: totrans-290
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 具有参数 $\theta$ 的策略，$\pi_\theta$。
 - en: Soft Q-value function parameterized by $w$, $Q_w$.
+  id: totrans-291
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 由 $w$ 参数化的软 Q 值函数，$Q_w$。
 - en: Soft state value function parameterized by $\psi$, $V_\psi$; theoretically we
     can infer $V$ by knowing $Q$ and $\pi$, but in practice, it helps stabilize the
     training.
+  id: totrans-292
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 由 $\psi$ 参数化的软状态值函数，$V_\psi$；理论上我们可以通过知道 $Q$ 和 $\pi$ 推断 $V$，但在实践中，这有助于稳定训练。
 - en: 'Soft Q-value and soft state value are defined as:'
+  id: totrans-293
   prefs: []
   type: TYPE_NORMAL
+  zh: 软 Q 值和软状态值的定义如下：
 - en: $$ \begin{aligned} Q(s_t, a_t) &= r(s_t, a_t) + \gamma \mathbb{E}_{s_{t+1} \sim
     \rho_{\pi}(s)} [V(s_{t+1})] & \text{; according to Bellman equation.}\\ \text{where
     }V(s_t) &= \mathbb{E}_{a_t \sim \pi} [Q(s_t, a_t) - \alpha \log \pi(a_t \vert
     s_t)] & \text{; soft state value function.} \end{aligned} $$$$ \text{Thus, } Q(s_t,
     a_t) = r(s_t, a_t) + \gamma \mathbb{E}_{(s_{t+1}, a_{t+1}) \sim \rho_{\pi}} [Q(s_{t+1},
     a_{t+1}) - \alpha \log \pi(a_{t+1} \vert s_{t+1})] $$
+  id: totrans-294
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} Q(s_t, a_t) &= r(s_t, a_t) + \gamma \mathbb{E}_{s_{t+1} \sim
+    \rho_{\pi}(s)} [V(s_{t+1})] & \text{；根据贝尔曼方程。}\\ \text{其中 }V(s_t) &= \mathbb{E}_{a_t
+    \sim \pi} [Q(s_t, a_t) - \alpha \log \pi(a_t \vert s_t)] & \text{；软状态值函数。} \end{aligned}
+    $$$$ \text{因此，} Q(s_t, a_t) = r(s_t, a_t) + \gamma \mathbb{E}_{(s_{t+1}, a_{t+1})
+    \sim \rho_{\pi}} [Q(s_{t+1}, a_{t+1}) - \alpha \log \pi(a_{t+1} \vert s_{t+1})]
+    $$
 - en: $\rho_\pi(s)$ and $\rho_\pi(s, a)$ denote the state and the state-action marginals
     of the state distribution induced by the policy $\pi(a \vert s)$; see the similar
     definitions in [DPG](#dpg) section.
+  id: totrans-295
   prefs: []
   type: TYPE_NORMAL
+  zh: $\rho_\pi(s)$ 和 $\rho_\pi(s, a)$ 分别表示由策略 $\pi(a \vert s)$ 引起的状态和状态-动作边缘分布；请参阅[DPG](#dpg)部分中类似的定义。
 - en: 'The soft state value function is trained to minimize the mean squared error:'
+  id: totrans-296
   prefs: []
   type: TYPE_NORMAL
+  zh: 软状态值函数的训练旨在最小化均方误差：
 - en: '$$ \begin{aligned} J_V(\psi) &= \mathbb{E}_{s_t \sim \mathcal{D}} [\frac{1}{2}
     \big(V_\psi(s_t) - \mathbb{E}[Q_w(s_t, a_t) - \log \pi_\theta(a_t \vert s_t)]
     \big)^2] \\ \text{with gradient: }\nabla_\psi J_V(\psi) &= \nabla_\psi V_\psi(s_t)\big(
     V_\psi(s_t) - Q_w(s_t, a_t) + \log \pi_\theta (a_t \vert s_t) \big) \end{aligned}
     $$'
+  id: totrans-297
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} J_V(\psi) &= \mathbb{E}_{s_t \sim \mathcal{D}} [\frac{1}{2}
+    \big(V_\psi(s_t) - \mathbb{E}[Q_w(s_t, a_t) - \log \pi_\theta(a_t \vert s_t)]
+    \big)^2] \\ \text{梯度为：}\nabla_\psi J_V(\psi) &= \nabla_\psi V_\psi(s_t)\big( V_\psi(s_t)
+    - Q_w(s_t, a_t) + \log \pi_\theta (a_t \vert s_t) \big) \end{aligned} $$
 - en: where $\mathcal{D}$ is the replay buffer.
+  id: totrans-298
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 $\mathcal{D}$ 是重放缓冲区。
 - en: 'The soft Q function is trained to minimize the soft Bellman residual:'
+  id: totrans-299
   prefs: []
   type: TYPE_NORMAL
+  zh: 软 Q 函数的训练旨在最小化软 Bellman 残差：
 - en: '$$ \begin{aligned} J_Q(w) &= \mathbb{E}_{(s_t, a_t) \sim \mathcal{D}} [\frac{1}{2}\big(
     Q_w(s_t, a_t) - (r(s_t, a_t) + \gamma \mathbb{E}_{s_{t+1} \sim \rho_\pi(s)}[V_{\bar{\psi}}(s_{t+1})])
     \big)^2] \\ \text{with gradient: } \nabla_w J_Q(w) &= \nabla_w Q_w(s_t, a_t) \big(
     Q_w(s_t, a_t) - r(s_t, a_t) - \gamma V_{\bar{\psi}}(s_{t+1})\big) \end{aligned}
     $$'
+  id: totrans-300
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} J_Q(w) &= \mathbb{E}_{(s_t, a_t) \sim \mathcal{D}} [\frac{1}{2}\big(
+    Q_w(s_t, a_t) - (r(s_t, a_t) + \gamma \mathbb{E}_{s_{t+1} \sim \rho_\pi(s)}[V_{\bar{\psi}}(s_{t+1})])
+    \big)^2] \\ \text{梯度为：} \nabla_w J_Q(w) &= \nabla_w Q_w(s_t, a_t) \big( Q_w(s_t,
+    a_t) - r(s_t, a_t) - \gamma V_{\bar{\psi}}(s_{t+1})\big) \end{aligned} $$
 - en: where $\bar{\psi}$ is the target value function which is the exponential moving
     average (or only gets updated periodically in a “hard” way), just like how the
     parameter of the target Q network is treated in [DQN](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#deep-q-network)
     to stabilize the training.
+  id: totrans-301
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 $\bar{\psi}$ 是目标值函数，是指数移动平均（或仅以“硬”方式定期更新），就像在[DQN](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#deep-q-network)中处理目标
+    Q 网络的参数以稳定训练一样。
 - en: 'SAC updates the policy to minimize the [KL-divergence](https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence):'
+  id: totrans-302
   prefs: []
   type: TYPE_NORMAL
+  zh: SAC 更新策略以最小化[KL-散度](https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence)：
 - en: '$$ \begin{aligned} \pi_\text{new} &= \arg\min_{\pi'' \in \Pi} D_\text{KL} \Big(
     \pi''(.\vert s_t) \| \frac{\exp(Q^{\pi_\text{old}}(s_t, .))}{Z^{\pi_\text{old}}(s_t)}
     \Big) \\[6pt] &= \arg\min_{\pi'' \in \Pi} D_\text{KL} \big( \pi''(.\vert s_t)
@@ -1559,132 +2365,213 @@
     \mathbb{E}_{a_t\sim\pi} \Big[ - \log \big( \frac{\exp(Q_w(s_t, a_t) - \log Z_w(s_t))}{\pi_\theta(a_t
     \vert s_t)} \big) \Big] \\[6pt] &= \mathbb{E}_{a_t\sim\pi} [ \log \pi_\theta(a_t
     \vert s_t) - Q_w(s_t, a_t) + \log Z_w(s_t) ] \end{aligned} $$'
+  id: totrans-303
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \pi_\text{new} &= \arg\min_{\pi' \in \Pi} D_\text{KL} \Big(
+    \pi'(.\vert s_t) \| \frac{\exp(Q^{\pi_\text{old}}(s_t, .))}{Z^{\pi_\text{old}}(s_t)}
+    \Big) \\[6pt] &= \arg\min_{\pi' \in \Pi} D_\text{KL} \big( \pi'(.\vert s_t) \|
+    \exp(Q^{\pi_\text{old}}(s_t, .) - \log Z^{\pi_\text{old}}(s_t)) \big) \\[6pt]
+    \text{更新目标：} J_\pi(\theta) &= \nabla_\theta D_\text{KL} \big( \pi_\theta(. \vert
+    s_t) \| \exp(Q_w(s_t, .) - \log Z_w(s_t)) \big) \\[6pt] &= \mathbb{E}_{a_t\sim\pi}
+    \Big[ - \log \big( \frac{\exp(Q_w(s_t, a_t) - \log Z_w(s_t))}{\pi_\theta(a_t \vert
+    s_t)} \big) \Big] \\[6pt] &= \mathbb{E}_{a_t\sim\pi} [ \log \pi_\theta(a_t \vert
+    s_t) - Q_w(s_t, a_t) + \log Z_w(s_t) ] \end{aligned} $$
 - en: where $\Pi$ is the set of potential policies that we can model our policy as
     to keep them tractable; for example, $\Pi$ can be the family of Gaussian mixture
     distributions, expensive to model but highly expressive and still tractable. $Z^{\pi_\text{old}}(s_t)$
     is the partition function to normalize the distribution. It is usually intractable
     but does not contribute to the gradient. How to minimize $J_\pi(\theta)$ depends
     our choice of $\Pi$.
+  id: totrans-304
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 $\Pi$ 是我们可以将策略建模为以保持可处理性的潜在策略集；例如，$\Pi$ 可以是高斯混合分布族，建模昂贵但高度表达且仍可处理。$Z^{\pi_\text{old}}(s_t)$
+    是用于归一化分布的分区函数。通常是难以处理的，但不会对梯度产生影响。如何最小化 $J_\pi(\theta)$ 取决于我们对 $\Pi$ 的选择。
 - en: This update guarantees that $Q^{\pi_\text{new}}(s_t, a_t) \geq Q^{\pi_\text{old}}(s_t,
     a_t)$, please check the proof on this lemma in the Appendix B.2 in the original
     [paper](https://arxiv.org/abs/1801.01290).
+  id: totrans-305
   prefs: []
   type: TYPE_NORMAL
+  zh: 此更新确保 $Q^{\pi_\text{new}}(s_t, a_t) \geq Q^{\pi_\text{old}}(s_t, a_t)$，请查看原始[论文](https://arxiv.org/abs/1801.01290)附录
+    B.2 中关于此引理的证明。
 - en: 'Once we have defined the objective functions and gradients for soft action-state
     value, soft state value and the policy network, the soft actor-critic algorithm
     is straightforward:'
+  id: totrans-306
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦我们为软动作-状态值、软状态值和策略网络定义了目标函数和梯度，软演员-评论算法就很简单：
 - en: '![](../Images/edf233d25ddef6c2c20e60b8298a7704.png)'
+  id: totrans-307
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/edf233d25ddef6c2c20e60b8298a7704.png)'
 - en: 'Fig. 8\. The soft actor-critic algorithm. (Image source: [original paper](https://arxiv.org/abs/1801.01290))'
+  id: totrans-308
   prefs: []
   type: TYPE_NORMAL
+  zh: 图8。软演员-评论算法。 (图片来源：[原始论文](https://arxiv.org/abs/1801.01290))
 - en: SAC with Automatically Adjusted Temperature
+  id: totrans-309
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 具有自动调整温度的SAC
 - en: '[[paper](https://arxiv.org/abs/1812.05905)|[code](https://github.com/rail-berkeley/softlearning)]'
+  id: totrans-310
   prefs: []
   type: TYPE_NORMAL
+  zh: '[[论文](https://arxiv.org/abs/1812.05905)|[代码](https://github.com/rail-berkeley/softlearning)]'
 - en: 'SAC is brittle with respect to the temperature parameter. Unfortunately it
     is difficult to adjust temperature, because the entropy can vary unpredictably
     both across tasks and during training as the policy becomes better. An improvement
     on SAC formulates a constrained optimization problem: while maximizing the expected
     return, the policy should satisfy a minimum entropy constraint:'
+  id: totrans-311
   prefs: []
   type: TYPE_NORMAL
+  zh: SAC对于温度参数是脆弱的。不幸的是，调整温度很困难，因为熵在任务之间和训练过程中难以预测地变化，随着策略变得更好。对SAC的改进制定了一个受约束的优化问题：在最大化预期回报的同时，策略应满足最小熵约束：
 - en: $$ \max_{\pi_0, \dots, \pi_T} \mathbb{E} \Big[ \sum_{t=0}^T r(s_t, a_t)\Big]
     \text{s.t. } \forall t\text{, } \mathcal{H}(\pi_t) \geq \mathcal{H}_0 $$
+  id: totrans-312
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \max_{\pi_0, \dots, \pi_T} \mathbb{E} \Big[ \sum_{t=0}^T r(s_t, a_t)\Big]
+    \text{s.t. } \forall t\text{, } \mathcal{H}(\pi_t) \geq \mathcal{H}_0 $$
 - en: where $\mathcal{H}_0$ is a predefined minimum policy entropy threshold.
+  id: totrans-313
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$\mathcal{H}_0$是预定义的最小策略熵阈值。
 - en: The expected return $\mathbb{E} \Big[ \sum_{t=0}^T r(s_t, a_t)\Big]$ can be
     decomposed into a sum of rewards at all the time steps. Because the policy $\pi_t$
     at time t has no effect on the policy at the earlier time step, $\pi_{t-1}$, we
     can maximize the return at different steps backward in time — this is essentially
     **DP**.
+  id: totrans-314
   prefs: []
   type: TYPE_NORMAL
+  zh: 预期回报$\mathbb{E} \Big[ \sum_{t=0}^T r(s_t, a_t)\Big]$可以分解为所有时间步的奖励之和。因为时间t时的策略$\pi_t$对早期时间步的策略$\pi_{t-1}$没有影响，我们可以向后在时间上不同步骤最大化回报
+    - 这本质上是**DP**。
 - en: $$ \underbrace{\max_{\pi_0} \Big( \mathbb{E}[r(s_0, a_0)]+ \underbrace{\max_{\pi_1}
     \Big(\mathbb{E}[...] + \underbrace{\max_{\pi_T} \mathbb{E}[r(s_T, a_T)]}_\text{1st
     maximization} \Big)}_\text{second but last maximization} \Big)}_\text{last maximization}
     $$
+  id: totrans-315
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \underbrace{\max_{\pi_0} \Big( \mathbb{E}[r(s_0, a_0)]+ \underbrace{\max_{\pi_1}
+    \Big(\mathbb{E}[...] + \underbrace{\max_{\pi_T} \mathbb{E}[r(s_T, a_T)]}_\text{第一次最大化}
+    \Big)}_\text{倒数第二次最大化} \Big)}_\text{最后一次最大化} $$
 - en: where we consider $\gamma=1$.
+  id: totrans-316
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中我们考虑$\gamma=1$。
 - en: 'So we start the optimization from the last timestep $T$:'
+  id: totrans-317
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以我们从最后一个时间步$T$开始优化：
 - en: $$ \text{maximize } \mathbb{E}_{(s_T, a_T) \sim \rho_{\pi}} [ r(s_T, a_T) ]
     \text{ s.t. } \mathcal{H}(\pi_T) - \mathcal{H}_0 \geq 0 $$
+  id: totrans-318
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \text{最大化 } \mathbb{E}_{(s_T, a_T) \sim \rho_{\pi}} [ r(s_T, a_T) ] \text{
+    s.t. } \mathcal{H}(\pi_T) - \mathcal{H}_0 \geq 0 $$
 - en: 'First, let us define the following functions:'
+  id: totrans-319
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，让我们定义以下函数：
 - en: $$ \begin{aligned} h(\pi_T) &= \mathcal{H}(\pi_T) - \mathcal{H}_0 = \mathbb{E}_{(s_T,
     a_T) \sim \rho_{\pi}} [-\log \pi_T(a_T\vert s_T)] - \mathcal{H}_0\\ f(\pi_T) &=
     \begin{cases} \mathbb{E}_{(s_T, a_T) \sim \rho_{\pi}} [ r(s_T, a_T) ], & \text{if
     }h(\pi_T) \geq 0 \\ -\infty, & \text{otherwise} \end{cases} \end{aligned} $$
+  id: totrans-320
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} h(\pi_T) &= \mathcal{H}(\pi_T) - \mathcal{H}_0 = \mathbb{E}_{(s_T,
+    a_T) \sim \rho_{\pi}} [-\log \pi_T(a_T\vert s_T)] - \mathcal{H}_0\\ f(\pi_T) &=
+    \begin{cases} \mathbb{E}_{(s_T, a_T) \sim \rho_{\pi}} [ r(s_T, a_T) ], & \text{如果
+    }h(\pi_T) \geq 0 \\ -\infty, & \text{否则} \end{cases} \end{aligned} $$
 - en: 'And the optimization becomes:'
+  id: totrans-321
   prefs: []
   type: TYPE_NORMAL
+  zh: 优化变为：
 - en: $$ \text{maximize } f(\pi_T) \text{ s.t. } h(\pi_T) \geq 0 $$
+  id: totrans-322
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \text{最大化 } f(\pi_T) \text{ s.t. } h(\pi_T) \geq 0 $$
 - en: 'To solve the maximization optimization with inequality constraint, we can construct
     a [Lagrangian expression](https://cs.stanford.edu/people/davidknowles/lagrangian_duality.pdf)
     with a Lagrange multiplier (also known as “dual variable”), $\alpha_T$:'
+  id: totrans-323
   prefs: []
   type: TYPE_NORMAL
+  zh: 要解决带有不等式约束的最大化优化问题，我们可以构建一个带有拉格朗日乘子（也称为“对偶变量”）$\alpha_T$的[拉格朗日表达式](https://cs.stanford.edu/people/davidknowles/lagrangian_duality.pdf)：
 - en: $$ L(\pi_T, \alpha_T) = f(\pi_T) + \alpha_T h(\pi_T) $$
+  id: totrans-324
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ L(\pi_T, \alpha_T) = f(\pi_T) + \alpha_T h(\pi_T) $$
 - en: Considering the case when we try to *minimize $L(\pi_T, \alpha_T)$ with respect
     to $\alpha_T$* - given a particular value $\pi_T$,
+  id: totrans-325
   prefs: []
   type: TYPE_NORMAL
+  zh: 考虑当我们尝试*相对于$\alpha_T$最小化$L(\pi_T, \alpha_T)$*时的情况 - 给定特定值$\pi_T$，
 - en: If the constraint is satisfied, $h(\pi_T) \geq 0$, at best we can set $\alpha_T=0$
     since we have no control over the value of $f(\pi_T)$. Thus, $L(\pi_T, 0) = f(\pi_T)$.
+  id: totrans-326
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如果约束得到满足，$h(\pi_T) \geq 0$，最好我们可以设置$\alpha_T=0$，因为我们无法控制$f(\pi_T)$的值。因此，$L(\pi_T,
+    0) = f(\pi_T)$。
 - en: If the constraint is invalidated, $h(\pi_T) < 0$, we can achieve $L(\pi_T, \alpha_T)
     \to -\infty$ by taking $\alpha_T \to \infty$. Thus, $L(\pi_T, \infty) = -\infty
     = f(\pi_T)$.
+  id: totrans-327
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如果约束条件无效，$h(\pi_T) < 0$，我们可以通过令$\alpha_T \to \infty$使$L(\pi_T, \alpha_T) \to
+    -\infty$。因此，$L(\pi_T, \infty) = -\infty = f(\pi_T)$。
 - en: In either case, we can recover the following equation,
+  id: totrans-328
   prefs: []
   type: TYPE_NORMAL
+  zh: 无论哪种情况，我们都可以得到以下方程，
 - en: $$ f(\pi_T) = \min_{\alpha_T \geq 0} L(\pi_T, \alpha_T) $$
+  id: totrans-329
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ f(\pi_T) = \min_{\alpha_T \geq 0} L(\pi_T, \alpha_T) $$
 - en: At the same time, we want to maximize $f(\pi_T)$,
+  id: totrans-330
   prefs: []
   type: TYPE_NORMAL
+  zh: 同时，我们希望最大化$f(\pi_T)$，
 - en: $$ \max_{\pi_T} f(\pi_T) = \min_{\alpha_T \geq 0} \max_{\pi_T} L(\pi_T, \alpha_T)
     $$
+  id: totrans-331
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \max_{\pi_T} f(\pi_T) = \min_{\alpha_T \geq 0} \max_{\pi_T} L(\pi_T, \alpha_T)
+    $$
 - en: Therefore, to maximize $f(\pi_T)$, the dual problem is listed as below. Note
     that to make sure $\max_{\pi_T} f(\pi_T)$ is properly maximized and would not
     become $-\infty$, the constraint has to be satisfied.
+  id: totrans-332
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，为了最大化$f(\pi_T)$，对偶问题列如下。请注意，为了确保$\max_{\pi_T} f(\pi_T)$被正确最大化且不会变为$-\infty$，必须满足约束条件。
 - en: $$ \begin{aligned} \max_{\pi_T} \mathbb{E}[ r(s_T, a_T) ] &= \max_{\pi_T} f(\pi_T)
     \\ &= \min_{\alpha_T \geq 0} \max_{\pi_T} L(\pi_T, \alpha_T) \\ &= \min_{\alpha_T
     \geq 0} \max_{\pi_T} f(\pi_T) + \alpha_T h(\pi_T) \\ &= \min_{\alpha_T \geq 0}
@@ -1695,16 +2582,30 @@
     &= \min_{\alpha_T \geq 0} \max_{\pi_T} \mathbb{E}_{(s_T, a_T) \sim \rho_{\pi}}
     [ r(s_T, a_T) + \alpha_T \mathcal{H}(\pi_T) - \alpha_T \mathcal{H}_0 ] \end{aligned}
     $$
+  id: totrans-333
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \max_{\pi_T} \mathbb{E}[ r(s_T, a_T) ] &= \max_{\pi_T} f(\pi_T)
+    \\ &= \min_{\alpha_T \geq 0} \max_{\pi_T} L(\pi_T, \alpha_T) \\ &= \min_{\alpha_T
+    \geq 0} \max_{\pi_T} f(\pi_T) + \alpha_T h(\pi_T) \\ &= \min_{\alpha_T \geq 0}
+    \max_{\pi_T} \mathbb{E}_{(s_T, a_T) \sim \rho_{\pi}} [ r(s_T, a_T) ] + \alpha_T
+    ( \mathbb{E}_{(s_T, a_T) \sim \rho_{\pi}} [-\log \pi_T(a_T\vert s_T)] - \mathcal{H}_0)
+    \\ &= \min_{\alpha_T \geq 0} \max_{\pi_T} \mathbb{E}_{(s_T, a_T) \sim \rho_{\pi}}
+    [ r(s_T, a_T) - \alpha_T \log \pi_T(a_T\vert s_T)] - \alpha_T \mathcal{H}_0 \\
+    &= \min_{\alpha_T \geq 0} \max_{\pi_T} \mathbb{E}_{(s_T, a_T) \sim \rho_{\pi}}
+    [ r(s_T, a_T) + \alpha_T \mathcal{H}(\pi_T) - \alpha_T \mathcal{H}_0 ] \end{aligned}
+    $$
 - en: We could compute the optimal $\pi_T$ and $\alpha_T$ iteratively. First given
     the current $\alpha_T$, get the best policy $\pi_T^{*}$ that maximizes $L(\pi_T^{*},
     \alpha_T)$. Then plug in $\pi_T^{*}$ and compute $\alpha_T^{*}$ that minimizes
     $L(\pi_T^{*}, \alpha_T)$. Assuming we have one neural network for policy and one
     network for temperature parameter, the iterative update process is more aligned
     with how we update network parameters during training.
+  id: totrans-334
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以迭代计算最优的$\pi_T$和$\alpha_T$。首先给定当前的$\alpha_T$，得到最大化$L(\pi_T^{*}, \alpha_T)$的最佳策略$\pi_T^{*}$。然后插入$\pi_T^{*}$并计算最小化$L(\pi_T^{*},
+    \alpha_T)$的$\alpha_T^{*}$。假设我们有一个用于策略的神经网络和一个用于温度参数的网络，迭代更新过程更符合我们在训练过程中更新网络参数的方式。
 - en: $$ \begin{aligned} \pi^{*}_T &= \arg\max_{\pi_T} \mathbb{E}_{(s_T, a_T) \sim
     \rho_{\pi}} [ r(s_T, a_T) + \alpha_T \mathcal{H}(\pi_T) - \alpha_T \mathcal{H}_0
     ] \\ \color{blue}{\alpha^{*}_T} &\color{blue}{=} \color{blue}{\arg\min_{\alpha_T
@@ -1712,22 +2613,40 @@
     - \alpha_T \mathcal{H}_0 ]} \end{aligned} $$$$ \text{Thus, }\max_{\pi_T} \mathbb{E}
     [ r(s_T, a_T) ] = \mathbb{E}_{(s_T, a_T) \sim \rho_{\pi^{*}}} [ r(s_T, a_T) +
     \alpha^{*}_T \mathcal{H}(\pi^{*}_T) - \alpha^{*}_T \mathcal{H}_0 ] $$
+  id: totrans-335
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \pi^{*}_T &= \arg\max_{\pi_T} \mathbb{E}_{(s_T, a_T) \sim
+    \rho_{\pi}} [ r(s_T, a_T) + \alpha_T \mathcal{H}(\pi_T) - \alpha_T \mathcal{H}_0
+    ] \\ \color{blue}{\alpha^{*}_T} &\color{blue}{=} \color{blue}{\arg\min_{\alpha_T
+    \geq 0} \mathbb{E}_{(s_T, a_T) \sim \rho_{\pi^{*}}} [\alpha_T \mathcal{H}(\pi^{*}_T)
+    - \alpha_T \mathcal{H}_0 ]} \end{aligned} $$$$ \text{因此，}\max_{\pi_T} \mathbb{E}
+    [ r(s_T, a_T) ] = \mathbb{E}_{(s_T, a_T) \sim \rho_{\pi^{*}}} [ r(s_T, a_T) +
+    \alpha^{*}_T \mathcal{H}(\pi^{*}_T) - \alpha^{*}_T \mathcal{H}_0 ] $$
 - en: 'Now let’s go back to the soft Q value function:'
+  id: totrans-336
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们回到软Q值函数：
 - en: $$ \begin{aligned} Q_{T-1}(s_{T-1}, a_{T-1}) &= r(s_{T-1}, a_{T-1}) + \mathbb{E}
     [Q(s_T, a_T) - \alpha_T \log \pi(a_T \vert s_T)] \\ &= r(s_{T-1}, a_{T-1}) + \mathbb{E}
     [r(s_T, a_T)] + \alpha_T \mathcal{H}(\pi_T) \\ Q_{T-1}^{*}(s_{T-1}, a_{T-1}) &=
     r(s_{T-1}, a_{T-1}) + \max_{\pi_T} \mathbb{E} [r(s_T, a_T)] + \alpha_T \mathcal{H}(\pi^{*}_T)
     & \text{; plug in the optimal }\pi_T^{*} \end{aligned} $$
+  id: totrans-337
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} Q_{T-1}(s_{T-1}, a_{T-1}) &= r(s_{T-1}, a_{T-1}) + \mathbb{E}
+    [Q(s_T, a_T) - \alpha_T \log \pi(a_T \vert s_T)] \\ &= r(s_{T-1}, a_{T-1}) + \mathbb{E}
+    [r(s_T, a_T)] + \alpha_T \mathcal{H}(\pi_T) \\ Q_{T-1}^{*}(s_{T-1}, a_{T-1}) &=
+    r(s_{T-1}, a_{T-1}) + \max_{\pi_T} \mathbb{E} [r(s_T, a_T)] + \alpha_T \mathcal{H}(\pi^{*}_T)
+    & \text{; plug in the optimal }\pi_T^{*} \end{aligned} $$
 - en: 'Therefore the expected return is as follows, when we take one step further
     back to the time step $T-1$:'
+  id: totrans-338
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，当我们进一步回到时间步$T-1$时，预期回报如下：
 - en: $$ \begin{aligned} &\max_{\pi_{T-1}}\Big(\mathbb{E}[r(s_{T-1}, a_{T-1})] + \max_{\pi_T}
     \mathbb{E}[r(s_T, a_T] \Big) \\ &= \max_{\pi_{T-1}} \Big( Q^{*}_{T-1}(s_{T-1},
     a_{T-1}) - \alpha^{*}_T \mathcal{H}(\pi^{*}_T) \Big) & \text{; should s.t. } \mathcal{H}(\pi_{T-1})
@@ -1737,262 +2656,415 @@
     w/ Lagrangian.} \\ &= \min_{\alpha_{T-1} \geq 0} \max_{\pi_{T-1}} \Big( Q^{*}_{T-1}(s_{T-1},
     a_{T-1}) + \alpha_{T-1} \mathcal{H}(\pi_{T-1}) - \alpha_{T-1}\mathcal{H}_0 \Big)
     - \alpha^{*}_T \mathcal{H}(\pi^{*}_T) \end{aligned} $$
+  id: totrans-339
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} &\max_{\pi_{T-1}}\Big(\mathbb{E}[r(s_{T-1}, a_{T-1})] + \max_{\pi_T}
+    \mathbb{E}[r(s_T, a_T] \Big) \\ &= \max_{\pi_{T-1}} \Big( Q^{*}_{T-1}(s_{T-1},
+    a_{T-1}) - \alpha^{*}_T \mathcal{H}(\pi^{*}_T) \Big) & \text{; 应满足条件 } \mathcal{H}(\pi_{T-1})
+    - \mathcal{H}_0 \geq 0 \\ &= \min_{\alpha_{T-1} \geq 0} \max_{\pi_{T-1}} \Big(
+    Q^{*}_{T-1}(s_{T-1}, a_{T-1}) - \alpha^{*}_T \mathcal{H}(\pi^{*}_T) + \alpha_{T-1}
+    \big( \mathcal{H}(\pi_{T-1}) - \mathcal{H}_0 \big) \Big) & \text{; 拉格朗日对偶问题。}
+    \\ &= \min_{\alpha_{T-1} \geq 0} \max_{\pi_{T-1}} \Big( Q^{*}_{T-1}(s_{T-1}, a_{T-1})
+    + \alpha_{T-1} \mathcal{H}(\pi_{T-1}) - \alpha_{T-1}\mathcal{H}_0 \Big) - \alpha^{*}_T
+    \mathcal{H}(\pi^{*}_T) \end{aligned} $$
 - en: Similar to the previous step,
+  id: totrans-340
   prefs: []
   type: TYPE_NORMAL
+  zh: 与前一步骤类似，
 - en: $$ \begin{aligned} \pi^{*}_{T-1} &= \arg\max_{\pi_{T-1}} \mathbb{E}_{(s_{T-1},
     a_{T-1}) \sim \rho_\pi} [Q^{*}_{T-1}(s_{T-1}, a_{T-1}) + \alpha_{T-1} \mathcal{H}(\pi_{T-1})
     - \alpha_{T-1} \mathcal{H}_0 ] \\ \color{green}{\alpha^{*}_{T-1}} &\color{green}{=}
     \color{green}{\arg\min_{\alpha_{T-1} \geq 0} \mathbb{E}_{(s_{T-1}, a_{T-1}) \sim
     \rho_{\pi^{*}}} [ \alpha_{T-1} \mathcal{H}(\pi^{*}_{T-1}) - \alpha_{T-1}\mathcal{H}_0
     ]} \end{aligned} $$
+  id: totrans-341
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \pi^{*}_{T-1} &= \arg\max_{\pi_{T-1}} \mathbb{E}_{(s_{T-1},
+    a_{T-1}) \sim \rho_\pi} [Q^{*}_{T-1}(s_{T-1}, a_{T-1}) + \alpha_{T-1} \mathcal{H}(\pi_{T-1})
+    - \alpha_{T-1} \mathcal{H}_0 ] \\ \color{green}{\alpha^{*}_{T-1}} &\color{green}{=}
+    \color{green}{\arg\min_{\alpha_{T-1} \geq 0} \mathbb{E}_{(s_{T-1}, a_{T-1}) \sim
+    \rho_{\pi^{*}}} [ \alpha_{T-1} \mathcal{H}(\pi^{*}_{T-1}) - \alpha_{T-1}\mathcal{H}_0
+    ]} \end{aligned} $$
 - en: 'The equation for updating $\alpha_{T-1}$ in green has the same format as the
     equation for updating $\alpha_{T-1}$ in blue above. By repeating this process,
     we can learn the optimal temperature parameter in every step by minimizing the
     same objective function:'
+  id: totrans-342
   prefs: []
   type: TYPE_NORMAL
+  zh: 绿色中更新$\alpha_{T-1}$的方程与上面蓝色中更新$\alpha_{T-1}$的方程具有相同的格式。通过重复这个过程，我们可以通过最小化相同的目标函数在每一步学习最优温度参数：
 - en: $$ J(\alpha) = \mathbb{E}_{a_t \sim \pi_t} [-\alpha \log \pi_t(a_t \mid s_t)
     - \alpha \mathcal{H}_0] $$
+  id: totrans-343
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ J(\alpha) = \mathbb{E}_{a_t \sim \pi_t} [-\alpha \log \pi_t(a_t \mid s_t)
+    - \alpha \mathcal{H}_0] $$
 - en: 'The final algorithm is same as SAC except for learning $\alpha$ explicitly
     with respect to the objective $J(\alpha)$ (see Fig. 7):'
+  id: totrans-344
   prefs: []
   type: TYPE_NORMAL
+  zh: 最终算法与SAC相同，唯一不同之处在于明确学习$\alpha$以满足目标$J(\alpha)$（见图7）：
 - en: '![](../Images/88e450df19c9b5260d801d0d3e54b9a9.png)'
+  id: totrans-345
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/88e450df19c9b5260d801d0d3e54b9a9.png)'
 - en: 'Fig. 9\. The soft actor-critic algorithm with automatically adjusted temperature.
     (Image source: [original paper](https://arxiv.org/abs/1812.05905))'
+  id: totrans-346
   prefs: []
   type: TYPE_NORMAL
+  zh: 图9. 具有自动调整温度的软演员-评论家算法。（图片来源：[原始论文](https://arxiv.org/abs/1812.05905)）
 - en: TD3
+  id: totrans-347
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: TD3
 - en: '[[paper](https://arxiv.org/abs/1802.09477)|[code](https://github.com/sfujim/TD3)]'
+  id: totrans-348
   prefs: []
   type: TYPE_NORMAL
+  zh: '[[论文](https://arxiv.org/abs/1802.09477)|[代码](https://github.com/sfujim/TD3)]'
 - en: 'The Q-learning algorithm is commonly known to suffer from the overestimation
     of the value function. This overestimation can propagate through the training
     iterations and negatively affect the policy. This property directly motivated
     [Double Q-learning](https://papers.nips.cc/paper/3964-double-q-learning) and [Double
     DQN](https://arxiv.org/abs/1509.06461): the action selection and Q-value update
     are decoupled by using two value networks.'
+  id: totrans-349
   prefs: []
   type: TYPE_NORMAL
+  zh: Q学习算法通常被认为存在值函数的过度估计问题。这种过度估计会在训练迭代中传播，并对策略产生负面影响。这一特性直接促使了[双Q学习](https://papers.nips.cc/paper/3964-double-q-learning)和[双DQN](https://arxiv.org/abs/1509.06461)的提出：通过使用两个值网络，将动作选择和Q值更新解耦。
 - en: '**Twin Delayed Deep Deterministic** (short for **TD3**; [Fujimoto et al., 2018](https://arxiv.org/abs/1802.09477))
     applied a couple of tricks on [DDPG](#ddpg) to prevent the overestimation of the
     value function:'
+  id: totrans-350
   prefs: []
   type: TYPE_NORMAL
+  zh: '**双延迟深度确定性**（简称**TD3**；[Fujimoto等人，2018](https://arxiv.org/abs/1802.09477)）在[DDPG](#ddpg)上应用了一些技巧，以防止值函数的过度估计：'
 - en: '(1) **Clipped Double Q-learning**: In Double Q-Learning, the action selection
     and Q-value estimation are made by two networks separately. In the DDPG setting,
     given two deterministic actors $(\mu_{\theta_1}, \mu_{\theta_2})$ with two corresponding
     critics $(Q_{w_1}, Q_{w_2})$, the Double Q-learning Bellman targets look like:'
+  id: totrans-351
   prefs: []
   type: TYPE_NORMAL
+  zh: (1) **剪切双Q学习**：在双Q学习中，动作选择和Q值估计分别由两个网络完成。在DDPG设置中，给定两个确定性演员$(\mu_{\theta_1},
+    \mu_{\theta_2})$和两个对应的评论家$(Q_{w_1}, Q_{w_2})$，双Q学习的贝尔曼目标如下：
 - en: $$ \begin{aligned} y_1 &= r + \gamma Q_{w_2}(s', \mu_{\theta_1}(s'))\\ y_2 &=
     r + \gamma Q_{w_1}(s', \mu_{\theta_2}(s')) \end{aligned} $$
+  id: totrans-352
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} y_1 &= r + \gamma Q_{w_2}(s', \mu_{\theta_1}(s'))\\ y_2 &=
+    r + \gamma Q_{w_1}(s', \mu_{\theta_2}(s')) \end{aligned} $$
 - en: 'However, due to the slow changing policy, these two networks could be too similar
     to make independent decisions. The *Clipped Double Q-learning* instead uses the
     minimum estimation among two so as to favor underestimation bias which is hard
     to propagate through training:'
+  id: totrans-353
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，由于策略变化缓慢，这两个网络可能太相似以至于无法做出独立决策。*剪切双Q学习*使用两者中的最小估计，以偏向难以通过训练传播的低估偏差：
 - en: $$ \begin{aligned} y_1 &= r + \gamma \min_{i=1,2}Q_{w_i}(s', \mu_{\theta_1}(s'))\\
     y_2 &= r + \gamma \min_{i=1,2} Q_{w_i}(s', \mu_{\theta_2}(s')) \end{aligned} $$
+  id: totrans-354
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} y_1 &= r + \gamma \min_{i=1,2}Q_{w_i}(s', \mu_{\theta_1}(s'))\\
+    y_2 &= r + \gamma \min_{i=1,2} Q_{w_i}(s', \mu_{\theta_2}(s')) \end{aligned} $$
 - en: '(2) **Delayed update of Target and Policy Networks**: In the [actor-critic](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#actor-critic)
     model, policy and value updates are deeply coupled: Value estimates diverge through
     overestimation when the policy is poor, and the policy will become poor if the
     value estimate itself is inaccurate.'
+  id: totrans-355
   prefs: []
   type: TYPE_NORMAL
+  zh: (2) **延迟更新目标和策略网络**：在[演员-评论家](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#actor-critic)模型中，策略和值的更新是深度耦合的：当策略较差时，值估计通过过度估计而发散，如果值估计本身不准确，策略也会变差。
 - en: To reduce the variance, TD3 updates the policy at a lower frequency than the
     Q-function. The policy network stays the same until the value error is small enough
     after several updates. The idea is similar to how the periodically-updated target
     network stay as a stable objective in [DQN](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#dqn).
+  id: totrans-356
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了减少方差，TD3以比Q函数更低的频率更新策略。策略网络保持不变，直到经过几次更新后值误差足够小。这个想法类似于[DQN](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#dqn)中定期更新的目标网络保持稳定的目标。
 - en: '(3) **Target Policy Smoothing**: Given a concern with deterministic policies
     that they can overfit to narrow peaks in the value function, TD3 introduced a
     smoothing regularization strategy on the value function: adding a small amount
     of clipped random noises to the selected action and averaging over mini-batches.'
+  id: totrans-357
   prefs: []
   type: TYPE_NORMAL
+  zh: (3) **目标策略平滑**：考虑到确定性策略可能会过度拟合值函数中的窄峰，TD3引入了对值函数的平滑正则化策略：向所选动作添加一小部分剪切的随机噪声，并在小批量上进行平均。
 - en: $$ \begin{aligned} y &= r + \gamma Q_w (s', \mu_{\theta}(s') + \epsilon) & \\
     \epsilon &\sim \text{clip}(\mathcal{N}(0, \sigma), -c, +c) & \scriptstyle{\text{
     ; clipped random noises.}} \end{aligned} $$
+  id: totrans-358
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} y &= r + \gamma Q_w (s', \mu_{\theta}(s') + \epsilon) & \\
+    \epsilon &\sim \text{clip}(\mathcal{N}(0, \sigma), -c, +c) & \scriptstyle{\text{
+    ; 剪切的随机噪声。}} \end{aligned} $$
 - en: This approach mimics the idea of [SARSA](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#sarsa-on-policy-td-control)
     update and enforces that similar actions should have similar values.
+  id: totrans-359
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种方法模仿了[SARSA](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#sarsa-on-policy-td-control)更新的思想，并强调相似的动作应该具有相似的值。
 - en: 'Here is the final algorithm:'
+  id: totrans-360
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是最终的算法：
 - en: '![](../Images/3c80bf25b3b0c4dfba77dbf00feaa715.png)'
+  id: totrans-361
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3c80bf25b3b0c4dfba77dbf00feaa715.png)'
 - en: 'Fig. 10\. TD3 Algorithm. (Image source: [Fujimoto et al., 2018](https://arxiv.org/abs/1802.09477))'
+  id: totrans-362
   prefs: []
   type: TYPE_NORMAL
+  zh: '图10\. TD3算法。 (图片来源: [Fujimoto et al., 2018](https://arxiv.org/abs/1802.09477))'
 - en: SVPG
+  id: totrans-363
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: SVPG
 - en: '[[paper](https://arxiv.org/abs/1704.02399)|[code](https://github.com/dilinwang820/Stein-Variational-Gradient-Descent)
     for SVPG]'
+  id: totrans-364
   prefs: []
   type: TYPE_NORMAL
+  zh: '[[论文](https://arxiv.org/abs/1704.02399)|[代码](https://github.com/dilinwang820/Stein-Variational-Gradient-Descent)
+    for SVPG]'
 - en: Stein Variational Policy Gradient (**SVPG**; [Liu et al, 2017](https://arxiv.org/abs/1704.02399))
     applies the [Stein](https://www.cs.dartmouth.edu/~qliu/stein.html) variational
     gradient descent (**SVGD**; [Liu and Wang, 2016](https://arxiv.org/abs/1608.04471))
     algorithm to update the policy parameter $\theta$.
+  id: totrans-365
   prefs: []
   type: TYPE_NORMAL
+  zh: Stein变分策略梯度（**SVPG**；[Liu et al, 2017](https://arxiv.org/abs/1704.02399)）应用[Stein](https://www.cs.dartmouth.edu/~qliu/stein.html)变分梯度下降（**SVGD**；[Liu
+    and Wang, 2016](https://arxiv.org/abs/1608.04471)）算法来更新策略参数$\theta$。
 - en: 'In the setup of maximum entropy policy optimization, $\theta$ is considered
     as a random variable $\theta \sim q(\theta)$ and the model is expected to learn
     this distribution $q(\theta)$. Assuming we know a prior on how $q$ might look
     like, $q_0$, and we would like to guide the learning process to not make $\theta$
     too far away from $q_0$ by optimizing the following objective function:'
+  id: totrans-366
   prefs: []
   type: TYPE_NORMAL
+  zh: 在最大熵策略优化设置中，$\theta$被视为随机变量$\theta \sim q(\theta)$，模型应该学习这个分布$q(\theta)$。假设我们知道关于$q$可能的先验$q_0$，我们希望通过优化以下目标函数来引导学习过程，使$\theta$不要离$q_0$太远：
 - en: $$ \hat{J}(\theta) = \mathbb{E}_{\theta \sim q} [J(\theta)] - \alpha D_\text{KL}(q\|q_0)
     $$
+  id: totrans-367
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \hat{J}(\theta) = \mathbb{E}_{\theta \sim q} [J(\theta)] - \alpha D_\text{KL}(q\|q_0)
+    $$
 - en: where $\mathbb{E}_{\theta \sim q} [R(\theta)]$ is the expected reward when $\theta
     \sim q(\theta)$ and $D_\text{KL}$ is the KL divergence.
+  id: totrans-368
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 $\mathbb{E}_{\theta \sim q} [R(\theta)]$ 是当 $\theta \sim q(\theta)$ 时的期望奖励，$D_\text{KL}$
+    是 KL 散度。
 - en: 'If we don’t have any prior information, we might set $q_0$ as a uniform distribution
     and set $q_0(\theta)$ to a constant. Then the above objective function becomes
     [SAC](#SAC), where the entropy term encourages exploration:'
+  id: totrans-369
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们没有任何先验信息，可以将 $q_0$ 设置为均匀分布，并将 $q_0(\theta)$ 设置为一个常数。 然后上述目标函数变为 [SAC](#SAC)，其中熵项鼓励探索：
 - en: $$ \begin{aligned} \hat{J}(\theta) &= \mathbb{E}_{\theta \sim q} [J(\theta)]
     - \alpha D_\text{KL}(q\|q_0) \\ &= \mathbb{E}_{\theta \sim q} [J(\theta)] - \alpha
     \mathbb{E}_{\theta \sim q} [\log q(\theta) - \log q_0(\theta)] \\ &= \mathbb{E}_{\theta
     \sim q} [J(\theta)] + \alpha H(q(\theta)) \end{aligned} $$
+  id: totrans-370
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \hat{J}(\theta) &= \mathbb{E}_{\theta \sim q} [J(\theta)]
+    - \alpha D_\text{KL}(q\|q_0) \\ &= \mathbb{E}_{\theta \sim q} [J(\theta)] - \alpha
+    \mathbb{E}_{\theta \sim q} [\log q(\theta) - \log q_0(\theta)] \\ &= \mathbb{E}_{\theta
+    \sim q} [J(\theta)] + \alpha H(q(\theta)) \end{aligned} $$
 - en: 'Let’s take the derivative of $\hat{J}(\theta) = \mathbb{E}_{\theta \sim q}
     [J(\theta)] - \alpha D_\text{KL}(q|q_0)$ w.r.t. $q$:'
+  id: totrans-371
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们对 $\hat{J}(\theta) = \mathbb{E}_{\theta \sim q} [J(\theta)] - \alpha D_\text{KL}(q|q_0)$
+    关于 $q$ 求导：
 - en: $$ \begin{aligned} \nabla_q \hat{J}(\theta) &= \nabla_q \big( \mathbb{E}_{\theta
     \sim q} [J(\theta)] - \alpha D_\text{KL}(q\|q_0) \big) \\ &= \nabla_q \int_\theta
     \big( q(\theta) J(\theta) - \alpha q(\theta)\log q(\theta) + \alpha q(\theta)
     \log q_0(\theta) \big) \\ &= \int_\theta \big( J(\theta) - \alpha \log q(\theta)
     -\alpha + \alpha \log q_0(\theta) \big) \\ &= 0 \end{aligned} $$
+  id: totrans-372
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \nabla_q \hat{J}(\theta) &= \nabla_q \big( \mathbb{E}_{\theta
+    \sim q} [J(\theta)] - \alpha D_\text{KL}(q\|q_0) \big) \\ &= \nabla_q \int_\theta
+    \big( q(\theta) J(\theta) - \alpha q(\theta)\log q(\theta) + \alpha q(\theta)
+    \log q_0(\theta) \big) \\ &= \int_\theta \big( J(\theta) - \alpha \log q(\theta)
+    -\alpha + \alpha \log q_0(\theta) \big) \\ &= 0 \end{aligned} $$
 - en: 'The optimal distribution is:'
+  id: totrans-373
   prefs: []
   type: TYPE_NORMAL
+  zh: 最优分布是：
 - en: $$ \log q^{*}(\theta) = \frac{1}{\alpha} J(\theta) + \log q_0(\theta) - 1 \text{
     thus } \underbrace{ q^{*}(\theta) }_\textrm{"posterior"} \propto \underbrace{\exp
     ( J(\theta) / \alpha )}_\textrm{"likelihood"} \underbrace{q_0(\theta)}_\textrm{prior}
     $$
+  id: totrans-374
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \log q^{*}(\theta) = \frac{1}{\alpha} J(\theta) + \log q_0(\theta) - 1 \text{
+    因此 } \underbrace{ q^{*}(\theta) }_\textrm{"后验"} \propto \underbrace{\exp ( J(\theta)
+    / \alpha )}_\textrm{"似然"} \underbrace{q_0(\theta)}_\textrm{先验} $$
 - en: The temperature $\alpha$ decides a tradeoff between exploitation and exploration.
     When $\alpha \rightarrow 0$, $\theta$ is updated only according to the expected
     return $J(\theta)$. When $\alpha \rightarrow \infty$, $\theta$ always follows
     the prior belief.
+  id: totrans-375
   prefs: []
   type: TYPE_NORMAL
+  zh: 温度 $\alpha$ 决定了开发和探索之间的权衡。 当 $\alpha \rightarrow 0$ 时，$\theta$ 只根据预期回报 $J(\theta)$
+    进行更新。 当 $\alpha \rightarrow \infty$ 时，$\theta$ 总是遵循先验信念。
 - en: 'When using the SVGD method to estimate the target posterior distribution $q(\theta)$,
     it relies on a set of particle $\{\theta_i\}_{i=1}^n$ (independently trained policy
     agents) and each is updated:'
+  id: totrans-376
   prefs: []
   type: TYPE_NORMAL
+  zh: 当使用 SVGD 方法估计目标后验分布 $q(\theta)$ 时，它依赖于一组粒子 $\{\theta_i\}_{i=1}^n$（独立训练的策略代理），每个粒子都会更新：
 - en: $$ \theta_i \gets \theta_i + \epsilon \phi^{*}(\theta_i) \text{ where } \phi^{*}
     = \max_{\phi \in \mathcal{H}} \{ - \nabla_\epsilon D_\text{KL} (q'_{[\theta +
     \epsilon \phi(\theta)]} \| q) \text{ s.t. } \|\phi\|_{\mathcal{H}} \leq 1\} $$
+  id: totrans-377
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \theta_i \gets \theta_i + \epsilon \phi^{*}(\theta_i) \text{ 其中 } \phi^{*}
+    = \max_{\phi \in \mathcal{H}} \{ - \nabla_\epsilon D_\text{KL} (q'_{[\theta +
+    \epsilon \phi(\theta)]} \| q) \text{ s.t. } \|\phi\|_{\mathcal{H}} \leq 1\} $$
 - en: where $\epsilon$ is a learning rate and $\phi^{*}$ is the unit ball of a [RKHS](http://mlss.tuebingen.mpg.de/2015/slides/gretton/part_1.pdf)
     (reproducing kernel Hilbert space) $\mathcal{H}$ of $\theta$-shaped value vectors
     that maximally decreases the KL divergence between the particles and the target
     distribution. $q’(.)$ is the distribution of $\theta + \epsilon \phi(\theta)$.
+  id: totrans-378
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 $\epsilon$ 是学习率，$\phi^{*}$ 是 $\theta$-形状值向量的 [RKHS](http://mlss.tuebingen.mpg.de/2015/slides/gretton/part_1.pdf)（再生核希尔伯特空间）$\mathcal{H}$
+    的单位球，最大程度地减少粒子与目标分布之间的 KL 散度。 $q’(.)$ 是 $\theta + \epsilon \phi(\theta)$ 的分布。
 - en: 'Comparing different gradient-based update methods:'
+  id: totrans-379
   prefs: []
   type: TYPE_NORMAL
+  zh: 比较不同基于梯度的更新方法：
 - en: '| Method | Update space |'
+  id: totrans-380
   prefs: []
   type: TYPE_TB
+  zh: '| 方法 | 更新空间 |'
 - en: '| --- | --- |'
+  id: totrans-381
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- |'
 - en: '| Plain gradient | $\Delta \theta$ on the parameter space |'
+  id: totrans-382
   prefs: []
   type: TYPE_TB
+  zh: '| 普通梯度 | 参数空间上的 $\Delta \theta$ |'
 - en: '| [Natural gradient](https://lilianweng.github.io/posts/2019-09-05-evolution-strategies/#natural-gradients)
     | $\Delta \theta$ on the search distribution space |'
+  id: totrans-383
   prefs: []
   type: TYPE_TB
+  zh: '| [自然梯度](https://lilianweng.github.io/posts/2019-09-05-evolution-strategies/#natural-gradients)
+    | 在搜索分布空间上的 $\Delta \theta$ |'
 - en: '| SVGD | $\Delta \theta$ on the kernel function space (edited) |'
+  id: totrans-384
   prefs: []
   type: TYPE_TB
+  zh: '| SVGD | 在核函数空间上的 $\Delta \theta$（已编辑） |'
 - en: One [estimation](https://arxiv.org/abs/1608.04471) of $\phi^{*}$ has the following
     form. A positive definite kernel $k(\vartheta, \theta)$, i.e. a Gaussian [radial
     basis function](https://en.wikipedia.org/wiki/Radial_basis_function), measures
     the similarity between particles.
+  id: totrans-385
   prefs: []
   type: TYPE_NORMAL
+  zh: $\phi^{*}$ 的一个[估计](https://arxiv.org/abs/1608.04471)具有以下形式。一个正定核 $k(\vartheta,
+    \theta)$，即高斯[径向基函数](https://en.wikipedia.org/wiki/Radial_basis_function)，衡量粒子之间的相似性。
 - en: $$ \begin{aligned} \phi^{*}(\theta_i) &= \mathbb{E}_{\vartheta \sim q'} [\nabla_\vartheta
     \log q(\vartheta) k(\vartheta, \theta_i) + \nabla_\vartheta k(\vartheta, \theta_i)]\\
     &= \frac{1}{n} \sum_{j=1}^n [\color{red}{\nabla_{\theta_j} \log q(\theta_j) k(\theta_j,
     \theta_i)} + \color{green}{\nabla_{\theta_j} k(\theta_j, \theta_i)}] & \scriptstyle{\text{;approximate
     }q'\text{ with current particle values}} \end{aligned} $$
+  id: totrans-386
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \phi^{*}(\theta_i) &= \mathbb{E}_{\vartheta \sim q'} [\nabla_\vartheta
+    \log q(\vartheta) k(\vartheta, \theta_i) + \nabla_\vartheta k(\vartheta, \theta_i)]\\
+    &= \frac{1}{n} \sum_{j=1}^n [\color{red}{\nabla_{\theta_j} \log q(\theta_j) k(\theta_j,
+    \theta_i)} + \color{green}{\nabla_{\theta_j} k(\theta_j, \theta_i)}] & \scriptstyle{\text{；用当前粒子值近似
+    }q'} \end{aligned} $$
 - en: The first term in red encourages $\theta_i$ learning towards the high probability
     regions of $q$ that is shared across similar particles. => to be similar to other
     particles
+  id: totrans-387
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 红色的第一项鼓励 $\theta_i$ 朝着 $q$ 的高概率区域学习，这些区域在相似粒子之间共享。 => 与其他粒子相似
 - en: The second term in green pushes particles away from each other and therefore
     diversifies the policy. => to be dissimilar to other particles
+  id: totrans-388
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 绿色的第二项将粒子推开，从而使策略多样化。 => 与其他粒子不同
 - en: '![](../Images/9ae8040508d01e7c6b082ee5553239ec.png)'
+  id: totrans-389
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9ae8040508d01e7c6b082ee5553239ec.png)'
 - en: Usually the temperature $\alpha$ follows an annealing scheme so that the training
     process does more exploration at the beginning but more exploitation at a later
     stage.
+  id: totrans-390
   prefs: []
   type: TYPE_NORMAL
+  zh: 通常温度 $\alpha$ 遵循一个退火方案，以便训练过程在开始时进行更多的探索，但在后期进行更多的利用。
 - en: IMPALA
+  id: totrans-391
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: IMPALA
 - en: '[[paper](https://arxiv.org/abs/1802.01561)|[code](https://github.com/deepmind/scalable_agent)]'
+  id: totrans-392
   prefs: []
   type: TYPE_NORMAL
+  zh: '[[论文](https://arxiv.org/abs/1802.01561)|[代码](https://github.com/deepmind/scalable_agent)]'
 - en: In order to scale up RL training to achieve a very high throughput, **IMPALA**
     (“Importance Weighted Actor-Learner Architecture”) framework decouples acting
     from learning on top of basic actor-critic setup and learns from all experience
     trajectories with **V-trace** off-policy correction.
+  id: totrans-393
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了将强化学习训练扩展到实现非常高的吞吐量，**IMPALA**（“重要性加权演员-学习者架构”）框架在基本的演员-评论家设置之上解耦了行为和学习，并通过**V-trace**离线校正从所有经验轨迹中学习。
 - en: Multiple actors generate experience in parallel, while the learner optimizes
     both policy and value function parameters using all the generated experience.
     Actors update their parameters with the latest policy from the learner periodically.
@@ -2000,27 +3072,42 @@
     to generate a lot more trajectories per time unit. As the training policy and
     the behavior policy are not totally synchronized, there is a *gap* between them
     and thus we need off-policy corrections.
+  id: totrans-394
   prefs: []
   type: TYPE_NORMAL
+  zh: 多个演员并行生成经验，而学习者使用所有生成的经验优化策略和价值函数参数。演员定期使用学习者的最新策略更新其参数。由于行为和学习是解耦的，我们可以添加更多的演员机器以生成更多的轨迹。由于训练策略和行为策略并不完全同步，它们之间存在*差距*，因此我们需要离线校正。
 - en: '![](../Images/3465a220a5ffc5bb45c094e35a7596de.png)'
+  id: totrans-395
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3465a220a5ffc5bb45c094e35a7596de.png)'
 - en: Let the value function $V_\theta$ parameterized by $\theta$ and the policy $\pi_\phi$
     parameterized by $\phi$. Also we know the trajectories in the replay buffer are
     collected by a slightly older policy $\mu$.
+  id: totrans-396
   prefs: []
   type: TYPE_NORMAL
+  zh: 让价值函数 $V_\theta$ 由 $\theta$ 参数化，策略 $\pi_\phi$ 由 $\phi$ 参数化。我们也知道重放缓冲区中的轨迹是由稍旧的策略
+    $\mu$ 收集的。
 - en: 'At the training time $t$, given $(s_t, a_t, s_{t+1}, r_t)$, the value function
     parameter $\theta$ is learned through an L2 loss between the current value and
     a V-trace value target. The $n$-step V-trace target is defined as:'
+  id: totrans-397
   prefs: []
   type: TYPE_NORMAL
+  zh: 在训练时间 $t$，给定 $(s_t, a_t, s_{t+1}, r_t)$，通过当前值和 V-trace 值目标之间的 L2 损失来学习价值函数参数
+    $\theta$。$n$ 步 V-trace 目标定义为：
 - en: $$ \begin{aligned} v_t &= V_\theta(s_t) + \sum_{i=t}^{t+n-1} \gamma^{i-t} \big(\prod_{j=t}^{i-1}
     c_j\big) \color{red}{\delta_i V} \\ &= V_\theta(s_t) + \sum_{i=t}^{t+n-1} \gamma^{i-t}
     \big(\prod_{j=t}^{i-1} c_j\big) \color{red}{\rho_i (r_i + \gamma V_\theta(s_{i+1})
     - V_\theta(s_i))} \end{aligned} $$
+  id: totrans-398
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} v_t &= V_\theta(s_t) + \sum_{i=t}^{t+n-1} \gamma^{i-t} \big(\prod_{j=t}^{i-1}
+    c_j\big) \color{red}{\delta_i V} \\ &= V_\theta(s_t) + \sum_{i=t}^{t+n-1} \gamma^{i-t}
+    \big(\prod_{j=t}^{i-1} c_j\big) \color{red}{\rho_i (r_i + \gamma V_\theta(s_{i+1})
+    - V_\theta(s_i))} \end{aligned} $$
 - en: where the red part $\delta_i V$ is a temporal difference for $V$. $\rho_i =
     \min\big(\bar{\rho}, \frac{\pi(a_i \vert s_i)}{\mu(a_i \vert s_i)}\big)$ and $c_j
     = \min\big(\bar{c}, \frac{\pi(a_j \vert s_j)}{\mu(a_j \vert s_j)}\big)$ are *truncated
@@ -2029,235 +3116,380 @@
     observed at time $i$ impacts the update of the value function at a previous time
     $t$. In the on-policy case, we have $\rho_i=1$ and $c_j=1$ (assuming $\bar{c}
     \geq 1$) and therefore the V-trace target becomes on-policy $n$-step Bellman target.
+  id: totrans-399
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中红色部分 $\delta_i V$ 是 $V$ 的时间差。$\rho_i = \min\big(\bar{\rho}, \frac{\pi(a_i
+    \vert s_i)}{\mu(a_i \vert s_i)}\big)$ 和 $c_j = \min\big(\bar{c}, \frac{\pi(a_j
+    \vert s_j)}{\mu(a_j \vert s_j)}\big)$ 是*截断的[重要性采样（IS）](#off-policy-policy-gradient)权重*。$c_t,
+    \dots, c_{i-1}$ 的乘积衡量了时间 $i$ 观察到的时间差 $\delta_i V$ 对先前时间 $t$ 的值函数更新的影响。在on-policy情况下，我们有
+    $\rho_i=1$ 和 $c_j=1$（假设 $\bar{c} \geq 1$），因此 V-trace 目标变为on-policy $n$-step Bellman
+    目标。
 - en: $\bar{\rho}$ and $\bar{c}$ are two truncation constants with $\bar{\rho} \geq
     \bar{c}$. $\bar{\rho}$ impacts the fixed-point of the value function we converge
     to and $\bar{c}$ impacts the speed of convergence. When $\bar{\rho} =\infty$ (untruncated),
     we converge to the value function of the target policy $V^\pi$; when $\bar{\rho}$
     is close to 0, we evaluate the value function of the behavior policy $V^\mu$;
     when in-between, we evaluate a policy between $\pi$ and $\mu$.
+  id: totrans-400
   prefs: []
   type: TYPE_NORMAL
+  zh: $\bar{\rho}$ 和 $\bar{c}$ 是两个截断常数，其中 $\bar{\rho} \geq \bar{c}$。$\bar{\rho}$ 影响我们收敛到的值函数的固定点，$\bar{c}$
+    影响收敛的速度。当 $\bar{\rho} =\infty$（未截断）时，我们收敛到目标策略的值函数 $V^\pi$；当 $\bar{\rho}$ 接近 0
+    时，我们评估行为策略的值函数 $V^\mu$；当介于两者之间时，我们评估介于 $\pi$ 和 $\mu$ 之间的策略。
 - en: 'The value function parameter is therefore updated in the direction of:'
+  id: totrans-401
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，值函数参数在以下方向上进行更新：
 - en: $$ \Delta\theta = (v_t - V_\theta(s_t))\nabla_\theta V_\theta(s_t) $$
+  id: totrans-402
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \Delta\theta = (v_t - V_\theta(s_t))\nabla_\theta V_\theta(s_t) $$
 - en: The policy parameter $\phi$ is updated through policy gradient,
+  id: totrans-403
   prefs: []
   type: TYPE_NORMAL
+  zh: 策略参数 $\phi$ 通过策略梯度进行更新，
 - en: $$ \begin{aligned} \Delta \phi &= \rho_t \nabla_\phi \log \pi_\phi(a_t \vert
     s_t) \big(r_t + \gamma v_{t+1} - V_\theta(s_t)\big) + \nabla_\phi H(\pi_\phi)\\
     &= \rho_t \nabla_\phi \log \pi_\phi(a_t \vert s_t) \big(r_t + \gamma v_{t+1} -
     V_\theta(s_t)\big) - \nabla_\phi \sum_a \pi_\phi(a\vert s_t)\log \pi_\phi(a\vert
     s_t) \end{aligned} $$
+  id: totrans-404
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \Delta \phi &= \rho_t \nabla_\phi \log \pi_\phi(a_t \vert
+    s_t) \big(r_t + \gamma v_{t+1} - V_\theta(s_t)\big) + \nabla_\phi H(\pi_\phi)\\
+    &= \rho_t \nabla_\phi \log \pi_\phi(a_t \vert s_t) \big(r_t + \gamma v_{t+1} -
+    V_\theta(s_t)\big) - \nabla_\phi \sum_a \pi_\phi(a\vert s_t)\log \pi_\phi(a\vert
+    s_t) \end{aligned} $$
 - en: where $r_t + \gamma v_{t+1}$ is the estimated Q value, from which a state-dependent
     baseline $V_\theta(s_t)$ is subtracted. $H(\pi_\phi)$ is an entropy bonus to encourage
     exploration.
+  id: totrans-405
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 $r_t + \gamma v_{t+1}$ 是估计的 Q 值，从中减去了状态相关的基线 $V_\theta(s_t)$。$H(\pi_\phi)$
+    是一个熵奖励，以鼓励探索。
 - en: In the experiments, IMPALA is used to train one agent over multiple tasks. Two
     different model architectures are involved, a shallow model (left) and a deep
     residual model (right).
+  id: totrans-406
   prefs: []
   type: TYPE_NORMAL
+  zh: 在实验中，IMPALA 用于训练一个代理在多个任务上。涉及两种不同的模型架构，一个浅层模型（左）和一个深度残差模型（右）。
 - en: '![](../Images/de1729d344670bf19484d5c00b1f5891.png)'
+  id: totrans-407
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/de1729d344670bf19484d5c00b1f5891.png)'
 - en: Quick Summary
+  id: totrans-408
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 快速总结
 - en: 'After reading through all the algorithms above, I list a few building blocks
     or principles that seem to be common among them:'
+  id: totrans-409
   prefs: []
   type: TYPE_NORMAL
+  zh: 阅读完上述所有算法后，我列出了一些似乎在它们之间共同的构建块或原则：
 - en: Try to reduce the variance and keep the bias unchanged to stabilize learning.
+  id: totrans-410
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 尝试减少方差并保持偏差不变以稳定学习。
 - en: Off-policy gives us better exploration and helps us use data samples more efficiently.
+  id: totrans-411
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Off-policy 让我们更好地探索并更有效地使用数据样本。
 - en: Experience replay (training data sampled from a replay memory buffer);
+  id: totrans-412
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 经验回放（从回放内存缓冲区中采样的训练数据）；
 - en: Target network that is either frozen periodically or updated slower than the
     actively learned policy network;
+  id: totrans-413
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 目标网络定期冻结或更新速度比主动学习的策略网络慢；
 - en: Batch normalization;
+  id: totrans-414
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 批量归一化；
 - en: Entropy-regularized reward;
+  id: totrans-415
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 熵正则化奖励；
 - en: The critic and actor can share lower layer parameters of the network and two
     output heads for policy and value functions.
+  id: totrans-416
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 评论家和演员可以共享网络的较低层参数和用于策略和值函数的两个输出头。
 - en: It is possible to learn with deterministic policy rather than stochastic one.
+  id: totrans-417
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 可以使用确定性策略而不是随机策略进行学习。
 - en: Put constraint on the divergence between policy updates.
+  id: totrans-418
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 对策略更新之间的发散施加约束。
 - en: New optimization methods (such as K-FAC).
+  id: totrans-419
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 新的优化方法（如 K-FAC）。
 - en: Entropy maximization of the policy helps encourage exploration.
+  id: totrans-420
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 策略的熵最大化有助于鼓励探索。
 - en: Try not to overestimate the value function.
+  id: totrans-421
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 不要高估价值函数的价值。
 - en: Think twice whether the policy and value network should share parameters.
+  id: totrans-422
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 三思是否策略和价值网络应该共享参数。
 - en: TBA more.
+  id: totrans-423
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 待定更多。
 - en: '* * *'
+  id: totrans-424
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'Cited as:'
+  id: totrans-425
   prefs: []
   type: TYPE_NORMAL
+  zh: 引用为：
 - en: '[PRE0]'
+  id: totrans-426
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: References
+  id: totrans-427
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: '[1] jeremykun.com [Markov Chain Monte Carlo Without all the Bullshit](https://jeremykun.com/2015/04/06/markov-chain-monte-carlo-without-all-the-bullshit/)'
+  id: totrans-428
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] jeremykun.com [马尔可夫链蒙特卡洛，不带废话](https://jeremykun.com/2015/04/06/markov-chain-monte-carlo-without-all-the-bullshit/)'
 - en: '[2] Richard S. Sutton and Andrew G. Barto. [Reinforcement Learning: An Introduction;
     2nd Edition](http://incompleteideas.net/book/bookdraft2017nov5.pdf). 2017.'
+  id: totrans-429
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] Richard S. Sutton和Andrew G. Barto。[强化学习：介绍第二版](http://incompleteideas.net/book/bookdraft2017nov5.pdf)。2017年。'
 - en: '[3] John Schulman, et al. [“High-dimensional continuous control using generalized
     advantage estimation.”](https://arxiv.org/pdf/1506.02438.pdf) ICLR 2016.'
+  id: totrans-430
   prefs: []
   type: TYPE_NORMAL
+  zh: '[3] John Schulman等人。[“使用广义优势估计进行高维连续控制。”](https://arxiv.org/pdf/1506.02438.pdf)
+    ICLR 2016。'
 - en: '[4] Thomas Degris, Martha White, and Richard S. Sutton. [“Off-policy actor-critic.”](https://arxiv.org/pdf/1205.4839.pdf)
     ICML 2012.'
+  id: totrans-431
   prefs: []
   type: TYPE_NORMAL
+  zh: '[4] Thomas Degris，Martha White和Richard S. Sutton。[“离线演员评论家。”](https://arxiv.org/pdf/1205.4839.pdf)
+    ICML 2012。'
 - en: '[5] timvieira.github.io [Importance sampling](http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/)'
+  id: totrans-432
   prefs: []
   type: TYPE_NORMAL
+  zh: '[5] timvieira.github.io [重要性采样](http://timvieira.github.io/blog/post/2014/12/21/importance-sampling/)'
 - en: '[6] Mnih, Volodymyr, et al. [“Asynchronous methods for deep reinforcement learning.”](https://arxiv.org/abs/1602.01783)
     ICML. 2016.'
+  id: totrans-433
   prefs: []
   type: TYPE_NORMAL
+  zh: '[6] Mnih，Volodymyr等人。[“深度强化学习的异步方法。”](https://arxiv.org/abs/1602.01783) ICML。2016年。'
 - en: '[7] David Silver, et al. [“Deterministic policy gradient algorithms.”](https://hal.inria.fr/file/index/docid/938992/filename/dpg-icml2014.pdf)
     ICML. 2014.'
+  id: totrans-434
   prefs: []
   type: TYPE_NORMAL
+  zh: '[7] David Silver等人。[“确定性策略梯度算法。”](https://hal.inria.fr/file/index/docid/938992/filename/dpg-icml2014.pdf)
+    ICML。2014年。'
 - en: '[8] Timothy P. Lillicrap, et al. [“Continuous control with deep reinforcement
     learning.”](https://arxiv.org/pdf/1509.02971.pdf) arXiv preprint arXiv:1509.02971
     (2015).'
+  id: totrans-435
   prefs: []
   type: TYPE_NORMAL
+  zh: '[8] Timothy P. Lillicrap等人。[“深度强化学习的连续控制。”](https://arxiv.org/pdf/1509.02971.pdf)
+    arXiv预印本arXiv:1509.02971（2015年）。'
 - en: '[9] Ryan Lowe, et al. [“Multi-agent actor-critic for mixed cooperative-competitive
     environments.”](https://arxiv.org/pdf/1706.02275.pdf) NIPS. 2017.'
+  id: totrans-436
   prefs: []
   type: TYPE_NORMAL
+  zh: '[9] Ryan Lowe等人。[“混合合作竞争环境的多智能体演员-评论家。”](https://arxiv.org/pdf/1706.02275.pdf)
+    NIPS。2017年。'
 - en: '[10] John Schulman, et al. [“Trust region policy optimization.”](https://arxiv.org/pdf/1502.05477.pdf)
     ICML. 2015.'
+  id: totrans-437
   prefs: []
   type: TYPE_NORMAL
+  zh: '[10] John Schulman等人。[“信任区域策略优化。”](https://arxiv.org/pdf/1502.05477.pdf) ICML。2015年。'
 - en: '[11] Ziyu Wang, et al. [“Sample efficient actor-critic with experience replay.”](https://arxiv.org/pdf/1611.01224.pdf)
     ICLR 2017.'
+  id: totrans-438
   prefs: []
   type: TYPE_NORMAL
+  zh: '[11] Ziyu Wang等人。[“具有经验重播的样本高效演员-评论家。”](https://arxiv.org/pdf/1611.01224.pdf)
+    ICLR 2017。'
 - en: '[12] Rémi Munos, Tom Stepleton, Anna Harutyunyan, and Marc Bellemare. [“Safe
     and efficient off-policy reinforcement learning”](http://papers.nips.cc/paper/6538-safe-and-efficient-off-policy-reinforcement-learning.pdf)
     NIPS. 2016.'
+  id: totrans-439
   prefs: []
   type: TYPE_NORMAL
+  zh: '[12] Rémi Munos，Tom Stepleton，Anna Harutyunyan和Marc Bellemare。[“安全高效的离线策略强化学习”](http://papers.nips.cc/paper/6538-safe-and-efficient-off-policy-reinforcement-learning.pdf)
+    NIPS。2016年。'
 - en: '[13] Yuhuai Wu, et al. [“Scalable trust-region method for deep reinforcement
     learning using Kronecker-factored approximation.”](https://arxiv.org/pdf/1708.05144.pdf)
     NIPS. 2017.'
+  id: totrans-440
   prefs: []
   type: TYPE_NORMAL
+  zh: '[13] Yuhuai Wu等人。[“使用Kronecker因子化逼近的可扩展信任区域方法进行深度强化学习。”](https://arxiv.org/pdf/1708.05144.pdf)
+    NIPS。2017年。'
 - en: '[14] kvfrans.com [A intuitive explanation of natural gradient descent](http://kvfrans.com/a-intuitive-explanation-of-natural-gradient-descent/)'
+  id: totrans-441
   prefs: []
   type: TYPE_NORMAL
+  zh: '[14] kvfrans.com [自然梯度下降的直观解释](http://kvfrans.com/a-intuitive-explanation-of-natural-gradient-descent/)'
 - en: '[15] Sham Kakade. [“A Natural Policy Gradient.”](https://papers.nips.cc/paper/2073-a-natural-policy-gradient.pdf).
     NIPS. 2002.'
+  id: totrans-442
   prefs: []
   type: TYPE_NORMAL
+  zh: '[15] Sham Kakade。[“自然策略梯度。”](https://papers.nips.cc/paper/2073-a-natural-policy-gradient.pdf)
+    NIPS。2002年。'
 - en: '[16] [“Going Deeper Into Reinforcement Learning: Fundamentals of Policy Gradients.”](https://danieltakeshi.github.io/2017/03/28/going-deeper-into-reinforcement-learning-fundamentals-of-policy-gradients/)
     - Seita’s Place, Mar 2017.'
+  id: totrans-443
   prefs: []
   type: TYPE_NORMAL
+  zh: '[16] [“深入探讨强化学习：策略梯度基础。”](https://danieltakeshi.github.io/2017/03/28/going-deeper-into-reinforcement-learning-fundamentals-of-policy-gradients/)
+    - Seita’s Place，2017年3月。'
 - en: '[17] [“Notes on the Generalized Advantage Estimation Paper.”](https://danieltakeshi.github.io/2017/04/02/notes-on-the-generalized-advantage-estimation-paper/)
     - Seita’s Place, Apr, 2017.'
+  id: totrans-444
   prefs: []
   type: TYPE_NORMAL
+  zh: '[17] [“关于广义优势估计论文的笔记。”](https://danieltakeshi.github.io/2017/04/02/notes-on-the-generalized-advantage-estimation-paper/)
+    - Seita’s Place，2017年4月。'
 - en: '[18] Gabriel Barth-Maron, et al. [“Distributed Distributional Deterministic
     Policy Gradients.”](https://arxiv.org/pdf/1804.08617.pdf) ICLR 2018 poster.'
+  id: totrans-445
   prefs: []
   type: TYPE_NORMAL
+  zh: '[18] Gabriel Barth-Maron等人。[“分布式分布式确定性策略梯度。”](https://arxiv.org/pdf/1804.08617.pdf)
+    ICLR 2018海报。'
 - en: '[19] Tuomas Haarnoja, Aurick Zhou, Pieter Abbeel, and Sergey Levine. [“Soft
     Actor-Critic: Off-Policy Maximum Entropy Deep Reinforcement Learning with a Stochastic
     Actor.”](https://arxiv.org/pdf/1801.01290.pdf) arXiv preprint arXiv:1801.01290
     (2018).'
+  id: totrans-446
   prefs: []
   type: TYPE_NORMAL
+  zh: '[19] 图马斯·哈尔诺亚，奥里克·周，皮特·阿贝尔和谢尔盖·莱文。[“软演员-评论：离线最大熵深度强化学习与随机演员。”](https://arxiv.org/pdf/1801.01290.pdf)
+    arXiv预印本 arXiv:1801.01290 (2018)。'
 - en: '[20] Scott Fujimoto, Herke van Hoof, and Dave Meger. [“Addressing Function
     Approximation Error in Actor-Critic Methods.”](https://arxiv.org/abs/1802.09477)
     arXiv preprint arXiv:1802.09477 (2018).'
+  id: totrans-447
   prefs: []
   type: TYPE_NORMAL
+  zh: '[20] 斯科特·藤本，赫克·范·胡夫和戴夫·梅格尔。[“解决演员-评论方法中的函数逼近误差。”](https://arxiv.org/abs/1802.09477)
+    arXiv预印本 arXiv:1802.09477 (2018)。'
 - en: '[21] Tuomas Haarnoja, et al. [“Soft Actor-Critic Algorithms and Applications.”](https://arxiv.org/abs/1812.05905)
     arXiv preprint arXiv:1812.05905 (2018).'
+  id: totrans-448
   prefs: []
   type: TYPE_NORMAL
+  zh: '[21] 图马斯·哈尔诺亚等人。[“软演员-评论算法及应用。”](https://arxiv.org/abs/1812.05905) arXiv预印本
+    arXiv:1812.05905 (2018)。'
 - en: '[22] David Knowles. [“Lagrangian Duality for Dummies”](https://cs.stanford.edu/people/davidknowles/lagrangian_duality.pdf)
     Nov 13, 2010.'
+  id: totrans-449
   prefs: []
   type: TYPE_NORMAL
+  zh: '[22] 大卫·诺尔斯。[“哑巴的拉格朗日对偶”](https://cs.stanford.edu/people/davidknowles/lagrangian_duality.pdf)
+    2010年11月13日。'
 - en: '[23] Yang Liu, et al. [“Stein variational policy gradient.”](https://arxiv.org/abs/1704.02399)
     arXiv preprint arXiv:1704.02399 (2017).'
+  id: totrans-450
   prefs: []
   type: TYPE_NORMAL
+  zh: '[23] 杨柳等人。[“斯坦变分策略梯度。”](https://arxiv.org/abs/1704.02399) arXiv预印本 arXiv:1704.02399
+    (2017)。'
 - en: '[24] Qiang Liu and Dilin Wang. [“Stein variational gradient descent: A general
     purpose bayesian inference algorithm.”](https://papers.nips.cc/paper/6338-stein-variational-gradient-descent-a-general-purpose-bayesian-inference-algorithm.pdf)
     NIPS. 2016.'
+  id: totrans-451
   prefs: []
   type: TYPE_NORMAL
+  zh: '[24] 刘强和王迪林。[“斯坦变分梯度下降：一种通用的贝叶斯推断算法。”](https://papers.nips.cc/paper/6338-stein-variational-gradient-descent-a-general-purpose-bayesian-inference-algorithm.pdf)
+    NIPS。2016年。'
 - en: '[25] Lasse Espeholt, et al. [“IMPALA: Scalable Distributed Deep-RL with Importance
     Weighted Actor-Learner Architectures”](https://arxiv.org/abs/1802.01561) arXiv
     preprint 1802.01561 (2018).'
+  id: totrans-452
   prefs: []
   type: TYPE_NORMAL
+  zh: '[25] 拉斯·埃斯佩霍特等人。[“IMPALA：具有重要性加权演员-学习者架构的可扩展分布式深度强化学习”](https://arxiv.org/abs/1802.01561)
+    arXiv预印本 1802.01561 (2018)。'
 - en: '[26] Karl Cobbe, et al. [“Phasic Policy Gradient.”](https://arxiv.org/abs/2009.04416)
     arXiv preprint arXiv:2009.04416 (2020).'
+  id: totrans-453
   prefs: []
   type: TYPE_NORMAL
+  zh: '[26] 卡尔·科比等人。[“阶段性策略梯度。”](https://arxiv.org/abs/2009.04416) arXiv预印本 arXiv:2009.04416
+    (2020)。'
 - en: '[27] Chloe Ching-Yun Hsu, et al. [“Revisiting Design Choices in Proximal Policy
     Optimization.”](https://arxiv.org/abs/2009.10897) arXiv preprint arXiv:2009.10897
     (2020).'
+  id: totrans-454
   prefs: []
   type: TYPE_NORMAL
+  zh: '[27] 許青芸等人。[“重新审视近端策略优化中的设计选择。”](https://arxiv.org/abs/2009.10897) arXiv预印本
+    arXiv:2009.10897 (2020)。'

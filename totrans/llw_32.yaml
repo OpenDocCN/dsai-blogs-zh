@@ -1,43 +1,63 @@
 - en: Attention? Attention!
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 注意力？注意力！
 - en: 原文：[https://lilianweng.github.io/posts/2018-06-24-attention/](https://lilianweng.github.io/posts/2018-06-24-attention/)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://lilianweng.github.io/posts/2018-06-24-attention/](https://lilianweng.github.io/posts/2018-06-24-attention/)
 - en: '[Updated on 2018-10-28: Add [Pointer Network](#pointer-network) and the [link](https://github.com/lilianweng/transformer-tensorflow)
     to my implementation of Transformer.]'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: '[更新于2018-10-28：添加了[指针网络](#pointer-network)和[链接](https://github.com/lilianweng/transformer-tensorflow)到我的Transformer实现。]'
 - en: '[Updated on 2018-11-06: Add a [link](https://github.com/lilianweng/transformer-tensorflow)
     to the implementation of Transformer model.]'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[更新于2018-11-06：添加了一个[链接](https://github.com/lilianweng/transformer-tensorflow)到Transformer模型的实现。]'
 - en: '[Updated on 2018-11-18: Add [Neural Turing Machines](#neural-turing-machines).]'
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: '[更新于2018-11-18：添加了[神经图灵机](#neural-turing-machines)。]'
 - en: '[Updated on 2019-07-18: Correct the mistake on using the term “self-attention”
     when introducing the [show-attention-tell](https://arxiv.org/abs/1502.03044) paper;
     moved it to [Self-Attention](#self-attention) section.]'
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: '[更新于2019-07-18：在介绍[show-attention-tell](https://arxiv.org/abs/1502.03044)论文时，更正了使用术语“自注意力”的错误；将其移到[自注意力](#self-attention)部分。]'
 - en: '[Updated on 2020-04-07: A follow-up post on improved Transformer models is
     [here](https://lilianweng.github.io/posts/2020-04-07-the-transformer-family/).]'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: '[更新于2020-04-07：有关改进的 Transformer 模型的后续帖子在[这里](https://lilianweng.github.io/posts/2020-04-07-the-transformer-family/)。]'
 - en: Attention is, to some extent, motivated by how we pay visual attention to different
     regions of an image or correlate words in one sentence. Take the picture of a
     Shiba Inu in Fig. 1 as an example.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意力在某种程度上受到我们如何在图像的不同区域或在一句话中相关单词之间进行视觉关注的启发。以图1中的柴犬图片为例。
 - en: '![](../Images/1ea85e2e230e5948f973409b3b701e7c.png)'
+  id: totrans-8
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/1ea85e2e230e5948f973409b3b701e7c.png)'
 - en: Fig. 1\. A Shiba Inu in a men’s outfit. The credit of the original photo goes
     to Instagram [@mensweardog](https://www.instagram.com/mensweardog/?hl=en).
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 图1。一只穿着男士服装的柴犬。原始照片的来源归功于Instagram [@mensweardog](https://www.instagram.com/mensweardog/?hl=en)。
 - en: Human visual attention allows us to focus on a certain region with “high resolution”
     (i.e. look at the pointy ear in the yellow box) while perceiving the surrounding
     image in “low resolution” (i.e. now how about the snowy background and the outfit?),
@@ -47,153 +67,219 @@
     another pointy ear on the right, and Shiba’s mystery eyes (stuff in the red boxes).
     However, the sweater and blanket at the bottom would not be as helpful as those
     doggy features.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 人类视觉注意力使我们能够专注于“高分辨率”区域（即看着黄色框中尖耳朵）同时以“低分辨率”感知周围图像（即雪地背景和服装是什么？），然后相应地调整焦点或进行推断。给定图像的一个小区域，其余像素提供线索，指导应该显示什么。我们期望在黄色框中看到尖耳朵，因为我们已经看到了狗的鼻子，右边的另一只尖耳朵，以及柴犬神秘的眼睛（红框中的东西）。然而，底部的毛衣和毯子对于这些狗狗特征来说并不那么有帮助。
 - en: Similarly, we can explain the relationship between words in one sentence or
     close context. When we see “eating”, we expect to encounter a food word very soon.
     The color term describes the food, but probably not so much with “eating” directly.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 同样地，我们可以解释一句话或接近上下文中单词之间的关系。当我们看到“吃”时，我们期望很快遇到一个食物词。颜色词描述食物，但可能与“吃”直接相关性不那么大。
 - en: '![](../Images/aef85ca18e79b348ebf5db5f66efc70f.png)'
+  id: totrans-12
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/aef85ca18e79b348ebf5db5f66efc70f.png)'
 - en: Fig. 2\. One word "attends" to other words in the same sentence differently.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 图2。一个单词在同一句子中与其他单词的关注不同。
 - en: 'In a nutshell, attention in deep learning can be broadly interpreted as a vector
     of importance weights: in order to predict or infer one element, such as a pixel
     in an image or a word in a sentence, we estimate using the attention vector how
     strongly it is correlated with (or “*attends to*” as you may have read in many
     papers) other elements and take the sum of their values weighted by the attention
     vector as the approximation of the target.'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 简而言之，深度学习中的注意力可以广义地解释为一个重要性权重向量：为了预测或推断一个元素，例如图像中的一个像素或句子中的一个单词，我们使用注意力向量估计它与其他元素的相关性有多强（或者正如您可能在许多论文中读到的那样“*关注*”），并将它们的值按注意力向量加权求和作为目标的近似。
 - en: What’s Wrong with Seq2Seq Model?
+  id: totrans-15
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Seq2Seq 模型有什么问题？
 - en: The **seq2seq** model was born in the field of language modeling ([Sutskever,
     et al. 2014](https://arxiv.org/abs/1409.3215)). Broadly speaking, it aims to transform
     an input sequence (source) to a new one (target) and both sequences can be of
     arbitrary lengths. Examples of transformation tasks include machine translation
     between multiple languages in either text or audio, question-answer dialog generation,
     or even parsing sentences into grammar trees.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: '**seq2seq**模型诞生于语言建模领域（[Sutskever等人，2014](https://arxiv.org/abs/1409.3215)）。广义上讲，它旨在将一个输入序列（源）转换为一个新的序列（目标），而且两个序列的长度可以是任意的。转换任务的示例包括文本或音频之间的多语言机器翻译，问答对话生成，甚至将句子解析成语法树。'
 - en: 'The seq2seq model normally has an encoder-decoder architecture, composed of:'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: seq2seq模型通常具有编码器-解码器架构，由以下组成：
 - en: An **encoder** processes the input sequence and compresses the information into
     a context vector (also known as sentence embedding or “thought” vector) of a *fixed
     length*. This representation is expected to be a good summary of the meaning of
     the *whole* source sequence.
+  id: totrans-18
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**编码器**处理输入序列并将信息压缩成一个长度固定的上下文向量（也称为句子嵌入或“思想”向量）。这种表示预期是对*整个*源序列含义的很好总结。'
 - en: A **decoder** is initialized with the context vector to emit the transformed
     output. The early work only used the last state of the encoder network as the
     decoder initial state.
+  id: totrans-19
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**解码器**使用上下文向量初始化以发出转换后的输出。早期的工作仅使用编码器网络的最后状态作为解码器的初始状态。'
 - en: Both the encoder and decoder are recurrent neural networks, i.e. using [LSTM
     or GRU](http://colah.github.io/posts/2015-08-Understanding-LSTMs/) units.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 编码器和解码器都是循环神经网络，即使用[LSTM或GRU](http://colah.github.io/posts/2015-08-Understanding-LSTMs/)单元。
 - en: '![](../Images/eb1e0411440e2a00be8bcfb6c9436aaf.png)'
+  id: totrans-21
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/eb1e0411440e2a00be8bcfb6c9436aaf.png)'
 - en: Fig. 3\. The encoder-decoder model, translating the sentence "she is eating
     a green apple" to Chinese. The visualization of both encoder and decoder is unrolled
     in time.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 3\. 编码器-解码器模型，将句子“她正在吃一个绿色的苹果”翻译成中文。编码器和解码器的可视化在时间上展开。
 - en: A critical and apparent disadvantage of this fixed-length context vector design
     is incapability of remembering long sentences. Often it has forgotten the first
     part once it completes processing the whole input. The attention mechanism was
     born ([Bahdanau et al., 2015](https://arxiv.org/pdf/1409.0473.pdf)) to resolve
     this problem.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种固定长度上下文向量设计的一个关键而明显的缺点是无法记住长句子。通常在处理完整个输入后，它会忘记第一部分。注意力机制诞生于[Bahdanau等人，2015](https://arxiv.org/pdf/1409.0473.pdf)以解决这个问题。
 - en: Born for Translation
+  id: totrans-24
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 诞生于翻译领域
 - en: The attention mechanism was born to help memorize long source sentences in neural
     machine translation ([NMT](https://arxiv.org/pdf/1409.0473.pdf)). Rather than
     building a single context vector out of the encoder’s last hidden state, the secret
     sauce invented by attention is to create shortcuts between the context vector
     and the entire source input. The weights of these shortcut connections are customizable
     for each output element.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意力机制诞生于神经机器翻译（[NMT](https://arxiv.org/pdf/1409.0473.pdf)）中，以帮助记忆长句子。注意力的秘密在于不是仅仅基于编码器的最后隐藏状态构建一个单一的上下文向量，而是在上下文向量和整个源输入之间创建快捷方式。这些快捷连接的权重对每个输出元素都是可定制的。
 - en: 'While the context vector has access to the entire input sequence, we don’t
     need to worry about forgetting. The alignment between the source and target is
     learned and controlled by the context vector. Essentially the context vector consumes
     three pieces of information:'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然上下文向量可以访问整个输入序列，但我们不需要担心遗忘。源和目标之间的对齐由上下文向量学习和控制。基本上，上下文向量包含三个信息：
 - en: encoder hidden states;
+  id: totrans-27
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 编码器隐藏状态；
 - en: decoder hidden states;
+  id: totrans-28
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 解码器隐藏状态；
 - en: alignment between source and target.
+  id: totrans-29
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 源和目标之间的对齐。
 - en: '![](../Images/07cb5dba07e1f92813a195f18723da81.png)'
+  id: totrans-30
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/07cb5dba07e1f92813a195f18723da81.png)'
 - en: Fig. 4\. The encoder-decoder model with additive attention mechanism in [Bahdanau
     et al., 2015](https://arxiv.org/pdf/1409.0473.pdf).
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 4\. [Bahdanau等人，2015](https://arxiv.org/pdf/1409.0473.pdf)中带有加性注意力机制的编码器-解码器模型。
 - en: Definition
+  id: totrans-32
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 定义
 - en: 'Now let’s define the attention mechanism introduced in NMT in a scientific
     way. Say, we have a source sequence $\mathbf{x}$ of length $n$ and try to output
     a target sequence $\mathbf{y}$ of length $m$:'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们以科学的方式定义NMT中引入的注意力机制。假设我们有长度为$n$的源序列$\mathbf{x}$，并尝试输出长度为$m$的目标序列$\mathbf{y}$：
 - en: $$ \begin{aligned} \mathbf{x} &= [x_1, x_2, \dots, x_n] \\ \mathbf{y} &= [y_1,
     y_2, \dots, y_m] \end{aligned} $$
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \mathbf{x} &= [x_1, x_2, \dots, x_n] \\ \mathbf{y} &= [y_1,
+    y_2, \dots, y_m] \end{aligned} $$
 - en: (Variables in bold indicate that they are vectors; same for everything else
     in this post.)
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: （粗体变量表示它们是向量；本文中的其他内容也是如此。）
 - en: The encoder is a [bidirectional RNN](https://www.coursera.org/lecture/nlp-sequence-models/bidirectional-rnn-fyXnn)
     (or other recurrent network setting of your choice) with a forward hidden state
     $\overrightarrow{\boldsymbol{h}}_i$ and a backward one $\overleftarrow{\boldsymbol{h}}_i$.
     A simple concatenation of two represents the encoder state. The motivation is
     to include both the preceding and following words in the annotation of one word.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 编码器是一个[双向RNN](https://www.coursera.org/lecture/nlp-sequence-models/bidirectional-rnn-fyXnn)（或您选择的其他循环网络设置），具有前向隐藏状态$\overrightarrow{\boldsymbol{h}}_i$和后向隐藏状态$\overleftarrow{\boldsymbol{h}}_i$。简单地将两者连接起来表示编码器状态。其动机是在一个词的注释中包含前面和后面的单词。
 - en: $$ \boldsymbol{h}_i = [\overrightarrow{\boldsymbol{h}}_i^\top; \overleftarrow{\boldsymbol{h}}_i^\top]^\top,
     i=1,\dots,n $$
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \boldsymbol{h}_i = [\overrightarrow{\boldsymbol{h}}_i^\top; \overleftarrow{\boldsymbol{h}}_i^\top]^\top,
+    i=1,\dots,n $$
 - en: 'The decoder network has hidden state $\boldsymbol{s}_t=f(\boldsymbol{s}_{t-1},
     y_{t-1}, \mathbf{c}_t)$ for the output word at position t, $t=1,\dots,m$, where
     the context vector $\mathbf{c}_t$ is a sum of hidden states of the input sequence,
     weighted by alignment scores:'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 解码器网络具有隐藏状态$\boldsymbol{s}_t=f(\boldsymbol{s}_{t-1}, y_{t-1}, \mathbf{c}_t)$，用于位置t处的输出单词，$t=1,\dots,m$，其中上下文向量$\mathbf{c}_t$是输入序列的隐藏状态的加权和，由对齐分数加权：
 - en: $$ \begin{aligned} \mathbf{c}_t &= \sum_{i=1}^n \alpha_{t,i} \boldsymbol{h}_i
     & \small{\text{; Context vector for output }y_t}\\ \alpha_{t,i} &= \text{align}(y_t,
     x_i) & \small{\text{; How well two words }y_t\text{ and }x_i\text{ are aligned.}}\\
     &= \frac{\exp(\text{score}(\boldsymbol{s}_{t-1}, \boldsymbol{h}_i))}{\sum_{i'=1}^n
     \exp(\text{score}(\boldsymbol{s}_{t-1}, \boldsymbol{h}_{i'}))} & \small{\text{;
     Softmax of some predefined alignment score.}}. \end{aligned} $$
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \mathbf{c}_t &= \sum_{i=1}^n \alpha_{t,i} \boldsymbol{h}_i
+    & \small{\text{; 输出}y_t\text{的上下文向量}}\\ \alpha_{t,i} &= \text{align}(y_t, x_i)
+    & \small{\text{; 两个单词}y_t\text{和}x_i\text{对齐得有多好。}}\\ &= \frac{\exp(\text{score}(\boldsymbol{s}_{t-1},
+    \boldsymbol{h}_i))}{\sum_{i'=1}^n \exp(\text{score}(\boldsymbol{s}_{t-1}, \boldsymbol{h}_{i'}))}
+    & \small{\text{; 一些预定义对齐分数的softmax。}}. \end{aligned} $$
 - en: 'The alignment model assigns a score $\alpha_{t,i}$ to the pair of input at
     position i and output at position t, $(y_t, x_i)$, based on how well they match.
     The set of $\{\alpha_{t, i}\}$ are weights defining how much of each source hidden
@@ -202,37 +288,56 @@
     layer and this network is jointly trained with other parts of the model. The score
     function is therefore in the following form, given that tanh is used as the non-linear
     activation function:'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 对齐模型为输入位置i和输出位置t处的一对（$y_t, x_i$）分配一个分数$\alpha_{t,i}$，根据它们匹配得有多好。$\{\alpha_{t,
+    i}\}$的集合是定义每个输出应考虑多少源隐藏状态的权重。在Bahdanau的论文中，对齐分数$\alpha$由一个具有单隐藏层的**前馈网络**参数化，并且该网络与模型的其他部分一起进行训练。因此，得分函数的形式如下，假设tanh被用作非线性激活函数：
 - en: $$ \text{score}(\boldsymbol{s}_t, \boldsymbol{h}_i) = \mathbf{v}_a^\top \tanh(\mathbf{W}_a[\boldsymbol{s}_t;
     \boldsymbol{h}_i]) $$
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \text{score}(\boldsymbol{s}_t, \boldsymbol{h}_i) = \mathbf{v}_a^\top \tanh(\mathbf{W}_a[\boldsymbol{s}_t;
+    \boldsymbol{h}_i]) $$
 - en: where both $\mathbf{v}_a$ and $\mathbf{W}_a$ are weight matrices to be learned
     in the alignment model.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里$\mathbf{v}_a$和$\mathbf{W}_a$都是在对齐模型中要学习的权重矩阵。
 - en: The matrix of alignment scores is a nice byproduct to explicitly show the correlation
     between source and target words.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 对齐分数矩阵是一个很好的副产品，可以明确显示源语言和目标语言之间的相关性。
 - en: '![](../Images/31047272a545e645e55731c540ebdf10.png)'
+  id: totrans-44
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/31047272a545e645e55731c540ebdf10.png)'
 - en: 'Fig. 5\. Alignment matrix of "L''accord sur l''Espace économique européen a
     été signé en août 1992" (French) and its English translation "The agreement on
     the European Economic Area was signed in August 1992". (Image source: Fig 3 in
     [Bahdanau et al., 2015](https://arxiv.org/pdf/1409.0473.pdf))'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 图5. "L'accord sur l'Espace économique européen a été signé en août 1992"（法语）及其英文翻译"The
+    agreement on the European Economic Area was signed in August 1992"的对齐矩阵（图片来源：[Bahdanau等人，2015年](https://arxiv.org/pdf/1409.0473.pdf)中的图3）
 - en: Check out this nice [tutorial](https://www.tensorflow.org/versions/master/tutorials/seq2seq)
     by Tensorflow team for more implementation instructions.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 查看这篇由Tensorflow团队提供的不错的[教程](https://www.tensorflow.org/versions/master/tutorials/seq2seq)，了解更多实现说明。
 - en: A Family of Attention Mechanisms
+  id: totrans-47
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 一系列注意力机制
 - en: With the help of the attention, the dependencies between source and target sequences
     are not restricted by the in-between distance anymore! Given the big improvement
     by attention in machine translation, it soon got extended into the computer vision
@@ -240,117 +345,184 @@
     started exploring various other forms of attention mechanisms ([Luong, et al.,
     2015](https://arxiv.org/pdf/1508.04025.pdf); [Britz et al., 2017](https://arxiv.org/abs/1703.03906);
     [Vaswani, et al., 2017](http://papers.nips.cc/paper/7181-attention-is-all-you-need.pdf)).
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 在注意力的帮助下，源序列和目标序列之间的依赖关系不再受中间距离的限制！鉴于注意力在机器翻译中的巨大改进，它很快被扩展到计算机视觉领域（[Xu et al.
+    2015](http://proceedings.mlr.press/v37/xuc15.pdf)），人们开始探索各种其他形式的注意力机制（[Luong,
+    et al., 2015](https://arxiv.org/pdf/1508.04025.pdf); [Britz et al., 2017](https://arxiv.org/abs/1703.03906);
+    [Vaswani, et al., 2017](http://papers.nips.cc/paper/7181-attention-is-all-you-need.pdf)）。
 - en: Summary
+  id: totrans-49
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 总结
 - en: 'Below is a summary table of several popular attention mechanisms and corresponding
     alignment score functions:'
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面是几种流行的注意力机制及相应的对齐评分函数的总结表：
 - en: '| Name | Alignment score function | Citation |'
+  id: totrans-51
   prefs: []
   type: TYPE_TB
+  zh: '| 名称 | 对齐评分函数 | 引用 |'
 - en: '| --- | --- | --- |'
+  id: totrans-52
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- | --- |'
 - en: '| Content-base attention | $\text{score}(\boldsymbol{s}_t, \boldsymbol{h}_i)
     = \text{cosine}[\boldsymbol{s}_t, \boldsymbol{h}_i]$ | [Graves2014](https://arxiv.org/abs/1410.5401)
     |'
+  id: totrans-53
   prefs: []
   type: TYPE_TB
+  zh: '| 基于内容的注意力 | $\text{score}(\boldsymbol{s}_t, \boldsymbol{h}_i) = \text{cosine}[\boldsymbol{s}_t,
+    \boldsymbol{h}_i]$ | [Graves2014](https://arxiv.org/abs/1410.5401) |'
 - en: '| Additive(*) | $\text{score}(\boldsymbol{s}_t, \boldsymbol{h}_i) = \mathbf{v}_a^\top
     \tanh(\mathbf{W}_a[\boldsymbol{s}_{t-1}; \boldsymbol{h}_i])$ | [Bahdanau2015](https://arxiv.org/pdf/1409.0473.pdf)
     |'
+  id: totrans-54
   prefs: []
   type: TYPE_TB
+  zh: '| 加性(*) | $\text{score}(\boldsymbol{s}_t, \boldsymbol{h}_i) = \mathbf{v}_a^\top
+    \tanh(\mathbf{W}_a[\boldsymbol{s}_{t-1}; \boldsymbol{h}_i])$ | [Bahdanau2015](https://arxiv.org/pdf/1409.0473.pdf)
+    |'
 - en: '| Location-Base | $\alpha_{t,i} = \text{softmax}(\mathbf{W}_a \boldsymbol{s}_t)$
     Note: This simplifies the softmax alignment to only depend on the target position.
     | [Luong2015](https://arxiv.org/pdf/1508.04025.pdf) |'
+  id: totrans-55
   prefs: []
   type: TYPE_TB
+  zh: '| 基于位置 | $\alpha_{t,i} = \text{softmax}(\mathbf{W}_a \boldsymbol{s}_t)$ 注意：这简化了softmax对齐，只依赖于目标位置。
+    | [Luong2015](https://arxiv.org/pdf/1508.04025.pdf) |'
 - en: '| General | $\text{score}(\boldsymbol{s}_t, \boldsymbol{h}_i) = \boldsymbol{s}_t^\top\mathbf{W}_a\boldsymbol{h}_i$
     where $\mathbf{W}_a$ is a trainable weight matrix in the attention layer. | [Luong2015](https://arxiv.org/pdf/1508.04025.pdf)
     |'
+  id: totrans-56
   prefs: []
   type: TYPE_TB
+  zh: '| 一般 | $\text{score}(\boldsymbol{s}_t, \boldsymbol{h}_i) = \boldsymbol{s}_t^\top\mathbf{W}_a\boldsymbol{h}_i$
+    其中 $\mathbf{W}_a$ 是注意力层中的可训练权重矩阵。 | [Luong2015](https://arxiv.org/pdf/1508.04025.pdf)
+    |'
 - en: '| Dot-Product | $\text{score}(\boldsymbol{s}_t, \boldsymbol{h}_i) = \boldsymbol{s}_t^\top\boldsymbol{h}_i$
     | [Luong2015](https://arxiv.org/pdf/1508.4025.pdf) |'
+  id: totrans-57
   prefs: []
   type: TYPE_TB
+  zh: '| 点积 | $\text{score}(\boldsymbol{s}_t, \boldsymbol{h}_i) = \boldsymbol{s}_t^\top\boldsymbol{h}_i$
+    | [Luong2015](https://arxiv.org/pdf/1508.4025.pdf) |'
 - en: '| Scaled Dot-Product(^) | $\text{score}(\boldsymbol{s}_t, \boldsymbol{h}_i)
     = \frac{\boldsymbol{s}_t^\top\boldsymbol{h}_i}{\sqrt{n}}$ Note: very similar to
     the dot-product attention except for a scaling factor; where n is the dimension
     of the source hidden state. | [Vaswani2017](http://papers.nips.cc/paper/7181-attention-is-all-you-need.pdf)
     |'
+  id: totrans-58
   prefs: []
   type: TYPE_TB
+  zh: '| 缩放点积(^) | $\text{score}(\boldsymbol{s}_t, \boldsymbol{h}_i) = \frac{\boldsymbol{s}_t^\top\boldsymbol{h}_i}{\sqrt{n}}$
+    注意：与点积注意力非常相似，只是多了一个缩放因子；其中 n 是源隐藏状态的维度。 | [Vaswani2017](http://papers.nips.cc/paper/7181-attention-is-all-you-need.pdf)
+    |'
 - en: (*) Referred to as “concat” in Luong, et al., 2015 and as “additive attention”
     in Vaswani, et al., 2017.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: (*) 在Luong等人的2015年论文中被称为“concat”，在Vaswani等人的2017年论文中被称为“加性注意力”。
 - en: (^) It adds a scaling factor $1/\sqrt{n}$, motivated by the concern when the
     input is large, the softmax function may have an extremely small gradient, hard
     for efficient learning.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: (^) 它添加了一个缩放因子 $1/\sqrt{n}$，这是出于当输入较大时的考虑，softmax函数可能具有极小的梯度，难以进行有效学习。
 - en: 'Here are a summary of broader categories of attention mechanisms:'
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里是注意力机制的更广泛类别的总结：
 - en: '| Name | Definition | Citation |'
+  id: totrans-62
   prefs: []
   type: TYPE_TB
+  zh: '| 名称 | 定义 | 引用 |'
 - en: '| --- | --- | --- |'
+  id: totrans-63
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- | --- |'
 - en: '| Self-Attention(&) | Relating different positions of the same input sequence.
     Theoretically the self-attention can adopt any score functions above, but just
     replace the target sequence with the same input sequence. | [Cheng2016](https://arxiv.org/pdf/1601.06733.pdf)
     |'
+  id: totrans-64
   prefs: []
   type: TYPE_TB
+  zh: '| 自注意力(&) | 关联同一输入序列的不同位置。理论上，自注意力可以采用上述任何评分函数，只是将目标序列替换为相同的输入序列。 | [Cheng2016](https://arxiv.org/pdf/1601.06733.pdf)
+    |'
 - en: '| Global/Soft | Attending to the entire input state space. | [Xu2015](http://proceedings.mlr.press/v37/xuc15.pdf)
     |'
+  id: totrans-65
   prefs: []
   type: TYPE_TB
+  zh: '| 全局/软 | 关注整个输入状态空间。 | [Xu2015](http://proceedings.mlr.press/v37/xuc15.pdf)
+    |'
 - en: '| Local/Hard | Attending to the part of input state space; i.e. a patch of
     the input image. | [Xu2015](http://proceedings.mlr.press/v37/xuc15.pdf); [Luong2015](https://arxiv.org/pdf/1508.04025.pdf)
     |'
+  id: totrans-66
   prefs: []
   type: TYPE_TB
+  zh: '| 本地/硬 | 关注输入状态空间的一部分；即输入图像的一个补丁。 | [Xu2015](http://proceedings.mlr.press/v37/xuc15.pdf);
+    [Luong2015](https://arxiv.org/pdf/1508.04025.pdf) |'
 - en: (&) Also, referred to as “intra-attention” in Cheng et al., 2016 and some other
     papers.
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: (&) 也被称为“内部注意力”在Cheng等人，2016和其他一些论文中。
 - en: Self-Attention
+  id: totrans-68
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 自注意力
 - en: '**Self-attention**, also known as **intra-attention**, is an attention mechanism
     relating different positions of a single sequence in order to compute a representation
     of the same sequence. It has been shown to be very useful in machine reading,
     abstractive summarization, or image description generation.'
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: '**自注意力**，也称为**内部注意力**，是一种注意力机制，涉及单个序列的不同位置，以计算相同序列的表示。已经证明在机器阅读、抽象摘要或图像描述生成中非常有用。'
 - en: The [long short-term memory network](https://arxiv.org/pdf/1601.06733.pdf) paper
     used self-attention to do machine reading. In the example below, the self-attention
     mechanism enables us to learn the correlation between the current words and the
     previous part of the sentence.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: '[长短期记忆网络](https://arxiv.org/pdf/1601.06733.pdf)论文使用自注意力进行机器阅读。 在下面的示例中，自注意力机制使我们能够学习当前单词与句子先前部分之间的相关性。'
 - en: '![](../Images/2e52242205699e659b249b60a7554f4b.png)'
+  id: totrans-71
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/2e52242205699e659b249b60a7554f4b.png)'
 - en: 'Fig. 6\. The current word is in red and the size of the blue shade indicates
     the activation level. (Image source: [Cheng et al., 2016](https://arxiv.org/pdf/1601.06733.pdf))'
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 6\. 当前单词为红色，蓝色阴影的大小表示激活水平。 （图片来源：[Cheng等人，2016](https://arxiv.org/pdf/1601.06733.pdf)）
 - en: Soft vs Hard Attention
+  id: totrans-73
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 软注意力 vs 硬注意力
 - en: In the [show, attend and tell](http://proceedings.mlr.press/v37/xuc15.pdf) paper,
     attention mechanism is applied to images to generate captions. The image is first
     encoded by a CNN to extract features. Then a LSTM decoder consumes the convolution
@@ -358,74 +530,106 @@
     through attention. The visualization of the attention weights clearly demonstrates
     which regions of the image the model is paying attention to so as to output a
     certain word.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 在[show, attend and tell](http://proceedings.mlr.press/v37/xuc15.pdf)论文中，注意力机制被应用于图像以生成标题。
+    图像首先由CNN编码以提取特征。 然后，LSTM解码器消耗卷积特征逐个生成描述性单词，其中权重通过注意力学习。 注意权重的可视化清楚地展示了模型关注图像的哪些区域，以便输出特定单词。
 - en: '![](../Images/e8ff5fefb56dad1a477f5c3c9cdd6062.png)'
+  id: totrans-75
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e8ff5fefb56dad1a477f5c3c9cdd6062.png)'
 - en: 'Fig. 7\. "A woman is throwing a frisbee in a park." (Image source: Fig. 6(b)
     in [Xu et al. 2015](http://proceedings.mlr.press/v37/xuc15.pdf))'
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 7\. "一个女人在公园里扔飞盘。"（图片来源：[Xu等人，2015](http://proceedings.mlr.press/v37/xuc15.pdf)的图
+    6(b)）
 - en: 'This paper first proposed the distinction between “soft” vs “hard” attention,
     based on whether the attention has access to the entire image or only a patch:'
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文首次提出了“软” vs “硬” 注意力的区别，基于注意力是否可以访问整个图像或仅一个补丁：
 - en: '**Soft** Attention: the alignment weights are learned and placed “softly” over
     all patches in the source image; essentially the same type of attention as in
     [Bahdanau et al., 2015](https://arxiv.org/abs/1409.0473).'
+  id: totrans-78
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**软** 注意力：对齐权重是学习的，并“软地”放置在源图像的所有补丁上；本质上与[Bahdanau等人，2015](https://arxiv.org/abs/1409.0473)中的注意力相同类型。'
 - en: '*Pro*: the model is smooth and differentiable.'
+  id: totrans-79
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*优点*: 模型平滑且可微分。'
 - en: '*Con*: expensive when the source input is large.'
+  id: totrans-80
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*缺点*: 当源输入较大时，计算成本高。'
 - en: '**Hard** Attention: only selects one patch of the image to attend to at a time.'
+  id: totrans-81
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**硬** 注意力：一次只选择图像的一个补丁进行关注。'
 - en: '*Pro*: less calculation at the inference time.'
+  id: totrans-82
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*优点*: 推理时计算量较少。'
 - en: '*Con*: the model is non-differentiable and requires more complicated techniques
     such as variance reduction or reinforcement learning to train. ([Luong, et al.,
     2015](https://arxiv.org/abs/1508.04025))'
+  id: totrans-83
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*缺点*: 模型是不可微分的，需要更复杂的技术，如方差减少或强化学习来训练。([Luong等人，2015](https://arxiv.org/abs/1508.04025))'
 - en: Global vs Local Attention
+  id: totrans-84
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 全局 vs 本地注意力
 - en: '[Luong, et al., 2015](https://arxiv.org/pdf/1508.04025.pdf) proposed the “global”
     and “local” attention. The global attention is similar to the soft attention,
     while the local one is an interesting blend between [hard and soft](#soft-vs-hard-attention),
     an improvement over the hard attention to make it differentiable: the model first
     predicts a single aligned position for the current target word and a window centered
     around the source position is then used to compute a context vector.'
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Luong等人，2015](https://arxiv.org/pdf/1508.04025.pdf)提出了“全局”和“局部”注意力机制。全局注意力类似于软注意力，而局部注意力是硬注意力和软注意力之间的有趣融合，是对硬注意力的改进，使其可微分：模型首先预测当前目标词的单个对齐位置，然后使用围绕源位置的窗口来计算上下文向量。'
 - en: '![](../Images/a05d891d02aa495e7d947186edde4bdb.png)'
+  id: totrans-86
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a05d891d02aa495e7d947186edde4bdb.png)'
 - en: 'Fig. 8\. Global vs local attention (Image source: Fig 2 & 3 in [Luong, et al.,
     2015](https://arxiv.org/pdf/1508.04025.pdf))'
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 图8\. 全局与局部注意力（图片来源：Luong等人，2015中的图2和图3）
 - en: Neural Turing Machines
+  id: totrans-88
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 神经图灵机
 - en: 'Alan Turing in [1936](https://en.wikipedia.org/wiki/Turing_machine) proposed
     a minimalistic model of computation. It is composed of a infinitely long tape
     and a head to interact with the tape. The tape has countless cells on it, each
@@ -435,146 +639,220 @@
     procedure might be. The infinite memory gives a Turing machine an edge to be mathematically
     limitless. However, infinite memory is not feasible in real modern computers and
     then we only consider Turing machine as a mathematical model of computation.'
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 阿兰·图灵在[1936年](https://en.wikipedia.org/wiki/Turing_machine)提出了一种计算的极简模型。它由一个无限长的带和一个与带交互的头组成。带上有无数个单元格，每个单元格填有符号：0、1或空白（“
+    ”）。操作头可以读取符号，编辑符号，并在带上左右移动。理论上，图灵机可以模拟任何计算机算法，无论该过程有多复杂或昂贵。无限的存储器使得图灵机在数学上具有无限的可能性。然而，在现实的现代计算机中，无限的存储器是不可行的，因此我们只将图灵机视为计算的数学模型。
 - en: '![](../Images/a11e9eb6a12990baeab9a69ee3b8a5ce.png)'
+  id: totrans-90
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a11e9eb6a12990baeab9a69ee3b8a5ce.png)'
 - en: 'Fig. 9\. How a Turing machine looks like: a tape + a head that handles the
     tape. (Image source: [http://aturingmachine.com/](http://aturingmachine.com/))'
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 图9\. 图灵机的外观：带+处理带的头。（图片来源：[http://aturingmachine.com/](http://aturingmachine.com/)）
 - en: '**Neural Turing Machine** (**NTM**, [Graves, Wayne & Danihelka, 2014](https://arxiv.org/abs/1410.5401))
     is a model architecture for coupling a neural network with external memory storage.
     The memory mimics the Turing machine tape and the neural network controls the
     operation heads to read from or write to the tape. However, the memory in NTM
     is finite, and thus it probably looks more like a “Neural [von Neumann](https://en.wikipedia.org/wiki/Von_Neumann_architecture)
     Machine”.'
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: '**神经图灵机**（**NTM**，[Graves，Wayne＆Danihelka，2014](https://arxiv.org/abs/1410.5401)）是一种将神经网络与外部存储器耦合的模型架构。存储器模拟图灵机带，神经网络控制操作头以从带上读取或写入。然而，NTM中的存储器是有限的，因此它可能更像是“神经[冯·诺伊曼](https://en.wikipedia.org/wiki/Von_Neumann_architecture)机”。'
 - en: 'NTM contains two major components, a *controller* neural network and a *memory*
     bank. Controller: is in charge of executing operations on the memory. It can be
     any type of neural network, feed-forward or recurrent. Memory: stores processed
     information. It is a matrix of size $N \times M$, containing N vector rows and
     each has $M$ dimensions.'
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: NTM包含两个主要组件，一个*控制器*神经网络和一个*存储器*库。控制器：负责在存储器上执行操作。它可以是任何类型的神经网络，前馈或循环。存储器：存储处理过的信息。它是一个大小为$N
+    \times M$的矩阵，包含N个向量行，每个向量有$M$个维度。
 - en: In one update iteration, the controller processes the input and interacts with
     the memory bank accordingly to generate output. The interaction is handled by
     a set of parallel *read* and *write* heads. Both read and write operations are
     “blurry” by softly attending to all the memory addresses.
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 在一个更新迭代中，控制器处理输入并相应地与存储器库交互以生成输出。交互由一组并行的*读*和*写*头处理。读和写操作都通过软地关注所有存储器地址来“模糊”。
 - en: '![](../Images/85758b425b95dd14e2b42b524ed97207.png)'
+  id: totrans-95
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/85758b425b95dd14e2b42b524ed97207.png)'
 - en: Fig 10\. Neural Turing Machine Architecture.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 图10\. 神经图灵机架构。
 - en: Reading and Writing
+  id: totrans-97
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 阅读与写作
 - en: 'When reading from the memory at time t, an attention vector of size $N$, $\mathbf{w}_t$
     controls how much attention to assign to different memory locations (matrix rows).
     The read vector $\mathbf{r}_t$ is a sum weighted by attention intensity:'
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 在时间$t$从内存中读取时，大小为$N$的注意力向量$\mathbf{w}_t$控制分配给不同内存位置（矩阵行）的注意力量。读取向量$\mathbf{r}_t$是按注意力强度加权求和：
 - en: '$$ \mathbf{r}_t = \sum_{i=1}^N w_t(i)\mathbf{M}_t(i)\text{, where }\sum_{i=1}^N
     w_t(i)=1, \forall i: 0 \leq w_t(i) \leq 1 $$'
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: '$$ \mathbf{r}_t = \sum_{i=1}^N w_t(i)\mathbf{M}_t(i)\text{，其中 }\sum_{i=1}^N
+    w_t(i)=1，\forall i: 0 \leq w_t(i) \leq 1 $$'
 - en: where $w_t(i)$ is the $i$-th element in $\mathbf{w}_t$ and $\mathbf{M}_t(i)$
     is the $i$-th row vector in the memory.
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$w_t(i)$是$\mathbf{w}_t$中的第$i$个元素，$\mathbf{M}_t(i)$是内存中的第$i$行向量。
 - en: When writing into the memory at time t, as inspired by the input and forget
     gates in LSTM, a write head first wipes off some old content according to an erase
     vector $\mathbf{e}_t$ and then adds new information by an add vector $\mathbf{a}_t$.
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 在时间$t$写入内存时，受LSTM中的输入和遗忘门的启发，写头首先根据擦除向量$\mathbf{e}_t$擦除一些旧内容，然后通过添加向量$\mathbf{a}_t$添加新信息。
 - en: $$ \begin{aligned} \tilde{\mathbf{M}}_t(i) &= \mathbf{M}_{t-1}(i) [\mathbf{1}
     - w_t(i)\mathbf{e}_t] &\scriptstyle{\text{; erase}}\\ \mathbf{M}_t(i) &= \tilde{\mathbf{M}}_t(i)
     + w_t(i) \mathbf{a}_t &\scriptstyle{\text{; add}} \end{aligned} $$
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \tilde{\mathbf{M}}_t(i) &= \mathbf{M}_{t-1}(i) [\mathbf{1}
+    - w_t(i)\mathbf{e}_t] &\scriptstyle{\text{；擦除}}\\ \mathbf{M}_t(i) &= \tilde{\mathbf{M}}_t(i)
+    + w_t(i) \mathbf{a}_t &\scriptstyle{\text{；添加}} \end{aligned} $$
 - en: Attention Mechanisms
+  id: totrans-103
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 注意机制
 - en: 'In Neural Turing Machine, how to generate the attention distribution $\mathbf{w}_t$
     depends on the addressing mechanisms: NTM uses a mixture of content-based and
     location-based addressings.'
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 在神经图灵机中，如何生成注意力分布$\mathbf{w}_t$取决于寻址机制：NTM使用基于内容和基于位置的寻址的混合。
 - en: '**Content-based addressing**'
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: '**基于内容的寻址**'
 - en: The content-addressing creates attention vectors based on the similarity between
     the key vector $\mathbf{k}_t$ extracted by the controller from the input and memory
     rows. The content-based attention scores are computed as cosine similarity and
     then normalized by softmax. In addition, NTM adds a strength multiplier $\beta_t$
     to amplify or attenuate the focus of the distribution.
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 基于内容的寻址根据控制器从输入和内存行中提取的关键向量$\mathbf{k}_t$之间的相似性创建注意力向量。基于内容的注意力分数通过余弦相似性计算，然后通过softmax进行归一化。此外，NTM添加了一个强度乘数$\beta_t$来放大或减弱分布的焦点。
 - en: $$ w_t^c(i) = \text{softmax}(\beta_t \cdot \text{cosine}[\mathbf{k}_t, \mathbf{M}_t(i)])
     = \frac{\exp(\beta_t \frac{\mathbf{k}_t \cdot \mathbf{M}_t(i)}{\|\mathbf{k}_t\|
     \cdot \|\mathbf{M}_t(i)\|})}{\sum_{j=1}^N \exp(\beta_t \frac{\mathbf{k}_t \cdot
     \mathbf{M}_t(j)}{\|\mathbf{k}_t\| \cdot \|\mathbf{M}_t(j)\|})} $$
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ w_t^c(i) = \text{softmax}(\beta_t \cdot \text{cosine}[\mathbf{k}_t, \mathbf{M}_t(i)])
+    = \frac{\exp(\beta_t \frac{\mathbf{k}_t \cdot \mathbf{M}_t(i)}{\|\mathbf{k}_t\|
+    \cdot \|\mathbf{M}_t(i)\|})}{\sum_{j=1}^N \exp(\beta_t \frac{\mathbf{k}_t \cdot
+    \mathbf{M}_t(j)}{\|\mathbf{k}_t\| \cdot \|\mathbf{M}_t(j)\|})} $$
 - en: '**Interpolation**'
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: '**插值**'
 - en: 'Then an interpolation gate scalar $g_t$ is used to blend the newly generated
     content-based attention vector with the attention weights in the last time step:'
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，插值门标量$g_t$用于将新生成的基于内容的注意力向量与上一个时间步的注意力权重混合：
 - en: $$ \mathbf{w}_t^g = g_t \mathbf{w}_t^c + (1 - g_t) \mathbf{w}_{t-1} $$
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathbf{w}_t^g = g_t \mathbf{w}_t^c + (1 - g_t) \mathbf{w}_{t-1} $$
 - en: '**Location-based addressing**'
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: '**基于位置的寻址**'
 - en: The location-based addressing sums up the values at different positions in the
     attention vector, weighted by a weighting distribution over allowable integer
     shifts. It is equivalent to a 1-d convolution with a kernel $\mathbf{s}_t(.)$,
     a function of the position offset. There are multiple ways to define this distribution.
     See Fig. 11\. for inspiration.
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 基于位置的寻址将不同位置的注意力向量加权求和，权重由允许的整数偏移的加权分布确定。这相当于具有位置偏移函数$\mathbf{s}_t(.)$的1维卷积。有多种定义此分布的方法。参见图11以获取灵感。
 - en: '![](../Images/8c89f506eecd9f4137fbecd3cb78f6c6.png)'
+  id: totrans-113
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8c89f506eecd9f4137fbecd3cb78f6c6.png)'
 - en: Fig. 11\. Two ways to represent the shift weighting distribution $\mathbf{s}\_t$.
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: 图11\. 表示偏移加权分布$\mathbf{s}\_t$的两种方法。
 - en: Finally the attention distribution is enhanced by a sharpening scalar $\gamma_t
     \geq 1$.
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，注意力分布通过一个锐化标量$\gamma_t \geq 1$增强。
 - en: $$ \begin{aligned} \tilde{w}_t(i) &= \sum_{j=1}^N w_t^g(j) s_t(i-j) & \scriptstyle{\text{;
     circular convolution}}\\ w_t(i) &= \frac{\tilde{w}_t(i)^{\gamma_t}}{\sum_{j=1}^N
     \tilde{w}_t(j)^{\gamma_t}} & \scriptstyle{\text{; sharpen}} \end{aligned} $$
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \tilde{w}_t(i) &= \sum_{j=1}^N w_t^g(j) s_t(i-j) & \scriptstyle{\text{;
+    循环卷积}}\\ w_t(i) &= \frac{\tilde{w}_t(i)^{\gamma_t}}{\sum_{j=1}^N \tilde{w}_t(j)^{\gamma_t}}
+    & \scriptstyle{\text{; 锐化}} \end{aligned} $$
 - en: The complete process of generating the attention vector $\mathbf{w}_t$ at time
     step t is illustrated in Fig. 12\. All the parameters produced by the controller
     are unique for each head. If there are multiple read and write heads in parallel,
     the controller would output multiple sets.
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: 在时间步 t 生成注意力向量 $\mathbf{w}_t$ 的完整过程如图 12 所示。控制器产生的所有参数对于每个头部都是唯一的。如果并行存在多个读写头，控制器将输出多组参数。
 - en: '![](../Images/de022c1149bf0aea138a5b547862e206.png)'
+  id: totrans-118
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/de022c1149bf0aea138a5b547862e206.png)'
 - en: 'Fig. 12\. Flow diagram of the addressing mechanisms in Neural Turing Machine.
     (Image source: [Graves, Wayne & Danihelka, 2014](https://arxiv.org/abs/1410.5401))'
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: '图 12\. 神经图灵机中的寻址机制流程图。 (图片来源: [Graves, Wayne & Danihelka, 2014](https://arxiv.org/abs/1410.5401))'
 - en: Pointer Network
+  id: totrans-120
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 指针网络
 - en: 'In problems like sorting or travelling salesman, both input and output are
     sequential data. Unfortunately, they cannot be easily solved by classic seq-2-seq
     or NMT models, given that the discrete categories of output elements are not determined
@@ -584,15 +862,23 @@
     input sequence. Rather than using attention to blend hidden units of an encoder
     into a context vector (See Fig. 8), the Pointer Net applies attention over the
     input elements to pick one as the output at each decoder step.'
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: 在排序或旅行商等问题中，输入和输出都是序列数据。不幸的是，它们不能轻松地通过经典的 seq-2-seq 或 NMT 模型解决，因为输出元素的离散类别事先未确定，而是取决于可变的输入大小。**指针网络**
+    (**Ptr-Net**; [Vinyals, et al. 2015](https://arxiv.org/abs/1506.03134)) 被提出来解决这类问题：当输出元素对应于输入序列中的*位置*时。指针网络不会像图
+    8 中那样使用注意力将编码器的隐藏单元混合到上下文向量中，而是在每个解码器步骤中对输入元素应用注意力以选择一个作为输出。
 - en: '![](../Images/30beaa4eeff26420b441f8fd8b6d440e.png)'
+  id: totrans-122
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/30beaa4eeff26420b441f8fd8b6d440e.png)'
 - en: 'Fig. 13\. The architecture of a Pointer Network model. (Image source: [Vinyals,
     et al. 2015](https://arxiv.org/abs/1506.03134))'
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: '图 13\. 指针网络模型的架构。 (图片来源: [Vinyals, et al. 2015](https://arxiv.org/abs/1506.03134))'
 - en: 'The Ptr-Net outputs a sequence of integer indices, $\boldsymbol{c} = (c_1,
     \dots, c_m)$ given a sequence of input vectors $\boldsymbol{x} = (x_1, \dots,
     x_n)$ and $1 \leq c_i \leq n$. The model still embraces an encoder-decoder framework.
@@ -601,37 +887,56 @@
     Note that $\mathbf{s}_i$ is the output gate after cell activation in the decoder.
     The Ptr-Net applies additive attention between states and then normalizes it by
     softmax to model the output conditional probability:'
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: Ptr-Net 在给定输入向量序列 $\boldsymbol{x} = (x_1, \dots, x_n)$ 和 $1 \leq c_i \leq n$
+    的情况下输出一个整数索引序列 $\boldsymbol{c} = (c_1, \dots, c_m)$。该模型仍然采用编码器-解码器框架。编码器和解码器的隐藏状态分别表示为
+    $(\boldsymbol{h}_1, \dots, \boldsymbol{h}_n)$ 和 $(\boldsymbol{s}_1, \dots, \boldsymbol{s}_m)$。注意，$\mathbf{s}_i$
+    是解码器中细胞激活后的输出门。Ptr-Net 在状态之间应用加性注意力，然后通过 softmax 进行归一化以建模输出的条件概率：
 - en: $$ \begin{aligned} y_i &= p(c_i \vert c_1, \dots, c_{i-1}, \boldsymbol{x}) \\
     &= \text{softmax}(\text{score}(\boldsymbol{s}_t; \boldsymbol{h}_i)) = \text{softmax}(\mathbf{v}_a^\top
     \tanh(\mathbf{W}_a[\boldsymbol{s}_t; \boldsymbol{h}_i])) \end{aligned} $$
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} y_i &= p(c_i \vert c_1, \dots, c_{i-1}, \boldsymbol{x}) \\
+    &= \text{softmax}(\text{score}(\boldsymbol{s}_t; \boldsymbol{h}_i)) = \text{softmax}(\mathbf{v}_a^\top
+    \tanh(\mathbf{W}_a[\boldsymbol{s}_t; \boldsymbol{h}_i])) \end{aligned} $$
 - en: The attention mechanism is simplified, as Ptr-Net does not blend the encoder
     states into the output with attention weights. In this way, the output only responds
     to the positions but not the input content.
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意机制被简化了，因为 Ptr-Net 不会使用注意权重将编码器状态混合到输出中。这样，输出只会响应位置而不是输入内容。
 - en: Transformer
+  id: totrans-127
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Transformer
 - en: '[“Attention is All you Need”](http://papers.nips.cc/paper/7181-attention-is-all-you-need.pdf)
     (Vaswani, et al., 2017), without a doubt, is one of the most impactful and interesting
     paper in 2017\. It presented a lot of improvements to the soft attention and make
     it possible to do seq2seq modeling *without* recurrent network units. The proposed
     “**transformer**” model is entirely built on the self-attention mechanisms without
     using sequence-aligned recurrent architecture.'
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: '[“注意力就是一切”](http://papers.nips.cc/paper/7181-attention-is-all-you-need.pdf)（Vaswani等，2017），毫无疑问，是2017年最具影响力和有趣的论文之一。它提出了许多改进软注意力的方法，并使得在没有循环网络单元的情况下进行seq2seq建模成为可能。所提出的“**transformer**”模型完全基于自注意力机制构建，而不使用序列对齐的循环架构。'
 - en: The secret recipe is carried in its model architecture.
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
+  zh: 秘密配方体现在其模型架构中。
 - en: Key, Value and Query
+  id: totrans-130
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 键、值和查询
 - en: The major component in the transformer is the unit of *multi-head self-attention
     mechanism*. The transformer views the encoded representation of the input as a
     set of **key**-**value** pairs, $(\mathbf{K}, \mathbf{V})$, both of dimension
@@ -639,28 +944,42 @@
     the encoder hidden states. In the decoder, the previous output is compressed into
     a **query** ($\mathbf{Q}$ of dimension $m$) and the next output is produced by
     mapping this query and the set of keys and values.
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
+  zh: transformer中的主要组件是*多头自注意力机制*单元。transformer将输入的编码表示视为一组维度为$n$（输入序列长度）的**键**-**值**对$(\mathbf{K},
+    \mathbf{V})$；在NMT的背景下，键和值都是编码器隐藏状态。在解码器中，先前的输出被压缩成一个维度为$m$的**查询**（$\mathbf{Q}$），并通过映射这个查询和键值对集合来产生下一个输出。
 - en: 'The transformer adopts the [scaled dot-product attention](#summary): the output
     is a weighted sum of the values, where the weight assigned to each value is determined
     by the dot-product of the query with all the keys:'
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: transformer采用了[缩放点积注意力](#summary)：输出是值的加权和，其中分配给每个值的权重由查询与所有键的点积确定：
 - en: $$ \text{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \text{softmax}(\frac{\mathbf{Q}\mathbf{K}^\top}{\sqrt{n}})\mathbf{V}
     $$
+  id: totrans-133
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \text{注意力}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \text{softmax}(\frac{\mathbf{Q}\mathbf{K}^\top}{\sqrt{n}})\mathbf{V}
+    $$
 - en: Multi-Head Self-Attention
+  id: totrans-134
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 多头自注意力
 - en: '![](../Images/788c33539d4856ce08bfa8ce521a2e1f.png)'
+  id: totrans-135
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/788c33539d4856ce08bfa8ce521a2e1f.png)'
 - en: 'Fig. 14\. Multi-head scaled dot-product attention mechanism. (Image source:
     Fig 2 in [Vaswani, et al., 2017](http://papers.nips.cc/paper/7181-attention-is-all-you-need.pdf))'
+  id: totrans-136
   prefs: []
   type: TYPE_NORMAL
+  zh: 图14. 多头缩放点积注意力机制。（图片来源：[Vaswani等，2017](http://papers.nips.cc/paper/7181-attention-is-all-you-need.pdf)中的图2）
 - en: Rather than only computing the attention once, the multi-head mechanism runs
     through the scaled dot-product attention multiple times in parallel. The independent
     attention outputs are simply concatenated and linearly transformed into the expected
@@ -668,122 +987,182 @@
     to the paper, *“multi-head attention allows the model to jointly attend to information
     from different representation **subspaces** at different positions. With a single
     attention head, averaging inhibits this.”*
+  id: totrans-137
   prefs: []
   type: TYPE_NORMAL
+  zh: 多头机制不仅仅计算一次注意力，而是并行多次运行缩放点积注意力。独立的注意力输出简单地连接并线性转换为期望的维度。我猜想这样做的动机是因为集成总是有帮助的？;)
+    根据论文，“*多头注意力允许模型同时关注不同位置的不同表示**子空间**的信息。使用单个注意力头，平均会抑制这一点。”*
 - en: $$ \begin{aligned} \text{MultiHead}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) &= [\text{head}_1;
     \dots; \text{head}_h]\mathbf{W}^O \\ \text{where head}_i &= \text{Attention}(\mathbf{Q}\mathbf{W}^Q_i,
     \mathbf{K}\mathbf{W}^K_i, \mathbf{V}\mathbf{W}^V_i) \end{aligned} $$
+  id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \text{多头}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) &= [\text{头}_1;
+    \dots; \text{头}_h]\mathbf{W}^O \\ \text{其中头}_i &= \text{注意力}(\mathbf{Q}\mathbf{W}^Q_i,
+    \mathbf{K}\mathbf{W}^K_i, \mathbf{V}\mathbf{W}^V_i) \end{aligned} $$
 - en: where $\mathbf{W}^Q_i$, $\mathbf{W}^K_i$, $\mathbf{W}^V_i$, and $\mathbf{W}^O$
     are parameter matrices to be learned.
+  id: totrans-139
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$\mathbf{W}^Q_i$、$\mathbf{W}^K_i$、$\mathbf{W}^V_i$和$\mathbf{W}^O$是要学习的参数矩阵。
 - en: Encoder
+  id: totrans-140
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 编码器
 - en: '![](../Images/fc689e29a4113c7d4bcf0ba32eef24f3.png)'
+  id: totrans-141
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/fc689e29a4113c7d4bcf0ba32eef24f3.png)'
 - en: 'Fig. 15\. The transformer’s encoder. (Image source: [Vaswani, et al., 2017](http://papers.nips.cc/paper/7181-attention-is-all-you-need.pdf))'
+  id: totrans-142
   prefs: []
   type: TYPE_NORMAL
+  zh: 图15. transformer的编码器。（图片来源：[Vaswani等，2017](http://papers.nips.cc/paper/7181-attention-is-all-you-need.pdf)）
 - en: The encoder generates an attention-based representation with capability to locate
     a specific piece of information from a potentially infinitely-large context.
+  id: totrans-143
   prefs: []
   type: TYPE_NORMAL
+  zh: 编码器生成基于注意力的表示，能够从潜在无限大的上下文中定位特定信息片段。
 - en: A stack of N=6 identical layers.
+  id: totrans-144
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一堆N=6个相同的层。
 - en: Each layer has a **multi-head self-attention layer** and a simple position-wise
     **fully connected feed-forward network**.
+  id: totrans-145
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 每一层都有一个**多头自注意力层**和一个简单的位置逐点**全连接前馈网络**。
 - en: Each sub-layer adopts a [**residual**](https://arxiv.org/pdf/1512.03385.pdf)
     connection and a layer **normalization**. All the sub-layers output data of the
     same dimension $d_\text{model} = 512$.
+  id: totrans-146
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 每个子层都采用了[**残差**](https://arxiv.org/pdf/1512.03385.pdf)连接和一个层**归一化**。所有子层的输出数据维度都是
+    $d_\text{model} = 512$。
 - en: Decoder
+  id: totrans-147
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 解码器
 - en: '![](../Images/9c0df1037f1cb471158fa2e4e9b3663b.png)'
+  id: totrans-148
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9c0df1037f1cb471158fa2e4e9b3663b.png)'
 - en: 'Fig. 16\. The transformer’s decoder. (Image source: [Vaswani, et al., 2017](http://papers.nips.cc/paper/7181-attention-is-all-you-need.pdf))'
+  id: totrans-149
   prefs: []
   type: TYPE_NORMAL
+  zh: 图16\. transformer的解码器。（图片来源：[Vaswani, et al., 2017](http://papers.nips.cc/paper/7181-attention-is-all-you-need.pdf)）
 - en: The decoder is able to retrieval from the encoded representation.
+  id: totrans-150
   prefs: []
   type: TYPE_NORMAL
+  zh: 解码器能够从编码表示中检索。
 - en: A stack of N = 6 identical layers
+  id: totrans-151
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一堆叠的N = 6个相同层
 - en: Each layer has two sub-layers of multi-head attention mechanisms and one sub-layer
     of fully-connected feed-forward network.
+  id: totrans-152
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 每一层都有两个子层的多头注意力机制和一个子层的全连接前馈网络。
 - en: Similar to the encoder, each sub-layer adopts a residual connection and a layer
     normalization.
+  id: totrans-153
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 与编码器类似，每个子层都采用残差连接和层归一化。
 - en: The first multi-head attention sub-layer is **modified** to prevent positions
     from attending to subsequent positions, as we don’t want to look into the future
     of the target sequence when predicting the current position.
+  id: totrans-154
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 第一个多头注意力子层被**修改**以防止位置关注后续位置，因为在预测当前位置时我们不希望查看目标序列的未来。
 - en: Full Architecture
+  id: totrans-155
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 完整架构
 - en: 'Finally here is the complete view of the transformer’s architecture:'
+  id: totrans-156
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后这里是transformer架构的完整视图：
 - en: Both the source and target sequences first go through embedding layers to produce
     data of the same dimension $d_\text{model} =512$.
+  id: totrans-157
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 源序列和目标序列都首先经过嵌入层，以产生相同维度的数据 $d_\text{model} =512$。
 - en: To preserve the position information, a sinusoid-wave-based positional encoding
     is applied and summed with the embedding output.
+  id: totrans-158
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 为了保留位置信息，应用了基于正弦波的位置编码，并与嵌入输出相加。
 - en: A softmax and linear layer are added to the final decoder output.
+  id: totrans-159
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 最终解码器输出中添加了softmax和线性层。
 - en: '![](../Images/acfbdba255fcf46769c8568a8e649a17.png)'
+  id: totrans-160
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/acfbdba255fcf46769c8568a8e649a17.png)'
 - en: 'Fig. 17\. The full model architecture of the transformer. (Image source: Fig
     1 & 2 in [Vaswani, et al., 2017](http://papers.nips.cc/paper/7181-attention-is-all-you-need.pdf).)'
+  id: totrans-161
   prefs: []
   type: TYPE_NORMAL
+  zh: 图17\. transformer的完整模型架构。（图片来源：[Vaswani, et al., 2017](http://papers.nips.cc/paper/7181-attention-is-all-you-need.pdf)中的图1和图2。）
 - en: 'Try to implement the transformer model is an interesting experience, here is
     mine: [lilianweng/transformer-tensorflow](https://github.com/lilianweng/transformer-tensorflow).
     Read the comments in the code if you are interested.'
+  id: totrans-162
   prefs: []
   type: TYPE_NORMAL
+  zh: 尝试实现transformer模型是一次有趣的经历，这是我的实现：[lilianweng/transformer-tensorflow](https://github.com/lilianweng/transformer-tensorflow)。如果你感兴趣，阅读代码中的注释。
 - en: SNAIL
+  id: totrans-163
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: SNAIL
 - en: The transformer has no recurrent or convolutional structure, even with the positional
     encoding added to the embedding vector, the sequential order is only weakly incorporated.
     For problems sensitive to the positional dependency like [reinforcement learning](https://lilianweng.github.io/posts/2018-02-19-rl-overview/),
     this can be a big problem.
+  id: totrans-164
   prefs: []
   type: TYPE_NORMAL
+  zh: Transformer没有循环或卷积结构，即使在嵌入向量中添加了位置编码，顺序仅被弱化地纳入。对于像[强化学习](https://lilianweng.github.io/posts/2018-02-19-rl-overview/)这样对位置依赖性敏感的问题，这可能是一个大问题。
 - en: The **Simple Neural Attention [Meta-Learner](http://bair.berkeley.edu/blog/2017/07/18/learning-to-learn/)**
     (**SNAIL**) ([Mishra et al., 2017](http://metalearning.ml/papers/metalearn17_mishra.pdf))
     was developed partially to resolve the problem with [positioning](#full-architecture)
@@ -791,82 +1170,120 @@
     with [temporal convolutions](https://deepmind.com/blog/wavenet-generative-model-raw-audio/).
     It has been demonstrated to be good at both supervised learning and reinforcement
     learning tasks.
+  id: totrans-165
   prefs: []
   type: TYPE_NORMAL
+  zh: '**简单神经注意力[元学习者](http://bair.berkeley.edu/blog/2017/07/18/learning-to-learn/)**（**SNAIL**）（[Mishra
+    et al., 2017](http://metalearning.ml/papers/metalearn17_mishra.pdf)）部分地被开发出来解决transformer模型中的[定位](#full-architecture)问题，通过将transformer中的自注意机制与[时间卷积](https://deepmind.com/blog/wavenet-generative-model-raw-audio/)结合起来。已经证明在监督学习和强化学习任务中表现良好。'
 - en: '![](../Images/bf0412ce7739a72a6c9bd77954ca09dc.png)'
+  id: totrans-166
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/bf0412ce7739a72a6c9bd77954ca09dc.png)'
 - en: 'Fig. 18\. SNAIL model architecture (Image source: [Mishra et al., 2017](http://metalearning.ml/papers/metalearn17_mishra.pdf))'
+  id: totrans-167
   prefs: []
   type: TYPE_NORMAL
+  zh: 图18. SNAIL模型架构（图片来源：[Mishra et al., 2017](http://metalearning.ml/papers/metalearn17_mishra.pdf)）
 - en: SNAIL was born in the field of meta-learning, which is another big topic worthy
     of a post by itself. But in simple words, the meta-learning model is expected
     to be generalizable to novel, unseen tasks in the similar distribution. Read [this](http://bair.berkeley.edu/blog/2017/07/18/learning-to-learn/)
     nice introduction if interested.
+  id: totrans-168
   prefs: []
   type: TYPE_NORMAL
+  zh: SNAIL诞生于元学习领域，这是另一个值得单独发帖的重要主题。但简单来说，元学习模型期望能够推广到类似分布中的新颖、未见任务。如果感兴趣，阅读[这篇](http://bair.berkeley.edu/blog/2017/07/18/learning-to-learn/)很好的介绍。
 - en: Self-Attention GAN
+  id: totrans-169
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 自注意力生成对抗网络
 - en: '*Self-Attention GAN* (**SAGAN**; [Zhang et al., 2018](https://arxiv.org/pdf/1805.08318.pdf))
     adds self-attention layers into [GAN](https://lilianweng.github.io/posts/2017-08-20-gan/)
     to enable both the generator and the discriminator to better model relationships
     between spatial regions.'
+  id: totrans-170
   prefs: []
   type: TYPE_NORMAL
+  zh: '*自注意力生成对抗网络*（**SAGAN**；[Zhang et al., 2018](https://arxiv.org/pdf/1805.08318.pdf)）将自注意力层添加到[GAN](https://lilianweng.github.io/posts/2017-08-20-gan/)中，使生成器和鉴别器能够更好地建模空间区域之间的关系。'
 - en: The classic [DCGAN](https://arxiv.org/abs/1511.06434) (Deep Convolutional GAN)
     represents both discriminator and generator as multi-layer convolutional networks.
     However, the representation capacity of the network is restrained by the filter
     size, as the feature of one pixel is limited to a small local region. In order
     to connect regions far apart, the features have to be dilute through layers of
     convolutional operations and the dependencies are not guaranteed to be maintained.
+  id: totrans-171
   prefs: []
   type: TYPE_NORMAL
+  zh: 经典的[DCGAN](https://arxiv.org/abs/1511.06434)（深度卷积生成对抗网络）将鉴别器和生成器都表示为多层卷积网络。然而，网络的表示能力受到滤波器大小的限制，因为一个像素的特征仅限于一个小的局部区域。为了连接远离的区域，特征必须通过卷积操作的层逐渐稀疏化，而依赖关系不能保证被维持。
 - en: As the (soft) self-attention in the vision context is designed to explicitly
     learn the relationship between one pixel and all other positions, even regions
     far apart, it can easily capture global dependencies. Hence GAN equipped with
     self-attention is expected to *handle details better*, hooray!
+  id: totrans-172
   prefs: []
   type: TYPE_NORMAL
+  zh: 在视觉背景下的（软）自注意力被设计为明确学习一个像素与所有其他位置之间的关系，甚至远离的区域，它可以轻松捕捉全局依赖关系。因此，配备自注意力的GAN预计能够*更好地处理细节*，万岁！
 - en: '![](../Images/f08d52521c40f81a8b37cc8787ad83f5.png)'
+  id: totrans-173
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f08d52521c40f81a8b37cc8787ad83f5.png)'
 - en: Fig. 19\. Convolution operation and self-attention have access to regions of
     very different sizes.
+  id: totrans-174
   prefs: []
   type: TYPE_NORMAL
+  zh: 图19. 卷积操作和自注意力可以访问非常不同大小的区域。
 - en: 'The SAGAN adopts the [non-local neural network](https://arxiv.org/pdf/1711.07971.pdf)
     to apply the attention computation. The convolutional image feature maps $\mathbf{x}$
     is branched out into three copies, corresponding to the concepts of [key, value,
     and query](#key-value-and-query) in the transformer:'
+  id: totrans-175
   prefs: []
   type: TYPE_NORMAL
+  zh: SAGAN采用[非局部神经网络](https://arxiv.org/pdf/1711.07971.pdf)来应用注意力计算。卷积图像特征映射$\mathbf{x}$被分成三个副本，对应于变压器中的[key,
+    value, and query](#key-value-and-query)的概念：
 - en: 'Key: $f(\mathbf{x}) = \mathbf{W}_f \mathbf{x}$'
+  id: totrans-176
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 键：$f(\mathbf{x}) = \mathbf{W}_f \mathbf{x}$
 - en: 'Query: $g(\mathbf{x}) = \mathbf{W}_g \mathbf{x}$'
+  id: totrans-177
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 查询：$g(\mathbf{x}) = \mathbf{W}_g \mathbf{x}$
 - en: 'Value: $h(\mathbf{x}) = \mathbf{W}_h \mathbf{x}$'
+  id: totrans-178
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 值：$h(\mathbf{x}) = \mathbf{W}_h \mathbf{x}$
 - en: 'Then we apply the dot-product attention to output the self-attention feature
     maps:'
+  id: totrans-179
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后我们应用点积注意力来输出自注意力特征映射：
 - en: $$ \begin{aligned} \alpha_{i,j} &= \text{softmax}(f(\mathbf{x}_i)^\top g(\mathbf{x}_j))
     \\ \mathbf{o}_j &= \mathbf{W}_v \Big( \sum_{i=1}^N \alpha_{i,j} h(\mathbf{x}_i)
     \Big) \end{aligned} $$![](../Images/a300be7adb808f8d3a22989d7bc2860f.png)
+  id: totrans-180
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \alpha_{i,j} &= \text{softmax}(f(\mathbf{x}_i)^\top g(\mathbf{x}_j))
+    \\ \mathbf{o}_j &= \mathbf{W}_v \Big( \sum_{i=1}^N \alpha_{i,j} h(\mathbf{x}_i)
+    \Big) \end{aligned} $$![](../Images/a300be7adb808f8d3a22989d7bc2860f.png)
 - en: 'Fig. 20\. The self-attention mechanism in SAGAN. (Image source: Fig. 2 in [Zhang
     et al., 2018](https://arxiv.org/abs/1805.08318))'
+  id: totrans-181
   prefs: []
   type: TYPE_NORMAL
+  zh: 图20. SAGAN中的自注意力机制。（图片来源：[Zhang et al., 2018](https://arxiv.org/abs/1805.08318)中的图2）
 - en: Note that $\alpha_{i,j}$ is one entry in the attention map, indicating how much
     attention the model should pay to the $i$-th position when synthesizing the $j$-th
     location. $\mathbf{W}_f$, $\mathbf{W}_g$, and $\mathbf{W}_h$ are all 1x1 convolution
@@ -874,104 +1291,171 @@
     just to multiply the whole feature map with one number?), watch this short [tutorial](https://www.coursera.org/lecture/convolutional-neural-networks/networks-in-networks-and-1x1-convolutions-ZTb8x)
     by Andrew Ng. The output $\mathbf{o}_j$ is a column vector of the final output
     $\mathbf{o}= (\mathbf{o}_1, \mathbf{o}_2, \dots, \mathbf{o}_j, \dots, \mathbf{o}_N)$.
+  id: totrans-182
   prefs: []
   type: TYPE_NORMAL
+  zh: 请注意，$\alpha_{i,j}$是注意力图中的一个条目，指示模型在合成第$j$位置时应该关注第$i$位置的程度。$\mathbf{W}_f$、$\mathbf{W}_g$和$\mathbf{W}_h$都是1x1卷积滤波器。如果你觉得1x1卷积听起来像一个奇怪的概念（即，它不就是用一个数字乘以整个特征图吗？），请观看Andrew
+    Ng的这个简短的[教程](https://www.coursera.org/lecture/convolutional-neural-networks/networks-in-networks-and-1x1-convolutions-ZTb8x)。输出$\mathbf{o}_j$是最终输出$\mathbf{o}=
+    (\mathbf{o}_1, \mathbf{o}_2, \dots, \mathbf{o}_j, \dots, \mathbf{o}_N)$的列向量。
 - en: 'Furthermore, the output of the attention layer is multiplied by a scale parameter
     and added back to the original input feature map:'
+  id: totrans-183
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，注意力层的输出乘以一个比例参数，并添加回原始输入特征图：
 - en: $$ \mathbf{y} = \mathbf{x}_i + \gamma \mathbf{o}_i $$
+  id: totrans-184
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathbf{y} = \mathbf{x}_i + \gamma \mathbf{o}_i $$
 - en: While the scaling parameter $\gamma$ is increased gradually from 0 during the
     training, the network is configured to first rely on the cues in the local regions
     and then gradually learn to assign more weight to the regions that are further
     away.
+  id: totrans-185
   prefs: []
   type: TYPE_NORMAL
+  zh: 在训练过程中，当缩放参数$\gamma$逐渐增加时，网络首先配置为依赖于局部区域的线索，然后逐渐学会给远离的区域分配更多的权重。
 - en: '![](../Images/6447507b0b432c30981501aaf39e5e7f.png)'
+  id: totrans-186
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6447507b0b432c30981501aaf39e5e7f.png)'
 - en: 'Fig. 21\. 128×128 example images generated by SAGAN for different classes.
     (Image source: Partial Fig. 6 in [Zhang et al., 2018](https://arxiv.org/pdf/1805.08318.pdf))'
+  id: totrans-187
   prefs: []
   type: TYPE_NORMAL
+  zh: 图21. 由SAGAN生成的不同类别的128×128示例图像。（图片来源：[Zhang等人，2018](https://arxiv.org/pdf/1805.08318.pdf)中的部分图6）
 - en: '* * *'
+  id: totrans-188
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'Cited as:'
+  id: totrans-189
   prefs: []
   type: TYPE_NORMAL
+  zh: 引用为：
 - en: '[PRE0]'
+  id: totrans-190
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: References
+  id: totrans-191
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: '[1] [“Attention and Memory in Deep Learning and NLP.”](http://www.wildml.com/2016/01/attention-and-memory-in-deep-learning-and-nlp/)
     - Jan 3, 2016 by Denny Britz'
+  id: totrans-192
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] [“深度学习和自然语言处理中的注意力和记忆。”](http://www.wildml.com/2016/01/attention-and-memory-in-deep-learning-and-nlp/)
+    - 2016年1月3日，作者：Denny Britz'
 - en: '[2] [“Neural Machine Translation (seq2seq) Tutorial”](https://github.com/tensorflow/nmt)'
+  id: totrans-193
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] [“神经机器翻译（seq2seq）教程”](https://github.com/tensorflow/nmt)'
 - en: '[3] Dzmitry Bahdanau, Kyunghyun Cho, and Yoshua Bengio. [“Neural machine translation
     by jointly learning to align and translate.”](https://arxiv.org/pdf/1409.0473.pdf)
     ICLR 2015.'
+  id: totrans-194
   prefs: []
   type: TYPE_NORMAL
+  zh: '[3] Dzmitry Bahdanau, Kyunghyun Cho, and Yoshua Bengio. [“通过联合学习对齐和翻译的神经机器翻译。”](https://arxiv.org/pdf/1409.0473.pdf)
+    ICLR 2015.'
 - en: '[4] Kelvin Xu, Jimmy Ba, Ryan Kiros, Kyunghyun Cho, Aaron Courville, Ruslan
     Salakhudinov, Rich Zemel, and Yoshua Bengio. [“Show, attend and tell: Neural image
     caption generation with visual attention.”](http://proceedings.mlr.press/v37/xuc15.pdf)
     ICML, 2015.'
+  id: totrans-195
   prefs: []
   type: TYPE_NORMAL
+  zh: '[4] Kelvin Xu, Jimmy Ba, Ryan Kiros, Kyunghyun Cho, Aaron Courville, Ruslan
+    Salakhudinov, Rich Zemel, and Yoshua Bengio. [“展示、关注和讲述：具有视觉注意力的神经图像标题生成。”](http://proceedings.mlr.press/v37/xuc15.pdf)
+    ICML，2015。'
 - en: '[5] Ilya Sutskever, Oriol Vinyals, and Quoc V. Le. [“Sequence to sequence learning
     with neural networks.”](https://papers.nips.cc/paper/5346-sequence-to-sequence-learning-with-neural-networks.pdf)
     NIPS 2014.'
+  id: totrans-196
   prefs: []
   type: TYPE_NORMAL
+  zh: '[5] Ilya Sutskever, Oriol Vinyals, and Quoc V. Le. [“序列到序列学习与神经网络。”](https://papers.nips.cc/paper/5346-sequence-to-sequence-learning-with-neural-networks.pdf)
+    NIPS 2014.'
 - en: '[6] Thang Luong, Hieu Pham, Christopher D. Manning. [“Effective Approaches
     to Attention-based Neural Machine Translation.”](https://arxiv.org/pdf/1508.04025.pdf)
     EMNLP 2015.'
+  id: totrans-197
   prefs: []
   type: TYPE_NORMAL
+  zh: '[6] Thang Luong, Hieu Pham, Christopher D. Manning. [“基于注意力的神经机器翻译的有效方法。”](https://arxiv.org/pdf/1508.04025.pdf)
+    EMNLP 2015.'
 - en: '[7] Denny Britz, Anna Goldie, Thang Luong, and Quoc Le. [“Massive exploration
     of neural machine translation architectures.”](https://arxiv.org/abs/1703.03906)
     ACL 2017.'
+  id: totrans-198
   prefs: []
   type: TYPE_NORMAL
+  zh: '[7] Denny Britz, Anna Goldie, Thang Luong, and Quoc Le. [“神经机器翻译架构的大规模探索。”](https://arxiv.org/abs/1703.03906)
+    ACL 2017.'
 - en: '[8] Ashish Vaswani, et al. [“Attention is all you need.”](http://papers.nips.cc/paper/7181-attention-is-all-you-need.pdf)
     NIPS 2017.'
+  id: totrans-199
   prefs: []
   type: TYPE_NORMAL
+  zh: '[8] Ashish Vaswani等人。[“注意力就是一切。”](http://papers.nips.cc/paper/7181-attention-is-all-you-need.pdf)
+    NIPS 2017。'
 - en: '[9] Jianpeng Cheng, Li Dong, and Mirella Lapata. [“Long short-term memory-networks
     for machine reading.”](https://arxiv.org/pdf/1601.06733.pdf) EMNLP 2016.'
+  id: totrans-200
   prefs: []
   type: TYPE_NORMAL
+  zh: '[9] Jianpeng Cheng, Li Dong, and Mirella Lapata. [“用于机器阅读的长短期记忆网络。”](https://arxiv.org/pdf/1601.06733.pdf)
+    EMNLP 2016。'
 - en: '[10] Xiaolong Wang, et al. [“Non-local Neural Networks.”](https://arxiv.org/pdf/1711.07971.pdf)
     CVPR 2018'
+  id: totrans-201
   prefs: []
   type: TYPE_NORMAL
+  zh: '[10] Xiaolong Wang等人。[“非局部神经网络。”](https://arxiv.org/pdf/1711.07971.pdf) CVPR
+    2018'
 - en: '[11] Han Zhang, Ian Goodfellow, Dimitris Metaxas, and Augustus Odena. [“Self-Attention
     Generative Adversarial Networks.”](https://arxiv.org/pdf/1805.08318.pdf) arXiv
     preprint arXiv:1805.08318 (2018).'
+  id: totrans-202
   prefs: []
   type: TYPE_NORMAL
+  zh: '[11] Han Zhang, Ian Goodfellow, Dimitris Metaxas和Augustus Odena。[“自注意力生成对抗网络。”](https://arxiv.org/pdf/1805.08318.pdf)
+    arXiv预印本 arXiv:1805.08318 (2018).'
 - en: '[12] Nikhil Mishra, Mostafa Rohaninejad, Xi Chen, and Pieter Abbeel. [“A simple
     neural attentive meta-learner.”](https://arxiv.org/abs/1707.03141) ICLR 2018.'
+  id: totrans-203
   prefs: []
   type: TYPE_NORMAL
+  zh: '[12] Nikhil Mishra, Mostafa Rohaninejad, Xi Chen和Pieter Abbeel。[“一个简单的神经注意力元学习器。”](https://arxiv.org/abs/1707.03141)
+    ICLR 2018.'
 - en: '[13] [“WaveNet: A Generative Model for Raw Audio”](https://deepmind.com/blog/wavenet-generative-model-raw-audio/)
     - Sep 8, 2016 by DeepMind.'
+  id: totrans-204
   prefs: []
   type: TYPE_NORMAL
+  zh: '[13] [“WaveNet：原始音频的生成模型”](https://deepmind.com/blog/wavenet-generative-model-raw-audio/)
+    - 2016年9月8日，DeepMind。'
 - en: '[14] Oriol Vinyals, Meire Fortunato, and Navdeep Jaitly. [“Pointer networks.”](https://arxiv.org/abs/1506.03134)
     NIPS 2015.'
+  id: totrans-205
   prefs: []
   type: TYPE_NORMAL
+  zh: '[14] Oriol Vinyals, Meire Fortunato和Navdeep Jaitly。[“指针网络。”](https://arxiv.org/abs/1506.03134)
+    NIPS 2015.'
 - en: '[15] Alex Graves, Greg Wayne, and Ivo Danihelka. [“Neural turing machines.”](https://arxiv.org/abs/1410.5401)
     arXiv preprint arXiv:1410.5401 (2014).'
+  id: totrans-206
   prefs: []
   type: TYPE_NORMAL
+  zh: '[15] Alex Graves, Greg Wayne和Ivo Danihelka。[“神经图灵机。”](https://arxiv.org/abs/1410.5401)
+    arXiv预印本 arXiv:1410.5401 (2014).'

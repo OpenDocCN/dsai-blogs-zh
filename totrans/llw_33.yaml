@@ -1,155 +1,236 @@
 - en: Implementing Deep Reinforcement Learning Models with Tensorflow + OpenAI Gym
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用Tensorflow + OpenAI Gym实现深度强化学习模型
 - en: 原文：[https://lilianweng.github.io/posts/2018-05-05-drl-implementation/](https://lilianweng.github.io/posts/2018-05-05-drl-implementation/)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://lilianweng.github.io/posts/2018-05-05-drl-implementation/](https://lilianweng.github.io/posts/2018-05-05-drl-implementation/)
 - en: The full implementation is available in [lilianweng/deep-reinforcement-learning-gym](https://github.com/lilianweng/deep-reinforcement-learning-gym)
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 完整的实现可在[lilianweng/deep-reinforcement-learning-gym](https://github.com/lilianweng/deep-reinforcement-learning-gym)中找到
 - en: In the previous two posts, I have introduced the algorithms of many deep reinforcement
     learning models. Now it is the time to get our hands dirty and practice how to
     implement the models in the wild. The implementation is gonna be built in Tensorflow
     and OpenAI [gym](https://github.com/openai/gym) environment. The full version
     of the code in this tutorial is available in [[lilian/deep-reinforcement-learning-gym]](https://github.com/lilianweng/deep-reinforcement-learning-gym).
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: 在之前的两篇文章中，我介绍了许多深度强化学习模型的算法。现在是时候动手实践如何在实践中实现这些模型了。这个实现将在Tensorflow和OpenAI [gym](https://github.com/openai/gym)环境中构建。本教程中代码的完整版本可在[[lilian/deep-reinforcement-learning-gym]](https://github.com/lilianweng/deep-reinforcement-learning-gym)中找到。
 - en: Environment Setup
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 环境设置
 - en: 'Make sure you have [Homebrew](https://docs.brew.sh/Installation) installed:'
+  id: totrans-5
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 确保您已安装[Homebrew](https://docs.brew.sh/Installation)：
 - en: '[PRE0]'
+  id: totrans-6
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: I would suggest starting a virtualenv for your development. It makes life so
     much easier when you have multiple projects with conflicting requirements; i.e.
     one works in Python 2.7 while the other is only compatible with Python 3.5+.
+  id: totrans-7
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 我建议为您的开发启动一个虚拟环境。当您有多个项目具有冲突的要求时，这样做会让生活变得更加轻松；例如，一个在Python 2.7中工作，而另一个只与Python
+    3.5+兼容。
 - en: '[PRE1]'
+  id: totrans-8
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: '*[*] For every new installation below, please make sure you are in the virtualenv.*'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: '*[*] 对于以下每个新安装，请确保您在虚拟环境中。*'
 - en: 'Install OpenAI gym according to the [instruction](https://github.com/openai/gym#installation).
     For a minimal installation, run:'
+  id: totrans-10
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 根据[说明](https://github.com/openai/gym#installation)安装OpenAI gym。要进行最小安装，请运行：
 - en: '[PRE2]'
+  id: totrans-11
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: If you are interested in playing with Atari games or other advanced packages,
     please continue to get a couple of system packages installed.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果您对玩Atari游戏或其他高级软件包感兴趣，请继续安装一些系统软件包。
 - en: '[PRE3]'
+  id: totrans-13
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: For Atari, go to the gym directory and pip install it. This [post](http://alvinwan.com/installing-arcade-learning-environment-with-python3-on-macosx/)
     is pretty helpful if you have troubles with ALE (arcade learning environment)
     installation.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于Atari，转到gym目录并使用pip进行安装。如果您在ALE（arcade learning environment）安装中遇到问题，这篇[文章](http://alvinwan.com/installing-arcade-learning-environment-with-python3-on-macosx/)非常有帮助。
 - en: '[PRE4]'
+  id: totrans-15
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: Finally clone the “playground” code and install the requirements.
+  id: totrans-16
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 最后克隆“playground”代码并安装所需的软件包。
 - en: '[PRE5]'
+  id: totrans-17
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: Gym Environment
+  id: totrans-18
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '**健身房环境**'
 - en: 'The [OpenAI Gym](https://gym.openai.com/) toolkit provides a set of physical
     simulation environments, games, and robot simulators that we can play with and
     design reinforcement learning agents for. An environment object can be initialized
     by `gym.make("{environment name}"`:'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: '[OpenAI Gym](https://gym.openai.com/)工具包提供了一组物理仿真环境、游戏和机器人模拟器，我们可以使用它们并为其设计强化学习代理。可以通过`gym.make("{环境名称}"`来初始化一个环境对象：'
 - en: '[PRE6]'
+  id: totrans-20
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: '![](../Images/8545d08d5954add8262c2ec6e9fe0f1a.png)'
+  id: totrans-21
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8545d08d5954add8262c2ec6e9fe0f1a.png)'
 - en: The formats of action and observation of an environment are defined by `env.action_space`
     and `env.observation_space`, respectively.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 环境的动作和观察的格式分别由`env.action_space`和`env.observation_space`定义。
 - en: 'Types of gym [spaces](https://gym.openai.com/docs/#spaces):'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: gym [spaces](https://gym.openai.com/docs/#spaces)的类型：
 - en: '`gym.spaces.Discrete(n)`: discrete values from 0 to n-1.'
+  id: totrans-24
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`gym.spaces.Discrete(n)`: 从0到n-1的离散值。'
 - en: '`gym.spaces.Box`: a multi-dimensional vector of numeric values, the upper and
     lower bounds of each dimension are defined by `Box.low` and `Box.high`.'
+  id: totrans-25
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`gym.spaces.Box`: 数值向量的多维数组，每个维度的上下界由`Box.low`和`Box.high`定义。'
 - en: 'We interact with the env through two major api calls:'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们通过两个主要的API调用与环境进行交互：
 - en: '**`ob = env.reset()`**'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: '**`ob = env.reset()`**'
 - en: Resets the env to the original setting.
+  id: totrans-28
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 将环境重置为原始设置。
 - en: Returns the initial observation.
+  id: totrans-29
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 返回初始观察。
 - en: '**`ob_next, reward, done, info = env.step(action)`**'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: '**`ob_next, reward, done, info = env.step(action)`**'
 - en: Applies one action in the env which should be compatible with `env.action_space`.
+  id: totrans-31
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在环境中应用一个与`env.action_space`兼容的动作。
 - en: Gets back the new observation `ob_next` (env.observation_space), a reward (float),
     a `done` flag (bool), and other meta information (dict). If `done=True`, the episode
     is complete and we should reset the env to restart. Read more [here](https://gym.openai.com/docs/#observations).
+  id: totrans-32
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 返回新的观察 `ob_next`（env.observation_space）、奖励（float）、`done` 标志（bool）和其他元信息（dict）。如果
+    `done=True`，则该回合已完成，我们应该重置环境以重新开始。更多信息请阅读[这里](https://gym.openai.com/docs/#observations)。
 - en: Naive Q-Learning
+  id: totrans-33
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Naive Q-Learning
 - en: '[Q-learning](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#q-learning-off-policy-td-control)
     (Watkins & Dayan, 1992) learns the action value (“Q-value”) and update it according
     to the [Bellman equation](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#bellman-equations).
     The key point is while estimating what is the next action, it does not follow
     the current policy but rather adopt the best Q value (the part in red) independently.'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Q学习](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#q-learning-off-policy-td-control)（Watkins
+    & Dayan, 1992）学习动作值（“Q值”）并根据[贝尔曼方程](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#bellman-equations)进行更新。关键点是在估计下一个动作时，它不遵循当前策略，而是独立采用最佳的
+    Q 值（红色部分）。'
 - en: $$ Q(s, a) \leftarrow (1 - \alpha) Q(s, a) + \alpha (r + \gamma \color{red}{\max_{a'
     \in \mathcal{A}} Q(s', a')}) $$
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ Q(s, a) \leftarrow (1 - \alpha) Q(s, a) + \alpha (r + \gamma \color{red}{\max_{a'
+    \in \mathcal{A}} Q(s', a')}) $$
 - en: In a naive implementation, the Q value for all (s, a) pairs can be simply tracked
     in a dict. No complicated machine learning model is involved yet.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 在一个简单的实现中，所有 (s, a) 对的 Q 值可以简单地在字典中跟踪。尚未涉及复杂的机器学习模型。
 - en: '[PRE7]'
+  id: totrans-37
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: Most gym environments have a multi-dimensional continuous observation space
     (`gym.spaces.Box`). To make sure our Q dictionary will not explode by trying to
     memorize an infinite number of keys, we apply a wrapper to discretize the observation.
@@ -157,103 +238,156 @@
     is very powerful, with which we are capable to customize observation, action,
     step function, etc. of an env. No matter how many wrappers are applied, `env.unwrapped`
     always gives back the internal original environment object.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 大多数 gym 环境具有多维连续观察空间（`gym.spaces.Box`）。为了确保我们的 Q 字典不会因尝试记住无限数量的键而爆炸，我们应用一个包装器来离散化观察。包装器的概念非常强大，我们可以用它来定制环境的观察、动作、步骤函数等。无论应用了多少个包装器，`env.unwrapped`始终会返回内部原始环境对象。
 - en: '[PRE8]'
+  id: totrans-39
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: Let’s plug in the interaction with a gym env and update the Q function every
     time a new transition is generated. When picking the action, we use ε-greedy to
     force exploration.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们将与 gym 环境的交互插入，并在生成新转换时每次更新 Q 函数。在选择动作时，我们使用 ε-贪心来强制探索。
 - en: '[PRE9]'
+  id: totrans-41
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: Often we start with a high `epsilon` and gradually decrease it during the training,
     known as “epsilon annealing”. The full code of `QLearningPolicy` is available
     [here](https://github.com/lilianweng/deep-reinforcement-learning-gym/blob/master/playground/policies/qlearning.py).
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 通常我们从一个较高的 `epsilon` 开始，并在训练过程中逐渐减小它，这被称为“epsilon退火”。`QLearningPolicy`的完整代码可以在[这里](https://github.com/lilianweng/deep-reinforcement-learning-gym/blob/master/playground/policies/qlearning.py)找到。
 - en: Deep Q-Network
+  id: totrans-43
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 深度 Q 网络
 - en: '[Deep Q-network](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#deep-q-network)
     is a seminal piece of work to make the training of Q-learning more stable and
     more data-efficient, when the Q value is approximated with a nonlinear function.
     Two key ingredients are experience replay and a separately updated target network.'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: '[深度 Q 网络](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#deep-q-network)是一项开创性的工作，使得
+    Q 学习的训练更加稳定和更加高效，当 Q 值用非线性函数逼近时。经验回放和一个单独更新的目标网络是两个关键要素。'
 - en: The main loss function looks like the following,
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 主要损失函数如下所示，
 - en: $$ \begin{aligned} & Y(s, a, r, s') = r + \gamma \max_{a'} Q_{\theta^{-}}(s',
     a') \\ & \mathcal{L}(\theta) = \mathbb{E}_{(s, a, r, s') \sim U(D)} \Big[ \big(
     Y(s, a, r, s') - Q_\theta(s, a) \big)^2 \Big] \end{aligned} $$
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} & Y(s, a, r, s') = r + \gamma \max_{a'} Q_{\theta^{-}}(s',
+    a') \\ & \mathcal{L}(\theta) = \mathbb{E}_{(s, a, r, s') \sim U(D)} \Big[ \big(
+    Y(s, a, r, s') - Q_\theta(s, a) \big)^2 \Big] \end{aligned} $$
 - en: The Q network can be a multi-layer dense neural network, a convolutional network,
     or a recurrent network, depending on the problem. In the [full implementation](https://github.com/lilianweng/deep-reinforcement-learning-gym/blob/master/playground/policies/dqn.py)
     of the DQN policy, it is determined by the `model_type` parameter, one of (“dense”,
     “conv”, “lstm”).
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: Q网络可以是多层密集神经网络、卷积网络或循环网络，具体取决于问题。在DQN策略的[完整实现](https://github.com/lilianweng/deep-reinforcement-learning-gym/blob/master/playground/policies/dqn.py)中，它由`model_type`参数确定，其中之一为（“dense”，“conv”，“lstm”）。
 - en: In the following example, I’m using a 2-layer densely connected neural network
     to learn Q values for the cart pole balancing problem.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 在以下示例中，我正在使用一个2层密集连接的神经网络来学习小车摆动问题的Q值。
 - en: '[PRE10]'
+  id: totrans-49
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: 'We have a helper function for creating the networks below:'
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们有一个用于创建下面网络的辅助函数：
 - en: '[PRE11]'
+  id: totrans-51
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: 'The Q-network and the target network are updated with a batch of transitions
     (state, action, reward, state_next, done_flag). The input tensors are:'
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: Q网络和目标网络通过一批转换（状态、动作、奖励、下一个状态、完成标志）进行更新。输入张量为：
 - en: '[PRE12]'
+  id: totrans-53
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: We have two networks of the same structure. Both have the same network architectures
     with the state observation as the inputs and Q values over all the actions as
     the outputs.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们有两个相同结构的网络。两者具有相同的网络架构，状态观察作为输入，所有动作的Q值作为输出。
 - en: '[PRE13]'
+  id: totrans-55
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: The target network “Q_target” takes the `states_next` tensor as the input, because
     we use its prediction to select the optimal next state in the Bellman equation.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 目标网络“Q_target”以`states_next`张量作为输入，因为我们使用其预测来选择贝尔曼方程中的最佳下一个状态。
 - en: '[PRE14]'
+  id: totrans-57
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE14]'
 - en: Note that [tf.stop_gradient()](https://www.tensorflow.org/api_docs/python/tf/stop_gradient)
     on the target y, because the target network should stay fixed during the loss-minimizing
     gradient update.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意在目标y上使用[tf.stop_gradient()](https://www.tensorflow.org/api_docs/python/tf/stop_gradient)，因为目标网络在损失最小化梯度更新期间应保持固定。
 - en: '![](../Images/bdb8c0c23dc95dbf2633b4056b07ca45.png)'
+  id: totrans-59
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/bdb8c0c23dc95dbf2633b4056b07ca45.png)'
 - en: The target network is updated by copying the primary Q network parameters over
     every `C` number of steps (“hard update”) or polyak averaging towards the primary
     network (“soft update”)
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 目标网络通过每`C`步复制主Q网络参数进行更新（“硬更新”）或向主网络进行Polyak平均（“软更新”）。
 - en: '[PRE15]'
+  id: totrans-61
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE15]'
 - en: Double Q-Learning
+  id: totrans-62
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 双Q学习
 - en: 'If we look into the standard form of the Q value target, $Y(s, a) = r + \gamma
     \max_{a’ \in \mathcal{A}} Q_\theta (s’, a’)$, it is easy to notice that we use
     $Q_\theta$ to select the best next action at state s’ and then apply the action
@@ -264,194 +398,305 @@
     the action selection and action value estimation by using two Q networks, $Q_1$
     and $Q_2$: when $Q_1$ is being updated, $Q_2$ decides the best next action, and
     vice versa.'
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们查看Q值目标的标准形式，$Y(s, a) = r + \gamma \max_{a’ \in \mathcal{A}} Q_\theta (s’,
+    a’)$，很容易注意到我们使用$Q_\theta$来选择在状态s’时的最佳下一个动作，然后应用相同$Q_\theta$预测的动作值。这种两步强化过程可能导致对（已经）过度估计的值进行进一步估计，进而导致训练不稳定。双Q学习提出的解决方案（[Hasselt,
+    2010](http://papers.nips.cc/paper/3964-double-q-learning.pdf)）是通过使用两个Q网络$Q_1$和$Q_2$来解耦动作选择和动作值估计：当$Q_1$正在更新时，$Q_2$决定最佳的下一个动作，反之亦然。
 - en: $$ Y_1(s, a, r, s') = r + \gamma Q_1 (s', \arg\max_{a' \in \mathcal{A}}Q_2(s',
     a'))\\ Y_2(s, a, r, s') = r + \gamma Q_2 (s', \arg\max_{a' \in \mathcal{A}}Q_1(s',
     a')) $$
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ Y_1(s, a, r, s') = r + \gamma Q_1 (s', \arg\max_{a' \in \mathcal{A}}Q_2(s',
+    a'))\\ Y_2(s, a, r, s') = r + \gamma Q_2 (s', \arg\max_{a' \in \mathcal{A}}Q_1(s',
+    a')) $$
 - en: 'To incorporate double Q-learning into DQN, the minimum modification ([Hasselt,
     Guez, & Silver, 2016](https://arxiv.org/pdf/1509.06461.pdf)) is to use the primary
     Q network to select the action while the action value is estimated by the target
     network:'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 要将双Q学习合并到DQN中，最小的修改（[Hasselt, Guez, & Silver, 2016](https://arxiv.org/pdf/1509.06461.pdf)）是使用主Q网络选择动作，而动作值由目标网络估计：
 - en: $$ Y(s, a, r, s') = r + \gamma Q_{\theta^{-}}(s', \arg\max_{a' \in \mathcal{A}}
     Q_\theta(s', a')) $$
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ Y(s, a, r, s') = r + \gamma Q_{\theta^{-}}(s', \arg\max_{a' \in \mathcal{A}}
+    Q_\theta(s', a')) $$
 - en: In the code, we add a new tensor for getting the action selected by the primary
     Q network as the input and a tensor operation for selecting this action.
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 在代码中，我们添加一个新的张量用于获取主Q网络选择的动作作为输入，以及一个张量操作用于选择此动作。
 - en: '[PRE16]'
+  id: totrans-68
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE16]'
 - en: 'The prediction target y in the loss function becomes:'
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 在损失函数中，预测目标y变为：
 - en: '[PRE17]'
+  id: totrans-70
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE17]'
 - en: Here I used [tf.gather()](https://www.tensorflow.org/api_docs/python/tf/gather)
     to select the action values of interests.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里我使用[tf.gather()](https://www.tensorflow.org/api_docs/python/tf/gather)来选择感兴趣的动作值。
 - en: '![](../Images/b4ee4f320324f85b5d952e2c8a98faef.png)'
+  id: totrans-72
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/b4ee4f320324f85b5d952e2c8a98faef.png)'
 - en: '(Image source: tf.gather() docs)'
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: （图片来源：tf.gather()文档）
 - en: During the episode rollout, we compute the `actions_next` by feeding the next
     states’ data into the `actions_selected_by_q` operation.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 在剧集推出期间，我们通过将下一个状态的数据输入到`actions_selected_by_q`操作中来计算`actions_next`。
 - en: '[PRE18]'
+  id: totrans-75
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE18]'
 - en: Dueling Q-Network
+  id: totrans-76
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 对抗Q网络
 - en: 'The dueling Q-network ([Wang et al., 2016](https://arxiv.org/pdf/1511.06581.pdf))
     is equipped with an enhanced network architecture: the output layer branches out
     into two heads, one for predicting state value, V, and the other for [advantage](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#value-function),
     A. The Q-value is then reconstructed, $Q(s, a) = V(s) + A(s, a)$.'
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 对抗Q网络（[Wang等，2016](https://arxiv.org/pdf/1511.06581.pdf)）配备了增强的网络架构：输出层分为两个头，一个用于预测状态值V，另一个用于[优势](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#value-function)A。然后重新构建Q值，$Q(s,
+    a) = V(s) + A(s, a)$。
 - en: $$ \begin{aligned} A(s, a) &= Q(s, a) - V(s)\\ V(s) &= \sum_a Q(s, a) \pi(a
     \vert s) = \sum_a (V(s) + A(s, a)) \pi(a \vert s) = V(s) + \sum_a A(s, a)\pi(a
     \vert s)\\ \text{Thus, }& \sum_a A(s, a)\pi(a \vert s) = 0 \end{aligned} $$
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} A(s, a) &= Q(s, a) - V(s)\\ V(s) &= \sum_a Q(s, a) \pi(a
+    \vert s) = \sum_a (V(s) + A(s, a)) \pi(a \vert s) = V(s) + \sum_a A(s, a)\pi(a
+    \vert s)\\ \text{因此，}& \sum_a A(s, a)\pi(a \vert s) = 0 \end{aligned} $$
 - en: To make sure the estimated advantage values sum up to zero, $\sum_a A(s, a)\pi(a
     \vert s) = 0$, we deduct the mean value from the prediction.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了确保估计的优势值总和为零，$\sum_a A(s, a)\pi(a \vert s) = 0$，我们从预测中减去均值。
 - en: $$ Q(s, a) = V(s) + (A(s, a) - \frac{1}{|\mathcal{A}|} \sum_a A(s, a)) $$
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ Q(s, a) = V(s) + (A(s, a) - \frac{1}{|\mathcal{A}|} \sum_a A(s, a)) $$
 - en: 'The code change is straightforward:'
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 代码更改很简单：
 - en: '[PRE19]'
+  id: totrans-82
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE19]'
 - en: '![](../Images/41b8d2b6e957c50908d0772aa30b5a6d.png)'
+  id: totrans-83
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/41b8d2b6e957c50908d0772aa30b5a6d.png)'
 - en: '(Image source: [Wang et al., 2016](https://arxiv.org/pdf/1511.06581.pdf))'
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: （图片来源：[Wang等，2016](https://arxiv.org/pdf/1511.06581.pdf)）
 - en: Check the [code](https://github.com/lilianweng/deep-reinforcement-learning-gym/blob/master/playground/policies/dqn.py)
     for the complete flow.
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 查看[代码](https://github.com/lilianweng/deep-reinforcement-learning-gym/blob/master/playground/policies/dqn.py)以获取完整流程。
 - en: Monte-Carlo Policy Gradient
+  id: totrans-86
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 蒙特卡洛策略梯度
 - en: I reviewed a number of popular policy gradient methods in my [last post](https://lilianweng.github.io/posts/2018-04-08-policy-gradient/).
     Monte-Carlo policy gradient, also known as [REINFORCE](https://lilianweng.github.io/posts/2018-04-08-policy-gradient/#reinforce),
     is a classic on-policy method that learns the policy model explicitly. It uses
     the return estimated from a full on-policy trajectory and updates the policy parameters
     with policy gradient.
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 我在我的[上一篇文章](https://lilianweng.github.io/posts/2018-04-08-policy-gradient/)中回顾了一些流行的策略梯度方法。蒙特卡洛策略梯度，也称为[REINFORCE](https://lilianweng.github.io/posts/2018-04-08-policy-gradient/#reinforce)，是一种经典的在线方法，它明确地学习策略模型。它使用从完整在线轨迹估计的回报，并使用策略梯度更新策略参数。
 - en: The returns are computed during rollouts and then fed into the Tensorflow graph
     as inputs.
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 返回值是在推出期间计算的，然后作为输入馈送到Tensorflow图中。
 - en: '[PRE20]'
+  id: totrans-89
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE20]'
 - en: The policy network is contructed. We update the policy parameters by minimizing
     the loss function, $\mathcal{L} = - (G_t - V(s)) \log \pi(a \vert s)$. [tf.nn.sparse_softmax_cross_entropy_with_logits()](https://www.tensorflow.org/api_docs/python/tf/nn/sparse_softmax_cross_entropy_with_logits)
     asks for the raw logits as inputs, rather then the probabilities after softmax,
     and that’s why we do not have a softmax layer on top of the policy network.
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 构建策略网络。我们通过最小化损失函数$\mathcal{L} = - (G_t - V(s)) \log \pi(a \vert s)$来更新策略参数。[tf.nn.sparse_softmax_cross_entropy_with_logits()](https://www.tensorflow.org/api_docs/python/tf/nn/sparse_softmax_cross_entropy_with_logits)要求输入原始logits，而不是softmax后的概率，这就是为什么我们在策略网络顶部没有softmax层。
 - en: '[PRE21]'
+  id: totrans-91
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE21]'
 - en: 'During the episode rollout, the return is calculated as follows:'
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 在剧集推出期间，返回值计算如下：
 - en: '[PRE22]'
+  id: totrans-93
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE22]'
 - en: The full implementation of REINFORCE is [here](https://github.com/lilianweng/deep-reinforcement-learning-gym/blob/master/playground/policies/reinforce.py).
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: REINFORCE的完整实现在[这里](https://github.com/lilianweng/deep-reinforcement-learning-gym/blob/master/playground/policies/reinforce.py)。
 - en: Actor-Critic
+  id: totrans-95
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 演员-评论家
 - en: The [actor-critic](https://lilianweng.github.io/posts/2018-04-08-policy-gradient/#actor-critic)
     algorithm learns two models at the same time, the actor for learning the best
     policy and the critic for estimating the state value.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: '[演员-评论家](https://lilianweng.github.io/posts/2018-04-08-policy-gradient/#actor-critic)算法同时学习两个模型，一个用于学习最佳策略，另一个用于估计状态值。'
 - en: Initialize the actor network, $\pi(a \vert s)$ and the critic, $V(s)$
+  id: totrans-97
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 初始化演员网络，$\pi(a \vert s)$ 和评论家，$V(s)$
 - en: 'Collect a new transition (s, a, r, s’): Sample the action $a \sim \pi(a \vert
     s)$ for the current state s, and get the reward r and the next state s''.'
+  id: totrans-98
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 收集新的转换（s, a, r, s’）：对当前状态 s 采样动作 $a \sim \pi(a \vert s)$，获得奖励 r 和下一个状态 s'。
 - en: Compute the TD target during episode rollout, $G_t = r + \gamma V(s’)$ and TD
     error, $\delta_t = r + \gamma V(s’) - V(s)$.
+  id: totrans-99
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在回合推出期间计算 TD 目标，$G_t = r + \gamma V(s’)$ 和 TD 误差，$\delta_t = r + \gamma V(s’)
+    - V(s)$。
 - en: 'Update the critic network by minimizing the critic loss: $L_c = (V(s) - G_t)$.'
+  id: totrans-100
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 通过最小化评论家损失更新评论家网络：$L_c = (V(s) - G_t)$。
 - en: 'Update the actor network by minimizing the actor loss: $L_a = - \delta_t \log
     \pi(a \vert s)$.'
+  id: totrans-101
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 通过最小化演员损失更新演员网络：$L_a = - \delta_t \log \pi(a \vert s)$。
 - en: Set s’ = s and repeat step 2.-5.
+  id: totrans-102
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 设定 s’ = s 并重复步骤 2.-5.
 - en: Overall the implementation looks pretty similar to REINFORCE with an extra critic
     network. The full implementation is here.
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 总体而言，实现看起来与 REINFORCE 非常相似，只是多了一个评论家网络。完整的实现在这里。
 - en: '[PRE23]'
+  id: totrans-104
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE23]'
 - en: 'The tensorboard graph is always helpful: ![](../Images/04ae9b4b6a4f875b577f7014314c8962.png)'
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: Tensorboard 图表总是很有帮助：![](../Images/04ae9b4b6a4f875b577f7014314c8962.png)
 - en: References
+  id: totrans-106
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: '[1] [Tensorflow API Docs](https://www.tensorflow.org/api_docs/)'
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] [Tensorflow API 文档](https://www.tensorflow.org/api_docs/)'
 - en: '[2] Christopher JCH Watkins, and Peter Dayan. [“Q-learning.”](https://link.springer.com/content/pdf/10.1007/BF00992698.pdf)
     Machine learning 8.3-4 (1992): 279-292.'
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] Christopher JCH Watkins 和 Peter Dayan。[“Q学习。”](https://link.springer.com/content/pdf/10.1007/BF00992698.pdf)
+    机器学习 8.3-4（1992）：279-292。'
 - en: '[3] Hado Van Hasselt, Arthur Guez, and David Silver. [“Deep Reinforcement Learning
     with Double Q-Learning.”](https://arxiv.org/pdf/1509.06461.pdf) AAAI. Vol. 16\.
     2016.'
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: '[3] Hado Van Hasselt，Arthur Guez 和 David Silver。[“双Q学习的深度强化学习。”](https://arxiv.org/pdf/1509.06461.pdf)
+    AAAI. Vol. 16. 2016.'
 - en: '[4] Hado van Hasselt. [“Double Q-learning.”](http://papers.nips.cc/paper/3964-double-q-learning.pdf)
     NIPS, 23:2613–2621, 2010.'
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: '[4] Hado van Hasselt。[“双Q学习。”](http://papers.nips.cc/paper/3964-double-q-learning.pdf)
+    NIPS，23:2613–2621，2010.'
 - en: '[5] Ziyu Wang, et al. [Dueling network architectures for deep reinforcement
     learning.](https://arxiv.org/pdf/1511.06581.pdf) ICML. 2016.'
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: '[5] Ziyu Wang 等人。[深度强化学习的对抗网络架构。](https://arxiv.org/pdf/1511.06581.pdf) ICML.
+    2016.'

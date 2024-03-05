@@ -1,189 +1,289 @@
 - en: The Transformer Family
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '**Transformer** 家族'
 - en: 原文：[https://lilianweng.github.io/posts/2020-04-07-the-transformer-family/](https://lilianweng.github.io/posts/2020-04-07-the-transformer-family/)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://lilianweng.github.io/posts/2020-04-07-the-transformer-family/](https://lilianweng.github.io/posts/2020-04-07-the-transformer-family/)
 - en: '[Updated on **2023-01-27**: After almost three years, I did a big refactoring
     update of this post to incorporate a bunch of new Transformer models since 2020\.
     The enhanced version of this post is here: [**The Transformer Family Version 2.0**](https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/).
     Please refer to that post on this topic.]'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: '[更新于 **2023-01-27**：近三年过去了，我对这篇文章进行了大规模的重构更新，以整合自 2020 年以来的一系列新 Transformer
+    模型。这篇文章的增强版本在这里：[**Transformer 家族 2.0 版**](https://lilianweng.github.io/posts/2023-01-27-the-transformer-family-v2/)。请参考该文章了解更多内容。]'
 - en: It has been almost two years since my last post on [attention](https://lilianweng.github.io/posts/2018-06-24-attention/).
     Recent progress on new and enhanced versions of Transformer motivates me to write
     another post on this specific topic, focusing on how the vanilla Transformer can
     be improved for longer-term attention span, less memory and computation consumption,
     RL task solving and more.
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: 距离我上一篇关于[注意力](https://lilianweng.github.io/posts/2018-06-24-attention/)的文章已经将近两年了。最近对
+    Transformer 的新版本和增强版本的进展激励我撰写了这个特定主题的另一篇文章，重点关注如何改进传统 Transformer 以提高长期注意力跨度、减少内存和计算消耗、解决强化学习任务等方面。
 - en: Notations
+  id: totrans-4
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 符号
 - en: '| Symbol | Meaning |'
+  id: totrans-5
   prefs: []
   type: TYPE_TB
+  zh: '| 符号 | 含义 |'
 - en: '| --- | --- |'
+  id: totrans-6
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- |'
 - en: '| $d$ | The model size / hidden state dimension / positional encoding size.
     |'
+  id: totrans-7
   prefs: []
   type: TYPE_TB
+  zh: '| $d$ | 模型大小 / 隐藏状态维度 / 位置编码大小。 |'
 - en: '| $h$ | The number of heads in multi-head attention layer. |'
+  id: totrans-8
   prefs: []
   type: TYPE_TB
+  zh: '| $h$ | 多头注意力层中的头数。 |'
 - en: '| $L$ | The segment length of input sequence. |'
+  id: totrans-9
   prefs: []
   type: TYPE_TB
+  zh: '| $L$ | 输入序列的段长度。 |'
 - en: '| $\mathbf{X} \in \mathbb{R}^{L \times d}$ | The input sequence where each
     element has been mapped into an embedding vector of shape $d$, same as the model
     size. |'
+  id: totrans-10
   prefs: []
   type: TYPE_TB
+  zh: '| $\mathbf{X} \in \mathbb{R}^{L \times d}$ | 输入序列，其中每个元素都映射为形状为 $d$ 的嵌入向量，与模型大小相同。
+    |'
 - en: '| $\mathbf{W}^k \in \mathbb{R}^{d \times d_k}$ | The key weight matrix. |'
+  id: totrans-11
   prefs: []
   type: TYPE_TB
+  zh: '| $\mathbf{W}^k \in \mathbb{R}^{d \times d_k}$ | 键权重矩阵。 |'
 - en: '| $\mathbf{W}^q \in \mathbb{R}^{d \times d_k}$ | The query weight matrix. |'
+  id: totrans-12
   prefs: []
   type: TYPE_TB
+  zh: '| $\mathbf{W}^q \in \mathbb{R}^{d \times d_k}$ | 查询权重矩阵。 |'
 - en: '| $\mathbf{W}^v \in \mathbb{R}^{d \times d_v}$ | The value weight matrix. Often
     we have $d_k = d_v = d$. |'
+  id: totrans-13
   prefs: []
   type: TYPE_TB
+  zh: '| $\mathbf{W}^v \in \mathbb{R}^{d \times d_v}$ | 值权重矩阵。通常情况下 $d_k = d_v = d$。
+    |'
 - en: '| $\mathbf{W}^k_i, \mathbf{W}^q_i \in \mathbb{R}^{d \times d_k/h}; \mathbf{W}^v_i
     \in \mathbb{R}^{d \times d_v/h}$ | The weight matrices per head. |'
+  id: totrans-14
   prefs: []
   type: TYPE_TB
+  zh: '| $\mathbf{W}^k_i, \mathbf{W}^q_i \in \mathbb{R}^{d \times d_k/h}; \mathbf{W}^v_i
+    \in \mathbb{R}^{d \times d_v/h}$ | 每个头的权重矩阵。 |'
 - en: '| $\mathbf{W}^o \in \mathbb{R}^{d_v \times d}$ | The output weight matrix.
     |'
+  id: totrans-15
   prefs: []
   type: TYPE_TB
+  zh: '| $\mathbf{W}^o \in \mathbb{R}^{d_v \times d}$ | 输出权重矩阵。 |'
 - en: '| $\mathbf{Q} = \mathbf{X}\mathbf{W}^q \in \mathbb{R}^{L \times d_k}$ | The
     query embedding inputs. |'
+  id: totrans-16
   prefs: []
   type: TYPE_TB
+  zh: '| $\mathbf{Q} = \mathbf{X}\mathbf{W}^q \in \mathbb{R}^{L \times d_k}$ | 查询嵌入输入。
+    |'
 - en: '| $\mathbf{K} = \mathbf{X}\mathbf{W}^k \in \mathbb{R}^{L \times d_k}$ | The
     key embedding inputs. |'
+  id: totrans-17
   prefs: []
   type: TYPE_TB
+  zh: '| $\mathbf{K} = \mathbf{X}\mathbf{W}^k \in \mathbb{R}^{L \times d_k}$ | 键嵌入输入。
+    |'
 - en: '| $\mathbf{V} = \mathbf{X}\mathbf{W}^v \in \mathbb{R}^{L \times d_v}$ | The
     value embedding inputs. |'
+  id: totrans-18
   prefs: []
   type: TYPE_TB
+  zh: '| $\mathbf{V} = \mathbf{X}\mathbf{W}^v \in \mathbb{R}^{L \times d_v}$ | 值嵌入输入。
+    |'
 - en: '| $S_i$ | A collection of key positions for the $i$-th query $\mathbf{q}_i$
     to attend to. |'
+  id: totrans-19
   prefs: []
   type: TYPE_TB
+  zh: '| $S_i$ | 第 $i$ 个查询 $\mathbf{q}_i$ 需要关注的关键位置集合。 |'
 - en: '| $\mathbf{A} \in \mathbb{R}^{L \times L}$ | The self-attention matrix between
     a input sequence of lenght $L$ and itself. $\mathbf{A} = \text{softmax}(\mathbf{Q}\mathbf{K}^\top
     / \sqrt{d_k})$. |'
+  id: totrans-20
   prefs: []
   type: TYPE_TB
+  zh: '| $\mathbf{A} \in \mathbb{R}^{L \times L}$ | 输入序列长度为 $L$ 时的自注意力矩阵。$\mathbf{A}
+    = \text{softmax}(\mathbf{Q}\mathbf{K}^\top / \sqrt{d_k})$。 |'
 - en: '| $a_{ij} \in \mathbf{A}$ | The scalar attention score between query $\mathbf{q}_i$
     and key $\mathbf{k}_j$. |'
+  id: totrans-21
   prefs: []
   type: TYPE_TB
+  zh: '| $a_{ij} \in \mathbf{A}$ | 查询 $\mathbf{q}_i$ 和键 $\mathbf{k}_j$ 之间的标量注意力分数。
+    |'
 - en: '| $\mathbf{P} \in \mathbb{R}^{L \times d}$ | position encoding matrix, where
     the $i$-th row $\mathbf{p}_i$ is the positional encoding for input $\mathbf{x}_i$.
     |'
+  id: totrans-22
   prefs: []
   type: TYPE_TB
+  zh: '| $\mathbf{P} \in \mathbb{R}^{L \times d}$ | 位置编码矩阵，其中第 $i$ 行 $\mathbf{p}_i$
+    是输入 $\mathbf{x}_i$ 的位置编码。 |'
 - en: Attention and Self-Attention
+  id: totrans-23
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 注意力和自注意力
 - en: '*Attention* is a mechanism in the neural network that a model can learn to
     make predictions by selectively attending to a given set of data. The amount of
     attention is quantified by learned weights and thus the output is usually formed
     as a weighted average.'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: '*注意力* 是神经网络中的一种机制，模型可以通过有选择地关注给定的数据集来学习预测。注意力的多少由学习到的权重来量化，因此输出通常形成加权平均。'
 - en: '*Self-attention* is a type of attention mechanism where the model makes prediction
     for one part of a data sample using other parts of the observation about the same
     sample. Conceptually, it feels quite similar to [non-local means](https://en.wikipedia.org/wiki/Non-local_means).
     Also note that self-attention is permutation-invariant; in other words, it is
     an operation on sets.'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: '*自注意力*是一种注意力机制，模型使用关于同一样本的其他部分的观察来预测数据样本的一部分。在概念上，它与[非局部均值](https://en.wikipedia.org/wiki/Non-local_means)非常相似。还要注意，自注意力是置换不变的；换句话说，它是一个集合上的操作。'
 - en: 'There are various forms of attention / self-attention, Transformer ([Vaswani
     et al., 2017](https://arxiv.org/abs/1706.03762)) relies on the *scaled dot-product
     attention*: given a query matrix $\mathbf{Q}$, a key matrix $\mathbf{K}$ and a
     value matrix $\mathbf{V}$, the output is a weighted sum of the value vectors,
     where the weight assigned to each value slot is determined by the dot-product
     of the query with the corresponding key:'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意/自注意力有各种形式，Transformer（[Vaswani等人，2017](https://arxiv.org/abs/1706.03762)）依赖于*缩放点积注意力*：给定一个查询矩阵$\mathbf{Q}$，一个键矩阵$\mathbf{K}$和一个值矩阵$\mathbf{V}$，输出是值向量的加权和，其中分配给每个值槽的权重由查询与相应键的点积确定：
 - en: $$ \text{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \text{softmax}(\frac{\mathbf{Q}
     {\mathbf{K}}^\top}{\sqrt{d_k}})\mathbf{V} $$
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \text{注意力}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \text{softmax}(\frac{\mathbf{Q}
+    {\mathbf{K}}^\top}{\sqrt{d_k}})\mathbf{V} $$
 - en: 'And for a query and a key vector $\mathbf{q}_i, \mathbf{k}_j \in \mathbb{R}^d$
     (row vectors in query and key matrices), we have a scalar score:'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于查询和键向量$\mathbf{q}_i, \mathbf{k}_j \in \mathbb{R}^d$（查询和键矩阵中的行向量），我们有一个标量分数：
 - en: $$ a_{ij} = \text{softmax}(\frac{\mathbf{q}_i {\mathbf{k}_j}^\top}{\sqrt{d_k}})
     = \frac{\exp(\mathbf{q}_i {\mathbf{k}_j}^\top)}{ \sqrt{d_k} \sum_{r \in S_i} \exp(\mathbf{q}_i
     {\mathbf{k}_r}^\top) } $$
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ a_{ij} = \text{softmax}(\frac{\mathbf{q}_i {\mathbf{k}_j}^\top}{\sqrt{d_k}})
+    = \frac{\exp(\mathbf{q}_i {\mathbf{k}_j}^\top)}{ \sqrt{d_k} \sum_{r \in S_i} \exp(\mathbf{q}_i
+    {\mathbf{k}_r}^\top) } $$
 - en: where $S_i$ is a collection of key positions for the $i$-th query to attend
     to.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$S_i$是第$i$个查询要关注的键位置的集合。
 - en: See my old [post](https://lilianweng.github.io/posts/2018-06-24-attention/#a-family-of-attention-mechanisms)
     for other types of attention if interested.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果感兴趣，可以查看我以前的[帖子](https://lilianweng.github.io/posts/2018-06-24-attention/#a-family-of-attention-mechanisms)了解其他类型的注意力。
 - en: Multi-Head Self-Attention
+  id: totrans-32
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 多头自注意力
 - en: The *multi-head self-attention* module is a key component in Transformer. Rather
     than only computing the attention once, the multi-head mechanism splits the inputs
     into smaller chunks and then computes the scaled dot-product attention over each
     subspace in parallel. The independent attention outputs are simply concatenated
     and linearly transformed into expected dimensions.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: '*多头自注意力*模块是Transformer中的一个关键组件。与仅计算一次注意力不同，多头机制将输入分成较小的块，然后并行计算每个子空间的缩放点积注意力。独立的注意力输出简单地连接并线性转换为期望的维度。'
 - en: $$ \begin{aligned} \text{MultiHeadAttention}(\mathbf{X}_q, \mathbf{X}_k, \mathbf{X}_v)
     &= [\text{head}_1; \dots; \text{head}_h] \mathbf{W}^o \\ \text{where head}_i &=
     \text{Attention}(\mathbf{X}_q\mathbf{W}^q_i, \mathbf{X}_k\mathbf{W}^k_i, \mathbf{X}_v\mathbf{W}^v_i)
     \end{aligned} $$
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \text{多头注意力}(\mathbf{X}_q, \mathbf{X}_k, \mathbf{X}_v) &=
+    [\text{头}_1; \dots; \text{头}_h] \mathbf{W}^o \\ \text{其中头}_i &= \text{注意力}(\mathbf{X}_q\mathbf{W}^q_i,
+    \mathbf{X}_k\mathbf{W}^k_i, \mathbf{X}_v\mathbf{W}^v_i) \end{aligned} $$
 - en: where $[.;.]$ is a concatenation operation. $\mathbf{W}^q_i, \mathbf{W}^k_i
     \in \mathbb{R}^{d \times d_k/h}, \mathbf{W}^v_i \in \mathbb{R}^{d \times d_v/h}$
     are weight matrices to map input embeddings of size $L \times d$ into query, key
     and value matrices. And $\mathbf{W}^o \in \mathbb{R}^{d_v \times d}$ is the output
     linear transformation. All the weights should be learned during training.
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$[.;.]$是一个连接操作。$\mathbf{W}^q_i, \mathbf{W}^k_i \in \mathbb{R}^{d \times d_k/h},
+    \mathbf{W}^v_i \in \mathbb{R}^{d \times d_v/h}$是权重矩阵，用于将大小为$L \times d$的输入嵌入映射到查询、键和值矩阵。而$\mathbf{W}^o
+    \in \mathbb{R}^{d_v \times d}$是输出线性变换。所有权重都应在训练期间学习。
 - en: '![](../Images/52244c658beb541179924e3c6d384a70.png)'
+  id: totrans-36
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/52244c658beb541179924e3c6d384a70.png)'
 - en: 'Fig. 1\. Illustration of the multi-head scaled dot-product attention mechanism.
     (Image source: Figure 2 in [Vaswani, et al., 2017](https://arxiv.org/abs/1706.03762))'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 图1. 多头缩放点积注意力机制的示意图。（图片来源：[Vaswani等人，2017](https://arxiv.org/abs/1706.03762)中的图2）
 - en: Transformer
+  id: totrans-38
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Transformer
 - en: The **Transformer** (which will be referred to as “vanilla Transformer” to distinguish
     it from other enhanced versions; [Vaswani, et al., 2017](https://arxiv.org/abs/1706.03762))
     model has an encoder-decoder architecture, as commonly used in many [NMT](https://lilianweng.github.io/posts/2018-06-24-attention/#born-for-translation)
     models. Later simplified Transformer was shown to achieve great performance in
     language modeling tasks, like in encoder-only [BERT](https://lilianweng.github.io/posts/2019-01-31-lm/#bert)
     or decoder-only [GPT](https://lilianweng.github.io/posts/2019-01-31-lm/#openai-gpt).
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: '**Transformer**（将其称为“传统Transformer”以区别于其他增强版本；[Vaswani等人，2017](https://arxiv.org/abs/1706.03762)）模型具有编码器-解码器架构，这在许多[NMT](https://lilianweng.github.io/posts/2018-06-24-attention/#born-for-translation)模型中常用。后来简化的Transformer在语言建模任务中表现出色，例如仅编码器的[BERT](https://lilianweng.github.io/posts/2019-01-31-lm/#bert)或仅解码器的[GPT](https://lilianweng.github.io/posts/2019-01-31-lm/#openai-gpt)。'
 - en: '**Encoder-Decoder Architecture**'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: '**编码器-解码器架构**'
 - en: The **encoder** generates an attention-based representation with capability
     to locate a specific piece of information from a large context. It consists of
     a stack of 6 identity modules, each containing two submodules, a *multi-head self-attention*
@@ -192,227 +292,340 @@
     each element in the sequence. This can also be viewed as a convolutional layer
     with filter size 1\. Each submodule has a residual connection and layer normalization.
     All the submodules output data of the same dimension $d$.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: '**编码器**生成一个基于注意力的表示，具有定位大背景中特定信息的能力。它由一堆6个恒等模块组成，每个模块包含两个子模块，一个*多头自注意力*层和一个*逐点*全连接前馈网络。逐点意味着它将相同的线性变换（具有相同权重）应用于序列中的每个元素。这也可以看作是一个滤波器大小为1的卷积层。每个子模块都有残差连接和层归一化。所有子模块输出相同维度$d$的数据。'
 - en: The function of Transformer **decoder** is to retrieve information from the
     encoded representation. The architecture is quite similar to the encoder, except
     that the decoder contains two multi-head attention submodules instead of one in
     each identical repeating module. The first multi-head attention submodule is *masked*
     to prevent positions from attending to the future.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: Transformer的**解码器**的功能是从编码表示中检索信息。该架构与编码器非常相似，只是解码器包含两个多头注意力子模块，而不是每个相同重复模块中的一个。第一个多头注意力子模块是*掩码*的，以防止位置关注未来。
 - en: '![](../Images/ac11054b46acb073d1d5adddcfbeb98d.png)'
+  id: totrans-43
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ac11054b46acb073d1d5adddcfbeb98d.png)'
 - en: 'Fig. 2\. The architecture of the vanilla Transformer model. (Image source:
     [Figure 17](https://lilianweng.github.io/posts/2018-06-24-attention/#full-architecture))'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 图2。传统Transformer模型的架构。（图片来源：[Figure 17](https://lilianweng.github.io/posts/2018-06-24-attention/#full-architecture)）
 - en: '**Positional Encoding**'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: '**位置编码**'
 - en: 'Because self-attention operation is permutation invariant, it is important
     to use proper **positional encoding**to provide *order information* to the model.
     The positional encoding $\mathbf{P} \in \mathbb{R}^{L \times d}$ has the same
     dimension as the input embedding, so it can be added on the input directly. The
     vanilla Transformer considered two types of encodings:'
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 因为自注意力操作是置换不变的，所以使用适当的**位置编码**为模型提供*顺序信息*非常重要。位置编码$\mathbf{P} \in \mathbb{R}^{L
+    \times d}$与输入嵌入具有相同的维度，因此可以直接添加到输入上。传统的Transformer考虑了两种编码类型：
 - en: '(1) *Sinusoidal positional encoding* is defined as follows, given the token
     position $i=1,\dots,L$ and the dimension $\delta=1,\dots,d$:'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: (1) *正弦位置编码*定义如下，给定令牌位置$i=1,\dots,L$和维度$\delta=1,\dots,d$：
 - en: $$ \text{PE}(i,\delta) = \begin{cases} \sin(\frac{i}{10000^{2\delta'/d}}) &
     \text{if } \delta = 2\delta'\\ \cos(\frac{i}{10000^{2\delta'/d}}) & \text{if }
     \delta = 2\delta' + 1\\ \end{cases} $$
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \text{PE}(i,\delta) = \begin{cases} \sin(\frac{i}{10000^{2\delta'/d}}) &
+    \text{if } \delta = 2\delta'\\ \cos(\frac{i}{10000^{2\delta'/d}}) & \text{if }
+    \delta = 2\delta' + 1\\ \end{cases} $$
 - en: In this way each dimension of the positional encoding corresponds to a sinusoid
     of different wavelengths in different dimensions, from $2\pi$ to $10000 \cdot
     2\pi$.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 这样，位置编码的每个维度对应于不同维度中不同波长的正弦波，从$2\pi$到$10000 \cdot 2\pi$。
 - en: '![](../Images/49f652aa0f8209d1c16427be9b2fabfa.png)'
+  id: totrans-50
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/49f652aa0f8209d1c16427be9b2fabfa.png)'
 - en: Fig. 3\. Sinusoidal positional encoding with $L=32$ and $d=128$. The value is
     between -1 (black) and 1 (white) and the value 0 is in gray.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 图3。正弦位置编码，$L=32$，$d=128$。值介于-1（黑色）和1（白色）之间，值为0为灰色。
 - en: (2) *Learned positional encoding*, as its name suggested, assigns each element
     with a learned column vector which encodes its *absolute* position ([Gehring,
     et al. 2017](https://arxiv.org/abs/1705.03122)).
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: (2) *学习的位置编码*，顾名思义，为每个元素分配一个学习的列向量，编码其*绝对*位置（[Gehring等人，2017](https://arxiv.org/abs/1705.03122)）。
 - en: '**Quick Follow-ups**'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: '**快速跟进**'
 - en: 'Following the vanilla Transformer, [Al-Rfou et al. (2018)](https://arxiv.org/abs/1808.04444)
     added a set of auxiliary losses to enable training a deep Transformer model on
     character-level language modeling which outperformed LSTMs. Several types of auxiliary
     tasks are used:'
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 在基础Transformer之后，[Al-Rfou等人（2018）](https://arxiv.org/abs/1808.04444)添加了一组辅助损失，以便在字符级语言建模上训练深度Transformer模型，这超过了LSTMs。使用了几种类型的辅助任务：
 - en: Instead of producing only one prediction at the sequence end, every *immediate
     position* is also asked to make a correct prediction, forcing the model to predict
     given smaller contexts (e.g. first couple tokens at the beginning of a context
     window).
+  id: totrans-55
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 不仅在序列末尾产生一个预测，还要求每个*即时位置*也进行正确预测，迫使模型在给定更小上下文（例如上下文窗口开头的前几个标记）时进行预测。
 - en: Each intermediate Transformer layer is used for making predictions as well.
     Lower layers are weighted to contribute less and less to the total loss as training
     progresses.
+  id: totrans-56
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 每个中间Transformer层也用于进行预测。随着训练的进行，较低层的权重会逐渐减少对总损失的贡献。
 - en: Each position in the sequence can predict multiple targets, i.e. two or more
     predictions of the future tokens.
+  id: totrans-57
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 每个序列中的位置可以预测多个目标，即未来标记的两个或更多预测。
 - en: '![](../Images/0506a3e893de360e86a1b184f7961551.png)'
+  id: totrans-58
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/0506a3e893de360e86a1b184f7961551.png)'
 - en: 'Fig. 4\. Auxiliary prediction tasks used in deep Transformer for character-level
     language modeling. (Image source: [Al-Rfou et al. (2018)](https://arxiv.org/abs/1808.04444))'
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 图4. 深度Transformer用于字符级语言建模的辅助预测任务。（图片来源：[Al-Rfou等人（2018）](https://arxiv.org/abs/1808.04444)）
 - en: Adaptive Computation Time (ACT)
+  id: totrans-60
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 自适应计算时间（ACT）
 - en: '**Adaptive Computation Time** (short for **ACT**; [Graves, 2016](https://arxiv.org/abs/1603.08983))
     is a mechanism for dynamically deciding how many computational steps are needed
     in a recurrent neural network. Here is a cool [tutorial](https://distill.pub/2016/augmented-rnns/#adaptive-computation-time)
     on ACT from distill.pub.'
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: '**自适应计算时间**（简称**ACT**；[Graves, 2016](https://arxiv.org/abs/1603.08983)）是一种动态决定循环神经网络中需要多少计算步骤的机制。这里有一个关于ACT的很酷的[教程](https://distill.pub/2016/augmented-rnns/#adaptive-computation-time)来自distill.pub。'
 - en: 'Let’s say, we have a RNN model $\mathcal{R}$ composed of input weights $W_x$,
     a parametric state transition function $\mathcal{S}(.)$, a set of output weights
     $W_y$ and an output bias $b_y$. Given an input sequence $(x_1, \dots, x_L)$, the
     output sequence $(y_1, \dots, y_L)$ is computed by:'
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设我们有一个由输入权重$W_x$、参数化状态转移函数$\mathcal{S}(.)$、一组输出权重$W_y$和输出偏置$b_y$组成的RNN模型$\mathcal{R}$。给定一个输入序列$(x_1,
+    \dots, x_L)$，输出序列$(y_1, \dots, y_L)$由以下计算得出：
 - en: $$ s_t = \mathcal{S}(s_{t-1}, W_x x_t), \quad y_t = W_y s_t + b_y\quad\text{for
     }t=1, \dots, L $$
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ s_t = \mathcal{S}(s_{t-1}, W_x x_t), \quad y_t = W_y s_t + b_y\quad\text{for
+    }t=1, \dots, L $$
 - en: 'ACT enables the above RNN setup to perform a variable number of steps at each
     input element. Multiple computational steps lead to a sequence of intermediate
     states $(s_t^1, \dots, s_t^{N(t)})$ and outputs $(y_t^1, \dots, y_t^{N(t)})$ —
     they all share the same state transition function $\mathcal{S}(.)$, as well as
     the same output weights $W_y$ and bias $b_y$:'
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: ACT使上述RNN设置能够在每个输入元素上执行可变数量的步骤。多个计算步骤导致中间状态序列$(s_t^1, \dots, s_t^{N(t)})$和输出$(y_t^1,
+    \dots, y_t^{N(t)})$ — 它们都共享相同的状态转移函数$\mathcal{S}(.)$，以及相同的输出权重$W_y$和偏置$b_y$：
 - en: $$ \begin{aligned} s_t^0 &= s_{t-1} \\ s_t^n &= \mathcal{S}(s_{t}^{n-1}, x_t^n)
     = \mathcal{S}(s_{t}^{n-1}, x_t + \delta_{n,1}) \text{ for } n=1, \dots, N(t)\\
     y_t^n &= W_y s_t^n + b_y \end{aligned} $$
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} s_t^0 &= s_{t-1} \\ s_t^n &= \mathcal{S}(s_{t}^{n-1}, x_t^n)
+    = \mathcal{S}(s_{t}^{n-1}, x_t + \delta_{n,1}) \text{ for } n=1, \dots, N(t)\\
+    y_t^n &= W_y s_t^n + b_y \end{aligned} $$
 - en: where $\delta_{n,1}$ is a binary flag indicating whether the input step has
     been incremented.
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$\delta_{n,1}$是一个二进制标志，指示输入步骤是否已增加。
 - en: 'The number of steps $N(t)$ is determined by an extra sigmoidal halting unit
     $h$, with associated weight matrix $W_h$ and bias $b_h$, outputting a halting
     probability $p_t^n$ at immediate step $n$ for $t$-th input element:'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 步数$N(t)$由额外的S形停止单元$h$确定，具有相关的权重矩阵$W_h$和偏置$b_h$，在第$t$个输入元素的即时步骤$n$处输出一个停止概率$p_t^n$：
 - en: $$ h_t^n = \sigma(W_h s_t^n + b_h) $$
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ h_t^n = \sigma(W_h s_t^n + b_h) $$
 - en: In order to allow the computation to halt after a single step, ACT introduces
     a small constant $\epsilon$ (e.g. 0.01), so that whenever the cumulative probability
     goes above $1-\epsilon$, the computation stops.
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了允许计算在单个步骤后停止，ACT引入了一个小常数$\epsilon$（例如0.01），因此每当累积概率超过$1-\epsilon$时，计算就会停止。
 - en: '$$ \begin{aligned} N(t) &= \min(\min\{n'': \sum_{n=1}^{n''} h_t^n \geq 1 -\epsilon\},
     M) \\ p_t^n &= \begin{cases} h_t^n & \text{if }n < N(t) \\ R(t) = 1 - \sum_{n=1}^{N(t)-1}
     h_t^n & \text{if }n= N(t)\\ \end{cases} \end{aligned} $$'
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: '$$ \begin{aligned} N(t) &= \min(\min\{n'': \sum_{n=1}^{n''} h_t^n \geq 1 -\epsilon\},
+    M) \\ p_t^n &= \begin{cases} h_t^n & \text{if }n < N(t) \\ R(t) = 1 - \sum_{n=1}^{N(t)-1}
+    h_t^n & \text{if }n= N(t)\\ \end{cases} \end{aligned} $$'
 - en: where $M$ is an upper limit for the number of immediate steps allowed.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$M$是允许的中间步骤数的上限。
 - en: 'The final state and output are mean-field updates:'
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 最终状态和输出是均场更新：
 - en: $$ s_t = \sum_{n=1}^{N(t)} p_t^n s_t^n,\quad y_t = \sum_{n=1}^{N(t)} p_t^n y_t^n
     $$![](../Images/71f6ca1bfeb08d5453814f08b73bd114.png)
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ s_t = \sum_{n=1}^{N(t)} p_t^n s_t^n,\quad y_t = \sum_{n=1}^{N(t)} p_t^n y_t^n
+    $$![](../Images/71f6ca1bfeb08d5453814f08b73bd114.png)
 - en: 'Fig. 5\. The computation graph of a RNN with ACT mechanism. (Image source:
     [Graves, 2016](https://arxiv.org/abs/1603.08983))'
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 图5. 具有ACT机制的RNN的计算图。 (图片来源：[Graves, 2016](https://arxiv.org/abs/1603.08983))
 - en: To avoid unnecessary pondering over each input, ACT adds a *ponder cost* $\mathcal{P}(x)
     = \sum_{t=1}^L N(t) + R(t) $ in the loss function to encourage a smaller number
     of intermediate computational steps.
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了避免对每个输入进行不必要的思考，ACT在损失函数中添加了一个*思考成本*$\mathcal{P}(x) = \sum_{t=1}^L N(t) +
+    R(t)$，以鼓励较少的中间计算步骤。
 - en: Improved Attention Span
+  id: totrans-76
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 改进的注意力跨度
 - en: The goal of improving attention span is to make the context that can be used
     in self-attention longer, more efficient and flexible.
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 改善注意力跨度的目标是使自注意力中可以使用的上下文更长、更高效和更灵活。
 - en: Longer Attention Span (Transformer-XL)
+  id: totrans-78
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 更长的注意力跨度（Transformer-XL）
 - en: The vanilla Transformer has a fixed and limited attention span. The model can
     only attend to other elements in the same segments during each update step and
     no information can flow across separated fixed-length segments.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 普通Transformer具有固定且有限的注意力跨度。模型在每个更新步骤中只能关注同一段中的其他元素，不能在分隔的固定长度段之间传递信息。
 - en: 'This *context segmentation* causes several issues:'
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种*上下文分割*会引起几个问题：
 - en: The model cannot capture very long term dependencies.
+  id: totrans-81
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 模型无法捕捉非常长期的依赖关系。
 - en: It is hard to predict the first few tokens in each segment given no or thin
     context.
+  id: totrans-82
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在没有或很少上下文的情况下，很难预测每个片段中的前几个标记。
 - en: The evaluation is expensive. Whenever the segment is shifted to the right by
     one, the new segment is re-processed from scratch, although there are a lot of
     overlapped tokens.
+  id: totrans-83
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 评估是昂贵的。每当段向右移动一个位置时，新段都会从头开始重新处理，尽管有很多重叠的标记。
 - en: '**Transformer-XL** ([Dai et al., 2019](https://arxiv.org/abs/1901.02860); “XL”
     means “extra long”) solves the context segmentation problem with two main modifications:'
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: '**Transformer-XL** ([Dai等人，2019](https://arxiv.org/abs/1901.02860); “XL”代表“extra
+    long”) 通过两个主要修改解决了上下文分割问题：'
 - en: Reusing hidden states between segments.
+  id: totrans-85
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在段之间重用隐藏状态。
 - en: Adopting a new positional encoding that is suitable for reused states.
+  id: totrans-86
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 采用适合重用状态的新位置编码。
 - en: '**Hidden State Reuse**'
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: '**隐藏状态重用**'
 - en: The recurrent connection between segments is introduced into the model by continuously
     using the hidden states from the previous segments.
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型通过持续使用先前段的隐藏状态引入了段之间的循环连接。
 - en: '![](../Images/72c12a971746eb755dfd93a3edb368dd.png)'
+  id: totrans-89
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/72c12a971746eb755dfd93a3edb368dd.png)'
 - en: 'Fig. 6\. A comparison between the training phrase of vanilla Transformer &
     Transformer-XL with a segment length 4\. (Image source: left part of Figure 2
     in [Dai et al., 2019](https://arxiv.org/abs/1901.02860)).'
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 图6. 普通Transformer和Transformer-XL在训练阶段的比较，段长度为4。 (图片来源：[Dai等人，2019](https://arxiv.org/abs/1901.02860)中图2的左部分)
 - en: Let’s label the hidden state of the $n$-th layer for the $(\tau + 1)$-th segment
     in the model as $\mathbf{h}_{\tau+1}^{(n)} \in \mathbb{R}^{L \times d}$. In addition
     to the hidden state of the last layer for the same segment $\mathbf{h}_{\tau+1}^{(n-1)}$,
@@ -420,52 +633,82 @@
     $\mathbf{h}_{\tau}^{(n)}$. By incorporating information from the previous hidden
     states, the model extends the attention span much longer in the past, over multiple
     segments.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们将模型中第$(\tau + 1)$个片段的第$n$层的隐藏状态标记为$\mathbf{h}_{\tau+1}^{(n)} \in \mathbb{R}^{L
+    \times d}$。除了相同段落的最后一层的隐藏状态$\mathbf{h}_{\tau+1}^{(n-1)}$之外，它还取决于前一个段落相同层的隐藏状态$\mathbf{h}_{\tau}^{(n)}$。通过合并来自先前隐藏状态的信息，模型将注意力跨度延伸到过去更长的时间，跨越多个片段。
 - en: $$ \begin{aligned} \color{red}{\widetilde{\mathbf{h}}_{\tau+1}^{(n-1)}} &= [\text{stop-gradient}(\mathbf{h}_{\tau}^{(n-1)})
     \circ \mathbf{h}_{\tau+1}^{(n-1)}] \\ \mathbf{Q}_{\tau+1}^{(n)} &= \mathbf{h}_{\tau+1}^{(n-1)}\mathbf{W}^q
     \\ \mathbf{K}_{\tau+1}^{(n)} &= \color{red}{\widetilde{\mathbf{h}}_{\tau+1}^{(n-1)}}
     \mathbf{W}^k \\ \mathbf{V}_{\tau+1}^{(n)} &= \color{red}{\widetilde{\mathbf{h}}_{\tau+1}^{(n-1)}}
     \mathbf{W}^v \\ \mathbf{h}_{\tau+1}^{(n)} &= \text{transformer-layer}(\mathbf{Q}_{\tau+1}^{(n)},
     \mathbf{K}_{\tau+1}^{(n)}, \mathbf{V}_{\tau+1}^{(n)}) \end{aligned} $$
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \color{red}{\widetilde{\mathbf{h}}_{\tau+1}^{(n-1)}} &= [\text{stop-gradient}(\mathbf{h}_{\tau}^{(n-1)})
+    \circ \mathbf{h}_{\tau+1}^{(n-1)}] \\ \mathbf{Q}_{\tau+1}^{(n)} &= \mathbf{h}_{\tau+1}^{(n-1)}\mathbf{W}^q
+    \\ \mathbf{K}_{\tau+1}^{(n)} &= \color{red}{\widetilde{\mathbf{h}}_{\tau+1}^{(n-1)}}
+    \mathbf{W}^k \\ \mathbf{V}_{\tau+1}^{(n)} &= \color{red}{\widetilde{\mathbf{h}}_{\tau+1}^{(n-1)}}
+    \mathbf{W}^v \\ \mathbf{h}_{\tau+1}^{(n)} &= \text{transformer-layer}(\mathbf{Q}_{\tau+1}^{(n)},
+    \mathbf{K}_{\tau+1}^{(n)}, \mathbf{V}_{\tau+1}^{(n)}) \end{aligned} $$
 - en: Note that both key and value rely on the extended hidden state, while the query
     only consumes hidden state at current step. The concatenation operation $[. \circ
     .]$ is along the sequence length dimension.
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意，键和值都依赖于扩展的隐藏状态，而查询仅消耗当前步骤的隐藏状态。连接操作$[. \circ .]$沿着序列长度维度进行。
 - en: '**Relative Positional Encoding**'
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: '**相对位置编码**'
 - en: In order to work with this new form of attention span, Transformer-XL proposed
     a new type of positional encoding. If using the same approach by vanilla Transformer
     and encoding the absolute position, the previous and current segments will be
     assigned with the same encoding, which is undesired.
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了处理这种新形式的注意力跨度，Transformer-XL提出了一种新类型的位置编码。如果使用香草Transformer相同的方法并对绝对位置进行编码，那么之前和当前的片段将被分配相同的编码，这是不希望看到的。
 - en: To keep the positional information flow coherently across segments, Transformer-XL
     encodes the *relative* position instead, as it could be sufficient enough to know
     the position offset for making good predictions, i.e. $i-j$, between one key vector
     $\mathbf{k}_{\tau, j}$ and its query $\mathbf{q}_{\tau, i}$.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了保持位置信息在各个片段之间的连贯流动，Transformer-XL编码*相对*位置，因为知道位置偏移量对于做出良好预测，即$i-j$之间的一个键向量$\mathbf{k}_{\tau,
+    j}$和其查询$\mathbf{q}_{\tau, i}$可能足够了。
 - en: 'If omitting the scalar $1/\sqrt{d_k}$ and the normalizing term in softmax but
     including positional encodings, we can write the attention score between query
     at position $i$ and key at position $j$ as:'
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果省略标量$1/\sqrt{d_k}$和softmax中的归一化项，但包括位置编码，我们可以将位置$i$处的查询和位置$j$处的键之间的注意力分数写为：
 - en: $$ \begin{aligned} a_{ij} &= \mathbf{q}_i {\mathbf{k}_j}^\top = (\mathbf{x}_i
     + \mathbf{p}_i)\mathbf{W}^q ((\mathbf{x}_j + \mathbf{p}_j)\mathbf{W}^k)^\top \\
     &= \mathbf{x}_i\mathbf{W}^q {\mathbf{W}^k}^\top\mathbf{x}_j^\top + \mathbf{x}_i\mathbf{W}^q
     {\mathbf{W}^k}^\top\mathbf{p}_j^\top + \mathbf{p}_i\mathbf{W}^q {\mathbf{W}^k}^\top\mathbf{x}_j^\top
     + \mathbf{p}_i\mathbf{W}^q {\mathbf{W}^k}^\top\mathbf{p}_j^\top \end{aligned}
     $$
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} a_{ij} &= \mathbf{q}_i {\mathbf{k}_j}^\top = (\mathbf{x}_i
+    + \mathbf{p}_i)\mathbf{W}^q ((\mathbf{x}_j + \mathbf{p}_j)\mathbf{W}^k)^\top \\
+    &= \mathbf{x}_i\mathbf{W}^q {\mathbf{W}^k}^\top\mathbf{x}_j^\top + \mathbf{x}_i\mathbf{W}^q
+    {\mathbf{W}^k}^\top\mathbf{p}_j^\top + \mathbf{p}_i\mathbf{W}^q {\mathbf{W}^k}^\top\mathbf{x}_j^\top
+    + \mathbf{p}_i\mathbf{W}^q {\mathbf{W}^k}^\top\mathbf{p}_j^\top \end{aligned}
+    $$
 - en: 'Transformer-XL reparameterizes the above four terms as follows:'
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: Transformer-XL将上述四个术语重新参数化如下：
 - en: $$ a_{ij}^\text{rel} = \underbrace{ \mathbf{x}_i\mathbf{W}^q \color{blue}{ {\mathbf{W}_E^k}^\top
     } \mathbf{x}_j^\top }_\text{content-based addressing} + \underbrace{ \mathbf{x}_i\mathbf{W}^q
     \color{blue}{ {\mathbf{W}_R^k}^\top } \color{green}{\mathbf{r}_{i-j}^\top} }_\text{content-dependent
@@ -473,348 +716,515 @@
     } \mathbf{x}_j^\top }_\text{global content bias} + \underbrace{ \color{red}{\mathbf{v}}
     \color{blue}{ {\mathbf{W}_R^k}^\top } \color{green}{\mathbf{r}_{i-j}^\top} }_\text{global
     positional bias} $$
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ a_{ij}^\text{rel} = \underbrace{ \mathbf{x}_i\mathbf{W}^q \color{blue}{ {\mathbf{W}_E^k}^\top
+    } \mathbf{x}_j^\top }_\text{基于内容的寻址} + \underbrace{ \mathbf{x}_i\mathbf{W}^q \color{blue}{
+    {\mathbf{W}_R^k}^\top } \color{green}{\mathbf{r}_{i-j}^\top} }_\text{基于内容的位置偏差}
+    + \underbrace{ \color{red}{\mathbf{u}} \color{blue}{ {\mathbf{W}_E^k}^\top } \mathbf{x}_j^\top
+    }_\text{全局内容偏差} + \underbrace{ \color{red}{\mathbf{v}} \color{blue}{ {\mathbf{W}_R^k}^\top
+    } \color{green}{\mathbf{r}_{i-j}^\top} }_\text{全局位置偏差} $$
 - en: Replace $\mathbf{p}_j$ with relative positional encoding $\mathbf{r}_{i-j} \in
     \mathbf{R}^{d}$;
+  id: totrans-101
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 将$\mathbf{p}_j$替换为相对位置编码$\mathbf{r}_{i-j} \in \mathbf{R}^{d}$；
 - en: Replace $\mathbf{p}_i\mathbf{W}^q$ with two trainable parameters $\mathbf{u}$
     (for content) and $\mathbf{v}$ (for location) in two different terms;
+  id: totrans-102
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 将$\mathbf{p}_i\mathbf{W}^q$替换为两个可训练参数$\mathbf{u}$（用于内容）和$\mathbf{v}$（用于位置）在两个不同的项中；
 - en: Split $\mathbf{W}^k$ into two matrices, $\mathbf{W}^k_E$ for content information
     and $\mathbf{W}^k_R$ for location information.
+  id: totrans-103
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 将$\mathbf{W}^k$拆分为两个矩阵，$\mathbf{W}^k_E$用于内容信息，$\mathbf{W}^k_R$用于位置信息。
 - en: Adaptive Attention Span
+  id: totrans-104
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 自适应注意力跨度
 - en: One key advantage of Transformer is the capability of capturing long-term dependencies.
     Depending on the context, the model may prefer to attend further sometime than
     others; or one attention head may had different attention pattern from the other.
     If the attention span could adapt its length flexibly and only attend further
     back when needed, it would help reduce both computation and memory cost to support
     longer maximum context size in the model.
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: Transformer的一个关键优势是捕捉长期依赖关系的能力。根据上下文，模型可能更喜欢有时比其他时候更远的地方进行关注；或者一个注意力头可能具有不同于其他头部的不同注意模式。如果注意力跨度能够灵活地调整其长度，并且只在需要时才进一步关注更远的地方，这将有助于减少模型中支持更长最大上下文大小的计算和内存成本。
 - en: This is the motivation for **Adaptive Attention Span**. [Sukhbaatar, et al.,
     (2019)](https://arxiv.org/abs/1905.07799) proposed a self-attention mechanism
     that seeks an optimal attention span. They hypothesized that different attention
     heads might assign scores differently within the same context window (See Fig.
     7) and thus the optimal span would be trained separately per head.
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是**自适应注意力跨度**的动机。[Sukhbaatar等人（2019）](https://arxiv.org/abs/1905.07799)提出了一种自注意机制，旨在寻找最佳的注意力跨度。他们假设不同的注意力头可能在相同的上下文窗口内以不同方式分配分数（见图7），因此最佳跨度将分别针对每个头进行训练。
 - en: '![](../Images/ddadc900601957ade0d79b8ac1e61ca9.png)'
+  id: totrans-107
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ddadc900601957ade0d79b8ac1e61ca9.png)'
 - en: 'Fig. 7\. Two attention heads in the same model, A & B, assign attention differently
     within the same context window. Head A attends more to the recent tokens, while
     head B look further back into the past uniformly. (Image source: [Sukhbaatar,
     et al. 2019](https://arxiv.org/abs/1905.07799))'
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 图7。同一模型中的两个注意力头A和B，在相同的上下文窗口内分配不同的注意力。头A更多地关注最近的标记，而头B均匀地向过去更远处查看。（图片来源：[Sukhbaatar等人，2019](https://arxiv.org/abs/1905.07799))
 - en: Given the $i$-th token, we need to compute the attention weights between this
     token and other keys at positions $j \in S_i$, where $S_i$ defineds the $i$-th
     token’s context window.
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 给定第$i$个标记，我们需要计算该标记与位置$j \in S_i$处其他键之间的注意力权重，其中$S_i$定义了第$i$个标记的上下文窗口。
 - en: $$ \begin{aligned} e_{ij} &= \mathbf{q}_i {\mathbf{k}_j}^\top \\ a_{ij} &= \text{softmax}(e_{ij})
     = \frac{\exp(e_{ij})}{\sum_{r=i-s}^{i-1} \exp(e_{ir})} \\ \mathbf{y}_i &= \sum_{r=i-s}^{i-1}a_{ir}\mathbf{v}_r
     = \sum_{r=i-s}^{i-1}a_{ir}\mathbf{x}_r\mathbf{W}^v \end{aligned} $$
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} e_{ij} &= \mathbf{q}_i {\mathbf{k}_j}^\top \\ a_{ij} &= \text{softmax}(e_{ij})
+    = \frac{\exp(e_{ij})}{\sum_{r=i-s}^{i-1} \exp(e_{ir})} \\ \mathbf{y}_i &= \sum_{r=i-s}^{i-1}a_{ir}\mathbf{v}_r
+    = \sum_{r=i-s}^{i-1}a_{ir}\mathbf{x}_r\mathbf{W}^v \end{aligned} $$
 - en: 'A *soft mask function* $m_z$ is added to control for an effective adjustable
     attention span, which maps the distance between query and key into a [0, 1] value.
     $m_z$ is parameterized by $z \in [0, s]$ and $z$ is to be learned:'
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 添加*软掩码函数* $m_z$ 以控制有效可调整的注意力范围，将查询和键之间的距离映射为[0, 1]的值。$m_z$由$z \in [0, s]$参数化，$z$是需要学习的：
 - en: $$ m_z(x) = \text{clamp}(\frac{1}{R}(R+z-x), 0, 1) $$
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ m_z(x) = \text{clamp}(\frac{1}{R}(R+z-x), 0, 1) $$
 - en: where $R$ is a hyper-parameter which defines the softness of $m_z$.
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$R$是定义$m_z$软度的超参数。
 - en: '![](../Images/38e790ca98cc4dd1a2c4d0b424a3ee02.png)'
+  id: totrans-114
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/38e790ca98cc4dd1a2c4d0b424a3ee02.png)'
 - en: 'Fig. 8\. The soft masking function used in the adaptive attention span. (Image
     source: [Sukhbaatar, et al. 2019](https://arxiv.org/abs/1905.07799).)'
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: 图8. 自适应注意跨度中使用的软掩码函数。（图片来源：[Sukhbaatar等人，2019](https://arxiv.org/abs/1905.07799)。）
 - en: 'The soft mask function is applied to the softmax elements in the attention
     weights:'
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 软掩码函数应用于注意权重中的softmax元素：
 - en: $$ a_{ij} = \frac{m_z(i-j)\exp(s_{ij})}{\sum_{r=i-s}^{i-1}m_z(i-r) \exp(s_{ir})}
     $$
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ a_{ij} = \frac{m_z(i-j)\exp(s_{ij})}{\sum_{r=i-s}^{i-1}m_z(i-r) \exp(s_{ir})}
+    $$
 - en: In the above equation, $z$ is differentiable so it is trained jointly with other
     parts of the model. Parameters $z^{(i)}, i=1, \dots, h$ are learned *separately
     per head*. Moreover, the loss function has an extra L1 penalty on $\sum_{i=1}^h
     z^{(i)}$.
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上述方程中，$z$是可微的，因此它与模型的其他部分一起进行训练。参数$z^{(i)}, i=1, \dots, h$是*每个头部单独学习*的。此外，损失函数对$\sum_{i=1}^h
+    z^{(i)}$有额外的L1惩罚。
 - en: Using [Adaptive Computation Time](#adaptive-computation-time-act), the approach
     can be further enhanced to have flexible attention span length, adaptive to the
     current input dynamically. The span parameter $z_t$ of an attention head at time
     $t$ is a sigmoidal function, $z_t = S \sigma(\mathbf{v} \cdot \mathbf{x}_t +b)$,
     where the vector $\mathbf{v}$ and the bias scalar $b$ are learned jointly with
     other parameters.
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用[自适应计算时间](#adaptive-computation-time-act)，该方法可以进一步增强，使其具有灵活的注意跨度长度，动态适应当前输入。时间$t$处的注意头的跨度参数$z_t$是一个sigmoid函数，$z_t
+    = S \sigma(\mathbf{v} \cdot \mathbf{x}_t +b)$，其中向量$\mathbf{v}$和偏置标量$b$与其他参数一起学习。
 - en: In the experiments of Transformer with adaptive attention span, [Sukhbaatar,
     et al. (2019)](https://arxiv.org/abs/1905.07799) found a general tendency that
     lower layers do not require very long attention spans, while a few attention heads
     in higher layers may use exceptionally long spans. Adaptive attention span also
     helps greatly reduce the number of FLOPS, especially in a big model with many
     attention layers and a large context length.
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: 在具有自适应注意力跨度的Transformer实验中，[Sukhbaatar等人（2019）](https://arxiv.org/abs/1905.07799)发现一个普遍趋势，即较低层不需要非常长的注意跨度，而较高层中的少数注意头可能使用异常长的跨度。自适应注意跨度还有助于大大减少FLOPS的数量，特别是在具有许多注意层和大上下文长度的大型模型中。
 - en: Localized Attention Span (Image Transformer)
+  id: totrans-121
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 局部化注意跨度（图像变换器）
 - en: The original, also the most popular, use case for Transformer is to do language
     modeling. The text sequence is one-dimensional in a clearly defined chronological
     order and thus the attention span grows linearly with increased context size.
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: Transformer的最初，也是最流行的用例是进行语言建模。文本序列是一维的，按照明确定的时间顺序，因此随着上下文大小的增加，注意跨度呈线性增长。
 - en: However, if we want to use Transformer on images, it is unclear how to define
     the scope of context or the order. **Image Transformer** ([Parmer, et al 2018](https://arxiv.org/abs/1802.05751))
     embraces a formulation of image generation similar to sequence modeling within
     the Transformer framework. Additionally, Image Transformer restricts the self-attention
     span to only *local* neighborhoods, so that the model can scale up to process
     more images in parallel and keep the likelihood loss tractable.
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，如果我们想在图像上使用Transformer，目前尚不清楚如何定义上下文的范围或顺序。**图像变换器**（[Parmer等人，2018](https://arxiv.org/abs/1802.05751)）采用了与Transformer框架内的序列建模类似的图像生成公式。此外，图像变换器将自注意跨度限制在*局部*邻域，以便模型可以扩展到并行处理更多图像，并保持可能性损失可控。
 - en: 'The encoder-decoder architecture remains for image-conditioned generation:'
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: 编码器-解码器架构仍然用于基于图像的生成：
 - en: The encoder generates a contextualized, per-pixel-channel representation of
     the source image;
+  id: totrans-125
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 编码器生成源图像的上下文化的、逐像素通道的表示；
 - en: The decoder *autoregressively* generates an output image, one channel per pixel
     at each time step.
+  id: totrans-126
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 解码器*自回归*地生成输出图像，每个时间步生成一个像素通道。
 - en: Let’s label the representation of the current pixel to be generated as the query
     $\mathbf{q}$. Other positions whose representations will be used for computing
     $\mathbf{q}$ are key vector $\mathbf{k}_1, \mathbf{k}_2, \dots$ and they together
     form a memory matrix $\mathbf{M}$. The scope of $\mathbf{M}$ defines the context
     window for pixel query $\mathbf{q}$.
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们将待生成的当前像素的表示标记为查询$\mathbf{q}$。用于计算$\mathbf{q}$的其他位置的表示将用作键向量$\mathbf{k}_1,
+    \mathbf{k}_2, \dots$，它们一起形成一个记忆矩阵$\mathbf{M}$。$\mathbf{M}$的范围定义了像素查询$\mathbf{q}$的上下文窗口。
 - en: Image Transformer introduced two types of localized $\mathbf{M}$, as illustrated
     below.
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: 图像变换器引入了两种局部化的$\mathbf{M}$，如下图所示。
 - en: '![](../Images/1ae79a19cd8a99e00b9b9efa0d887b4a.png)'
+  id: totrans-129
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/1ae79a19cd8a99e00b9b9efa0d887b4a.png)'
 - en: 'Fig. 9\. Illustration of 1D and 2D attention span for visual inputs in Image
     Transformer. The black line marks a query block and the cyan outlines the actual
     attention span for pixel q. (Image source: Figure 2 in [Parmer et al, 2018](https://arxiv.org/abs/1802.05751))'
+  id: totrans-130
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 9\. 图像 Transformer 中视觉输入的 1D 和 2D 注意力跨度示意图。黑线标记一个查询块，青色轮廓标记像素 q 的实际注意力跨度。（图片来源：[Parmer
+    等人，2018](https://arxiv.org/abs/1802.05751) 中的图 2）
 - en: '(1) *1D Local Attention*: The input image is flattened in the [raster scanning](https://en.wikipedia.org/wiki/Raster_scan#Scanning_pattern)
     order, that is, from left to right and top to bottom. The linearized image is
     then partitioned into non-overlapping query blocks. The context window consists
     of pixels in the same query block as $\mathbf{q}$ and a fixed number of additional
     pixels generated before this query block.'
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
+  zh: (1) *1D 局部注意力*：输入图像按照 [光栅扫描](https://en.wikipedia.org/wiki/Raster_scan#Scanning_pattern)
+    顺序展开，即从左到右，从上到下。然后将线性化的图像分成不重叠的查询块。上下文窗口包括与 $\mathbf{q}$ 相同查询块中的像素以及在此查询块之前生成的固定数量的其他像素。
 - en: '(2) *2D Local Attention*: The image is partitioned into multiple non-overlapping
     rectangular query blocks. The query pixel can attend to all others in the same
     memory blocks. To make sure the pixel at the top-left corner can also have a valid
     context window, the memory block is extended to the top, left and right by a fixed
     amount, respectively.'
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: (2) *2D 局部注意力*：图像被分成多个不重叠的矩形查询块。查询像素可以关注同一内存块中的所有其他像素。为了确保左上角的像素也能有有效的上下文窗口，内存块分别向上、向左和向右扩展了固定数量。
 - en: Less Time and Memory Cost
+  id: totrans-133
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 更少的时间和内存成本
 - en: This section introduces several improvements made on Transformer to reduce the
     computation time and memory consumption.
+  id: totrans-134
   prefs: []
   type: TYPE_NORMAL
+  zh: 本节介绍了对 Transformer 进行的几项改进，以减少计算时间和内存消耗。
 - en: Sparse Attention Matrix Factorization (Sparse Transformers)
+  id: totrans-135
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 稀疏注意力矩阵分解（稀疏 Transformer）
 - en: The compute and memory cost of the vanilla Transformer grows quadratically with
     sequence length and thus it is hard to be applied on very long sequences.
+  id: totrans-136
   prefs: []
   type: TYPE_NORMAL
+  zh: Vanilla Transformer 的计算和内存成本随着序列长度呈二次增长，因此很难应用于非常长的序列。
 - en: '**Sparse Transformer** ([Child et al., 2019](https://arxiv.org/abs/1904.10509))
     introduced *factorized self-attention*, through sparse matrix factorization, making
     it possible to train dense attention networks with hundreds of layers on sequence
     length up to 16,384, which would be infeasible on modern hardware otherwise.'
+  id: totrans-137
   prefs: []
   type: TYPE_NORMAL
+  zh: '**稀疏 Transformer**（[Child 等人，2019](https://arxiv.org/abs/1904.10509)）引入了*分解自注意力*，通过稀疏矩阵分解，使得在长度达到
+    16,384 的序列上训练密集注意力网络成为可能，否则在现代硬件上是不可行的。'
 - en: Given a set of attention connectivity pattern $\mathcal{S} = \{S_1, \dots, S_n\}$,
     where each $S_i$ records a set of key positions that the $i$-th query vector attends
     to.
+  id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: 给定一组注意力连接模式 $\mathcal{S} = \{S_1, \dots, S_n\}$，其中每个 $S_i$ 记录第 $i$ 个查询向量关注的一组关键位置。
 - en: $$ \begin{aligned} \text{Attend}(\mathbf{X}, \mathcal{S}) &= \Big( a(\mathbf{x}_i,
     S_i) \Big)_{i \in \{1, \dots, L\}} \\ \text{ where } a(\mathbf{x}_i, S_i) &= \text{softmax}\Big(\frac{(\mathbf{x}_i
     \mathbf{W}^q)(\mathbf{x}_j \mathbf{W}^k)_{j \in S_i}^\top}{\sqrt{d_k}}\Big) (\mathbf{x}_j
     \mathbf{W}^v)_{j \in S_i} \end{aligned} $$
+  id: totrans-139
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \text{Attend}(\mathbf{X}, \mathcal{S}) &= \Big( a(\mathbf{x}_i,
+    S_i) \Big)_{i \in \{1, \dots, L\}} \\ \text{ where } a(\mathbf{x}_i, S_i) &= \text{softmax}\Big(\frac{(\mathbf{x}_i
+    \mathbf{W}^q)(\mathbf{x}_j \mathbf{W}^k)_{j \in S_i}^\top}{\sqrt{d_k}}\Big) (\mathbf{x}_j
+    \mathbf{W}^v)_{j \in S_i} \end{aligned} $$
 - en: Note that although the size of $S_i$ is not fixed, $a(\mathbf{x}_i, S_i)$ is
     always of size $d_v$ and thus $\text{Attend}(\mathbf{X}, \mathcal{S}) \in \mathbb{R}^{L
     \times d_v}$.
+  id: totrans-140
   prefs: []
   type: TYPE_NORMAL
+  zh: 请注意，尽管 $S_i$ 的大小不固定，$a(\mathbf{x}_i, S_i)$ 的大小始终为 $d_v$，因此 $\text{Attend}(\mathbf{X},
+    \mathcal{S}) \in \mathbb{R}^{L \times d_v}$。
 - en: 'In anto-regressive models, one attention span is defined as $S_i = \{j: j \leq
     i\}$ as it allows each token to attend to all the positions in the past.'
+  id: totrans-141
   prefs: []
   type: TYPE_NORMAL
+  zh: '在自回归模型中，一个注意力跨度被定义为 $S_i = \{j: j \leq i\}$，因为它允许每个标记关注过去所有位置。'
 - en: In factorized self-attention, the set $S_i$ is decomposed into a *tree* of dependencies,
     such that for every pair of $(i, j)$ where $j \leq i$, there is a path connecting
     $i$ back to $j$ and $i$ can attend to $j$ either directly or indirectly.
+  id: totrans-142
   prefs: []
   type: TYPE_NORMAL
+  zh: 在分解自注意力中，集合 $S_i$ 被分解为一个*依赖树*，对于每对 $(i, j)$，其中 $j \leq i$，都存在连接 $i$ 返回到 $j$
+    的路径，$i$ 可以直接或间接地关注 $j$。
 - en: Precisely, the set $S_i$ is divided into $p$ *non-overlapping* subsets, where
     the $m$-th subset is denoted as $A^{(m)}_i \subset S_i, m = 1,\dots, p$. Therefore
     the path between the output position $i$ and any $j$ has a maximum length $p +
     1$. For example, if $(j, a, b, c, \dots, i)$ is a path of indices between $i$
     and $j$, we would have $j \in A_a^{(1)}, a \in A_b^{(2)}, b \in A_c^{(3)}, \dots$,
     so on and so forth.
+  id: totrans-143
   prefs: []
   type: TYPE_NORMAL
+  zh: 具体来说，集合$S_i$被分成$p$个*不重叠*子集，其中第$m$个子集表示为$A^{(m)}_i \subset S_i, m = 1,\dots,
+    p$。因此，输出位置$i$和任何$j$之间的路径的最大长度为$p + 1$。例如，如果$(j, a, b, c, \dots, i)$是$i$和$j$之间的索引路径，则我们会有$j
+    \in A_a^{(1)}, a \in A_b^{(2)}, b \in A_c^{(3)}, \dots$，依此类推。
 - en: '**Sparse Factorized Attention**'
+  id: totrans-144
   prefs: []
   type: TYPE_NORMAL
+  zh: '**稀疏分解注意力**'
 - en: Sparse Transformer proposed two types of fractorized attention. It is easier
     to understand the concepts as illustrated in Fig. 10 with 2D image inputs as examples.
+  id: totrans-145
   prefs: []
   type: TYPE_NORMAL
+  zh: 稀疏变压器提出了两种分解注意力的类型。通过图10中以2D图像输入为例进行说明，更容易理解这些概念。
 - en: '![](../Images/96547036b8954591a9583a17f3321fa8.png)'
+  id: totrans-146
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/96547036b8954591a9583a17f3321fa8.png)'
 - en: 'Fig. 10\. The top row illustrates the attention connectivity patterns in (a)
     Transformer, (b) Sparse Transformer with strided attention, and (c) Sparse Transformer
     with fixed attention. The bottom row contains corresponding self-attention connectivity
     matrices. Note that the top and bottom rows are not in the same scale. (Image
     source: [Child et al., 2019](https://arxiv.org/abs/1904.10509) + a few of extra
     annotations.)'
+  id: totrans-147
   prefs: []
   type: TYPE_NORMAL
+  zh: 图10\. 顶部行显示了(a) 变压器、(b) 具有跨步注意力的稀疏变压器和(c) 具有固定注意力的稀疏变压器中的注意力连接模式。底部行包含相应的自注意力连接矩阵。请注意，顶部行和底部行的比例不同。（图片来源：[Child等人，2019](https://arxiv.org/abs/1904.10509)
+    + 一些额外注释。）
 - en: (1) *Strided* attention with stride $\ell \sim \sqrt{n}$. This works well with
     image data as the structure is aligned with strides. In the image case, each pixel
     would attend to all the previous $\ell$ pixels in the raster scanning order (naturally
     cover the entire width of the image) and then those pixels attend to others in
     the same column (defined by another attention connectivity subset).
+  id: totrans-148
   prefs: []
   type: TYPE_NORMAL
+  zh: (1) *跨步*注意力，跨度为$\ell \sim \sqrt{n}$。这在处理图像数据时效果很好，因为结构与步长对齐。在图像情况下，每个像素将关注前面的所有$\ell$个像素（自然覆盖整个图像的宽度），然后这些像素将关注同一列中的其他像素（由另一个注意力连接子集定义）。
 - en: '$$ \begin{aligned} A_i^{(1)} &= \{ t, t+1, \dots, i\} \text{, where } t = \max(0,
     i - \ell) \\ A_i^{(2)} &= \{j: (i-j) \mod \ell = 0\} \end{aligned} $$'
+  id: totrans-149
   prefs: []
   type: TYPE_NORMAL
+  zh: '$$ \begin{aligned} A_i^{(1)} &= \{ t, t+1, \dots, i\} \text{, where } t = \max(0,
+    i - \ell) \\ A_i^{(2)} &= \{j: (i-j) \mod \ell = 0\} \end{aligned} $$'
 - en: (2) *Fixed* attention. A small set of tokens summarize previous locations and
     propagate that information to all future locations.
+  id: totrans-150
   prefs: []
   type: TYPE_NORMAL
+  zh: (2) *固定*注意力。一小组令牌总结了先前位置的信息，并将该信息传播到所有未来位置。
 - en: '$$ \begin{aligned} A_i^{(1)} &= \{j: \lfloor \frac{j}{\ell} \rfloor = \lfloor
     \frac{i}{\ell} \rfloor \} \\ A_i^{(2)} &= \{j: j \mod \ell \in \{\ell-c, \dots,
     \ell-1\} \} \end{aligned} $$'
+  id: totrans-151
   prefs: []
   type: TYPE_NORMAL
+  zh: '$$ \begin{aligned} A_i^{(1)} &= \{j: \lfloor \frac{j}{\ell} \rfloor = \lfloor
+    \frac{i}{\ell} \rfloor \} \\ A_i^{(2)} &= \{j: j \mod \ell \in \{\ell-c, \dots,
+    \ell-1\} \} \end{aligned} $$'
 - en: where $c$ is a hyperparameter. If $c=1$, it restricts the representation whereas
     many depend on a few positions. The paper chose $c\in \{ 8, 16, 32 \}$ for $\ell
     \in \{ 128, 256 \}$.
+  id: totrans-152
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$c$是一个超参数。如果$c=1$，它会限制表示，而许多依赖于少数位置。该论文选择了$c\in \{ 8, 16, 32 \}$，对应$\ell \in
+    \{ 128, 256 \}$。
 - en: '**Use Factorized Self-Attention in Transformer**'
+  id: totrans-153
   prefs: []
   type: TYPE_NORMAL
+  zh: '**在变压器中使用分解自注意力**'
 - en: 'There are three ways to use sparse factorized attention patterns in Transformer
     architecture:'
+  id: totrans-154
   prefs: []
   type: TYPE_NORMAL
+  zh: 在变压器架构中有三种使用稀疏分解注意力模式的方法：
 - en: One attention type per residual block and then interleave them,
+  id: totrans-155
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 每个残差块使用一种注意力类型，然后交错它们，
 - en: $\text{attention}(\mathbf{X}) = \text{Attend}(\mathbf{X}, A^{(n \mod p)}) \mathbf{W}^o$,
     where $n$ is the index of the current residual block.
+  id: totrans-156
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: $\text{attention}(\mathbf{X}) = \text{Attend}(\mathbf{X}, A^{(n \mod p)}) \mathbf{W}^o$，其中$n$是当前残差块的索引。
 - en: Set up a single head which attends to locations that all the factorized heads
     attend to,
+  id: totrans-157
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 设置一个单头，该头关注所有分解头关注的位置，
 - en: $\text{attention}(\mathbf{X}) = \text{Attend}(\mathbf{X}, \cup_{m=1}^p A^{(m)})
     \mathbf{W}^o $.
+  id: totrans-158
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: $\text{attention}(\mathbf{X}) = \text{Attend}(\mathbf{X}, \cup_{m=1}^p A^{(m)})
+    \mathbf{W}^o $。
 - en: Use a multi-head attention mechanism, but different from vanilla Transformer,
     each head might adopt a pattern presented above, 1 or 2\. => This option often
     performs the best.
+  id: totrans-159
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用多头注意力机制，但与普通变压器不同，每个头可能采用上述的1或2中呈现的模式。=> 这个选项通常表现最好。
 - en: Sparse Transformer also proposed a set of changes so as to train the Transformer
     up to hundreds of layers, including gradient checkpointing, recomputing attention
     & FF layers during the backward pass, mixed precision training, efficient block-sparse
     implementation, etc. Please check the [paper](https://arxiv.org/abs/1904.10509)
     for more details.
+  id: totrans-160
   prefs: []
   type: TYPE_NORMAL
+  zh: 稀疏Transformer还提出了一系列改变，以便训练Transformer达到数百层，包括梯度检查点、在反向传播期间重新计算注意力和FF层、混合精度训练、高效的块稀疏实现等。更多细节请查看[论文](https://arxiv.org/abs/1904.10509)。
 - en: Locality-Sensitive Hashing (Reformer)
+  id: totrans-161
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 局部敏感哈希（Reformer）
 - en: 'The improvements proposed by the **Reformer** model ([Kitaev, et al. 2020](https://arxiv.org/abs/2001.04451))
     aim to solve the following pain points in Transformer:'
+  id: totrans-162
   prefs: []
   type: TYPE_NORMAL
+  zh: '**Reformer**模型（[Kitaev, et al. 2020](https://arxiv.org/abs/2001.04451)）提出的改进旨在解决Transformer中的以下痛点：'
 - en: Memory in a model with $N$ layers is $N$-times larger than in a single-layer
     model because we need to store activations for back-propagation.
+  id: totrans-163
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在具有$N$层的模型中，内存比单层模型大$N$倍，因为我们需要存储用于反向传播的激活值。
 - en: The intermediate FF layers are often quite large.
+  id: totrans-164
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 中间的FF层通常非常大。
 - en: The attention matrix on sequences of length $L$ often requires $O(L^2)$ in both
     memory and time.
+  id: totrans-165
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 长度为$L$的序列上的注意力矩阵通常需要$O(L^2)$的内存和时间。
 - en: 'Reformer proposed two main changes:'
+  id: totrans-166
   prefs: []
   type: TYPE_NORMAL
+  zh: Reformer提出了两个主要改变：
 - en: Replace the dot-product attention with *locality-sensitive hashing (LSH) attention*,
     reducing the complexity from $O(L^2)$ to $O(L\log L)$.
+  id: totrans-167
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将点积注意力替换为*局部敏感哈希（LSH）注意力*，将复杂度从$O(L^2)$降低到$O(L\log L)$。
 - en: Replace the standard residual blocks with *reversible residual layers*, which
     allows storing activations only once during training instead of $N$ times (i.e.
     proportional to the number of layers).
+  id: totrans-168
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将标准残差块替换为*可逆残差层*，这样在训练期间只需存储激活一次，而不是$N$次（即与层数成比例）。
 - en: '**Locality-Sensitive Hashing Attention**'
+  id: totrans-169
   prefs: []
   type: TYPE_NORMAL
+  zh: '**局部敏感哈希注意力**'
 - en: In $\mathbf{Q} \mathbf{K}^\top$ part of the [attention formula](#attention-and-self-attention),
     we are only interested in the largest elements as only large elements contribute
     a lot after softmax. For each query $\mathbf{q}_i \in \mathbf{Q}$, we are looking
@@ -822,283 +1232,427 @@
     neighbors quickly in high-dimensional space, Reformer incorporates [Locality-Sensitive
     Hashing (LSH)](https://en.wikipedia.org/wiki/Locality-sensitive_hashing) into
     its attention mechanism.
+  id: totrans-170
   prefs: []
   type: TYPE_NORMAL
+  zh: 在[注意力公式](#attention-and-self-attention)中的$\mathbf{Q} \mathbf{K}^\top$部分，我们只对最大的元素感兴趣，因为只有大的元素在softmax之后贡献很大。对于每个查询$\mathbf{q}_i
+    \in \mathbf{Q}$，我们正在寻找与$\mathbf{q}_i$最接近的$\mathbf{K}$中的行向量。为了在高维空间中快速找到最近邻居，Reformer将[局部敏感哈希（LSH）](https://en.wikipedia.org/wiki/Locality-sensitive_hashing)引入其注意力机制中。
 - en: A hashing scheme $x \mapsto h(x)$ is *locality-sensitive* if it preserves the
     distancing information between data points, such that close vectors obtain similar
     hashes while distant vectors have very different ones. The Reformer adopts a hashing
     scheme as such, given a fixed random matrix $\mathbf{R} \in \mathbb{R}^{d \times
     b/2}$ (where $b$ is a hyperparam), the hash function is $h(x) = \arg\max([xR;
     −xR])$.
+  id: totrans-171
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果哈希方案$x \mapsto h(x)$保留数据点之间的距离信息，则称其为*局部敏感*。Reformer采用了这样的哈希方案，给定一个固定的随机矩阵$\mathbf{R}
+    \in \mathbb{R}^{d \times b/2}$（其中$b$是一个超参数），哈希函数为$h(x) = \arg\max([xR; −xR])$。
 - en: '![](../Images/b0bd00ce9b25a5fc47b32d3d484e843d.png)'
+  id: totrans-172
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/b0bd00ce9b25a5fc47b32d3d484e843d.png)'
 - en: 'Fig. 11\. Illustration of Locality-Sensitive Hashing (LSH) attention. (Image
     source: right part of Figure 1 in [Kitaev, et al. 2020](https://arxiv.org/abs/2001.04451)).'
+  id: totrans-173
   prefs: []
   type: TYPE_NORMAL
+  zh: 图11. 局部敏感哈希（LSH）注意力的示意图。（图片来源：[Kitaev, et al. 2020](https://arxiv.org/abs/2001.04451)中图1的右部分）。
 - en: 'In LSH attention, a query can only attend to positions in the same hashing
     bucket, $S_i = \{j: h(\mathbf{q}_i) = h(\mathbf{k}_j)\}$. It is carried out in
     the following process, as illustrated in Fig. 11:'
+  id: totrans-174
   prefs: []
   type: TYPE_NORMAL
+  zh: '在LSH注意力中，一个查询只能关注相同哈希桶中的位置，$S_i = \{j: h(\mathbf{q}_i) = h(\mathbf{k}_j)\}$。如图11所示，这是通过以下过程进行的：'
 - en: (a) The attention matrix for full attention is often sparse.
+  id: totrans-175
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: (a) 完全注意力的注意力矩阵通常是稀疏的。
 - en: (b) Using LSH, we can sort the keys and queries to be aligned according to their
     hash buckets.
+  id: totrans-176
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: (b) 使用LSH，我们可以根据它们的哈希桶对键和查询进行排序对齐。
 - en: (c) Set $\mathbf{Q} = \mathbf{K}$ (precisely $\mathbf{k}_j = \mathbf{q}_j /
     |\mathbf{q}_j|$), so that there are equal numbers of keys and queries in one bucket,
     easier for batching. Interestingly, this “shared-QK” config does not affect the
     performance of the Transformer.
+  id: totrans-177
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: （c）设置$\mathbf{Q} = \mathbf{K}$（精确地说$\mathbf{k}_j = \mathbf{q}_j / |\mathbf{q}_j|$），以便一个桶中有相等数量的键和查询，更容易进行批处理。有趣的是，这种“共享-QK”配置不会影响Transformer的性能。
 - en: (d) Apply batching where chunks of $m$ consecutive queries are grouped together.
+  id: totrans-178
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: （d）对$m$个连续查询进行分组。
 - en: '![](../Images/b131239ec50d5443345eab7caf3086ef.png)'
+  id: totrans-179
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/b131239ec50d5443345eab7caf3086ef.png)'
 - en: 'Fig. 12\. The LSH attention consists of 4 steps: bucketing, sorting, chunking,
     and attention computation. (Image source: left part of Figure 1 in [Kitaev, et
     al. 2020](https://arxiv.org/abs/2001.04451)).'
+  id: totrans-180
   prefs: []
   type: TYPE_NORMAL
+  zh: 图12。LSH注意力包括4个步骤：分桶、排序、分块和注意力计算。（图片来源：[Kitaev等人，2020](https://arxiv.org/abs/2001.04451)中图1的左侧部分）。
 - en: '**Reversible Residual Network**'
+  id: totrans-181
   prefs: []
   type: TYPE_NORMAL
+  zh: '**可逆残差网络**'
 - en: Another improvement by Reformer is to use *reversible residual layers* ([Gomez
     et al. 2017](https://arxiv.org/abs/1707.04585)). The motivation for reversible
     residual network is to design the architecture in a way that activations at any
     given layer can be recovered from the activations at the following layer, using
     only the model parameters. Hence, we can save memory by recomputing the activation
     during backprop rather than storing all the activations.
+  id: totrans-182
   prefs: []
   type: TYPE_NORMAL
+  zh: Reformer的另一个改进是使用*可逆残差层*（[Gomez等人，2017](https://arxiv.org/abs/1707.04585)）。可逆残差网络的动机是以一种方式设计架构，使得在任何给定层的激活可以仅通过模型参数从后续层的激活中恢复。因此，我们可以通过在反向传播期间重新计算激活而不是存储所有激活来节省内存。
 - en: 'Given a layer $x \mapsto y$, the normal residual layer does $y = x + F(x)$,
     but the reversible layer splits both input and output into pairs $(x_1, x_2) \mapsto
     (y_1, y_2)$ and then executes the following:'
+  id: totrans-183
   prefs: []
   type: TYPE_NORMAL
+  zh: 给定一个层$x \mapsto y$，普通残差层执行$y = x + F(x)$，但可逆层将输入和输出都分成一对$(x_1, x_2) \mapsto
+    (y_1, y_2)$，然后执行以下操作：
 - en: $$ y_1 = x_1 + F(x_2),\; y_2 = x_2 + G(y_1) $$
+  id: totrans-184
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ y_1 = x_1 + F(x_2),\; y_2 = x_2 + G(y_1) $$
 - en: 'and reversing is easy:'
+  id: totrans-185
   prefs: []
   type: TYPE_NORMAL
+  zh: 逆转很容易：
 - en: $$ x_2 = y_2 - G(y_1), \; x_1 = y_1 − F(x_2) $$
+  id: totrans-186
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ x_2 = y_2 - G(y_1), \; x_1 = y_1 − F(x_2) $$
 - en: 'Reformer applies the same idea to Transformer by combination attention ($F$)
     and feed-forward layers ($G$) within a reversible net block:'
+  id: totrans-187
   prefs: []
   type: TYPE_NORMAL
+  zh: Reformer通过在可逆网络块内结合注意力（$F$）和前馈层（$G$）将相同的思想应用于Transformer：
 - en: $$ Y_1 = X_1 + \text{Attention}(X_2), \; Y_2 = X_2 + \text{FeedForward}(Y_1)
     $$
+  id: totrans-188
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ Y_1 = X_1 + \text{注意力}(X_2), \; Y_2 = X_2 + \text{前馈}(Y_1) $$
 - en: 'The memory can be further reduced by chunking the feed-forward computation:'
+  id: totrans-189
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过分块前馈计算可以进一步减少内存：
 - en: $$ Y_2 = [Y_2^{(1)}; \dots; Y_2^{(c)}] = [X_2^{(1)} + \text{FeedForward}(Y_1^{(1)});
     \dots; X_2^{(c)} + \text{FeedForward}(Y_1^{(c)})] $$
+  id: totrans-190
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ Y_2 = [Y_2^{(1)}; \dots; Y_2^{(c)}] = [X_2^{(1)} + \text{前馈}(Y_1^{(1)});
+    \dots; X_2^{(c)} + \text{前馈}(Y_1^{(c)})] $$
 - en: The resulting reversible Transformer does not need to store activation in every
     layer.
+  id: totrans-191
   prefs: []
   type: TYPE_NORMAL
+  zh: 结果可逆Transformer不需要在每一层存储激活。
 - en: Make it Recurrent (Universal Transformer)
+  id: totrans-192
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使其变成循环的（通用Transformer）
 - en: The **Universal Transformer** ([Dehghani, et al. 2019](https://arxiv.org/abs/1807.03819))
     combines self-attention in Transformer with the recurrent mechanism in RNN, aiming
     to benefit from both a long-term global receptive field of Transformer and learned
     inductive biases of RNN.
+  id: totrans-193
   prefs: []
   type: TYPE_NORMAL
+  zh: '**通用Transformer**（[Dehghani等人，2019](https://arxiv.org/abs/1807.03819)）将Transformer中的自注意力与RNN中的循环机制相结合，旨在同时受益于Transformer的长期全局感受野和RNN的学习归纳偏差。'
 - en: Rather than going through a fixed number of layers, Universal Transformer dynamically
     adjusts the number of steps using [adaptive computation time](#adaptive-computation-time-act).
     If we fix the number of steps, an Universal Transformer is equivalent to a multi-layer
     Transformer with shared parameters across layers.
+  id: totrans-194
   prefs: []
   type: TYPE_NORMAL
+  zh: 通用Transformer不是通过固定数量的层，而是通过使用[自适应计算时间](#adaptive-computation-time-act)动态调整步数。如果我们固定步数，通用Transformer等效于具有跨层共享参数的多层Transformer。
 - en: On a high level, the universal transformer can be viewed as a recurrent function
     for learning the hidden state representation per token. The recurrent function
     evolves in parallel across token positions and the information between positions
     is shared through self-attention.
+  id: totrans-195
   prefs: []
   type: TYPE_NORMAL
+  zh: 从高层次上看，通用Transformer可以被视为用于学习每个标记的隐藏状态表示的循环函数。循环函数在标记位置之间并行演变，并且通过自注意力在位置之间共享信息。
 - en: '![](../Images/7149588cfbf4b3f3392d2d85c6f42a8b.png)'
+  id: totrans-196
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/7149588cfbf4b3f3392d2d85c6f42a8b.png)'
 - en: 'Fig. 13\. How the Universal Transformer refines a set of hidden state representations
     repeatedly for every position in parallel. (Image source: Figure 1 in [Dehghani,
     et al. 2019](https://arxiv.org/abs/1807.03819)).'
+  id: totrans-197
   prefs: []
   type: TYPE_NORMAL
+  zh: 图13\. 通用Transformer如何并行地为每个位置重复细化一组隐藏状态表示。（图片来源：[Dehghani等人，2019](https://arxiv.org/abs/1807.03819)中的图1）。
 - en: Given an input sequence of length $L$, Universal Transformer iteratively updates
     the representation $\mathbf{H}^t \in \mathbb{R}^{L \times d}$ at step $t$ for
     an adjustable number of steps. At step 0, $\mathbf{H}^0$ is initialized to be
     same as the input embedding matrix. All the positions are processed in parallel
     in the multi-head self-attention mechanism and then go through a recurrent transition
     function.
+  id: totrans-198
   prefs: []
   type: TYPE_NORMAL
+  zh: 给定长度为$L$的输入序列，通用Transformer会在可调节的步数中迭代更新表示$\mathbf{H}^t \in \mathbb{R}^{L \times
+    d}$。在第0步，$\mathbf{H}^0$被初始化为与输入嵌入矩阵相同。所有位置在多头自注意力机制中并行处理，然后经过一个递归过渡函数。
 - en: $$ \begin{aligned} \mathbf{A}^t &= \text{LayerNorm}(\mathbf{H}^{t-1} + \text{MultiHeadAttention}(\mathbf{H}^{t-1}
     + \mathbf{P}^t) \\ \mathbf{H}^t &= \text{LayerNorm}(\mathbf{A}^{t-1} + \text{Transition}(\mathbf{A}^t))
     \end{aligned} $$
+  id: totrans-199
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \mathbf{A}^t &= \text{LayerNorm}(\mathbf{H}^{t-1} + \text{MultiHeadAttention}(\mathbf{H}^{t-1}
+    + \mathbf{P}^t) \\ \mathbf{H}^t &= \text{LayerNorm}(\mathbf{A}^{t-1} + \text{Transition}(\mathbf{A}^t))
+    \end{aligned} $$
 - en: where $\text{Transition}(.)$ is either a [separable convolution](https://arxiv.org/abs/1610.02357)
     or a fully-connected neural network that consists of two position-wise (i.e. applied
     to each row of $\mathbf{A}^t$ individually) affine transformation + one ReLU.
+  id: totrans-200
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$\text{Transition}(.)$可以是[可分离卷积](https://arxiv.org/abs/1610.02357)或由两个位置逐行（即分别应用于$\mathbf{A}^t$的每一行）的仿射变换+一个ReLU组成的全连接神经网络。
 - en: 'The positional encoding $\mathbf{P}^t$ uses sinusoidal position signal but
     with an additional time dimension:'
+  id: totrans-201
   prefs: []
   type: TYPE_NORMAL
+  zh: 位置编码$\mathbf{P}^t$使用正弦位置信号，但还带有一个额外的时间维度：
 - en: $$ \text{PE}(i, t, \delta) = \begin{cases} \sin(\frac{i}{10000^{2\delta'/d}})
     \oplus \sin(\frac{t}{10000^{2\delta'/d}}) & \text{if } \delta = 2\delta'\\ \cos(\frac{i}{10000^{2\delta'/d}})
     \oplus \cos(\frac{t}{10000^{2\delta'/d}}) & \text{if } \delta = 2\delta' + 1\\
     \end{cases} $$![](../Images/28f10d04e3e8614a323abde62a4b5601.png)
+  id: totrans-202
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \text{PE}(i, t, \delta) = \begin{cases} \sin(\frac{i}{10000^{2\delta'/d}})
+    \oplus \sin(\frac{t}{10000^{2\delta'/d}}) & \text{if } \delta = 2\delta'\\ \cos(\frac{i}{10000^{2\delta'/d}})
+    \oplus \cos(\frac{t}{10000^{2\delta'/d}}) & \text{if } \delta = 2\delta' + 1\\
+    \end{cases} $$![](../Images/28f10d04e3e8614a323abde62a4b5601.png)
 - en: 'Fig. 14\. A simplified illustration of Universal Transformer. The encoder and
     decoder share the same basic recurrent structure. But the decoder also attends
     to final encoder representation $\mathbf{H}^T$. (Image source: Figure 2 in [Dehghani,
     et al. 2019](https://arxiv.org/abs/1807.03819))'
+  id: totrans-203
   prefs: []
   type: TYPE_NORMAL
+  zh: 图14\. 通用Transformer的简化示意图。编码器和解码器共享相同的基本递归结构。但解码器还会关注最终编码器表示$\mathbf{H}^T$。（图片来源：[Dehghani等人，2019](https://arxiv.org/abs/1807.03819)中的图2）。
 - en: In the adaptive version of Universal Transformer, the number of recurrent steps
     $T$ is dynamically determined by [ACT](#adaptive-computation-time-act). Each position
     is equipped with a dynamic ACT halting mechanism. Once a per-token recurrent block
     halts, it stops taking more recurrent updates but simply copies the current value
     to the next step until all the blocks halt or until the model reaches a maximum
     step limit.
+  id: totrans-204
   prefs: []
   type: TYPE_NORMAL
+  zh: 在自适应版本的通用Transformer中，递归步数$T$由[ACT](#adaptive-computation-time-act)动态确定。每个位置都配备了一个动态的ACT停止机制。一旦一个每令牌递归块停止，它就停止接受更多的递归更新，而只是将当前值复制到下一步，直到所有块停止或直到模型达到最大步数限制。
 - en: Stabilization for RL (GTrXL)
+  id: totrans-205
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: RL的稳定化（GTrXL）
 - en: The self-attention mechanism avoids compressing the whole past into a fixed-size
     hidden state and does not suffer from vanishing or exploding gradients as much
     as RNNs. Reinforcement Learning tasks can for sure benefit from these traits.
     *However*, it is quite difficult to train Transformer even in supervised learning,
     let alone in the RL context. It could be quite challenging to stabilize and train
     a LSTM agent by itself, after all.
+  id: totrans-206
   prefs: []
   type: TYPE_NORMAL
+  zh: 自注意力机制避免将整个过去压缩为固定大小的隐藏状态，并且不像RNN那样容易出现梯度消失或梯度爆炸问题。强化学习任务肯定可以从这些特性中受益。*然而*，即使在监督学习中，训练Transformer也是相当困难的，更不用说在RL环境中了。毕竟，单独训练和稳定一个LSTM代理可能会非常具有挑战性。
 - en: 'The **Gated Transformer-XL** (**GTrXL**; [Parisotto, et al. 2019](https://arxiv.org/abs/1910.06764))
     is one attempt to use Transformer for RL. GTrXL succeeded in stabilizing training
     with two changes on top of [Transformer-XL](#longer-attention-span-transformer-xl):'
+  id: totrans-207
   prefs: []
   type: TYPE_NORMAL
+  zh: '**门控Transformer-XL** (**GTrXL**; [帕里索托等人，2019](https://arxiv.org/abs/1910.06764))
+    是将Transformer用于RL的一次尝试。GTrXL通过对[Transformer-XL](#longer-attention-span-transformer-xl)进行两项修改成功稳定了训练。'
 - en: The layer normalization is only applied on the input stream in a residual module,
     but NOT on the shortcut stream. A key benefit to this reordering is to allow the
     original input to flow from the first to last layer.
+  id: totrans-208
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 层归一化仅应用于残差模块中的输入流，而不应用于快捷流。这种重新排序的一个关键好处是允许原始输入从第一层流向最后一层。
 - en: The residual connection is replaced with a GRU-style (Gated Recurrent Unit;
     [Chung et al., 2014](https://arxiv.org/abs/1412.3555)) *gating* mechanism.
+  id: totrans-209
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 残差连接被一个类似GRU风格（门控循环单元；[Chung等人，2014](https://arxiv.org/abs/1412.3555)）的*门控*机制所取代。
 - en: $$ \begin{aligned} r &= \sigma(W_r^{(l)} y + U_r^{(l)} x) \\ z &= \sigma(W_z^{(l)}
     y + U_z^{(l)} x - b_g^{(l)}) \\ \hat{h} &= \tanh(W_g^{(l)} y + U_g^{(l)} (r \odot
     x)) \\ g^{(l)}(x, y) &= (1-z)\odot x + z\odot \hat{h} \end{aligned} $$
+  id: totrans-210
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} r &= \sigma(W_r^{(l)} y + U_r^{(l)} x) \\ z &= \sigma(W_z^{(l)}
+    y + U_z^{(l)} x - b_g^{(l)}) \\ \hat{h} &= \tanh(W_g^{(l)} y + U_g^{(l)} (r \odot
+    x)) \\ g^{(l)}(x, y) &= (1-z)\odot x + z\odot \hat{h} \end{aligned} $$
 - en: The gating function parameters are explicitly initialized to be close to an
     identity map - this is why there is a $b_g$ term. A $b_g > 0$ greatly helps with
     the learning speedup.
+  id: totrans-211
   prefs: []
   type: TYPE_NORMAL
+  zh: 门控函数参数被明确初始化为接近单位映射 - 这就是为什么有一个$b_g$项。$b_g > 0$对于学习加速非常有帮助。
 - en: '![](../Images/ba1be03e093ad142ecb78a39e83b59f3.png)'
+  id: totrans-212
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ba1be03e093ad142ecb78a39e83b59f3.png)'
 - en: 'Fig. 15\. Comparison of the model architecture of Transformer-XL, Transformer-XL
     with the layer norm reordered, and Gated Transformer-XL. (Image source: Figure
     1 in [Parisotto, et al. 2019](https://arxiv.org/abs/1910.06764))'
+  id: totrans-213
   prefs: []
   type: TYPE_NORMAL
+  zh: 图15。Transformer-XL、重新排序的层归一化Transformer-XL和门控Transformer-XL的模型架构比较。 (图片来源：[帕里索托等人，2019](https://arxiv.org/abs/1910.06764))
 - en: Citation
+  id: totrans-214
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 引用
 - en: 'Cited as:'
+  id: totrans-215
   prefs: []
   type: TYPE_NORMAL
+  zh: 引用为：
 - en: Weng, Lilian. (Apr 2020). The transformer family. Lil’Log. https://lilianweng.github.io/posts/2020-04-07-the-transformer-family/.
+  id: totrans-216
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 翁，莉莉安。 (2020年4月)。变压器家族。Lil’Log。https://lilianweng.github.io/posts/2020-04-07-the-transformer-family/。
 - en: Or
+  id: totrans-217
   prefs: []
   type: TYPE_NORMAL
+  zh: 或
 - en: '[PRE0]'
+  id: totrans-218
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: Reference
+  id: totrans-219
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考
 - en: '[1] Ashish Vaswani, et al. [“Attention is all you need.”](http://papers.nips.cc/paper/7181-attention-is-all-you-need.pdf)
     NIPS 2017.'
+  id: totrans-220
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] 阿希什·瓦斯瓦尼等人。[“注意力就是你所需要的。”](http://papers.nips.cc/paper/7181-attention-is-all-you-need.pdf)
+    NIPS 2017。'
 - en: '[2] Rami Al-Rfou, et al. [“Character-level language modeling with deeper self-attention.”](https://arxiv.org/abs/1808.04444)
     AAAI 2019.'
+  id: totrans-221
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] 拉米·阿尔-福等人。[“更深层次的自注意力字符级语言建模。”](https://arxiv.org/abs/1808.04444) AAAI
+    2019。'
 - en: '[3] Olah & Carter, [“Attention and Augmented Recurrent Neural Networks”](http://doi.org/10.23915/disti),
     Distill, 2016.'
+  id: totrans-222
   prefs: []
   type: TYPE_NORMAL
+  zh: '[3] 奥拉和卡特，[“注意力和增强循环神经网络”](http://doi.org/10.23915/disti)，Distill，2016。'
 - en: '[4] Sainbayar Sukhbaatar, et al. [“Adaptive Attention Span in Transformers”](https://arxiv.org/abs/1905.07799).
     ACL 2019.'
+  id: totrans-223
   prefs: []
   type: TYPE_NORMAL
+  zh: '[4] 赛恩巴亚尔·苏赫巴塔尔等人。[“变压器中的自适应注意力跨度”](https://arxiv.org/abs/1905.07799)。ACL 2019。'
 - en: '[5] Rewon Child, et al. [“Generating Long Sequences with Sparse Transformers”](https://arxiv.org/abs/1904.10509)
     arXiv:1904.10509 (2019).'
+  id: totrans-224
   prefs: []
   type: TYPE_NORMAL
+  zh: '[5] 雷文·奇尔德等人。[“使用稀疏变压器生成长序列”](https://arxiv.org/abs/1904.10509) arXiv:1904.10509
+    (2019)。'
 - en: '[6] Nikita Kitaev, et al. [“Reformer: The Efficient Transformer”](https://arxiv.org/abs/2001.04451)
     ICLR 2020.'
+  id: totrans-225
   prefs: []
   type: TYPE_NORMAL
+  zh: '[6] 尼基塔·基塔耶夫等人。[“Reformer: 高效Transformer”](https://arxiv.org/abs/2001.04451)
+    ICLR 2020。'
 - en: '[7] Alex Graves. (“Adaptive Computation Time for Recurrent Neural Networks”)[https://arxiv.org/abs/1603.08983]'
+  id: totrans-226
   prefs: []
   type: TYPE_NORMAL
+  zh: '[7] 亚历克斯·格雷夫斯。[“适应性循环神经网络的计算时间”](https://arxiv.org/abs/1603.08983)。'
 - en: '[8] Niki Parmar, et al. [“Image Transformer”](https://arxiv.org/abs/1802.05751)
     ICML 2018.'
+  id: totrans-227
   prefs: []
   type: TYPE_NORMAL
+  zh: '[8] 尼基·帕马尔等人。[“图像变压器”](https://arxiv.org/abs/1802.05751) ICML 2018。'
 - en: '[9] Zihang Dai, et al. [“Transformer-XL: Attentive Language Models Beyond a
     Fixed-Length Context.”](https://arxiv.org/abs/1901.02860) ACL 2019.'
+  id: totrans-228
   prefs: []
   type: TYPE_NORMAL
+  zh: '[9] 戴子航等人。[“Transformer-XL: 超越固定长度上下文的关注语言模型。”](https://arxiv.org/abs/1901.02860)
+    ACL 2019。'
 - en: '[10] Aidan N. Gomez, et al. [“The Reversible Residual Network: Backpropagation
     Without Storing Activations”](https://arxiv.org/abs/1707.04585) NIPS 2017.'
+  id: totrans-229
   prefs: []
   type: TYPE_NORMAL
+  zh: '[10] 艾丹·戈麦斯等人。[“可逆残差网络：无需存储激活的反向传播”](https://arxiv.org/abs/1707.04585) NIPS
+    2017。'
 - en: '[11] Mostafa Dehghani, et al. [“Universal Transformers”](https://arxiv.org/abs/1807.03819)
     ICLR 2019.'
+  id: totrans-230
   prefs: []
   type: TYPE_NORMAL
+  zh: '[11] 莫斯塔法·德赫加尼等人。[“通用变压器”](https://arxiv.org/abs/1807.03819) ICLR 2019。'
 - en: '[12] Emilio Parisotto, et al. [“Stabilizing Transformers for Reinforcement
     Learning”](https://arxiv.org/abs/1910.06764) arXiv:1910.06764 (2019).'
+  id: totrans-231
   prefs: []
   type: TYPE_NORMAL
+  zh: '[12] 埃米利奥·帕里索托等人。[“用于强化学习的稳定变压器”](https://arxiv.org/abs/1910.06764) arXiv:1910.06764
+    (2019)。'

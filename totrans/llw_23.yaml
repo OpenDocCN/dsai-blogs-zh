@@ -1,11 +1,15 @@
 - en: Evolution Strategies
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 进化策略
 - en: 原文：[https://lilianweng.github.io/posts/2019-09-05-evolution-strategies/](https://lilianweng.github.io/posts/2019-09-05-evolution-strategies/)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://lilianweng.github.io/posts/2019-09-05-evolution-strategies/](https://lilianweng.github.io/posts/2019-09-05-evolution-strategies/)
 - en: 'Stochastic gradient descent is a universal choice for optimizing deep learning
     models. However, it is not the only option. With black-box optimization algorithms,
     you can evaluate a target function $f(x): \mathbb{R}^n \to \mathbb{R}$, even when
@@ -13,282 +17,434 @@
     or the Hessian matrix. Examples of black-box optimization methods include [Simulated
     Annealing](https://en.wikipedia.org/wiki/Simulated_annealing), [Hill Climbing](https://en.wikipedia.org/wiki/Hill_climbing)
     and [Nelder-Mead method](https://en.wikipedia.org/wiki/Nelder%E2%80%93Mead_method).'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: '随机梯度下降是优化深度学习模型的通用选择。然而，并不是唯一的选择。通过黑盒优化算法，您可以评估目标函数$f(x): \mathbb{R}^n \to
+    \mathbb{R}$，即使您不知道$f(x)$的精确解析形式，因此无法计算梯度或Hessian矩阵。黑盒优化方法的示例包括[模拟退火](https://en.wikipedia.org/wiki/Simulated_annealing)，[爬山算法](https://en.wikipedia.org/wiki/Hill_climbing)和[Nelder-Mead方法](https://en.wikipedia.org/wiki/Nelder%E2%80%93Mead_method)。'
 - en: '**Evolution Strategies (ES)** is one type of black-box optimization algorithms,
     born in the family of **Evolutionary Algorithms (EA)**. In this post, I would
     dive into a couple of classic ES methods and introduce a few applications of how
     ES can play a role in deep reinforcement learning.'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '**进化策略（ES）**是黑盒优化算法的一种类型，诞生于**进化算法（EA）**家族中。在本文中，我将深入探讨一些经典的ES方法，并介绍ES在深度强化学习中的一些应用。'
 - en: What are Evolution Strategies?
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 什么是进化策略？
 - en: Evolution strategies (ES) belong to the big family of evolutionary algorithms.
     The optimization targets of ES are vectors of real numbers, $x \in \mathbb{R}^n$.
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: 进化策略（ES）属于进化算法的大家族。ES的优化目标是实数向量，$x \in \mathbb{R}^n$。
 - en: Evolutionary algorithms refer to a division of population-based optimization
     algorithms inspired by *natural selection*. Natural selection believes that individuals
     with traits beneficial to their survival can live through generations and pass
     down the good characteristics to the next generation. Evolution happens by the
     selection process gradually and the population grows better adapted to the environment.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 进化算法是受*自然选择*启发的一类基于群体的优化算法。自然选择认为，具有有利于其生存的特征的个体可以在世代中生存下来，并将良好的特征传递给下一代。进化是通过逐渐的选择过程发生的，群体逐渐适应环境变得更好。
 - en: '![](../Images/76acafd0a38025ada2dfd64108faa511.png)'
+  id: totrans-7
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/76acafd0a38025ada2dfd64108faa511.png)'
 - en: 'Fig. 1\. How natural selection works. (Image source: Khan Academy: [Darwin,
     evolution, & natural selection](https://www.khanacademy.org/science/biology/her/evolution-and-natural-selection/a/darwin-evolution-natural-selection))'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 图1\. 自然选择的工作原理。（图片来源：可汗学院：[达尔文、进化和自然选择](https://www.khanacademy.org/science/biology/her/evolution-and-natural-selection/a/darwin-evolution-natural-selection)）
 - en: 'Evolutionary algorithms can be summarized in the following [format](https://ipvs.informatik.uni-stuttgart.de/mlr/marc/teaching/13-Optimization/06-blackBoxOpt.pdf)
     as a general optimization solution:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 进化算法可以总结为以下[格式](https://ipvs.informatik.uni-stuttgart.de/mlr/marc/teaching/13-Optimization/06-blackBoxOpt.pdf)作为一种通用的优化解决方案：
 - en: Let’s say we want to optimize a function $f(x)$ and we are not able to compute
     gradients directly. But we still can evaluate $f(x)$ given any $x$ and the result
     is deterministic. Our belief in the probability distribution over $x$ as a good
     solution to $f(x)$ optimization is $p_\theta(x)$, parameterized by $\theta$. The
     goal is to find an optimal configuration of $\theta$.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设我们想要优化一个函数$f(x)$，但无法直接计算梯度。但我们仍然可以评估给定任何$x$的$f(x)$，结果是确定的。我们对$x$上的概率分布作为$f(x)$优化的好解决方案的信念是$p_\theta(x)$，由$\theta$参数化。目标是找到$\theta$的最佳配置。
 - en: Here given a fixed format of distribution (i.e. Gaussian), the parameter $\theta$
     carries the knowledge about the best solutions and is being iteratively updated
     across generations.
+  id: totrans-11
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 在给定固定分布格式（即高斯）的情况下，参数$\theta$携带有关最佳解决方案的知识，并在各代之间进行迭代更新。
 - en: 'Starting with an initial value of $\theta$, we can continuously update $\theta$
     by looping three steps as follows:'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 从初始值$\theta$开始，我们可以通过以下三个步骤循环连续更新$\theta$：
 - en: Generate a population of samples $D = \{(x_i, f(x_i)\}$ where $x_i \sim p_\theta(x)$.
+  id: totrans-13
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 生成样本群$D = \{(x_i, f(x_i)\}$，其中$x_i \sim p_\theta(x)$。
 - en: Evaluate the “fitness” of samples in $D$.
+  id: totrans-14
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 评估$D$中样本的“适应度”。
 - en: Select the best subset of individuals and use them to update $\theta$, generally
     based on fitness or rank.
+  id: totrans-15
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 选择最佳个体子集并使用它们来更新$\theta$，通常基于适应度或排名。
 - en: In **Genetic Algorithms (GA)**, another popular subcategory of EA, $x$ is a
     sequence of binary codes, $x \in \{0, 1\}^n$. While in ES, $x$ is just a vector
     of real numbers, $x \in \mathbb{R}^n$.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 在**遗传算法（GA）**中，另一个流行的EA子类，$x$是一系列二进制代码，$x \in \{0, 1\}^n$。而在ES中，$x$只是一组实数，$x
+    \in \mathbb{R}^n$。
 - en: Simple Gaussian Evolution Strategies
+  id: totrans-17
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 简单高斯进化策略
 - en: '[This](http://blog.otoro.net/2017/10/29/visual-evolution-strategies/) is the
     most basic and canonical version of evolution strategies. It models $p_\theta(x)$
     as a $n$-dimensional isotropic Gaussian distribution, in which $\theta$ only tracks
     the mean $\mu$ and standard deviation $\sigma$.'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: '[这里](http://blog.otoro.net/2017/10/29/visual-evolution-strategies/)是进化策略的最基本和经典版本。它将$p_\theta(x)$建模为一个$n$维各向同性高斯分布，其中$\theta$只跟踪均值$\mu$和标准差$\sigma$。'
 - en: $$ \theta = (\mu, \sigma),\;p_\theta(x) \sim \mathcal{N}(\mathbf{\mu}, \sigma^2
     I) = \mu + \sigma \mathcal{N}(0, I) $$
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \theta = (\mu, \sigma),\;p_\theta(x) \sim \mathcal{N}(\mathbf{\mu}, \sigma^2
+    I) = \mu + \sigma \mathcal{N}(0, I) $$
 - en: 'The process of Simple-Gaussian-ES, given $x \in \mathcal{R}^n$:'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 简单高斯ES的过程，给定$x \in \mathcal{R}^n$：
 - en: Initialize $\theta = \theta^{(0)}$ and the generation counter $t=0$
+  id: totrans-21
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 初始化$\theta = \theta^{(0)}$和代数计数器$t=0`
 - en: 'Generate the offspring population of size $\Lambda$ by sampling from the Gaussian
     distribution:'
+  id: totrans-22
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 通过从高斯分布中抽样生成大小为$\Lambda$的后代种群：
 - en: $D^{(t+1)}=\{ x^{(t+1)}_i \mid x^{(t+1)}_i = \mu^{(t)} + \sigma^{(t)} y^{(t+1)}_i
     \text{ where } y^{(t+1)}_i \sim \mathcal{N}(x \vert 0, \mathbf{I}),;i = 1, \dots,
     \Lambda\}$
+  id: totrans-23
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: $D^{(t+1)}=\{ x^{(t+1)}_i \mid x^{(t+1)}_i = \mu^{(t)} + \sigma^{(t)} y^{(t+1)}_i
+    \text{ where } y^{(t+1)}_i \sim \mathcal{N}(x \vert 0, \mathbf{I}),;i = 1, \dots,
+    \Lambda\}$
 - en: .
+  id: totrans-24
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: .
 - en: Select a top subset of $\lambda$ samples with optimal $f(x_i)$ and this subset
     is called **elite** set. Without loss of generality, we may consider the first
     $k$ samples in $D^{(t+1)}$ to belong to the elite group — Let’s label them as
+  id: totrans-25
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 选择具有最佳$f(x_i)$的$\lambda$个样本的顶部子集，这个子集被称为**精英**集。不失一般性，我们可以考虑$D^{(t+1)}$中的前$k$个样本属于精英组
+    — 让我们将它们标记为
 - en: $$ D^{(t+1)}\_\text{elite} = \\{x^{(t+1)}\_i \mid x^{(t+1)}\_i \in D^{(t+1)},
     i=1,\dots, \lambda, \lambda\leq \Lambda\\} $$
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ D^{(t+1)}\_\text{elite} = \\{x^{(t+1)}\_i \mid x^{(t+1)}\_i \in D^{(t+1)},
+    i=1,\dots, \lambda, \lambda\leq \Lambda\\} $$
 - en: 'Then we estimate the new mean and std for the next generation using the elite
     set:'
+  id: totrans-27
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 然后我们使用精英集估计下一代的新均值和标准差：
 - en: $$ \begin{aligned} \mu^{(t+1)} &= \text{avg}(D^{(t+1)}_\text{elite}) = \frac{1}{\lambda}\sum_{i=1}^\lambda
     x_i^{(t+1)} \\ {\sigma^{(t+1)}}^2 &= \text{var}(D^{(t+1)}_\text{elite}) = \frac{1}{\lambda}\sum_{i=1}^\lambda
     (x_i^{(t+1)} -\mu^{(t)})^2 \end{aligned} $$
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \mu^{(t+1)} &= \text{avg}(D^{(t+1)}_\text{elite}) = \frac{1}{\lambda}\sum_{i=1}^\lambda
+    x_i^{(t+1)} \\ {\sigma^{(t+1)}}^2 &= \text{var}(D^{(t+1)}_\text{elite}) = \frac{1}{\lambda}\sum_{i=1}^\lambda
+    (x_i^{(t+1)} -\mu^{(t)})^2 \end{aligned} $$
 - en: Repeat steps (2)-(4) until the result is good enough ✌️
+  id: totrans-29
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 重复步骤(2)-(4)直到结果足够好 ✌️
 - en: Covariance Matrix Adaptation Evolution Strategies (CMA-ES)
+  id: totrans-30
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 协方差矩阵自适应进化策略（CMA-ES）
 - en: 'The standard deviation $\sigma$ accounts for the level of exploration: the
     larger $\sigma$ the bigger search space we can sample our offspring population.
     In [vanilla ES](#simple-gaussian-evolution-strategies), $\sigma^{(t+1)}$ is highly
     correlated with $\sigma^{(t)}$, so the algorithm is not able to rapidly adjust
     the exploration space when needed (i.e. when the confidence level changes).'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 标准差$\sigma$代表探索的程度：$\sigma$越大，我们可以从中抽样后代种群的搜索空间就越大。在[简单高斯进化策略](#simple-gaussian-evolution-strategies)中，$\sigma^{(t+1)}$与$\sigma^{(t)}$高度相关，因此算法无法在需要时（即置信水平变化时）快速调整探索空间。
 - en: '[**CMA-ES**](https://en.wikipedia.org/wiki/CMA-ES), short for *“Covariance
     Matrix Adaptation Evolution Strategy”*, fixes the problem by tracking pairwise
     dependencies between the samples in the distribution with a covariance matrix
     $C$. The new distribution parameter becomes:'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: '[**CMA-ES**](https://en.wikipedia.org/wiki/CMA-ES)，简称*“协方差矩阵自适应进化策略”*，通过跟踪分布中样本之间的成对依赖关系，解决了这个问题，使用协方差矩阵$C$。新的分布参数变为：'
 - en: $$ \theta = (\mu, \sigma, C),\; p_\theta(x) \sim \mathcal{N}(\mu, \sigma^2 C)
     \sim \mu + \sigma \mathcal{N}(0, C) $$
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \theta = (\mu, \sigma, C),\; p_\theta(x) \sim \mathcal{N}(\mu, \sigma^2 C)
+    \sim \mu + \sigma \mathcal{N}(0, C) $$
 - en: where $\sigma$ controls for the overall scale of the distribution, often known
     as *step size*.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$\sigma$控制分布的整体尺度，通常称为*步长*。
 - en: 'Before we dig into how the parameters are updated in CMA-ES, it is better to
     review how the covariance matrix works in the multivariate Gaussian distribution
     first. As a real symmetric matrix, the covariance matrix $C$ has the following
     nice features (See [proof](http://s3.amazonaws.com/mitsloan-php/wp-faculty/sites/30/2016/12/15032137/Symmetric-Matrices-and-Eigendecomposition.pdf)
     & [proof](http://control.ucsd.edu/mauricio/courses/mae280a/lecture11.pdf)):'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 在深入研究CMA-ES中参数如何更新之前，最好先回顾一下协方差矩阵在多元高斯分布中的作用。作为一个实对称矩阵，协方差矩阵$C$具有以下良好特性（参见[证明](http://s3.amazonaws.com/mitsloan-php/wp-faculty/sites/30/2016/12/15032137/Symmetric-Matrices-and-Eigendecomposition.pdf)
+    & [证明](http://control.ucsd.edu/mauricio/courses/mae280a/lecture11.pdf)）：
 - en: It is always diagonalizable.
+  id: totrans-36
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 总是可对角化的。
 - en: Always positive semi-definite.
+  id: totrans-37
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 总是半正定的。
 - en: All of its eigenvalues are real non-negative numbers.
+  id: totrans-38
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 所有的特征值都是实非负数。
 - en: All of its eigenvectors are orthogonal.
+  id: totrans-39
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 所有的特征向量都是正交的。
 - en: There is an orthonormal basis of $\mathbb{R}^n$ consisting of its eigenvectors.
+  id: totrans-40
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 有一个$\mathbb{R}^n$的标准正交基组成的正交基。
 - en: Let the matrix $C$ have an *orthonormal* basis of eigenvectors $B = [b_1, \dots,
     b_n]$, with corresponding eigenvalues $\lambda_1^2, \dots, \lambda_n^2$. Let $D=\text{diag}(\lambda_1,
     \dots, \lambda_n)$.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设矩阵$C$有一个*标准正交*的特征向量基$B = [b_1, \dots, b_n]$，对应的特征值为$\lambda_1^2, \dots, \lambda_n^2$。令$D=\text{diag}(\lambda_1,
+    \dots, \lambda_n)$。
 - en: $$ C = B^\top D^2 B = \begin{bmatrix} \mid & \mid & & \mid \\ b_1 & b_2 & \dots
     & b_n\\ \mid & \mid & & \mid \\ \end{bmatrix} \begin{bmatrix} \lambda_1^2 & 0
     & \dots & 0 \\ 0 & \lambda_2^2 & \dots & 0 \\ \vdots & \dots & \ddots & \vdots
     \\ 0 & \dots & 0 & \lambda_n^2 \end{bmatrix} \begin{bmatrix} - & b_1 & - \\ -
     & b_2 & - \\ & \dots & \\ - & b_n & - \\ \end{bmatrix} $$
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ C = B^\top D^2 B = \begin{bmatrix} \mid & \mid & & \mid \\ b_1 & b_2 & \dots
+    & b_n\\ \mid & \mid & & \mid \\ \end{bmatrix} \begin{bmatrix} \lambda_1^2 & 0
+    & \dots & 0 \\ 0 & \lambda_2^2 & \dots & 0 \\ \vdots & \dots & \ddots & \vdots
+    \\ 0 & \dots & 0 & \lambda_n^2 \end{bmatrix} \begin{bmatrix} - & b_1 & - \\ -
+    & b_2 & - \\ & \dots & \\ - & b_n & - \\ \end{bmatrix} $$
 - en: 'The square root of $C$ is:'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: $C$的平方根为：
 - en: $$ C^{\frac{1}{2}} = B^\top D B $$
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ C^{\frac{1}{2}} = B^\top D B $$
 - en: '| Symbol | Meaning |'
+  id: totrans-45
   prefs: []
   type: TYPE_TB
+  zh: '| 符号 | 含义 |'
 - en: '| --- | --- |'
+  id: totrans-46
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- |'
 - en: '| $x_i^{(t)} \in \mathbb{R}^n$ | the $i$-th samples at the generation (t) |'
+  id: totrans-47
   prefs: []
   type: TYPE_TB
+  zh: '| $x_i^{(t)} \in \mathbb{R}^n$ | 第(t)代第$i$个样本 |'
 - en: '| $y_i^{(t)} \in \mathbb{R}^n$ | $x_i^{(t)} = \mu^{(t-1)} + \sigma^{(t-1)}
     y_i^{(t)} $ |'
+  id: totrans-48
   prefs: []
   type: TYPE_TB
+  zh: '| $y_i^{(t)} \in \mathbb{R}^n$ | $x_i^{(t)} = \mu^{(t-1)} + \sigma^{(t-1)}
+    y_i^{(t)} $ |'
 - en: '| $\mu^{(t)}$ | mean of the generation (t) |'
+  id: totrans-49
   prefs: []
   type: TYPE_TB
+  zh: '| $\mu^{(t)}$ | 第(t)代的均值 |'
 - en: '| $\sigma^{(t)}$ | step size |'
+  id: totrans-50
   prefs: []
   type: TYPE_TB
+  zh: '| $\sigma^{(t)}$ | 步长 |'
 - en: '| $C^{(t)}$ | covariance matrix |'
+  id: totrans-51
   prefs: []
   type: TYPE_TB
+  zh: '| $C^{(t)}$ | 协方差矩阵 |'
 - en: '| $B^{(t)}$ | a matrix of $C$’s eigenvectors as row vectors |'
+  id: totrans-52
   prefs: []
   type: TYPE_TB
+  zh: '| $B^{(t)}$ | $C$的特征向量构成的矩阵，作为行向量 |'
 - en: '| $D^{(t)}$ | a diagonal matrix with $C$’s eigenvalues on the diagnose. |'
+  id: totrans-53
   prefs: []
   type: TYPE_TB
+  zh: '| $D^{(t)}$ | 一个对角线矩阵，对角线上是$C$的特征值。 |'
 - en: '| $p_\sigma^{(t)}$ | evaluation path for $\sigma$ at the generation (t) |'
+  id: totrans-54
   prefs: []
   type: TYPE_TB
+  zh: '| $p_\sigma^{(t)}$ | 第(t)代$\sigma$的评估路径 |'
 - en: '| $p_c^{(t)}$ | evaluation path for $C$ at the generation (t) |'
+  id: totrans-55
   prefs: []
   type: TYPE_TB
+  zh: '| $p_c^{(t)}$ | 第(t)代$C$的评估路径 |'
 - en: '| $\alpha_\mu$ | learning rate for $\mu$’s update |'
+  id: totrans-56
   prefs: []
   type: TYPE_TB
+  zh: '| $\alpha_\mu$ | $\mu$更新的学习率 |'
 - en: '| $\alpha_\sigma$ | learning rate for $p_\sigma$ |'
+  id: totrans-57
   prefs: []
   type: TYPE_TB
+  zh: '| $\alpha_\sigma$ | $p_\sigma$的学习率 |'
 - en: '| $d_\sigma$ | damping factor for $\sigma$’s update |'
+  id: totrans-58
   prefs: []
   type: TYPE_TB
+  zh: '| $d_\sigma$ | $\sigma$更新的阻尼因子 |'
 - en: '| $\alpha_{cp}$ | learning rate for $p_c$ |'
+  id: totrans-59
   prefs: []
   type: TYPE_TB
+  zh: '| $\alpha_{cp}$ | $p_c$的学习率 |'
 - en: '| $\alpha_{c\lambda}$ | learning rate for $C$’s rank-min(λ, n) update |'
+  id: totrans-60
   prefs: []
   type: TYPE_TB
+  zh: '| $\alpha_{c\lambda}$ | $C$的秩-min(λ, n)更新的学习率 |'
 - en: '| $\alpha_{c1}$ | learning rate for $C$’s rank-1 update |'
+  id: totrans-61
   prefs: []
   type: TYPE_TB
+  zh: '| $\alpha_{c1}$ | $C$的秩-1更新的学习率 |'
 - en: Updating the Mean
+  id: totrans-62
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 更新均值
 - en: $$ \mu^{(t+1)} = \mu^{(t)} + \alpha_\mu \frac{1}{\lambda}\sum_{i=1}^\lambda
     (x_i^{(t+1)} - \mu^{(t)}) $$
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mu^{(t+1)} = \mu^{(t)} + \alpha_\mu \frac{1}{\lambda}\sum_{i=1}^\lambda
+    (x_i^{(t+1)} - \mu^{(t)}) $$
 - en: CMA-ES has a learning rate $\alpha_\mu \leq 1$ to control how fast the mean
     $\mu$ should be updated. Usually it is set to 1 and thus the equation becomes
     the same as in vanilla ES, $\mu^{(t+1)} = \frac{1}{\lambda}\sum_{i=1}^\lambda
     (x_i^{(t+1)}$.
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: CMA-ES有一个学习率$\alpha_\mu \leq 1$来控制均值$\mu$的更新速度。通常设置为1，因此方程变为与普通ES相同，$\mu^{(t+1)}
+    = \frac{1}{\lambda}\sum_{i=1}^\lambda (x_i^{(t+1)}$。
 - en: Controlling the Step Size
+  id: totrans-65
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 控制步长
 - en: 'The sampling process can be decoupled from the mean and standard deviation:'
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 采样过程可以与均值和标准差分离：
 - en: $$ x^{(t+1)}_i = \mu^{(t)} + \sigma^{(t)} y^{(t+1)}_i \text{, where } y^{(t+1)}_i
     = \frac{x_i^{(t+1)} - \mu^{(t)}}{\sigma^{(t)}} \sim \mathcal{N}(0, C) $$
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ x^{(t+1)}_i = \mu^{(t)} + \sigma^{(t)} y^{(t+1)}_i \text{, 其中 } y^{(t+1)}_i
+    = \frac{x_i^{(t+1)} - \mu^{(t)}}{\sigma^{(t)}} \sim \mathcal{N}(0, C) $$
 - en: The parameter $\sigma$ controls the overall scale of the distribution. It is
     separated from the covariance matrix so that we can change steps faster than the
     full covariance. A larger step size leads to faster parameter update. In order
@@ -297,204 +453,317 @@
     y_i^{(j)}, j=1, \dots, t$. By comparing this path length with its expected length
     under random selection (meaning single steps are uncorrelated), we are able to
     adjust $\sigma$ accordingly (See Fig. 2).
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 参数$\sigma$控制分布的整体尺度。它与协方差矩阵分开，以便我们可以比完整协方差更快地改变步骤。较大的步长导致更快的参数更新。为了评估当前步长是否合适，CMA-ES构建了一个*演化路径*$p_\sigma$，通过对一系列移动步骤的连续序列求和，$\frac{1}{\lambda}\sum_{i}^\lambda
+    y_i^{(j)}, j=1, \dots, t$。通过将此路径长度与在随机选择下的预期长度（意味着单步不相关）进行比较，我们能够相应地调整$\sigma$（见图2）。
 - en: '![](../Images/dcb57da656a4a7959940a9e7593b8327.png)'
+  id: totrans-69
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/dcb57da656a4a7959940a9e7593b8327.png)'
 - en: 'Fig. 2\. Three scenarios of how single steps are correlated in different ways
     and their impacts on step size update. (Image source: additional annotations on
     Fig 5 in [CMA-ES tutorial](https://arxiv.org/abs/1604.00772) paper)'
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 图2。三种不同方式的单步相关性及其对步长更新的影响的场景。（图片来源：[CMA-ES教程](https://arxiv.org/abs/1604.00772)论文中图5的附加注释）
 - en: Each time the evolution path is updated with the average of moving step $y_i$
     in the same generation.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 每次更新演化路径时，使用同一代中移动步骤$y_i$的平均值。
 - en: $$ \begin{aligned} &\frac{1}{\lambda}\sum_{i=1}^\lambda y_i^{(t+1)} = \frac{1}{\lambda}
     \frac{\sum_{i=1}^\lambda x_i^{(t+1)} - \lambda \mu^{(t)}}{\sigma^{(t)}} = \frac{\mu^{(t+1)}
     - \mu^{(t)}}{\sigma^{(t)}} \\ &\frac{1}{\lambda}\sum_{i=1}^\lambda y_i^{(t+1)}
     \sim \frac{1}{\lambda}\mathcal{N}(0, \lambda C^{(t)}) \sim \frac{1}{\sqrt{\lambda}}{C^{(t)}}^{\frac{1}{2}}\mathcal{N}(0,
     I) \\ &\text{Thus } \sqrt{\lambda}\;{C^{(t)}}^{-\frac{1}{2}} \frac{\mu^{(t+1)}
     - \mu^{(t)}}{\sigma^{(t)}} \sim \mathcal{N}(0, I) \end{aligned} $$
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} &\frac{1}{\lambda}\sum_{i=1}^\lambda y_i^{(t+1)} = \frac{1}{\lambda}
+    \frac{\sum_{i=1}^\lambda x_i^{(t+1)} - \lambda \mu^{(t)}}{\sigma^{(t)}} = \frac{\mu^{(t+1)}
+    - \mu^{(t)}}{\sigma^{(t)}} \\ &\frac{1}{\lambda}\sum_{i=1}^\lambda y_i^{(t+1)}
+    \sim \frac{1}{\lambda}\mathcal{N}(0, \lambda C^{(t)}) \sim \frac{1}{\sqrt{\lambda}}{C^{(t)}}^{\frac{1}{2}}\mathcal{N}(0,
+    I) \\ &\text{因此 } \sqrt{\lambda}\;{C^{(t)}}^{-\frac{1}{2}} \frac{\mu^{(t+1)} -
+    \mu^{(t)}}{\sigma^{(t)}} \sim \mathcal{N}(0, I) \end{aligned} $$
 - en: 'By multiplying with $C^{-\frac{1}{2}}$, the evolution path is transformed to
     be independent of its direction. The term ${C^{(t)}}^{-\frac{1}{2}} = {B^{(t)}}^\top
     {D^{(t)}}^{-\frac{1}{2}} {B^{(t)}}$ transformation works as follows:'
+  id: totrans-73
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 通过与$C^{-\frac{1}{2}}$相乘，演化路径被转换为与其方向无关。术语${C^{(t)}}^{-\frac{1}{2}} = {B^{(t)}}^\top
+    {D^{(t)}}^{-\frac{1}{2}} {B^{(t)}}$ 变换的工作方式如下：
 - en: ${B^{(t)}}$ contains row vectors of $C$’s eigenvectors. It projects the original
     space onto the perpendicular principal axes.
+  id: totrans-74
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: ${B^{(t)}}$ 包含$C$的特征向量的行向量。它将原始空间投影到垂直主轴上。
 - en: Then ${D^{(t)}}^{-\frac{1}{2}} = \text{diag}(\frac{1}{\lambda_1}, \dots, \frac{1}{\lambda_n})$
     scales the length of principal axes to be equal.
+  id: totrans-75
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 然后${D^{(t)}}^{-\frac{1}{2}} = \text{diag}(\frac{1}{\lambda_1}, \dots, \frac{1}{\lambda_n})$
+    将主轴的长度缩放为相等。
 - en: ${B^{(t)}}^\top$ transforms the space back to the original coordinate system.
+  id: totrans-76
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: ${B^{(t)}}^\top$ 将空间转换回原始坐标系。
 - en: In order to assign higher weights to recent generations, we use polyak averaging
     to update the evolution path with learning rate $\alpha_\sigma$. Meanwhile, the
     weights are balanced so that $p_\sigma$ is [conjugate](https://en.wikipedia.org/wiki/Conjugate_prior),
     $\sim \mathcal{N}(0, I)$ both before and after one update.
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了给最近的代分配更高的权重，我们使用Polyak平均来使用学习率$\alpha_\sigma$更新演化路径。同时，权重是平衡的，使得$p_\sigma$在更新前后都是[共轭的](https://en.wikipedia.org/wiki/Conjugate_prior)，$\sim
+    \mathcal{N}(0, I)$。
 - en: $$ \begin{aligned} p_\sigma^{(t+1)} & = (1 - \alpha_\sigma) p_\sigma^{(t)} +
     \sqrt{1 - (1 - \alpha_\sigma)^2}\;\sqrt{\lambda}\; {C^{(t)}}^{-\frac{1}{2}} \frac{\mu^{(t+1)}
     - \mu^{(t)}}{\sigma^{(t)}} \\ & = (1 - \alpha_\sigma) p_\sigma^{(t)} + \sqrt{c_\sigma
     (2 - \alpha_\sigma)\lambda}\;{C^{(t)}}^{-\frac{1}{2}} \frac{\mu^{(t+1)} - \mu^{(t)}}{\sigma^{(t)}}
     \end{aligned} $$
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} p_\sigma^{(t+1)} & = (1 - \alpha_\sigma) p_\sigma^{(t)} +
+    \sqrt{1 - (1 - \alpha_\sigma)^2}\;\sqrt{\lambda}\; {C^{(t)}}^{-\frac{1}{2}} \frac{\mu^{(t+1)}
+    - \mu^{(t)}}{\sigma^{(t)}} \\ & = (1 - \alpha_\sigma) p_\sigma^{(t)} + \sqrt{c_\sigma
+    (2 - \alpha_\sigma)\lambda}\;{C^{(t)}}^{-\frac{1}{2}} \frac{\mu^{(t+1)} - \mu^{(t)}}{\sigma^{(t)}}
+    \end{aligned} $$
 - en: 'The expected length of $p_\sigma$ under random selection is $\mathbb{E}|\mathcal{N}(0,I)|$,
     that is the expectation of the L2-norm of a $\mathcal{N}(0,I)$ random variable.
     Following the idea in Fig. 2, we adjust the step size according to the ratio of
     $|p_\sigma^{(t+1)}| / \mathbb{E}|\mathcal{N}(0,I)|$:'
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 在随机选择下，$p_\sigma$的期望长度是$\mathbb{E}|\mathcal{N}(0,I)|$，即$\mathcal{N}(0,I)$随机变量的L2范数的期望。根据图2中的思想，我们根据$|p_\sigma^{(t+1)}|
+    / \mathbb{E}|\mathcal{N}(0,I)|$的比率调整步长大小：
 - en: $$ \begin{aligned} \ln\sigma^{(t+1)} &= \ln\sigma^{(t)} + \frac{\alpha_\sigma}{d_\sigma}
     \Big(\frac{\|p_\sigma^{(t+1)}\|}{\mathbb{E}\|\mathcal{N}(0,I)\|} - 1\Big) \\ \sigma^{(t+1)}
     &= \sigma^{(t)} \exp\Big(\frac{\alpha_\sigma}{d_\sigma} \Big(\frac{\|p_\sigma^{(t+1)}\|}{\mathbb{E}\|\mathcal{N}(0,I)\|}
     - 1\Big)\Big) \end{aligned} $$
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \ln\sigma^{(t+1)} &= \ln\sigma^{(t)} + \frac{\alpha_\sigma}{d_\sigma}
+    \Big(\frac{\|p_\sigma^{(t+1)}\|}{\mathbb{E}\|\mathcal{N}(0,I)\|} - 1\Big) \\ \sigma^{(t+1)}
+    &= \sigma^{(t)} \exp\Big(\frac{\alpha_\sigma}{d_\sigma} \Big(\frac{\|p_\sigma^{(t+1)}\|}{\mathbb{E}\|\mathcal{N}(0,I)\|}
+    - 1\Big)\Big) \end{aligned} $$
 - en: where $d_\sigma \approx 1$ is a damping parameter, scaling how fast $\ln\sigma$
     should be changed.
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$d_\sigma \approx 1$是一个阻尼参数，用于调整$\ln\sigma$的变化速度。
 - en: Adapting the Covariance Matrix
+  id: totrans-82
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 调整协方差矩阵
 - en: 'For the covariance matrix, it can be estimated from scratch using $y_i$ of
     elite samples (recall that $y_i \sim \mathcal{N}(0, C)$):'
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于协方差矩阵，可以从头开始使用精英样本$y_i$进行估计（回想一下$y_i \sim \mathcal{N}(0, C)$）：
 - en: $$ C_\lambda^{(t+1)} = \frac{1}{\lambda}\sum_{i=1}^\lambda y^{(t+1)}_i {y^{(t+1)}_i}^\top
     = \frac{1}{\lambda {\sigma^{(t)}}^2} \sum_{i=1}^\lambda (x_i^{(t+1)} - \mu^{(t)})(x_i^{(t+1)}
     - \mu^{(t)})^\top $$
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ C_\lambda^{(t+1)} = \frac{1}{\lambda}\sum_{i=1}^\lambda y^{(t+1)}_i {y^{(t+1)}_i}^\top
+    = \frac{1}{\lambda {\sigma^{(t)}}^2} \sum_{i=1}^\lambda (x_i^{(t+1)} - \mu^{(t)})(x_i^{(t+1)}
+    - \mu^{(t)})^\top $$
 - en: The above estimation is only reliable when the selected population is large
     enough. However, we do want to run *fast* iteration with a *small* population
     of samples in each generation. That’s why CMA-ES invented a more reliable but
     also more complicated way to update $C$. It involves two independent routes,
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 以上估计仅在选择的样本量足够大时才可靠。然而，我们希望在每一代中使用*小*样本量进行*快速*迭代。这就是为什么CMA-ES发明了一种更可靠但也更复杂的更新$C$的方法。它涉及两条独立的路径，
 - en: '*Rank-min(λ, n) update*: uses the history of $\{C_\lambda\}$, each estimated
     from scratch in one generation.'
+  id: totrans-86
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*秩-最小(λ, n)更新*：使用$\{C_\lambda\}$的历史记录，每一代中都从头开始估计。'
 - en: '*Rank-one update*: estimates the moving steps $y_i$ and the sign information
     from the history.'
+  id: totrans-87
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*秩-一更新*：从历史中估计移动步长$y_i$和符号信息。'
 - en: 'The first route considers the estimation of $C$ from the entire history of
     $\{C_\lambda\}$. For example, if we have experienced a large number of generations,
     $C^{(t+1)} \approx \text{avg}(C_\lambda^{(i)}; i=1,\dots,t)$ would be a good estimator.
     Similar to $p_\sigma$, we also use polyak averaging with a learning rate to incorporate
     the history:'
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 第一条路径考虑从$\{C_\lambda\}$的整个历史中估计$C$。例如，如果我们经历了大量的代数，$C^{(t+1)} \approx \text{avg}(C_\lambda^{(i)};
+    i=1,\dots,t)$将是一个很好的估计量。类似于$p_\sigma$，我们还使用带有学习率的Polyak平均法来融合历史：
 - en: $$ C^{(t+1)} = (1 - \alpha_{c\lambda}) C^{(t)} + \alpha_{c\lambda} C_\lambda^{(t+1)}
     = (1 - \alpha_{c\lambda}) C^{(t)} + \alpha_{c\lambda} \frac{1}{\lambda} \sum_{i=1}^\lambda
     y^{(t+1)}_i {y^{(t+1)}_i}^\top $$
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ C^{(t+1)} = (1 - \alpha_{c\lambda}) C^{(t)} + \alpha_{c\lambda} C_\lambda^{(t+1)}
+    = (1 - \alpha_{c\lambda}) C^{(t)} + \alpha_{c\lambda} \frac{1}{\lambda} \sum_{i=1}^\lambda
+    y^{(t+1)}_i {y^{(t+1)}_i}^\top $$
 - en: A common choice for the learning rate is $\alpha_{c\lambda} \approx \min(1,
     \lambda/n^2)$.
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 学习率的常见选择是$\alpha_{c\lambda} \approx \min(1, \lambda/n^2)$。
 - en: The second route tries to solve the issue that $y_i{y_i}^\top = (-y_i)(-y_i)^\top$
     loses the sign information. Similar to how we adjust the step size $\sigma$, an
     evolution path $p_c$ is used to track the sign information and it is constructed
     in a way that $p_c$ is conjugate, $\sim \mathcal{N}(0, C)$ both before and after
     a new generation.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 第二条路径试图解决$y_i{y_i}^\top = (-y_i)(-y_i)^\top$丢失符号信息的问题。类似于我们如何调整步长$\sigma$，演化路径$p_c$用于跟踪符号信息，并且构造方式使得$p_c$在新一代之前和之后都是共轭的，$\sim
+    \mathcal{N}(0, C)$。
 - en: We may consider $p_c$ as another way to compute $\text{avg}_i(y_i)$ (notice
     that both $\sim \mathcal{N}(0, C)$) while the entire history is used and the sign
     information is maintained. Note that we’ve known $\sqrt{k}\frac{\mu^{(t+1)} -
     \mu^{(t)}}{\sigma^{(t)}} \sim \mathcal{N}(0, C)$ in the [last section](#controlling-the-step-size),
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以将$p_c$视为计算$\text{avg}_i(y_i)$的另一种方式（注意两者都$\sim \mathcal{N}(0, C)$），同时使用整个历史记录并保持符号信息。请注意，在[上一节](#controlling-the-step-size)中我们已经知道$\sqrt{k}\frac{\mu^{(t+1)}
+    - \mu^{(t)}}{\sigma^{(t)}} \sim \mathcal{N}(0, C)$，
 - en: $$ \begin{aligned} p_c^{(t+1)} &= (1-\alpha_{cp}) p_c^{(t)} + \sqrt{1 - (1-\alpha_{cp})^2}\;\sqrt{\lambda}\;\frac{\mu^{(t+1)}
     - \mu^{(t)}}{\sigma^{(t)}} \\ &= (1-\alpha_{cp}) p_c^{(t)} + \sqrt{\alpha_{cp}(2
     - \alpha_{cp})\lambda}\;\frac{\mu^{(t+1)} - \mu^{(t)}}{\sigma^{(t)}} \end{aligned}
     $$
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} p_c^{(t+1)} &= (1-\alpha_{cp}) p_c^{(t)} + \sqrt{1 - (1-\alpha_{cp})^2}\;\sqrt{\lambda}\;\frac{\mu^{(t+1)}
+    - \mu^{(t)}}{\sigma^{(t)}} \\ &= (1-\alpha_{cp}) p_c^{(t)} + \sqrt{\alpha_{cp}(2
+    - \alpha_{cp})\lambda}\;\frac{\mu^{(t+1)} - \mu^{(t)}}{\sigma^{(t)}} \end{aligned}
+    $$
 - en: 'Then the covariance matrix is updated according to $p_c$:'
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后根据 $p_c$ 更新协方差矩阵：
 - en: $$ C^{(t+1)} = (1-\alpha_{c1}) C^{(t)} + \alpha_{c1}\;p_c^{(t+1)} {p_c^{(t+1)}}^\top
     $$
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ C^{(t+1)} = (1-\alpha_{c1}) C^{(t)} + \alpha_{c1}\;p_c^{(t+1)} {p_c^{(t+1)}}^\top
+    $$
 - en: The *rank-one update* approach is claimed to generate a significant improvement
     over the *rank-min(λ, n)-update* when $k$ is small, because the signs of moving
     steps and correlations between consecutive steps are all utilized and passed down
     through generations.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: '*rank-one update* 方法声称在 $k$ 较小时相对于 *rank-min(λ, n)-update* 生成了显著的改进，因为移动步骤的符号和连续步骤之间的相关性都被利用并传递给后代。'
 - en: Eventually we combine two approaches together,
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 最终我们将两种方法结合在一起，
 - en: $$ C^{(t+1)} = (1 - \alpha_{c\lambda} - \alpha_{c1}) C^{(t)} + \alpha_{c1}\;\underbrace{p_c^{(t+1)}
     {p_c^{(t+1)}}^\top}_\textrm{rank-one update} + \alpha_{c\lambda} \underbrace{\frac{1}{\lambda}
     \sum_{i=1}^\lambda y^{(t+1)}_i {y^{(t+1)}_i}^\top}_\textrm{rank-min(lambda, n)
     update} $$![](../Images/849af8d9302f2fccd386650053423e98.png)
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ C^{(t+1)} = (1 - \alpha_{c\lambda} - \alpha_{c1}) C^{(t)} + \alpha_{c1}\;\underbrace{p_c^{(t+1)}
+    {p_c^{(t+1)}}^\top}_\textrm{rank-one update} + \alpha_{c\lambda} \underbrace{\frac{1}{\lambda}
+    \sum_{i=1}^\lambda y^{(t+1)}_i {y^{(t+1)}_i}^\top}_\textrm{rank-min(lambda, n)
+    update} $$![](../Images/849af8d9302f2fccd386650053423e98.png)
 - en: In all my examples above, each elite sample is considered to contribute an equal
     amount of weights, $1/\lambda$. The process can be easily extended to the case
     where selected samples are assigned with different weights, $w_1, \dots, w_\lambda$,
     according to their performances. See more detail in [tutorial](https://arxiv.org/abs/1604.00772).
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我上面的所有示例中，每个精英样本被认为贡献相等的权重，$1/\lambda$。该过程可以轻松扩展到所选样本根据其表现分配不同权重，$w_1, \dots,
+    w_\lambda$ 的情况。更多细节请参见 [教程](https://arxiv.org/abs/1604.00772)。
 - en: '![](../Images/83ecb3db46a1645979b4796e3a1f59fc.png)'
+  id: totrans-100
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/83ecb3db46a1645979b4796e3a1f59fc.png)'
 - en: 'Fig. 3\. Illustration of how CMA-ES works on a 2D optimization problem (the
     lighter color the better). Black dots are samples in one generation. The samples
     are more spread out initially but when the model has higher confidence in finding
     a good solution in the late stage, the samples become very concentrated over the
     global optimum. (Image source: [Wikipedia CMA-ES](https://en.wikipedia.org/wiki/CMA-ES))'
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 图3\. 展示了CMA-ES在2D优化问题上的工作原理（颜色越浅越好）。黑点是一代中的样本。样本最初更分散，但当模型在后期对找到全局最优解有更高的信心时，样本会非常集中在全局最优解上。（图片来源：[维基百科CMA-ES](https://en.wikipedia.org/wiki/CMA-ES)）
 - en: Natural Evolution Strategies
+  id: totrans-102
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 自然进化策略
 - en: Natural Evolution Strategies (**NES**; [Wierstra, et al, 2008](https://arxiv.org/abs/1106.4487))
     optimizes in a search distribution of parameters and moves the distribution in
     the direction of high fitness indicated by the *natural gradient*.
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 自然进化策略（**NES**；[Wierstra, et al, 2008](https://arxiv.org/abs/1106.4487)）在参数搜索分布中进行优化，并沿着
+    *自然梯度* 指示的高适应度方向移动分布。
 - en: Natural Gradients
+  id: totrans-104
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 自然梯度
 - en: 'Given an objective function $\mathcal{J}(\theta)$ parameterized by $\theta$,
     let’s say our goal is to find the optimal $\theta$ to maximize the objective function
     value. A *plain gradient* finds the steepest direction within a small Euclidean
     distance from the current $\theta$; the distance restriction is applied on the
     parameter space. In other words, we compute the plain gradient with respect to
     a small change of the absolute value of $\theta$. The optimal step is:'
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 给定一个由 $\theta$ 参数化的目标函数 $\mathcal{J}(\theta)$，假设我们的目标是找到最优的 $\theta$ 以最大化目标函数值。*普通梯度*
+    找到当前 $\theta$ 附近小的欧几里德距离内的最陡方向；距离限制应用于参数空间。换句话说，我们计算相对于 $\theta$ 的绝对值的小变化的普通梯度。最优步骤是：
 - en: $$ d^{*} = \operatorname*{argmax}_{\|d\| = \epsilon} \mathcal{J}(\theta + d)\text{,
     where }\epsilon \to 0 $$
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ d^{*} = \operatorname*{argmax}_{\|d\| = \epsilon} \mathcal{J}(\theta + d)\text{,
+    where }\epsilon \to 0 $$
 - en: Differently, *natural gradient* works with a probability [distribution](https://arxiv.org/abs/1301.3584v7)
     [space](https://wiseodd.github.io/techblog/2018/03/14/natural-gradient/) parameterized
     by $\theta$, $p_\theta(x)$ (referred to as “search distribution” in NES [paper](https://arxiv.org/abs/1106.4487)).
@@ -502,20 +771,31 @@
     where the distance is measured by KL divergence. With this constraint we ensure
     that each update is moving along the distributional manifold with constant speed,
     without being slowed down by its curvature.
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: '*自然梯度*与由$\theta$参数化的概率[分布](https://arxiv.org/abs/1301.3584v7)空间$p_\theta(x)$（在NES
+    [论文](https://arxiv.org/abs/1106.4487)中称为“搜索分布”）一起工作。它在分布空间中寻找在KL散度度量的小步长内最陡的方向。通过这个约束，我们确保每次更新都沿着分布流形以恒定速度移动，而不会被其曲率减慢。'
 - en: $$ d^{*}_\text{N} = \operatorname*{argmax}_{\text{KL}[p_\theta \| p_{\theta+d}]
     = \epsilon} \mathcal{J}(\theta + d) $$
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ d^{*}_\text{N} = \operatorname*{argmax}_{\text{KL}[p_\theta \| p_{\theta+d}]
+    = \epsilon} \mathcal{J}(\theta + d) $$
 - en: Estimation using Fisher Information Matrix
+  id: totrans-109
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 使用费舍尔信息矩阵进行估计
 - en: 'But, how to compute $\text{KL}[p_\theta | p_{\theta+\Delta\theta}]$ precisely?
     By running Taylor expansion of $\log p_{\theta + d}$ at $\theta$, we get:'
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: 但是，如何精确计算$\text{KL}[p_\theta | p_{\theta+\Delta\theta}]$？通过在$\theta$处运行$\log
+    p_{\theta + d}$的泰勒展开，我们得到：
 - en: $$ \begin{aligned} & \text{KL}[p_\theta \| p_{\theta+d}] \\ &= \mathbb{E}_{x
     \sim p_\theta} [\log p_\theta(x) - \log p_{\theta+d}(x)] & \\ &\approx \mathbb{E}_{x
     \sim p_\theta} [ \log p_\theta(x) -( \log p_{\theta}(x) + \nabla_\theta \log p_{\theta}(x)
@@ -523,57 +803,100 @@
     Taylor expand }\log p_{\theta+d}} \\ &\approx - \mathbb{E}_x [\nabla_\theta \log
     p_{\theta}(x)] d - \frac{1}{2}d^\top \mathbb{E}_x [\nabla^2_\theta \log p_{\theta}(x)]
     d & \end{aligned} $$
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} & \text{KL}[p_\theta \| p_{\theta+d}] \\ &= \mathbb{E}_{x
+    \sim p_\theta} [\log p_\theta(x) - \log p_{\theta+d}(x)] & \\ &\approx \mathbb{E}_{x
+    \sim p_\theta} [ \log p_\theta(x) -( \log p_{\theta}(x) + \nabla_\theta \log p_{\theta}(x)
+    d + \frac{1}{2}d^\top \nabla^2_\theta \log p_{\theta}(x) d)] & \scriptstyle{\text{；在}\theta\text{处展开}\log
+    p_{\theta+d}} \\ &\approx - \mathbb{E}_x [\nabla_\theta \log p_{\theta}(x)] d
+    - \frac{1}{2}d^\top \mathbb{E}_x [\nabla^2_\theta \log p_{\theta}(x)] d & \end{aligned}
+    $$
 - en: where
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中
 - en: $$ \begin{aligned} \mathbb{E}_x [\nabla_\theta \log p_{\theta}] d &= \int_{x\sim
     p_\theta} p_\theta(x) \nabla_\theta \log p_\theta(x) & \\ &= \int_{x\sim p_\theta}
     p_\theta(x) \frac{1}{p_\theta(x)} \nabla_\theta p_\theta(x) & \\ &= \nabla_\theta
     \Big( \int_{x} p_\theta(x) \Big) & \scriptstyle{\textrm{; note that }p_\theta(x)\textrm{
     is probability distribution.}} \\ &= \nabla_\theta (1) = 0 \end{aligned} $$
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \mathbb{E}_x [\nabla_\theta \log p_{\theta}] d &= \int_{x\sim
+    p_\theta} p_\theta(x) \nabla_\theta \log p_\theta(x) & \\ &= \int_{x\sim p_\theta}
+    p_\theta(x) \frac{1}{p_\theta(x)} \nabla_\theta p_\theta(x) & \\ &= \nabla_\theta
+    \Big( \int_{x} p_\theta(x) \Big) & \scriptstyle{\textrm{；注意}p_\theta(x)\textrm{是概率分布。}}
+    \\ &= \nabla_\theta (1) = 0 \end{aligned} $$
 - en: Finally we have,
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后我们有，
 - en: $$ \text{KL}[p_\theta \| p_{\theta+d}] = - \frac{1}{2}d^\top \mathbf{F}_\theta
     d \text{, where }\mathbf{F}_\theta = \mathbb{E}_x [(\nabla_\theta \log p_{\theta})
     (\nabla_\theta \log p_{\theta})^\top] $$
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \text{KL}[p_\theta \| p_{\theta+d}] = - \frac{1}{2}d^\top \mathbf{F}_\theta
+    d \text{，其中 }\mathbf{F}_\theta = \mathbb{E}_x [(\nabla_\theta \log p_{\theta})
+    (\nabla_\theta \log p_{\theta})^\top] $$
 - en: where $\mathbf{F}_\theta$ is called the **[Fisher Information Matrix](http://mathworld.wolfram.com/FisherInformationMatrix.html)**
     and [it is](https://wiseodd.github.io/techblog/2018/03/11/fisher-information/)
     the covariance matrix of $\nabla_\theta \log p_\theta$ since $\mathbb{E}[\nabla_\theta
     \log p_\theta] = 0$.
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$\mathbf{F}_\theta$被称为**[费舍尔信息矩阵](http://mathworld.wolfram.com/FisherInformationMatrix.html)**，[它是](https://wiseodd.github.io/techblog/2018/03/11/fisher-information/)由于$\mathbb{E}[\nabla_\theta
+    \log p_\theta] = 0$，所以是$\nabla_\theta \log p_\theta$的协方差矩阵。
 - en: 'The solution to the following optimization problem:'
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下优化问题的解决方案：
 - en: $$ \max \mathcal{J}(\theta + d) \approx \max \big( \mathcal{J}(\theta) + {\nabla_\theta\mathcal{J}(\theta)}^\top
     d \big)\;\text{ s.t. }\text{KL}[p_\theta \| p_{\theta+d}] - \epsilon = 0 $$
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \max \mathcal{J}(\theta + d) \approx \max \big( \mathcal{J}(\theta) + {\nabla_\theta\mathcal{J}(\theta)}^\top
+    d \big)\;\text{ s.t. }\text{KL}[p_\theta \| p_{\theta+d}] - \epsilon = 0 $$
 - en: can be found using a Lagrangian multiplier,
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: 可以通过拉格朗日乘子找到，
 - en: $$ \begin{aligned} \mathcal{L}(\theta, d, \beta) &= \mathcal{J}(\theta) + \nabla_\theta\mathcal{J}(\theta)^\top
     d - \beta (\frac{1}{2}d^\top \mathbf{F}_\theta d + \epsilon) = 0 \text{ s.t. }
     \beta > 0 \\ \nabla_d \mathcal{L}(\theta, d, \beta) &= \nabla_\theta\mathcal{J}(\theta)
     - \beta\mathbf{F}_\theta d = 0 \\ \text{Thus } d_\text{N}^* &= \nabla_\theta^\text{N}
     \mathcal{J}(\theta) = \mathbf{F}_\theta^{-1} \nabla_\theta\mathcal{J}(\theta)
     \end{aligned} $$
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \mathcal{L}(\theta, d, \beta) &= \mathcal{J}(\theta) + \nabla_\theta\mathcal{J}(\theta)^\top
+    d - \beta (\frac{1}{2}d^\top \mathbf{F}_\theta d + \epsilon) = 0 \text{ s.t. }
+    \beta > 0 \\ \nabla_d \mathcal{L}(\theta, d, \beta) &= \nabla_\theta\mathcal{J}(\theta)
+    - \beta\mathbf{F}_\theta d = 0 \\ \text{因此 } d_\text{N}^* &= \nabla_\theta^\text{N}
+    \mathcal{J}(\theta) = \mathbf{F}_\theta^{-1} \nabla_\theta\mathcal{J}(\theta)
+    \end{aligned} $$
 - en: where $d_\text{N}^*$ only extracts the direction of the optimal moving step
     on $\theta$, ignoring the scalar $\beta^{-1}$.
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: $d_\text{N}^*$ 只提取了在 $\theta$ 上最佳移动步骤的方向，忽略了标量 $\beta^{-1}$。
 - en: '![](../Images/0a4c7fb878db42a208d4cfd63c66916c.png)'
+  id: totrans-122
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/0a4c7fb878db42a208d4cfd63c66916c.png)'
 - en: 'Fig. 4\. The natural gradient samples (black solid arrows) in the right are
     the plain gradient samples (black solid arrows) in the left multiplied by the
     inverse of their covariance. In this way, a gradient direction with high uncertainty
@@ -581,43 +904,66 @@
     The aggregated natural gradient (red dash arrow) is therefore more trustworthy
     than the natural gradient (green solid arrow). (Image source: additional annotations
     on Fig 2 in [NES](https://arxiv.org/abs/1106.4487) paper)'
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: 图4. 右侧的自然梯度样本（黑色实箭头）是左侧的普通梯度样本（黑色实箭头）乘以它们的协方差的倒数。通过这种方式，具有高不确定性的梯度方向（由与其他样本的高协方差表示）将以较小的权重进行惩罚。因此，聚合的自然梯度（红色虚线箭头）比自然梯度（绿色实箭头）更可信。
+    （图片来源：[NES](https://arxiv.org/abs/1106.4487) 论文中对图2的附加注释）
 - en: NES Algorithm
+  id: totrans-124
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: NES 算法
 - en: 'The fitness associated with one sample is labeled as $f(x)$ and the search
     distribution over $x$ is parameterized by $\theta$. NES is expected to optimize
     the parameter $\theta$ to achieve maximum expected fitness:'
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: 与一个样本相关联的适应度标记为 $f(x)$，对 $x$ 的搜索分布由 $\theta$ 参数化。NES 期望优化参数 $\theta$ 以实现最大期望适应度：
 - en: $$ \mathcal{J}(\theta) = \mathbb{E}_{x\sim p_\theta(x)} [f(x)] = \int_x f(x)
     p_\theta(x) dx $$
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathcal{J}(\theta) = \mathbb{E}_{x\sim p_\theta(x)} [f(x)] = \int_x f(x)
+    p_\theta(x) dx $$
 - en: 'Using the same log-likelihood [trick](http://blog.shakirm.com/2015/11/machine-learning-trick-of-the-day-5-log-derivative-trick/)
     in [REINFORCE](https://lilianweng.github.io/posts/2018-04-08-policy-gradient/#reinforce):'
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: 在[REINFORCE](https://lilianweng.github.io/posts/2018-04-08-policy-gradient/#reinforce)中使用相同的对数似然[技巧](http://blog.shakirm.com/2015/11/machine-learning-trick-of-the-day-5-log-derivative-trick/)：
 - en: $$ \begin{aligned} \nabla_\theta\mathcal{J}(\theta) &= \nabla_\theta \int_x
     f(x) p_\theta(x) dx \\ &= \int_x f(x) \frac{p_\theta(x)}{p_\theta(x)}\nabla_\theta
     p_\theta(x) dx \\ & = \int_x f(x) p_\theta(x) \nabla_\theta \log p_\theta(x) dx
     \\ & = \mathbb{E}_{x \sim p_\theta} [f(x) \nabla_\theta \log p_\theta(x)] \end{aligned}
     $$![](../Images/4e95bc8c6a8052cf211ebb3310273b66.png)
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \nabla_\theta\mathcal{J}(\theta) &= \nabla_\theta \int_x
+    f(x) p_\theta(x) dx \\ &= \int_x f(x) \frac{p_\theta(x)}{p_\theta(x)}\nabla_\theta
+    p_\theta(x) dx \\ & = \int_x f(x) p_\theta(x) \nabla_\theta \log p_\theta(x) dx
+    \\ & = \mathbb{E}_{x \sim p_\theta} [f(x) \nabla_\theta \log p_\theta(x)] \end{aligned}
+    $$![](../Images/4e95bc8c6a8052cf211ebb3310273b66.png)
 - en: Besides natural gradients, NES adopts a couple of important heuristics to make
     the algorithm performance more robust.
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
+  zh: 除了自然梯度，NES采用了一些重要的启发式方法，使算法性能更加稳健。
 - en: NES applies **rank-based fitness shaping**, that is to use the *rank* under
     monotonically increasing fitness values instead of using $f(x)$ directly. Or it
     can be a function of the rank (“utility function”), which is considered as a free
     parameter of NES.
+  id: totrans-130
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: NES 应用**基于排名的适应度塑形**，即使用在单调递增适应度值下的*排名*，而不是直接使用 $f(x)$。或者可以是排名的函数（“效用函数”），被视为
+    NES 的一个自由参数。
 - en: NES adopts **adaptation sampling** to adjust hyperparameters at run time. When
     changing $\theta \to \theta’$, samples drawn from $p_\theta$ are compared with
     samples from $p_{\theta’}$ using [Mann-Whitney U-test(https://en.wikipedia.org/wiki/Mann%E2%80%93Whitney_U_test)];
@@ -625,22 +971,32 @@
     or increases by a multiplication constant. Note the score of a sample $x’_i \sim
     p_{\theta’}(x)$ has importance sampling weights applied $w_i’ = p_\theta(x) /
     p_{\theta’}(x)$.
+  id: totrans-131
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: NES采用**适应性抽样**来在运行时调整超参数。当改变$\theta \to \theta’$时，从$p_\theta$中抽取的样本与从$p_{\theta’}$中抽取的样本进行比较，使用[Mann-Whitney
+    U检验(https://en.wikipedia.org/wiki/Mann%E2%80%93Whitney_U_test)]；如果显示正负号，则目标超参数通过乘法常数减少或增加。注意样本$x’_i
+    \sim p_{\theta’}(x)$的得分应用重要性抽样权重$w_i’ = p_\theta(x) / p_{\theta’}(x)$。
 - en: 'Applications: ES in Deep Reinforcement Learning'
+  id: totrans-132
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 应用：深度强化学习中的进化策略
 - en: OpenAI ES for RL
+  id: totrans-133
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: OpenAI 强化学习中的进化策略
 - en: The concept of using evolutionary algorithms in reinforcement learning can be
     traced back [long ago](https://arxiv.org/abs/1106.0221), but only constrained
     to tabular RL due to computational limitations.
+  id: totrans-134
   prefs: []
   type: TYPE_NORMAL
+  zh: 在强化学习中使用进化算法的概念可以追溯到[很久以前](https://arxiv.org/abs/1106.0221)，但由于计算限制只限于表格型强化学习。
 - en: Inspired by [NES](#natural-evolution-strategies), researchers at OpenAI ([Salimans,
     et al. 2017](https://arxiv.org/abs/1703.03864)) proposed to use NES as a gradient-free
     black-box optimizer to find optimal policy parameters $\theta$ that maximizes
@@ -648,21 +1004,31 @@
     the model parameter $\theta$ and then use the log-likelihood trick to write it
     as the gradient of the Gaussian pdf. Eventually only the noise term is left as
     a weighting scalar for measured performance.
+  id: totrans-135
   prefs: []
   type: TYPE_NORMAL
+  zh: 受[NES](#natural-evolution-strategies)启发，OpenAI的研究人员（[Salimans, et al. 2017](https://arxiv.org/abs/1703.03864)）提出使用NES作为无梯度黑盒优化器来找到最大化回报函数$F(\theta)$的最优策略参数$\theta$。关键是在模型参数$\theta$上添加高斯噪声$\epsilon$，然后使用对数似然技巧将其写成高斯概率密度函数的梯度。最终，只有噪声项作为衡量性能的加权标量留下。
 - en: Let’s say the current parameter value is $\hat{\theta}$ (the added hat is to
     distinguish the value from the random variable $\theta$). The search distribution
     of $\theta$ is designed to be an isotropic multivariate Gaussian with a mean $\hat{\theta}$
     and a fixed covariance matrix $\sigma^2 I$,
+  id: totrans-136
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设当前参数值为$\hat{\theta}$（添加帽子是为了区分该值与随机变量$\theta$）。$\theta$的搜索分布被设计为具有均值$\hat{\theta}$和固定协方差矩阵$\sigma^2
+    I$的各向同性多元高斯分布，
 - en: $$ \theta \sim \mathcal{N}(\hat{\theta}, \sigma^2 I) \text{ equivalent to }
     \theta = \hat{\theta} + \sigma\epsilon, \epsilon \sim \mathcal{N}(0, I) $$
+  id: totrans-137
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \theta \sim \mathcal{N}(\hat{\theta}, \sigma^2 I) \text{ 等价于 } \theta = \hat{\theta}
+    + \sigma\epsilon, \epsilon \sim \mathcal{N}(0, I) $$
 - en: 'The gradient for $\theta$ update is:'
+  id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: $\theta$ 更新的梯度为：
 - en: $$ \begin{aligned} & \nabla_\theta \mathbb{E}_{\theta\sim\mathcal{N}(\hat{\theta},
     \sigma^2 I)} F(\theta) \\ &= \nabla_\theta \mathbb{E}_{\epsilon\sim\mathcal{N}(0,
     I)} F(\hat{\theta} + \sigma\epsilon) \\ &= \nabla_\theta \int_{\epsilon} p(\epsilon)
@@ -676,127 +1042,207 @@
     F(\hat{\theta} + \sigma\epsilon) ] & \\ &= \frac{1}{\sigma}\mathbb{E}_{\epsilon\sim\mathcal{N}(0,
     I)} [ \epsilon F(\hat{\theta} + \sigma\epsilon) ] & \scriptstyle{\text{; negative
     sign can be absorbed.}} \end{aligned} $$
+  id: totrans-139
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} & \nabla_\theta \mathbb{E}_{\theta\sim\mathcal{N}(\hat{\theta},
+    \sigma^2 I)} F(\theta) \\ &= \nabla_\theta \mathbb{E}_{\epsilon\sim\mathcal{N}(0,
+    I)} F(\hat{\theta} + \sigma\epsilon) \\ &= \nabla_\theta \int_{\epsilon} p(\epsilon)
+    F(\hat{\theta} + \sigma\epsilon) d\epsilon & \scriptstyle{\text{; 高斯 }p(\epsilon)=(2\pi)^{-\frac{n}{2}}
+    \exp(-\frac{1}{2}\epsilon^\top\epsilon)} \\ &= \int_{\epsilon} p(\epsilon) \nabla_\epsilon
+    \log p(\epsilon) \nabla_\theta \epsilon\;F(\hat{\theta} + \sigma\epsilon) d\epsilon
+    & \scriptstyle{\text{; 对数似然技巧}}\\ &= \mathbb{E}_{\epsilon\sim\mathcal{N}(0, I)}
+    [ \nabla_\epsilon \big(-\frac{1}{2}\epsilon^\top\epsilon\big) \nabla_\theta \big(\frac{\theta
+    - \hat{\theta}}{\sigma}\big) F(\hat{\theta} + \sigma\epsilon) ] & \\ &= \mathbb{E}_{\epsilon\sim\mathcal{N}(0,
+    I)} [ (-\epsilon) (\frac{1}{\sigma}) F(\hat{\theta} + \sigma\epsilon) ] & \\ &=
+    \frac{1}{\sigma}\mathbb{E}_{\epsilon\sim\mathcal{N}(0, I)} [ \epsilon F(\hat{\theta}
+    + \sigma\epsilon) ] & \scriptstyle{\text{; 负号可以被吸收。}} \end{aligned} $$
 - en: In one generation, we can sample many $epsilon_i, i=1,\dots,n$ and evaluate
     the fitness *in parallel*. One beautiful design is that no large model parameter
     needs to be shared. By only communicating the random seeds between workers, it
     is enough for the master node to do parameter update. This approach is later extended
     to adaptively learn a loss function; see my previous post on [Evolved Policy Gradient](https://lilianweng.github.io/posts/2019-06-23-meta-rl/#meta-learning-the-loss-function).
+  id: totrans-140
   prefs: []
   type: TYPE_NORMAL
+  zh: 在一个世代中，我们可以并行地抽样许多 $epsilon_i, i=1,\dots,n$ 并评估适应度。一个美妙的设计是不需要共享大型模型参数。只需在工作节点之间通信随机种子，主节点就足以进行参数更新。这种方法后来被扩展为自适应学习损失函数；请参阅我的先前文章[Evolved
+    Policy Gradient](https://lilianweng.github.io/posts/2019-06-23-meta-rl/#meta-learning-the-loss-function)。
 - en: '![](../Images/885fe7be4bab3d0d2265c02a6ba1208d.png)'
+  id: totrans-141
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/885fe7be4bab3d0d2265c02a6ba1208d.png)'
 - en: 'Fig. 5\. The algorithm for training a RL policy using evolution strategies.
     (Image source: [ES-for-RL](https://arxiv.org/abs/1703.03864) paper)'
+  id: totrans-142
   prefs: []
   type: TYPE_NORMAL
+  zh: 图5. 使用进化策略训练 RL 策略的算法。（图片来源：[ES-for-RL](https://arxiv.org/abs/1703.03864) 论文）
 - en: To make the performance more robust, OpenAI ES adopts virtual batch normalization
     (BN with mini-batch used for calculating statistics fixed), mirror sampling (sampling
     a pair of $(-\epsilon, \epsilon)$ for evaluation), and [fitness shaping](#fitness-shaping).
+  id: totrans-143
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了使性能更加稳健，OpenAI ES采用了虚拟批量归一化（BN使用固定的小批量计算统计数据）、镜像抽样（对评估抽样一对 $(-\epsilon, \epsilon)$）、和[适应性塑形](#fitness-shaping)。
 - en: Exploration with ES
+  id: totrans-144
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 用 ES 进行探索
 - en: Exploration ([vs exploitation](https://lilianweng.github.io/posts/2018-01-23-multi-armed-bandit/#exploitation-vs-exploration))
     is an important topic in RL. The optimization direction in the ES algorithm [above](TBA)
     is only extracted from the cumulative return $F(\theta)$. Without explicit exploration,
     the agent might get trapped in a local optimum.
+  id: totrans-145
   prefs: []
   type: TYPE_NORMAL
+  zh: 探索（[与开发](https://lilianweng.github.io/posts/2018-01-23-multi-armed-bandit/#exploitation-vs-exploration)）是强化学习中的一个重要主题。ES
+    算法中的优化方向[上面](TBA)仅从累积回报 $F(\theta)$ 中提取。没有明确的探索，代理可能会陷入局部最优解。
 - en: Novelty-Search ES (**NS-ES**; [Conti et al, 2018](https://arxiv.org/abs/1712.06560))
     encourages exploration by updating the parameter in the direction to maximize
     the *novelty* score. The novelty score depends on a domain-specific behavior characterization
     function $b(\pi_\theta)$. The choice of $b(\pi_\theta)$ is specific to the task
     and seems to be a bit arbitrary; for example, in the Humanoid locomotion task
     in the paper, $b(\pi_\theta)$ is the final $(x,y)$ location of the agent.
+  id: totrans-146
   prefs: []
   type: TYPE_NORMAL
+  zh: Novelty-Search ES（**NS-ES**；[Conti et al, 2018](https://arxiv.org/abs/1712.06560)）通过更新参数以最大化*新颖性*分数的方向来鼓励探索。新颖性分数取决于特定于领域的行为表征函数
+    $b(\pi_\theta)$。选择 $b(\pi_\theta)$ 针对任务是特定的，似乎有点随意；例如，在论文中的人形机器人运动任务中，$b(\pi_\theta)$
+    是代理的最终 $(x,y)$ 位置。
 - en: Every policy’s $b(\pi_\theta)$ is pushed to an archive set $\mathcal{A}$.
+  id: totrans-147
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 每个政策的 $b(\pi_\theta)$ 都被推送到一个档案集 $\mathcal{A}$ 中。
 - en: Novelty of a policy $\pi_\theta$ is measured as the k-nearest neighbor score
     between $b(\pi_\theta)$ and all other entries in $\mathcal{A}$. (The use case
     of the archive set sounds quite similar to [episodic memory](https://lilianweng.github.io/posts/2019-06-23-meta-rl/#episodic-control).)
+  id: totrans-148
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 政策 $\pi_\theta$ 的新颖性是通过 $b(\pi_\theta)$ 与 $\mathcal{A}$ 中所有其他条目之间的 k-最近邻分数来衡量的。（档案集的用例听起来与[情节记忆](https://lilianweng.github.io/posts/2019-06-23-meta-rl/#episodic-control)非常相似。）
 - en: $$ N(\theta, \mathcal{A}) = \frac{1}{\lambda} \sum_{i=1}^\lambda \| b(\pi_\theta),
     b^\text{knn}_i \|_2 \text{, where }b^\text{knn}_i \in \text{kNN}(b(\pi_\theta),
     \mathcal{A}) $$
+  id: totrans-149
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ N(\theta, \mathcal{A}) = \frac{1}{\lambda} \sum_{i=1}^\lambda \| b(\pi_\theta),
+    b^\text{knn}_i \|_2 \text{，其中 }b^\text{knn}_i \in \text{kNN}(b(\pi_\theta), \mathcal{A})
+    $$
 - en: 'The ES optimization step relies on the novelty score instead of fitness:'
+  id: totrans-150
   prefs: []
   type: TYPE_NORMAL
+  zh: ES 优化步骤依赖于新颖性分数而不是适应度：
 - en: $$ \nabla_\theta \mathbb{E}_{\theta\sim\mathcal{N}(\hat{\theta}, \sigma^2 I)}
     N(\theta, \mathcal{A}) = \frac{1}{\sigma}\mathbb{E}_{\epsilon\sim\mathcal{N}(0,
     I)} [ \epsilon N(\hat{\theta} + \sigma\epsilon, \mathcal{A}) ] $$
+  id: totrans-151
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \nabla_\theta \mathbb{E}_{\theta\sim\mathcal{N}(\hat{\theta}, \sigma^2 I)}
+    N(\theta, \mathcal{A}) = \frac{1}{\sigma}\mathbb{E}_{\epsilon\sim\mathcal{N}(0,
+    I)} [ \epsilon N(\hat{\theta} + \sigma\epsilon, \mathcal{A}) ] $$
 - en: NS-ES maintains a group of $M$ independently trained agents (“meta-population”),
     $\mathcal{M} = \{\theta_1, \dots, \theta_M \}$ and picks one to advance proportional
     to the novelty score. Eventually we select the best policy. This process is equivalent
     to ensembling; also see the same idea in [SVPG](https://lilianweng.github.io/posts/2018-04-08-policy-gradient/#svpg).
+  id: totrans-152
   prefs: []
   type: TYPE_NORMAL
+  zh: NS-ES 维护一组独立训练的代理（“元种群”）$M$，$\mathcal{M} = \{\theta_1, \dots, \theta_M \}$ 并根据新颖性得分选择一个代理进行推进。最终我们选择最佳策略。这个过程等同于集成学习；也可以参考[SVPG](https://lilianweng.github.io/posts/2018-04-08-policy-gradient/#svpg)中相同的想法。
 - en: $$ \begin{aligned} m &\leftarrow \text{pick } i=1,\dots,M\text{ according to
     probability}\frac{N(\theta_i, \mathcal{A})}{\sum_{j=1}^M N(\theta_j, \mathcal{A})}
     \\ \theta_m^{(t+1)} &\leftarrow \theta_m^{(t)} + \alpha \frac{1}{\sigma}\sum_{i=1}^N
     \epsilon_i N(\theta^{(t)}_m + \epsilon_i, \mathcal{A}) \text{ where }\epsilon_i
     \sim \mathcal{N}(0, I) \end{aligned} $$
+  id: totrans-153
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} m &\leftarrow \text{根据概率选择 } i=1,\dots,M\text{，概率为}\frac{N(\theta_i,
+    \mathcal{A})}{\sum_{j=1}^M N(\theta_j, \mathcal{A})} \\ \theta_m^{(t+1)} &\leftarrow
+    \theta_m^{(t)} + \alpha \frac{1}{\sigma}\sum_{i=1}^N \epsilon_i N(\theta^{(t)}_m
+    + \epsilon_i, \mathcal{A}) \text{其中 }\epsilon_i \sim \mathcal{N}(0, I) \end{aligned}
+    $$
 - en: where $N$ is the number of Gaussian perturbation noise vectors and $\alpha$
     is the learning rate.
+  id: totrans-154
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 $N$ 是高斯扰动噪声向量的数量，$\alpha$ 是学习率。
 - en: NS-ES completely discards the reward function and only optimizes for novelty
     to avoid deceptive local optima. To incorporate the fitness back into the formula,
     another two variations are proposed.
+  id: totrans-155
   prefs: []
   type: TYPE_NORMAL
+  zh: NS-ES 完全舍弃了奖励函数，仅优化新颖性以避免欺骗性局部最优解。为了将适应度重新纳入公式，提出了另外两种变体。
 - en: '**NSR-ES**:'
+  id: totrans-156
   prefs: []
   type: TYPE_NORMAL
+  zh: '**NSR-ES**:'
 - en: $$ \theta_m^{(t+1)} \leftarrow \theta_m^{(t)} + \alpha \frac{1}{\sigma}\sum_{i=1}^N
     \epsilon_i \frac{N(\theta^{(t)}_m + \epsilon_i, \mathcal{A}) + F(\theta^{(t)}_m
     + \epsilon_i)}{2} $$
+  id: totrans-157
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \theta_m^{(t+1)} \leftarrow \theta_m^{(t)} + \alpha \frac{1}{\sigma}\sum_{i=1}^N
+    \epsilon_i \frac{N(\theta^{(t)}_m + \epsilon_i, \mathcal{A}) + F(\theta^{(t)}_m
+    + \epsilon_i)}{2} $$
 - en: '**NSRAdapt-ES (NSRA-ES)**: the adaptive weighting parameter $w = 1.0$ initially.
     We start decreasing $w$ if performance stays flat for a number of generations.
     Then when the performance starts to increase, we stop decreasing $w$ but increase
     it instead. In this way, fitness is preferred when the performance stops growing
     but novelty is preferred otherwise.'
+  id: totrans-158
   prefs: []
   type: TYPE_NORMAL
+  zh: '**NSRAdapt-ES (NSRA-ES)**: 自适应权重参数 $w = 1.0$ 初始值。如果性能保持不变一段时间，我们开始减小 $w$。然后当性能开始提高时，我们停止减小
+    $w$，反而增加它。这样，当性能停止增长时更偏向适应度，否则更偏向新颖性。'
 - en: $$ \theta_m^{(t+1)} \leftarrow \theta_m^{(t)} + \alpha \frac{1}{\sigma}\sum_{i=1}^N
     \epsilon_i \big((1-w) N(\theta^{(t)}_m + \epsilon_i, \mathcal{A}) + w F(\theta^{(t)}_m
     + \epsilon_i)\big) $$![](../Images/0d42d675b0f19463db8f6544ac8715a2.png)
+  id: totrans-159
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \theta_m^{(t+1)} \leftarrow \theta_m^{(t)} + \alpha \frac{1}{\sigma}\sum_{i=1}^N
+    \epsilon_i \big((1-w) N(\theta^{(t)}_m + \epsilon_i, \mathcal{A}) + w F(\theta^{(t)}_m
+    + \epsilon_i)\big) $$![](../Images/0d42d675b0f19463db8f6544ac8715a2.png)
 - en: 'Fig. 6\. (Left) The environment is Humanoid locomotion with a three-sided wall
     which plays a role as a deceptive trap to create local optimum. (Right) Experiments
     compare ES baseline and other variations that encourage exploration. (Image source:
     [NS-ES](https://arxiv.org/abs/1712.06560) paper)'
+  id: totrans-160
   prefs: []
   type: TYPE_NORMAL
+  zh: 图6\.（左）环境是具有三面墙的人形机器人运动，起欺骗性陷阱作用以创建局部最优解。（右）实验比较了ES基线和其他鼓励探索的变体。（图片来源：[NS-ES](https://arxiv.org/abs/1712.06560)
+    论文）
 - en: CEM-RL
+  id: totrans-161
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: CEM-RL
 - en: '![](../Images/67b8f81b4b647952a01ed649cbad2ab9.png)'
+  id: totrans-162
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/67b8f81b4b647952a01ed649cbad2ab9.png)'
 - en: 'Fig. 7\. Architectures of the (a) CEM-RL and (b) [ERL](https://papers.nips.cc/paper/7395-evolution-guided-policy-gradient-in-reinforcement-learning.pdf)
     algorithms (Image source: [CEM-RL](https://arxiv.org/abs/1810.01222) paper)'
+  id: totrans-163
   prefs: []
   type: TYPE_NORMAL
+  zh: 图7\. (a) CEM-RL 和 (b) [ERL](https://papers.nips.cc/paper/7395-evolution-guided-policy-gradient-in-reinforcement-learning.pdf)
+    算法的架构（图片来源：[CEM-RL](https://arxiv.org/abs/1810.01222) 论文）
 - en: The CEM-RL method ([Pourchot & Sigaud, 2019](https://arxiv.org/abs/1810.01222))
     combines Cross Entropy Method (CEM) with either [DDPG](https://lilianweng.github.io/posts/2018-04-08-policy-gradient/#ddpg)
     or [TD3](https://lilianweng.github.io/posts/2018-04-08-policy-gradient/#td3).
@@ -807,119 +1253,169 @@
     in which the standard EA algorithm selects and evolves a population of actors
     and the rollout experience generated in the process is then added into reply buffer
     for training both RL-actor and RL-critic networks.
+  id: totrans-164
   prefs: []
   type: TYPE_NORMAL
+  zh: CEM-RL方法（[Pourchot & Sigaud，2019](https://arxiv.org/abs/1810.01222)）将交叉熵方法（CEM）与[DDPG](https://lilianweng.github.io/posts/2018-04-08-policy-gradient/#ddpg)或[TD3](https://lilianweng.github.io/posts/2018-04-08-policy-gradient/#td3)结合。这里的CEM与上文描述的简单高斯ES基本相同，因此可以使用CMA-ES替换相同的函数。CEM-RL建立在*进化强化学习*（*ERL*；[Khadka
+    & Tumer，2018](https://papers.nips.cc/paper/7395-evolution-guided-policy-gradient-in-reinforcement-learning.pdf)）框架上，标准EA算法选择和演化一组演员，然后在过程中生成的回滚经验被添加到回放缓冲区中，用于训练RL-actor和RL-critic网络。
 - en: 'Workflow:'
+  id: totrans-165
   prefs: []
   type: TYPE_NORMAL
+  zh: 工作流程：
 - en: The mean actor of the CEM population is $\pi_\mu$ is initialized with a random
     actor network.
+  id: totrans-166
   prefs:
   - PREF_UL
   - PREF_OL
   type: TYPE_NORMAL
+  zh: CEM种群的平均actor是$\pi_\mu$，初始化为一个随机actor网络。
 - en: The critic network $Q$ is initialized too, which will be updated by DDPG/TD3.
+  id: totrans-167
   prefs:
   - PREF_UL
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 评论者网络$Q$也被初始化，将由DDPG/TD3更新。
 - en: 'Repeat until happy:'
+  id: totrans-168
   prefs:
   - PREF_UL
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 直到满意为止重复：
 - en: a. Sample a population of actors $\sim \mathcal{N}(\pi_\mu, \Sigma)$.
+  id: totrans-169
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: a. 从演员种群中抽样$\sim \mathcal{N}(\pi_\mu, \Sigma)$。
 - en: b. Half of the population is evaluated. Their fitness scores are used as the
     cumulative reward $R$ and added into replay buffer.
+  id: totrans-170
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: b. 评估种群的一半。他们的适应度分数被用作累积奖励$R，并添加到重放缓冲区中。
 - en: c. The other half are updated together with the critic.
+  id: totrans-171
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: c. 另一半与评论者一起更新。
 - en: d. The new $\pi_mu$ and $\Sigma$ is computed using top performing elite samples.
     [CMA-ES](#covariance-matrix-adaptation-evolution-strategies-cma-es) can be used
     for parameter update too.
+  id: totrans-172
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: d. 使用表现最佳的精英样本计算新的$\pi_mu$和$\Sigma$。[CMA-ES](#covariance-matrix-adaptation-evolution-strategies-cma-es)也可以用于参数更新。
 - en: 'Extension: EA in Deep Learning'
+  id: totrans-173
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 扩展：深度学习中的EA
 - en: (This section is not on evolution strategies, but still an interesting and relevant
     reading.)
+  id: totrans-174
   prefs: []
   type: TYPE_NORMAL
+  zh: （本节不涉及进化策略，但仍然是一篇有趣且相关的阅读。）
 - en: The *Evolutionary Algorithms* have been applied on many deep learning problems.
     POET ([Wang et al, 2019](https://arxiv.org/abs/1901.01753)) is a framework based
     on EA and attempts to generate a variety of different tasks while the problems
     themselves are being solved. POET has been introduced in my [last post](https://lilianweng.github.io/posts/2019-06-23-meta-rl/#task-generation-by-domain-randomization)
     on meta-RL. Evolutionary Reinforcement Learning (ERL) is another example; See
     Fig. 7 (b).
+  id: totrans-175
   prefs: []
   type: TYPE_NORMAL
+  zh: '*进化算法* 已经应用在许多深度学习问题上。POET（[Wang等，2019](https://arxiv.org/abs/1901.01753)）是一个基于EA的框架，试图在解决问题的同时生成各种不同的任务。
+    POET已经在我关于元强化学习的[上一篇文章](https://lilianweng.github.io/posts/2019-06-23-meta-rl/#task-generation-by-domain-randomization)中介绍过。进化强化学习（ERL）是另一个例子；见图7（b）。'
 - en: Below I would like to introduce two applications in more detail, *Population-Based
     Training (PBT)* and *Weight-Agnostic Neural Networks (WANN)*.
+  id: totrans-176
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面我想更详细地介绍两个应用，*基于种群的训练（PBT）* 和 *无权重神经网络（WANN）*。
 - en: 'Hyperparameter Tuning: PBT'
+  id: totrans-177
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 超参数调整：PBT
 - en: '![](../Images/5439860ef5b0d257ee144c2804e5304f.png)'
+  id: totrans-178
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/5439860ef5b0d257ee144c2804e5304f.png)'
 - en: 'Fig. 8\. Paradigms of comparing different ways of hyperparameter tuning. (Image
     source: [PBT](https://arxiv.org/abs/1711.09846) paper)'
+  id: totrans-179
   prefs: []
   type: TYPE_NORMAL
+  zh: 图8. 比较不同超参数调整方式的范例。（图片来源：[PBT](https://arxiv.org/abs/1711.09846) 论文）
 - en: Population-Based Training ([Jaderberg, et al, 2017](https://arxiv.org/abs/1711.09846)),
     short for **PBT** applies EA on the problem of hyperparameter tuning. It jointly
     trains a population of models and corresponding hyperparameters for optimal performance.
+  id: totrans-180
   prefs: []
   type: TYPE_NORMAL
+  zh: 基于种群的训练（[Jaderberg等，2017](https://arxiv.org/abs/1711.09846)），简称**PBT**，将EA应用于超参数调整问题。它同时训练一组模型和相应的超参数以获得最佳性能。
 - en: 'PBT starts with a set of random candidates, each containing a pair of model
     weights initialization and hyperparameters, $\{(\theta_i, h_i)\mid i=1, \dots,
     N\}$. Every sample is trained in parallel and asynchronously evaluates its own
     performance periodically. Whenever a member deems ready (i.e. after taking enough
     gradient update steps, or when the performance is good enough), it has a chance
     to be updated by comparing with the whole population:'
+  id: totrans-181
   prefs: []
   type: TYPE_NORMAL
+  zh: PBT 从一组随机候选开始，每个候选包含一对模型权重初始化和超参数，$\{(\theta_i, h_i)\mid i=1, \dots, N\}$。每个样本都会并行训练，并异步地定期评估自己的性能。每当一个成员认为准备就绪（即经过足够的梯度更新步骤，或者性能足够好时），它有机会通过与整个种群进行比较来更新：
 - en: '**`exploit()`**: When this model is under-performing, the weights could be
     replaced with a better performing model.'
+  id: totrans-182
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**`exploit()`**：当该模型表现不佳时，权重可以被更好表现的模型替换。'
 - en: '**`explore()`**: If the model weights are overwritten, `explore` step perturbs
     the hyperparameters with random noise.'
+  id: totrans-183
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**`explore()`**：如果模型权重被覆盖，`explore` 步骤会用随机噪声扰动超参数。'
 - en: In this process, only promising model and hyperparameter pairs can survive and
     keep on evolving, achieving better utilization of computational resources.
+  id: totrans-184
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这个过程中，只有有前途的模型和超参数对才能存活并不断进化，实现对计算资源的更好利用。
 - en: '![](../Images/d60ab337d80382c1f608e9cd6c8d0bf2.png)'
+  id: totrans-185
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d60ab337d80382c1f608e9cd6c8d0bf2.png)'
 - en: 'Fig. 9\. The algorithm of population-based training. (Image source: [PBT](https://arxiv.org/abs/1711.09846)
     paper)'
+  id: totrans-186
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 9\. 基于种群的训练算法。（图片来源：[PBT](https://arxiv.org/abs/1711.09846) 论文）
 - en: 'Network Topology Optimization: WANN'
+  id: totrans-187
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 网络拓扑优化：WANN
 - en: '*Weight Agnostic Neural* Networks (short for **WANN**; [Gaier & Ha 2019](https://arxiv.org/abs/1906.04358))
     experiments with searching for the smallest network topologies that can achieve
     the optimal performance without training the network weights. By not considering
@@ -928,116 +1424,186 @@
     WANN is heavily inspired by a classic genetic algorithm to evolve network topologies,
     called *NEAT* (“Neuroevolution of Augmenting Topologies”; [Stanley & Miikkulainen
     2002](http://nn.cs.utexas.edu/downloads/papers/stanley.gecco02_1.pdf)).'
+  id: totrans-188
   prefs: []
   type: TYPE_NORMAL
+  zh: '*Weight Agnostic Neural* Networks（简称 **WANN**；[Gaier & Ha 2019](https://arxiv.org/abs/1906.04358)）尝试搜索可以在不训练网络权重的情况下实现最佳性能的最小网络拓扑。通过不考虑网络权重的最佳配置，WANN
+    更加注重架构本身，使焦点与 [NAS](http://openaccess.thecvf.com/content_cvpr_2018/papers/Zoph_Learning_Transferable_Architectures_CVPR_2018_paper.pdf)
+    不同。WANN 受到经典遗传算法 NEAT（“Neuroevolution of Augmenting Topologies”；[Stanley & Miikkulainen
+    2002](http://nn.cs.utexas.edu/downloads/papers/stanley.gecco02_1.pdf)）的启发，用于演化网络拓扑。'
 - en: 'The workflow of WANN looks pretty much the same as standard GA:'
+  id: totrans-189
   prefs: []
   type: TYPE_NORMAL
+  zh: WANN 的工作流程与标准 GA 几乎相同：
 - en: 'Initialize: Create a population of minimal networks.'
+  id: totrans-190
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 初始化：创建一组最小网络的种群。
 - en: 'Evaluation: Test with a range of *shared* weight values.'
+  id: totrans-191
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 评估：测试一系列*共享*权重值。
 - en: 'Rank and Selection: Rank by performance and complexity.'
+  id: totrans-192
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 排名和选择：按性能和复杂性排名。
 - en: 'Mutation: Create new population by varying best networks.'
+  id: totrans-193
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 变异：通过改变最佳网络创建新种群。
 - en: '![](../Images/9045d630e8aff012af2867c1d8af08f8.png)'
+  id: totrans-194
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/9045d630e8aff012af2867c1d8af08f8.png)'
 - en: 'Fig. 10\. mutation operations for searching for new network topologies in WANN
     (Image source: [WANN](https://arxiv.org/abs/1906.04358) paper)'
+  id: totrans-195
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 10\. WANN 中搜索新网络拓扑的变异操作（图片来源：[WANN](https://arxiv.org/abs/1906.04358) 论文）
 - en: At the “evaluation” stage, all the network weights are set to be the same. In
     this way, WANN is actually searching for network that can be described with a
     minimal description length. In the “selection” stage, both the network connection
     and the model performance are considered.
+  id: totrans-196
   prefs: []
   type: TYPE_NORMAL
+  zh: 在“评估”阶段，所有网络权重都设置为相同。这样，WANN 实际上是在寻找可以用最小描述长度描述的网络。在“选择”阶段，同时考虑网络连接和模型性能。
 - en: '![](../Images/3ec1ae75344aa740105314d20d4a4d9e.png)'
+  id: totrans-197
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3ec1ae75344aa740105314d20d4a4d9e.png)'
 - en: 'Fig. 11\. Performance of WANN found network topologies on different RL tasks
     are compared with baseline FF networks commonly used in the literature. "Tuned
     Shared Weight" only requires adjusting one weight value. (Image source: [WANN](https://arxiv.org/abs/1906.04358)
     paper)'
+  id: totrans-198
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 11\. 在不同 RL 任务上找到的 WANN 网络拓扑的性能与文献中常用的基线 FF 网络进行比较。“调整共享权重”只需要调整一个权重值。（图片来源：[WANN](https://arxiv.org/abs/1906.04358)
+    论文）
 - en: As shown in Fig. 11, WANN results are evaluated with both random weights and
     shared weights (single weight). It is interesting that even when enforcing weight-sharing
     on all weights and tuning this single parameter, WANN can discover topologies
     that achieve non-trivial good performance.
+  id: totrans-199
   prefs: []
   type: TYPE_NORMAL
+  zh: 如图11所示，WANN结果使用随机权重和共享权重（单一权重）进行评估。有趣的是，即使在所有权重上强制执行权重共享并调整这个单一参数时，WANN也能发现实现非平凡良好性能的拓扑结构。
 - en: '* * *'
+  id: totrans-200
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'Cited as:'
+  id: totrans-201
   prefs: []
   type: TYPE_NORMAL
+  zh: 引用为：
 - en: '[PRE0]'
+  id: totrans-202
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: References
+  id: totrans-203
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: '[1] Nikolaus Hansen. [“The CMA Evolution Strategy: A Tutorial”](https://arxiv.org/abs/1604.00772)
     arXiv preprint arXiv:1604.00772 (2016).'
+  id: totrans-204
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] 尼古拉斯·汉森。[“CMA进化策略：教程”](https://arxiv.org/abs/1604.00772) arXiv预印本 arXiv:1604.00772
+    (2016).'
 - en: '[2] Marc Toussaint. [Slides: “Introduction to Optimization”](https://ipvs.informatik.uni-stuttgart.de/mlr/marc/teaching/13-Optimization/06-blackBoxOpt.pdf)'
+  id: totrans-205
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] 马克·图桑特。[幻灯片：“优化简介”](https://ipvs.informatik.uni-stuttgart.de/mlr/marc/teaching/13-Optimization/06-blackBoxOpt.pdf)'
 - en: '[3] David Ha. [“A Visual Guide to Evolution Strategies”](http://blog.otoro.net/2017/10/29/visual-evolution-strategies/)
     blog.otoro.net. Oct 2017.'
+  id: totrans-206
   prefs: []
   type: TYPE_NORMAL
+  zh: '[3] 大卫·哈。[“演化策略的视觉指南”](http://blog.otoro.net/2017/10/29/visual-evolution-strategies/)
+    blog.otoro.net。2017年10月。'
 - en: '[4] Daan Wierstra, et al. [“Natural evolution strategies.”](https://arxiv.org/abs/1106.4487)
     IEEE World Congress on Computational Intelligence, 2008.'
+  id: totrans-207
   prefs: []
   type: TYPE_NORMAL
+  zh: '[4] 丹·维尔斯特拉等。[“自然进化策略。”](https://arxiv.org/abs/1106.4487) 2008年IEEE世界计算智能大会。'
 - en: '[5] Agustinus Kristiadi. [“Natural Gradient Descent”](https://wiseodd.github.io/techblog/2018/03/14/natural-gradient/)
     Mar 2018.'
+  id: totrans-208
   prefs: []
   type: TYPE_NORMAL
+  zh: '[5] 阿古斯蒂努斯·克里斯蒂亚迪。[“自然梯度下降”](https://wiseodd.github.io/techblog/2018/03/14/natural-gradient/)
+    2018年3月。'
 - en: '[6] Razvan Pascanu & Yoshua Bengio. [“Revisiting Natural Gradient for Deep
     Networks.”](https://arxiv.org/abs/1301.3584v7) arXiv preprint arXiv:1301.3584
     (2013).'
+  id: totrans-209
   prefs: []
   type: TYPE_NORMAL
+  zh: '[6] Razvan Pascanu & Yoshua Bengio。[“重温深度网络的自然梯度。”](https://arxiv.org/abs/1301.3584v7)
+    arXiv预印本 arXiv:1301.3584 (2013).'
 - en: '[7] Tim Salimans, et al. [“Evolution strategies as a scalable alternative to
     reinforcement learning.”](https://arxiv.org/abs/1703.03864) arXiv preprint arXiv:1703.03864
     (2017).'
+  id: totrans-210
   prefs: []
   type: TYPE_NORMAL
+  zh: '[7] 蒂姆·萨利曼斯等。[“进化策略作为可扩展的替代强化学习。”](https://arxiv.org/abs/1703.03864) arXiv预印本
+    arXiv:1703.03864 (2017).'
 - en: '[8] Edoardo Conti, et al. [“Improving exploration in evolution strategies for
     deep reinforcement learning via a population of novelty-seeking agents.”](https://arxiv.org/abs/1712.06560)
     NIPS. 2018.'
+  id: totrans-211
   prefs: []
   type: TYPE_NORMAL
+  zh: '[8] 埃多阿多·孔蒂等。[“通过一群寻求新颖性的代理改进进化策略在深度强化学习中的探索。”](https://arxiv.org/abs/1712.06560)
+    NIPS。2018年。'
 - en: '[9] Aloïs Pourchot & Olivier Sigaud. [“CEM-RL: Combining evolutionary and gradient-based
     methods for policy search.”](https://arxiv.org/abs/1810.01222) ICLR 2019.'
+  id: totrans-212
   prefs: []
   type: TYPE_NORMAL
+  zh: '[9] 阿洛伊斯·普尔肖 & 奥利维尔·西戈。[“CEM-RL：结合进化和基于梯度的方法进行策略搜索。”](https://arxiv.org/abs/1810.01222)
+    ICLR 2019。'
 - en: '[10] Shauharda Khadka & Kagan Tumer. [“Evolution-guided policy gradient in
     reinforcement learning.”](https://papers.nips.cc/paper/7395-evolution-guided-policy-gradient-in-reinforcement-learning.pdf)
     NIPS 2018.'
+  id: totrans-213
   prefs: []
   type: TYPE_NORMAL
+  zh: '[10] 肖哈尔达·卡德卡 & 卡甘·图默。[“进化引导的强化学习中的策略梯度。”](https://papers.nips.cc/paper/7395-evolution-guided-policy-gradient-in-reinforcement-learning.pdf)
+    NIPS 2018。'
 - en: '[11] Max Jaderberg, et al. [“Population based training of neural networks.”](https://arxiv.org/abs/1711.09846)
     arXiv preprint arXiv:1711.09846 (2017).'
+  id: totrans-214
   prefs: []
   type: TYPE_NORMAL
+  zh: '[11] 马克斯·贾德伯格等。[“基于种群的神经网络训练。”](https://arxiv.org/abs/1711.09846) arXiv预印本
+    arXiv:1711.09846 (2017).'
 - en: '[12] Adam Gaier & David Ha. [“Weight Agnostic Neural Networks.”](https://arxiv.org/abs/1906.04358)
     arXiv preprint arXiv:1906.04358 (2019).'
+  id: totrans-215
   prefs: []
   type: TYPE_NORMAL
+  zh: '[12] 亚当·盖尔 & 大卫·哈。[“无权重神经网络。”](https://arxiv.org/abs/1906.04358) arXiv预印本 arXiv:1906.04358
+    (2019).'

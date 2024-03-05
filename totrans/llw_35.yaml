@@ -1,19 +1,27 @@
 - en: A (Long) Peek into Reinforcement Learning
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 一个（长篇）深入了解强化学习
 - en: 原文：[https://lilianweng.github.io/posts/2018-02-19-rl-overview/](https://lilianweng.github.io/posts/2018-02-19-rl-overview/)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://lilianweng.github.io/posts/2018-02-19-rl-overview/](https://lilianweng.github.io/posts/2018-02-19-rl-overview/)
 - en: '[Updated on 2020-09-03: Updated the algorithm of [SARSA](#sarsa-on-policy-td-control)
     and [Q-learning](#q-learning-off-policy-td-control) so that the difference is
     more pronounced.'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: '[更新于 2020-09-03：更新了[SARSA](#sarsa-on-policy-td-control)和[Q-learning](#q-learning-off-policy-td-control)的算法，使差异更加明显。'
 - en: '[Updated on 2021-09-19: Thanks to 爱吃猫的鱼, we have this post in [Chinese](https://paperexplained.cn/articles/article/detail/33/)].'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: '[更新于 2021-09-19：感谢爱吃猫的鱼，我们在[中文](https://paperexplained.cn/articles/article/detail/33/)上有这篇文章]。'
 - en: A couple of exciting news in Artificial Intelligence (AI) has just happened
     in recent years. AlphaGo defeated the best professional human player in the game
     of Go. Very soon the extended algorithm AlphaGo Zero beat AlphaGo by 100-0 without
@@ -24,39 +32,56 @@
     introduce several fundamental concepts and then dive into classic approaches to
     solving RL problems. Hopefully, this post could be a good starting point for newbies,
     bridging the future study on the cutting-edge research.
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: 人工智能（AI）领域发生了一些令人兴奋的新闻。AlphaGo在围棋比赛中击败了最优秀的职业人类选手。很快，扩展算法AlphaGo Zero在没有人类知识的监督学习下以100-0击败了AlphaGo。顶级职业游戏玩家在OpenAI开发的DOTA2
+    1v1比赛中输给了机器人。在了解这些之后，很难不对这些算法背后的魔力感到好奇 — 强化学习（RL）。我写这篇文章是为了简要介绍这个领域。我们将首先介绍几个基本概念，然后深入探讨解决RL问题的经典方法。希望这篇文章能成为新手的一个良好起点，为未来研究前沿铺平道路。
 - en: What is Reinforcement Learning?
+  id: totrans-5
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 什么是强化学习？
 - en: Say, we have an agent in an unknown environment and this agent can obtain some
     rewards by interacting with the environment. The agent ought to take actions so
     as to maximize cumulative rewards. In reality, the scenario could be a bot playing
     a game to achieve high scores, or a robot trying to complete physical tasks with
     physical items; and not just limited to these.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设我们有一个在未知环境中的代理，这个代理可以通过与环境互动获得一些奖励。代理应该采取行动以最大化累积奖励。在现实中，情景可能是一个机器人玩游戏以获得高分，或者一个机器人试图用物理物品完成物理任务；不仅限于这些。
 - en: '![](../Images/369a4d0513923e06e2ad96938f6f6c2d.png)'
+  id: totrans-7
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/369a4d0513923e06e2ad96938f6f6c2d.png)'
 - en: Fig. 1\. An agent interacts with the environment, trying to take smart actions
     to maximize cumulative rewards.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 图1. 代理与环境互动，试图采取聪明的行动以最大化累积奖励。
 - en: The goal of Reinforcement Learning (RL) is to learn a good strategy for the
     agent from experimental trials and relative simple feedback received. With the
     optimal strategy, the agent is capable to actively adapt to the environment to
     maximize future rewards.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 强化学习（RL）的目标是从实验性试验和相对简单的反馈中学习代理的良好策略。通过最佳策略，代理能够积极适应环境以最大化未来的奖励。
 - en: Key Concepts
+  id: totrans-10
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 关键概念
 - en: Now Let’s formally define a set of key concepts in RL.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们正式定义强化学习中的一组关键概念。
 - en: The agent is acting in an **environment**. How the environment reacts to certain
     actions is defined by a **model** which we may or may not know. The agent can
     stay in one of many **states** ($s \in \mathcal{S}$) of the environment, and choose
@@ -64,42 +89,58 @@
     to another. Which state the agent will arrive in is decided by transition probabilities
     between states ($P$). Once an action is taken, the environment delivers a **reward**
     ($r \in \mathcal{R}$) as feedback.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 代理在一个**环境**中行动。环境对某些行动的反应是由一个**模型**定义的，我们可能知道也可能不知道。代理可以停留在环境的许多**状态**（$s \in
+    \mathcal{S}$）中的一个，并选择采取许多**动作**（$a \in \mathcal{A}$）以从一个状态转换到另一个状态。代理将到达哪个状态由状态之间的转移概率（$P$）决定。一旦采取行动，环境会提供一个**奖励**（$r
+    \in \mathcal{R}$）作为反馈。
 - en: 'The model defines the reward function and transition probabilities. We may
     or may not know how the model works and this differentiate two circumstances:'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型定义了奖励函数和转移概率。我们可能知道也可能不知道模型是如何工作的，这区分了两种情况：
 - en: '**Know the model**: planning with perfect information; do model-based RL. When
     we fully know the environment, we can find the optimal solution by [Dynamic Programming](https://en.wikipedia.org/wiki/Dynamic_programming)
     (DP). Do you still remember “longest increasing subsequence” or “traveling salesmen
     problem” from your Algorithms 101 class? LOL. This is not the focus of this post
     though.'
+  id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**了解模型**：使用完美信息进行规划；进行基于模型的强化学习。当我们完全了解环境时，我们可以通过[动态规划](https://en.wikipedia.org/wiki/Dynamic_programming)（DP）找到最优解。你还记得你的算法101课程中的“最长递增子序列”或“旅行推销员问题”吗？哈哈。尽管这不是本文的重点。'
 - en: '**Does not know the model**: learning with incomplete information; do model-free
     RL or try to learn the model explicitly as part of the algorithm. Most of the
     following content serves the scenarios when the model is unknown.'
+  id: totrans-15
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**不了解模型**：在学习过程中缺乏信息；进行无模型强化学习或尝试明确学习模型作为算法的一部分。以下大部分内容适用于模型未知的情况。'
 - en: The agent’s **policy** $\pi(s)$ provides the guideline on what is the optimal
     action to take in a certain state with **the goal to maximize the total rewards**.
     Each state is associated with a **value** function $V(s)$ predicting the expected
     amount of future rewards we are able to receive in this state by acting the corresponding
     policy. In other words, the value function quantifies how good a state is. Both
     policy and value functions are what we try to learn in reinforcement learning.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 代理的**策略**$\pi(s)$提供了在某个状态下采取最优动作的指导，**目标是最大化总奖励**。每个状态都与一个**值**函数$V(s)$相关联，预测我们通过执行相应策略在该状态中能够获得的未来奖励的期望量。换句话说，值函数量化了一个状态有多好。在强化学习中，我们试图学习策略和值函数。
 - en: '![](../Images/924d06a83ca636930ebd8e3d37182f9f.png)'
+  id: totrans-17
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/924d06a83ca636930ebd8e3d37182f9f.png)'
 - en: 'Fig. 2\. Summary of approaches in RL based on whether we want to model the
     value, policy, or the environment. (Image source: reproduced from David Silver''s
     RL course [lecture 1](https://youtu.be/2pWv7GOvuf0).)'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 图2。基于我们是否想对价值、策略或环境进行建模的强化学习方法总结。（图片来源：摘自David Silver的强化学习课程[第1讲](https://youtu.be/2pWv7GOvuf0)。）
 - en: 'The interaction between the agent and the environment involves a sequence of
     actions and observed rewards in time, $t=1, 2, \dots, T$. During the process,
     the agent accumulates the knowledge about the environment, learns the optimal
@@ -108,383 +149,590 @@
     t as $S_t$, $A_t$, and $R_t$, respectively. Thus the interaction sequence is fully
     described by one **episode** (also known as “trial” or “trajectory”) and the sequence
     ends at the terminal state $S_T$:'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 代理和环境之间的交互涉及时间$t=1, 2, \dots, T$中的一系列动作和观察到的奖励。在这个过程中，代理积累关于环境的知识，学习最优策略，并决定下一步应该采取哪个动作，以有效地学习最佳策略。让我们将时间步骤t处的状态、动作和奖励标记为$S_t$、$A_t$和$R_t$。因此，交互序列完全由一个**剧集**（也称为“试验”或“轨迹”）描述，并且序列在终端状态$S_T$处结束：
 - en: $$ S_1, A_1, R_2, S_2, A_2, \dots, S_T $$
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ S_1, A_1, R_2, S_2, A_2, \dots, S_T $$
 - en: 'Terms you will encounter a lot when diving into different categories of RL
     algorithms:'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 当深入研究不同类别的强化学习算法时，你会经常遇到的术语：
 - en: '**Model-based**: Rely on the model of the environment; either the model is
     known or the algorithm learns it explicitly.'
+  id: totrans-22
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**基于模型**：依赖于环境的模型；模型可以是已知的，也可以是算法明确学习的。'
 - en: '**Model-free**: No dependency on the model during learning.'
+  id: totrans-23
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**无模型**：在学习过程中不依赖于模型。'
 - en: '**On-policy**: Use the deterministic outcomes or samples from the target policy
     to train the algorithm.'
+  id: totrans-24
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**在策略**：使用目标策略的确定性结果或样本来训练算法。'
 - en: '**Off-policy**: Training on a distribution of transitions or episodes produced
     by a different behavior policy rather than that produced by the target policy.'
+  id: totrans-25
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**离策略**：训练基于由不同行为策略产生的转换或剧集分布，而不是由目标策略产生的。'
 - en: 'Model: Transition and Reward'
+  id: totrans-26
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 模型：转换和奖励
 - en: The model is a descriptor of the environment. With the model, we can learn or
     infer how the environment would interact with and provide feedback to the agent.
     The model has two major parts, transition probability function $P$ and reward
     function $R$.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 模型是环境的描述符。有了模型，我们可以学习或推断环境将如何与代理交互并向其提供反馈。模型有两个主要部分，转换概率函数$P$和奖励函数$R$。
 - en: Let’s say when we are in state s, we decide to take action a to arrive in the
     next state s’ and obtain reward r. This is known as one **transition** step, represented
     by a tuple (s, a, s’, r).
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设当我们处于状态s时，我们决定采取动作a到达下一个状态s’并获得奖励r。这被称为一个**转移**步骤，用元组(s, a, s’, r)表示。
 - en: The transition function P records the probability of transitioning from state
     s to s’ after taking action a while obtaining reward r. We use $\mathbb{P}$ as
     a symbol of “probability”.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 过渡函数P记录了在采取动作a并获得奖励r后从状态s过渡到s’的概率。我们使用$\mathbb{P}$作为“概率”的符号。
 - en: $$ P(s', r \vert s, a) = \mathbb{P} [S_{t+1} = s', R_{t+1} = r \vert S_t = s,
     A_t = a] $$
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ P(s', r \vert s, a) = \mathbb{P} [S_{t+1} = s', R_{t+1} = r \vert S_t = s,
+    A_t = a] $$
 - en: 'Thus the state-transition function can be defined as a function of $P(s’, r
     \vert s, a)$:'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，状态转移函数可以定义为$P(s’, r \vert s, a)$的函数：
 - en: $$ P_{ss'}^a = P(s' \vert s, a) = \mathbb{P} [S_{t+1} = s' \vert S_t = s, A_t
     = a] = \sum_{r \in \mathcal{R}} P(s', r \vert s, a) $$
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ P_{ss'}^a = P(s' \vert s, a) = \mathbb{P} [S_{t+1} = s' \vert S_t = s, A_t
+    = a] = \sum_{r \in \mathcal{R}} P(s', r \vert s, a) $$
 - en: 'The reward function R predicts the next reward triggered by one action:'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 奖励函数R预测由一个动作触发的下一个奖励：
 - en: $$ R(s, a) = \mathbb{E} [R_{t+1} \vert S_t = s, A_t = a] = \sum_{r\in\mathcal{R}}
     r \sum_{s' \in \mathcal{S}} P(s', r \vert s, a) $$
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ R(s, a) = \mathbb{E} [R_{t+1} \vert S_t = s, A_t = a] = \sum_{r\in\mathcal{R}}
+    r \sum_{s' \in \mathcal{S}} P(s', r \vert s, a) $$
 - en: Policy
+  id: totrans-35
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 策略
 - en: 'Policy, as the agent’s behavior function $\pi$, tells us which action to take
     in state s. It is a mapping from state s to action a and can be either deterministic
     or stochastic:'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 策略，作为代理的行为函数$\pi$，告诉我们在状态s中应该采取哪个动作。它是从状态s到动作a的映射，可以是确定性的或随机的：
 - en: 'Deterministic: $\pi(s) = a$.'
+  id: totrans-37
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 确定性的：$\pi(s) = a$。
 - en: 'Stochastic: $\pi(a \vert s) = \mathbb{P}_\pi [A=a \vert S=s]$.'
+  id: totrans-38
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 随机的：$\pi(a \vert s) = \mathbb{P}_\pi [A=a \vert S=s]$。
 - en: Value Function
+  id: totrans-39
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 值函数
 - en: 'Value function measures the goodness of a state or how rewarding a state or
     an action is by a prediction of future reward. The future reward, also known as
     **return**, is a total sum of discounted rewards going forward. Let’s compute
     the return $G_t$ starting from time t:'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 值函数通过对未来奖励的预测来衡量状态的优劣或状态或动作的奖励性。未来奖励，也称为**回报**，是向前总和的折现奖励。让我们从时间t开始计算回报$G_t$：
 - en: $$ G_t = R_{t+1} + \gamma R_{t+2} + \dots = \sum_{k=0}^{\infty} \gamma^k R_{t+k+1}
     $$
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ G_t = R_{t+1} + \gamma R_{t+2} + \dots = \sum_{k=0}^{\infty} \gamma^k R_{t+k+1}
+    $$
 - en: 'The discounting factor $\gamma \in [0, 1]$ penalize the rewards in the future,
     because:'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 折现因子$\gamma \in [0, 1]$惩罚未来的奖励，因为：
 - en: The future rewards may have higher uncertainty; i.e. stock market.
+  id: totrans-43
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 未来奖励可能具有更高的不确定性；即股票市场。
 - en: The future rewards do not provide immediate benefits; i.e. As human beings,
     we might prefer to have fun today rather than 5 years later ;).
+  id: totrans-44
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 未来奖励不提供即时的好处；即作为人类，我们可能更喜欢今天玩乐，而不是5年后 ;).
 - en: Discounting provides mathematical convenience; i.e., we don’t need to track
     future steps forever to compute return.
+  id: totrans-45
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 折现提供了数学上的便利；即，我们不需要永远跟踪未来步骤来计算回报。
 - en: We don’t need to worry about the infinite loops in the state transition graph.
+  id: totrans-46
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们不需要担心状态转移图中的无限循环。
 - en: 'The **state-value** of a state s is the expected return if we are in this state
     at time t, $S_t = s$:'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: '**状态值**是在时间t处于该状态s时的预期回报，$S_t = s$：'
 - en: $$ V_{\pi}(s) = \mathbb{E}_{\pi}[G_t \vert S_t = s] $$
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ V_{\pi}(s) = \mathbb{E}_{\pi}[G_t \vert S_t = s] $$
 - en: 'Similarly, we define the **action-value** (“Q-value”; Q as “Quality” I believe?)
     of a state-action pair as:'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 同样，我们将状态-动作对的**动作值**（“Q值”；Q代表“质量”我相信？）定义为：
 - en: $$ Q_{\pi}(s, a) = \mathbb{E}_{\pi}[G_t \vert S_t = s, A_t = a] $$
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ Q_{\pi}(s, a) = \mathbb{E}_{\pi}[G_t \vert S_t = s, A_t = a] $$
 - en: 'Additionally, since we follow the target policy $\pi$, we can make use of the
     probility distribution over possible actions and the Q-values to recover the state-value:'
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 另外，由于我们遵循目标策略$\pi$，我们可以利用可能动作的概率分布和Q值来恢复状态值：
 - en: $$ V_{\pi}(s) = \sum_{a \in \mathcal{A}} Q_{\pi}(s, a) \pi(a \vert s) $$
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ V_{\pi}(s) = \sum_{a \in \mathcal{A}} Q_{\pi}(s, a) \pi(a \vert s) $$
 - en: 'The difference between action-value and state-value is the action **advantage**
     function (“A-value”):'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 动作值和状态值之间的差异是动作**优势**函数（“A值”）：
 - en: $$ A_{\pi}(s, a) = Q_{\pi}(s, a) - V_{\pi}(s) $$
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ A_{\pi}(s, a) = Q_{\pi}(s, a) - V_{\pi}(s) $$
 - en: Optimal Value and Policy
+  id: totrans-55
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 最优值和策略
 - en: 'The optimal value function produces the maximum return:'
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 最优值函数产生最大回报：
 - en: $$ V_{*}(s) = \max_{\pi} V_{\pi}(s), Q_{*}(s, a) = \max_{\pi} Q_{\pi}(s, a)
     $$
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ V_{*}(s) = \max_{\pi} V_{\pi}(s), Q_{*}(s, a) = \max_{\pi} Q_{\pi}(s, a)
+    $$
 - en: 'The optimal policy achieves optimal value functions:'
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 最优策略实现最优值函数：
 - en: $$ \pi_{*} = \arg\max_{\pi} V_{\pi}(s), \pi_{*} = \arg\max_{\pi} Q_{\pi}(s,
     a) $$
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \pi_{*} = \arg\max_{\pi} V_{\pi}(s), \pi_{*} = \arg\max_{\pi} Q_{\pi}(s,
+    a) $$
 - en: And of course, we have $V_{\pi_{*}}(s)=V_{*}(s)$ and $Q_{\pi_{*}}(s, a) = Q_{*}(s,
     a)$.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 当然，我们有 $V_{\pi_{*}}(s)=V_{*}(s)$ 和 $Q_{\pi_{*}}(s, a) = Q_{*}(s, a)$。
 - en: Markov Decision Processes
+  id: totrans-61
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 马尔可夫决策过程
 - en: 'In more formal terms, almost all the RL problems can be framed as **Markov
     Decision Processes** (MDPs). All states in MDP has “Markov” property, referring
     to the fact that the future only depends on the current state, not the history:'
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 更正式地说，几乎所有的强化学习问题都可以被定义为**马尔可夫决策过程**（MDPs）。MDP中的所有状态都具有“马尔可夫”属性，指的是未来只取决于当前状态，而不是历史：
 - en: $$ \mathbb{P}[ S_{t+1} \vert S_t ] = \mathbb{P} [S_{t+1} \vert S_1, \dots, S_t]
     $$
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathbb{P}[ S_{t+1} \vert S_t ] = \mathbb{P} [S_{t+1} \vert S_1, \dots, S_t]
+    $$
 - en: Or in other words, the future and the past are **conditionally independent**
     given the present, as the current state encapsulates all the statistics we need
     to decide the future.
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 或者换句话说，未来和过去在当前状态的条件下是**条件独立**的，因为当前状态包含了我们决定未来所需的所有统计信息。
 - en: '![](../Images/f4e04cb28dc6e20c77821e4955643620.png)'
+  id: totrans-65
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f4e04cb28dc6e20c77821e4955643620.png)'
 - en: 'Fig. 3\. The agent-environment interaction in a Markov decision process. (Image
     source: Sec. 3.1 Sutton & Barto (2017).)'
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 图3\. 马尔可夫决策过程中的智能体-环境交互。（图片来源：Sec. 3.1 Sutton & Barto (2017).）
 - en: 'A Markov deicison process consists of five elements $\mathcal{M} = \langle
     \mathcal{S}, \mathcal{A}, P, R, \gamma \rangle$, where the symbols carry the same
     meanings as key concepts in the [previous](#key-concepts) section, well aligned
     with RL problem settings:'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 马尔可夫决策过程由五个元素组成 $\mathcal{M} = \langle \mathcal{S}, \mathcal{A}, P, R, \gamma
+    \rangle$，其中符号与[前面](#key-concepts)部分的关键概念具有相同的含义，与强化学习问题设置相吻合：
 - en: $\mathcal{S}$ - a set of states;
+  id: totrans-68
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $\mathcal{S}$ - 一组状态;
 - en: $\mathcal{A}$ - a set of actions;
+  id: totrans-69
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $\mathcal{A}$ - 一组动作;
 - en: $P$ - transition probability function;
+  id: totrans-70
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $P$ - 转移概率函数;
 - en: $R$ - reward function;
+  id: totrans-71
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $R$ - 奖励函数;
 - en: $\gamma$ - discounting factor for future rewards. In an unknown environment,
     we do not have perfect knowledge about $P$ and $R$.
+  id: totrans-72
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $\gamma$ - 未来奖励的折现因子。在未知环境中，我们对$P$和$R$没有完美的了解。
 - en: '![](../Images/a0b39d40f3cb870ce774475b89da2b6a.png)'
+  id: totrans-73
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a0b39d40f3cb870ce774475b89da2b6a.png)'
 - en: 'Fig. 4\. A fun example of Markov decision process: a typical work day. (Image
     source: [randomant.net/reinforcement-learning-concepts](https://randomant.net/reinforcement-learning-concepts/))'
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 图4\. 一个马尔可夫决策过程的有趣示例：典型的工作日。（图片来源：[randomant.net/reinforcement-learning-concepts](https://randomant.net/reinforcement-learning-concepts/)）
 - en: Bellman Equations
+  id: totrans-75
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 贝尔曼方程
 - en: Bellman equations refer to a set of equations that decompose the value function
     into the immediate reward plus the discounted future values.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 贝尔曼方程指的是一组方程，将值函数分解为即时奖励加上折现未来值。
 - en: $$ \begin{aligned} V(s) &= \mathbb{E}[G_t \vert S_t = s] \\ &= \mathbb{E} [R_{t+1}
     + \gamma R_{t+2} + \gamma^2 R_{t+3} + \dots \vert S_t = s] \\ &= \mathbb{E} [R_{t+1}
     + \gamma (R_{t+2} + \gamma R_{t+3} + \dots) \vert S_t = s] \\ &= \mathbb{E} [R_{t+1}
     + \gamma G_{t+1} \vert S_t = s] \\ &= \mathbb{E} [R_{t+1} + \gamma V(S_{t+1})
     \vert S_t = s] \end{aligned} $$
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} V(s) &= \mathbb{E}[G_t \vert S_t = s] \\ &= \mathbb{E} [R_{t+1}
+    + \gamma R_{t+2} + \gamma^2 R_{t+3} + \dots \vert S_t = s] \\ &= \mathbb{E} [R_{t+1}
+    + \gamma (R_{t+2} + \gamma R_{t+3} + \dots) \vert S_t = s] \\ &= \mathbb{E} [R_{t+1}
+    + \gamma G_{t+1} \vert S_t = s] \\ &= \mathbb{E} [R_{t+1} + \gamma V(S_{t+1})
+    \vert S_t = s] \end{aligned} $$
 - en: Similarly for Q-value,
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于Q值也是类似的，
 - en: $$ \begin{aligned} Q(s, a) &= \mathbb{E} [R_{t+1} + \gamma V(S_{t+1}) \mid S_t
     = s, A_t = a] \\ &= \mathbb{E} [R_{t+1} + \gamma \mathbb{E}_{a\sim\pi} Q(S_{t+1},
     a) \mid S_t = s, A_t = a] \end{aligned} $$
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} Q(s, a) &= \mathbb{E} [R_{t+1} + \gamma V(S_{t+1}) \mid S_t
+    = s, A_t = a] \\ &= \mathbb{E} [R_{t+1} + \gamma \mathbb{E}_{a\sim\pi} Q(S_{t+1},
+    a) \mid S_t = s, A_t = a] \end{aligned} $$
 - en: Bellman Expectation Equations
+  id: totrans-80
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 贝尔曼期望方程
 - en: The recursive update process can be further decomposed to be equations built
     on both state-value and action-value functions. As we go further in future action
     steps, we extend V and Q alternatively by following the policy $\pi$.
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 递归更新过程可以进一步分解为建立在状态值和动作值函数上的方程。随着我们在未来的动作步骤中继续，我们通过遵循策略$\pi$交替扩展V和Q。
 - en: '![](../Images/e59d6bbb82835de432579e45b07dcbfa.png)'
+  id: totrans-82
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e59d6bbb82835de432579e45b07dcbfa.png)'
 - en: Fig. 5\. Illustration of how Bellman expection equations update state-value
     and action-value functions.
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 图5\. 贝尔曼期望方程如何更新状态值和动作值函数的示意图。
 - en: $$ \begin{aligned} V_{\pi}(s) &= \sum_{a \in \mathcal{A}} \pi(a \vert s) Q_{\pi}(s,
     a) \\ Q_{\pi}(s, a) &= R(s, a) + \gamma \sum_{s' \in \mathcal{S}} P_{ss'}^a V_{\pi}
     (s') \\ V_{\pi}(s) &= \sum_{a \in \mathcal{A}} \pi(a \vert s) \big( R(s, a) +
     \gamma \sum_{s' \in \mathcal{S}} P_{ss'}^a V_{\pi} (s') \big) \\ Q_{\pi}(s, a)
     &= R(s, a) + \gamma \sum_{s' \in \mathcal{S}} P_{ss'}^a \sum_{a' \in \mathcal{A}}
     \pi(a' \vert s') Q_{\pi} (s', a') \end{aligned} $$
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} V_{\pi}(s) &= \sum_{a \in \mathcal{A}} \pi(a \vert s) Q_{\pi}(s,
+    a) \\ Q_{\pi}(s, a) &= R(s, a) + \gamma \sum_{s' \in \mathcal{S}} P_{ss'}^a V_{\pi}
+    (s') \\ V_{\pi}(s) &= \sum_{a \in \mathcal{A}} \pi(a \vert s) \big( R(s, a) +
+    \gamma \sum_{s' \in \mathcal{S}} P_{ss'}^a V_{\pi} (s') \big) \\ Q_{\pi}(s, a)
+    &= R(s, a) + \gamma \sum_{s' \in \mathcal{S}} P_{ss'}^a \sum_{a' \in \mathcal{A}}
+    \pi(a' \vert s') Q_{\pi} (s', a') \end{aligned} $$
 - en: Bellman Optimality Equations
+  id: totrans-85
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 贝尔曼最优方程
 - en: 'If we are only interested in the optimal values, rather than computing the
     expectation following a policy, we could jump right into the maximum returns during
     the alternative updates without using a policy. RECAP: the optimal values $V_*$
     and $Q_*$ are the best returns we can obtain, defined [here](#optimal-value-and-policy).'
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们只对最优值感兴趣，而不是按照策略计算期望值，我们可以直接在替代更新中跳转到最大回报，而不使用策略。回顾：最优值$V_*$和$Q_*$是我们可以获得的最佳回报，定义如下[链接](#optimal-value-and-policy)。
 - en: $$ \begin{aligned} V_*(s) &= \max_{a \in \mathcal{A}} Q_*(s,a)\\ Q_*(s, a) &=
     R(s, a) + \gamma \sum_{s' \in \mathcal{S}} P_{ss'}^a V_*(s') \\ V_*(s) &= \max_{a
     \in \mathcal{A}} \big( R(s, a) + \gamma \sum_{s' \in \mathcal{S}} P_{ss'}^a V_*(s')
     \big) \\ Q_*(s, a) &= R(s, a) + \gamma \sum_{s' \in \mathcal{S}} P_{ss'}^a \max_{a'
     \in \mathcal{A}} Q_*(s', a') \end{aligned} $$
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} V_*(s) &= \max_{a \in \mathcal{A}} Q_*(s,a)\\ Q_*(s, a) &=
+    R(s, a) + \gamma \sum_{s' \in \mathcal{S}} P_{ss'}^a V_*(s') \\ V_*(s) &= \max_{a
+    \in \mathcal{A}} \big( R(s, a) + \gamma \sum_{s' \in \mathcal{S}} P_{ss'}^a V_*(s')
+    \big) \\ Q_*(s, a) &= R(s, a) + \gamma \sum_{s' \in \mathcal{S}} P_{ss'}^a \max_{a'
+    \in \mathcal{A}} Q_*(s', a') \end{aligned} $$
 - en: Unsurprisingly they look very similar to Bellman expectation equations.
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 毫不奇怪，它们看起来与贝尔曼期望方程非常相似。
 - en: If we have complete information of the environment, this turns into a planning
     problem, solvable by DP. Unfortunately, in most scenarios, we do not know $P_{ss’}^a$
     or $R(s, a)$, so we cannot solve MDPs by directly applying Bellmen equations,
     but it lays the theoretical foundation for many RL algorithms.
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们对环境的完全信息，这就变成了一个规划问题，可以通过DP来解决。不幸的是，在大多数情况下，我们不知道$P_{ss’}^a$或$R(s, a)$，因此我们无法通过直接应用贝尔曼方程来解决MDP，但它为许多RL算法奠定了理论基础。
 - en: Common Approaches
+  id: totrans-90
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 常见方法
 - en: Now it is the time to go through the major approaches and classic algorithms
     for solving RL problems. In future posts, I plan to dive into each approach further.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在是时候深入了解解决RL问题的主要方法和经典算法了。在未来的帖子中，我计划进一步探讨每种方法。
 - en: Dynamic Programming
+  id: totrans-92
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 动态规划
 - en: When the model is fully known, following Bellman equations, we can use [Dynamic
     Programming](https://en.wikipedia.org/wiki/Dynamic_programming) (DP) to iteratively
     evaluate value functions and improve policy.
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 当模型完全已知时，根据贝尔曼方程，我们可以使用[动态规划](https://en.wikipedia.org/wiki/Dynamic_programming)（DP）来迭代地评估值函数并改进策略。
 - en: Policy Evaluation
+  id: totrans-94
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 策略评估
 - en: 'Policy Evaluation is to compute the state-value $V_\pi$ for a given policy
     $\pi$:'
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 策略评估是为给定策略$\pi$计算状态值$V_\pi$：
 - en: $$ V_{t+1}(s) = \mathbb{E}_\pi [r + \gamma V_t(s') | S_t = s] = \sum_a \pi(a
     \vert s) \sum_{s', r} P(s', r \vert s, a) (r + \gamma V_t(s')) $$
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ V_{t+1}(s) = \mathbb{E}_\pi [r + \gamma V_t(s') | S_t = s] = \sum_a \pi(a
+    \vert s) \sum_{s', r} P(s', r \vert s, a) (r + \gamma V_t(s')) $$
 - en: Policy Improvement
+  id: totrans-97
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 策略改进
 - en: Based on the value functions, Policy Improvement generates a better policy $\pi’
     \geq \pi$ by acting greedily.
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 基于值函数，策略改进通过贪婪地行动生成一个更好的策略$\pi’ \geq \pi$。
 - en: $$ Q_\pi(s, a) = \mathbb{E} [R_{t+1} + \gamma V_\pi(S_{t+1}) \vert S_t=s, A_t=a]
     = \sum_{s', r} P(s', r \vert s, a) (r + \gamma V_\pi(s')) $$
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ Q_\pi(s, a) = \mathbb{E} [R_{t+1} + \gamma V_\pi(S_{t+1}) \vert S_t=s, A_t=a]
+    = \sum_{s', r} P(s', r \vert s, a) (r + \gamma V_\pi(s')) $$
 - en: Policy Iteration
+  id: totrans-100
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 策略迭代
 - en: The *Generalized Policy Iteration (GPI)* algorithm refers to an iterative procedure
     to improve the policy when combining policy evaluation and improvement.
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: '*广义策略迭代（GPI）*算法指的是在结合策略评估和改进时改进策略的迭代过程。'
 - en: $$ \pi_0 \xrightarrow[]{\text{evaluation}} V_{\pi_0} \xrightarrow[]{\text{improve}}
     \pi_1 \xrightarrow[]{\text{evaluation}} V_{\pi_1} \xrightarrow[]{\text{improve}}
     \pi_2 \xrightarrow[]{\text{evaluation}} \dots \xrightarrow[]{\text{improve}} \pi_*
     \xrightarrow[]{\text{evaluation}} V_* $$
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \pi_0 \xrightarrow[]{\text{evaluation}} V_{\pi_0} \xrightarrow[]{\text{improve}}
+    \pi_1 \xrightarrow[]{\text{evaluation}} V_{\pi_1} \xrightarrow[]{\text{improve}}
+    \pi_2 \xrightarrow[]{\text{evaluation}} \dots \xrightarrow[]{\text{improve}} \pi_*
+    \xrightarrow[]{\text{evaluation}} V_* $$
 - en: In GPI, the value function is approximated repeatedly to be closer to the true
     value of the current policy and in the meantime, the policy is improved repeatedly
     to approach optimality. This policy iteration process works and always converges
     to the optimality, but why this is the case?
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 在GPI中，值函数被重复逼近以接近当前策略的真实值，同时策略被重复改进以接近最优性。这种策略迭代过程有效且总是收敛于最优性，但为什么会这样呢？
 - en: 'Say, we have a policy $\pi$ and then generate an improved version $\pi’$ by
     greedily taking actions, $\pi’(s) = \arg\max_{a \in \mathcal{A}} Q_\pi(s, a)$.
     The value of this improved $\pi’$ is guaranteed to be better because:'
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设我们有一个策略 $\pi$，然后通过贪婪地采取行动生成一个改进版本 $\pi'$，$\pi'(s) = \arg\max_{a \in \mathcal{A}}
+    Q_\pi(s, a)$。这个改进的 $\pi'$ 的价值是有保证的更好，因为：
 - en: $$ \begin{aligned} Q_\pi(s, \pi'(s)) &= Q_\pi(s, \arg\max_{a \in \mathcal{A}}
     Q_\pi(s, a)) \\ &= \max_{a \in \mathcal{A}} Q_\pi(s, a) \geq Q_\pi(s, \pi(s))
     = V_\pi(s) \end{aligned} $$
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} Q_\pi(s, \pi'(s)) &= Q_\pi(s, \arg\max_{a \in \mathcal{A}}
+    Q_\pi(s, a)) \\ &= \max_{a \in \mathcal{A}} Q_\pi(s, a) \geq Q_\pi(s, \pi(s))
+    = V_\pi(s) \end{aligned} $$
 - en: Monte-Carlo Methods
+  id: totrans-106
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 蒙特卡洛方法
 - en: 'First, let’s recall that $V(s) = \mathbb{E}[ G_t \vert S_t=s]$. Monte-Carlo
     (MC) methods uses a simple idea: It learns from episodes of raw experience without
     modeling the environmental dynamics and computes the observed mean return as an
@@ -492,300 +740,451 @@
     methods need to learn from **complete** episodes $S_1, A_1, R_2, \dots, S_T$ to
     compute $G_t = \sum_{k=0}^{T-t-1} \gamma^k R_{t+k+1}$ and all the episodes must
     eventually terminate.'
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，让我们回顾一下 $V(s) = \mathbb{E}[ G_t \vert S_t=s]$。蒙特卡洛（MC）方法使用一个简单的思想：它从原始经验的情节中学习，而不对环境动态进行建模，并将观察到的平均回报作为期望回报的逼近。为了计算经验回报
+    $G_t$，MC方法需要从**完整**的情节 $S_1, A_1, R_2, \dots, S_T$ 中学习以计算 $G_t = \sum_{k=0}^{T-t-1}
+    \gamma^k R_{t+k+1}$，并且所有情节最终都必须终止。
 - en: 'The empirical mean return for state s is:'
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 状态 s 的经验平均回报为：
 - en: $$ V(s) = \frac{\sum_{t=1}^T \mathbb{1}[S_t = s] G_t}{\sum_{t=1}^T \mathbb{1}[S_t
     = s]} $$
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ V(s) = \frac{\sum_{t=1}^T \mathbb{1}[S_t = s] G_t}{\sum_{t=1}^T \mathbb{1}[S_t
+    = s]} $$
 - en: where $\mathbb{1}[S_t = s]$ is a binary indicator function. We may count the
     visit of state s every time so that there could exist multiple visits of one state
     in one episode (“every-visit”), or only count it the first time we encounter a
     state in one episode (“first-visit”). This way of approximation can be easily
     extended to action-value functions by counting (s, a) pair.
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 $\mathbb{1}[S_t = s]$ 是一个二元指示函数。我们可以每次计算状态 s 的访问次数，因此在一个情节中可能存在对一个状态的多次访问（“每次访问”），或者只在一个情节中首次遇到状态时计数（“首次访问”）。这种逼近方式可以通过计算（s,
+    a）对来轻松扩展到动作值函数。
 - en: $$ Q(s, a) = \frac{\sum_{t=1}^T \mathbb{1}[S_t = s, A_t = a] G_t}{\sum_{t=1}^T
     \mathbb{1}[S_t = s, A_t = a]} $$
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ Q(s, a) = \frac{\sum_{t=1}^T \mathbb{1}[S_t = s, A_t = a] G_t}{\sum_{t=1}^T
+    \mathbb{1}[S_t = s, A_t = a]} $$
 - en: To learn the optimal policy by MC, we iterate it by following a similar idea
     to [GPI](#policy-iteration).
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过MC学习最优策略，我们通过遵循类似于[GPI](#policy-iteration)的思想进行迭代。
 - en: '![](../Images/2d79e5cb901e00622b3283ce9b1836db.png)'
+  id: totrans-113
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/2d79e5cb901e00622b3283ce9b1836db.png)'
 - en: 'Improve the policy greedily with respect to the current value function: $\pi(s)
     = \arg\max_{a \in \mathcal{A}} Q(s, a)$.'
+  id: totrans-114
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 根据当前值函数贪婪地改进策略：$\pi(s) = \arg\max_{a \in \mathcal{A}} Q(s, a)$。
 - en: Generate a new episode with the new policy $\pi$ (i.e. using algorithms like
     [ε-greedy](https://lilianweng.github.io/posts/2018-01-23-multi-armed-bandit/#%CE%B5-greedy-algorithm)
     helps us balance between exploitation and exploration.)
+  id: totrans-115
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用新策略 $\pi$ 生成一个新的情节（即使用像[ε-greedy](https://lilianweng.github.io/posts/2018-01-23-multi-armed-bandit/#%CE%B5-greedy-algorithm)这样的算法帮助我们在开发和探索之间取得平衡）。
 - en: 'Estimate Q using the new episode: $q_\pi(s, a) = \frac{\sum_{t=1}^T \big( \mathbb{1}[S_t
     = s, A_t = a] \sum_{k=0}^{T-t-1} \gamma^k R_{t+k+1} \big)}{\sum_{t=1}^T \mathbb{1}[S_t
     = s, A_t = a]}$'
+  id: totrans-116
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用新情节估计 Q：$q_\pi(s, a) = \frac{\sum_{t=1}^T \big( \mathbb{1}[S_t = s, A_t =
+    a] \sum_{k=0}^{T-t-1} \gamma^k R_{t+k+1} \big)}{\sum_{t=1}^T \mathbb{1}[S_t =
+    s, A_t = a]}$
 - en: Temporal-Difference Learning
+  id: totrans-117
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 时间差分学习
 - en: Similar to Monte-Carlo methods, Temporal-Difference (TD) Learning is model-free
     and learns from episodes of experience. However, TD learning can learn from **incomplete**
     episodes and hence we don’t need to track the episode up to termination. TD learning
     is so important that Sutton & Barto (2017) in their RL book describes it as “one
     idea … central and novel to reinforcement learning”.
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: 与蒙特卡洛方法类似，时间差分（TD）学习是无模型的，并且从经验情节中学习。然而，TD学习可以从**不完整**的情节中学习，因此我们不需要追踪情节直至终止。TD学习如此重要，以至于Sutton
+    & Barto（2017）在他们的强化学习书中将其描述为“强化学习中一个中心且新颖的想法”。
 - en: Bootstrapping
+  id: totrans-119
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 自举
 - en: TD learning methods update targets with regard to existing estimates rather
     than exclusively relying on actual rewards and complete returns as in MC methods.
     This approach is known as **bootstrapping**.
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: TD学习方法更新目标是根据现有估计而不是仅依赖于实际奖励和完整回报，这种方法被称为**自举**。
 - en: Value Estimation
+  id: totrans-121
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 价值估计
 - en: 'The key idea in TD learning is to update the value function $V(S_t)$ towards
     an estimated return $R_{t+1} + \gamma V(S_{t+1})$ (known as “**TD target**”).
     To what extent we want to update the value function is controlled by the learning
     rate hyperparameter α:'
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: TD学习的关键思想是将值函数$V(S_t)$更新为估计的回报$R_{t+1} + \gamma V(S_{t+1})$（称为“**TD目标**”）。我们希望在多大程度上更新值函数由学习率超参数α控制：
 - en: $$ \begin{aligned} V(S_t) &\leftarrow (1- \alpha) V(S_t) + \alpha G_t \\ V(S_t)
     &\leftarrow V(S_t) + \alpha (G_t - V(S_t)) \\ V(S_t) &\leftarrow V(S_t) + \alpha
     (R_{t+1} + \gamma V(S_{t+1}) - V(S_t)) \end{aligned} $$
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} V(S_t) &\leftarrow (1- \alpha) V(S_t) + \alpha G_t \\ V(S_t)
+    &\leftarrow V(S_t) + \alpha (G_t - V(S_t)) \\ V(S_t) &\leftarrow V(S_t) + \alpha
+    (R_{t+1} + \gamma V(S_{t+1}) - V(S_t)) \end{aligned} $$
 - en: 'Similarly, for action-value estimation:'
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: 类似地，对于动作值估计：
 - en: $$ Q(S_t, A_t) \leftarrow Q(S_t, A_t) + \alpha (R_{t+1} + \gamma Q(S_{t+1},
     A_{t+1}) - Q(S_t, A_t)) $$
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ Q(S_t, A_t) \leftarrow Q(S_t, A_t) + \alpha (R_{t+1} + \gamma Q(S_{t+1},
+    A_{t+1}) - Q(S_t, A_t)) $$
 - en: Next, let’s dig into the fun part on how to learn optimal policy in TD learning
     (aka “TD control”). Be prepared, you are gonna see many famous names of classic
     algorithms in this section.
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，让我们深入探讨如何在TD学习中学习最优策略（也称为“TD控制”）。准备好，你将在本节中看到许多经典算法的著名名称。
 - en: 'SARSA: On-Policy TD control'
+  id: totrans-127
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: SARSA：基于策略的TD控制
 - en: '“SARSA” refers to the procedure of updaing Q-value by following a sequence
     of $\dots, S_t, A_t, R_{t+1}, S_{t+1}, A_{t+1}, \dots$. The idea follows the same
     route of [GPI](#policy-iteration). Within one episode, it works as follows:'
+  id: totrans-128
   prefs: []
   type: TYPE_NORMAL
+  zh: “SARSA”指的是通过遵循一系列$\dots, S_t, A_t, R_{t+1}, S_{t+1}, A_{t+1}, \dots$来更新Q值的过程。这个想法遵循[GPI](#policy-iteration)的相同路线。在一个回合内，它的工作方式如下：
 - en: Initialize $t=0$.
+  id: totrans-129
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 初始化$t=0$。
 - en: Start with $S_0$ and choose action $A_0 = \arg\max_{a \in \mathcal{A}} Q(S_0,
     a)$, where $\epsilon$-greedy is commonly applied.
+  id: totrans-130
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 从$S_0$开始并选择动作$A_0 = \arg\max_{a \in \mathcal{A}} Q(S_0, a)$，通常应用$\epsilon$-贪心策略。
 - en: At time $t$, after applying action $A_t$, we observe reward $R_{t+1}$ and get
     into the next state $S_{t+1}$.
+  id: totrans-131
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在时间$t$，应用动作$A_t$后，我们观察奖励$R_{t+1}$并进入下一个状态$S_{t+1}$。
 - en: 'Then pick the next action in the same way as in step 2: $A_{t+1} = \arg\max_{a
     \in \mathcal{A}} Q(S_{t+1}, a)$.'
+  id: totrans-132
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 接着以与第2步相同的方式选择下一个动作：$A_{t+1} = \arg\max_{a \in \mathcal{A}} Q(S_{t+1}, a)$。
 - en: 'Update the Q-value function: $ Q(S_t, A_t) \leftarrow Q(S_t, A_t) + \alpha
     (R_{t+1} + \gamma Q(S_{t+1}, A_{t+1}) - Q(S_t, A_t)) $.'
+  id: totrans-133
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 更新Q值函数：$ Q(S_t, A_t) \leftarrow Q(S_t, A_t) + \alpha (R_{t+1} + \gamma Q(S_{t+1},
+    A_{t+1}) - Q(S_t, A_t)) $。
 - en: Set $t = t+1$ and repeat from step 3.
+  id: totrans-134
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 设定$t = t+1$并重复从第3步开始。
 - en: In each step of SARSA, we need to choose the *next* action according to the
     *current* policy.
+  id: totrans-135
   prefs: []
   type: TYPE_NORMAL
+  zh: 在SARSA的每一步中，我们需要根据当前策略选择*下一个*动作。
 - en: 'Q-Learning: Off-policy TD control'
+  id: totrans-136
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: Q学习：离策略TD控制
 - en: 'The development of Q-learning ([Watkins & Dayan, 1992](https://link.springer.com/content/pdf/10.1007/BF00992698.pdf))
     is a big breakout in the early days of Reinforcement Learning. Within one episode,
     it works as follows:'
+  id: totrans-137
   prefs: []
   type: TYPE_NORMAL
+  zh: Q学习的发展（[Watkins & Dayan, 1992](https://link.springer.com/content/pdf/10.1007/BF00992698.pdf)）是强化学习早期的重大突破。在一个回合内，它的工作方式如下：
 - en: Initialize $t=0$.
+  id: totrans-138
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 初始化$t=0$。
 - en: Starts with $S_0$.
+  id: totrans-139
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 从$S_0$开始。
 - en: At time step $t$, we pick the action according to Q values, $A_t = \arg\max_{a
     \in \mathcal{A}} Q(S_t, a)$ and $\epsilon$-greedy is commonly applied.
+  id: totrans-140
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在时间步$t$，我们根据Q值选择动作，$A_t = \arg\max_{a \in \mathcal{A}} Q(S_t, a)$，通常应用$\epsilon$-贪心策略。
 - en: After applying action $A_t$, we observe reward $R_{t+1}$ and get into the next
     state $S_{t+1}$.
+  id: totrans-141
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在应用动作$A_t$后，我们观察奖励$R_{t+1}$并进入下一个状态$S_{t+1}$。
 - en: 'Update the Q-value function: $Q(S_t, A_t) \leftarrow Q(S_t, A_t) + \alpha (R_{t+1}
     + \gamma \max_{a \in \mathcal{A}} Q(S_{t+1}, a) - Q(S_t, A_t))$.'
+  id: totrans-142
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 更新Q值函数：$Q(S_t, A_t) \leftarrow Q(S_t, A_t) + \alpha (R_{t+1} + \gamma \max_{a
+    \in \mathcal{A}} Q(S_{t+1}, a) - Q(S_t, A_t))$。
 - en: $t = t+1$ and repeat from step 3.
+  id: totrans-143
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: $t = t+1$并重复从第3步开始。
 - en: The key difference from SARSA is that Q-learning does not follow the current
     policy to pick the second action $A_{t+1}$. It estimates $Q^*$ out of the best
     Q values, but which action (denoted as $a^*$) leads to this maximal Q does not
     matter and in the next step Q-learning may not follow $a^*$.
+  id: totrans-144
   prefs: []
   type: TYPE_NORMAL
+  zh: 与SARSA的关键区别在于，Q学习不遵循当前策略选择第二个动作$A_{t+1}$。它估计$Q^*$超出最佳Q值，但导致这个最大Q的动作（表示为$a^*$）并不重要，在下一步中Q学习可能不会遵循$a^*$。
 - en: '![](../Images/48b596e6b67d794791af4d9afead9da1.png)'
+  id: totrans-145
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/48b596e6b67d794791af4d9afead9da1.png)'
 - en: 'Fig. 6\. The backup diagrams for Q-learning and SARSA. (Image source: Replotted
     based on Figure 6.5 in Sutton & Barto (2017))'
+  id: totrans-146
   prefs: []
   type: TYPE_NORMAL
+  zh: 图6\. Q学习和SARSA的备份图。 （图片来源：基于Sutton＆Barto（2017）第6.5节中的图6.5重新绘制）
 - en: Deep Q-Network
+  id: totrans-147
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 深度Q网络
 - en: Theoretically, we can memorize $Q_*(.)$ for all state-action pairs in Q-learning,
     like in a gigantic table. However, it quickly becomes computationally infeasible
     when the state and action space are large. Thus people use functions (i.e. a machine
     learning model) to approximate Q values and this is called **function approximation**.
     For example, if we use a function with parameter $\theta$ to calculate Q values,
     we can label Q value function as $Q(s, a; \theta)$.
+  id: totrans-148
   prefs: []
   type: TYPE_NORMAL
+  zh: 理论上，我们可以在Q学习中为所有状态-动作对记忆$Q_*(.)$，就像在一个巨大的表中一样。然而，当状态和动作空间很大时，这很快变得计算上不可行。因此，人们使用函数（即机器学习模型）来近似Q值，这被称为**函数逼近**。例如，如果我们使用一个带有参数$\theta$的函数来计算Q值，我们可以将Q值函数标记为$Q(s,
+    a; \theta)$。
 - en: 'Unfortunately Q-learning may suffer from instability and divergence when combined
     with an nonlinear Q-value function approximation and [bootstrapping](#bootstrapping)
     (See [Problems #2](#deadly-triad-issue)).'
+  id: totrans-149
   prefs: []
   type: TYPE_NORMAL
+  zh: 不幸的是，当与非线性Q值函数逼近和[自举](#bootstrapping)（见[问题＃2](#deadly-triad-issue)）结合时，Q学习可能会遭受不稳定性和发散。
 - en: 'Deep Q-Network (“DQN”; Mnih et al. 2015) aims to greatly improve and stabilize
     the training procedure of Q-learning by two innovative mechanisms:'
+  id: totrans-150
   prefs: []
   type: TYPE_NORMAL
+  zh: 深度Q网络（“DQN”；Mnih等人，2015年）旨在通过两种创新机制大大改进和稳定Q学习的训练过程：
 - en: '**Experience Replay**: All the episode steps $e_t = (S_t, A_t, R_t, S_{t+1})$
     are stored in one replay memory $D_t = \{ e_1, \dots, e_t \}$. $D_t$ has experience
     tuples over many episodes. During Q-learning updates, samples are drawn at random
     from the replay memory and thus one sample could be used multiple times. Experience
     replay improves data efficiency, removes correlations in the observation sequences,
     and smooths over changes in the data distribution.'
+  id: totrans-151
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**经验重放**：所有的情节步骤$e_t = (S_t, A_t, R_t, S_{t+1})$都存储在一个重放记忆$D_t = \{ e_1, \dots,
+    e_t \}$中。$D_t$包含许多情节的经验元组。在Q学习更新期间，从重放记忆中随机抽取样本，因此一个样本可能被多次使用。经验重放提高了数据效率，消除了观察序列中的相关性，并平滑了数据分布的变化。'
 - en: '**Periodically Updated Target**: Q is optimized towards target values that
     are only periodically updated. The Q network is cloned and kept frozen as the
     optimization target every C steps (C is a hyperparameter). This modification makes
     the training more stable as it overcomes the short-term oscillations.'
+  id: totrans-152
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**定期更新目标值**：Q被优化为仅定期更新的目标值。Q网络被克隆并保持冻结，作为每C步（C是一个超参数）的优化目标。这种修改使训练更加稳定，因为它克服了短期振荡。'
 - en: 'The loss function looks like this:'
+  id: totrans-153
   prefs: []
   type: TYPE_NORMAL
+  zh: 损失函数如下所示：
 - en: $$ \mathcal{L}(\theta) = \mathbb{E}_{(s, a, r, s') \sim U(D)} \Big[ \big( r
     + \gamma \max_{a'} Q(s', a'; \theta^{-}) - Q(s, a; \theta) \big)^2 \Big] $$
+  id: totrans-154
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathcal{L}(\theta) = \mathbb{E}_{(s, a, r, s') \sim U(D)} \Big[ \big( r
+    + \gamma \max_{a'} Q(s', a'; \theta^{-}) - Q(s, a; \theta) \big)^2 \Big] $$
 - en: where $U(D)$ is a uniform distribution over the replay memory D; $\theta^{-}$
     is the parameters of the frozen target Q-network.
+  id: totrans-155
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$U(D)$是重放记忆D上的均匀分布；$\theta^{-}$是冻结目标Q网络的参数。
 - en: In addition, it is also found to be helpful to clip the error term to be between
     [-1, 1]. (I always get mixed feeling with parameter clipping, as many studies
     have shown that it works empirically but it makes the math much less pretty. :/)
+  id: totrans-156
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，将错误项剪切至[-1, 1]之间也被发现是有帮助的。（我总是对参数剪切有复杂的感觉，因为许多研究表明它在经验上有效，但这使得数学变得不那么美观。:/）
 - en: '![](../Images/a5bd43bbb9f4c73f4ed8aff601065097.png)'
+  id: totrans-157
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a5bd43bbb9f4c73f4ed8aff601065097.png)'
 - en: 'Fig. 7\. Algorithm for DQN with experience replay and occasionally frozen optimization
     target. The prepossessed sequence is the output of some processes running on the
     input images of Atari games. Don''t worry too much about it; just consider them
     as input feature vectors. (Image source: Mnih et al. 2015)'
+  id: totrans-158
   prefs: []
   type: TYPE_NORMAL
+  zh: 图7\. 具有经验重放和偶尔冻结优化目标的DQN算法。预处理的序列是在Atari游戏的输入图像上运行的一些进程的输出。不要太担心它；只需将它们视为输入特征向量。（图片来源：Mnih等人，2015年）
 - en: There are many extensions of DQN to improve the original design, such as DQN
     with dueling architecture (Wang et al. 2016) which estimates state-value function
     V(s) and advantage function A(s, a) with shared network parameters.
+  id: totrans-159
   prefs: []
   type: TYPE_NORMAL
+  zh: 有许多DQN的扩展来改进原始设计，例如具有dueling架构的DQN（Wang等人，2016年），它使用共享网络参数估计状态值函数V(s)和优势函数A(s,
+    a)。
 - en: Combining TD and MC Learning
+  id: totrans-160
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 结合TD和MC学习
 - en: In the previous [section](#value-estimation) on value estimation in TD learning,
     we only trace one step further down the action chain when calculating the TD target.
     One can easily extend it to take multiple steps to estimate the return.
+  id: totrans-161
   prefs: []
   type: TYPE_NORMAL
+  zh: 在TD学习中关于值估计的前一[部分](#value-estimation)中，当计算TD目标时我们只追踪行动链下的一步。可以轻松地将其扩展到多步以估计回报。
 - en: 'Let’s label the estimated return following n steps as $G_t^{(n)}, n=1, \dots,
     \infty$, then:'
+  id: totrans-162
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们将跟随n步的估计回报标记为$G_t^{(n)}, n=1, \dots, \infty$，那么：
 - en: '| $n$ | $G_t$ | Notes |'
+  id: totrans-163
   prefs: []
   type: TYPE_TB
+  zh: '| $n$ | $G_t$ | 注释 |'
 - en: '| --- | --- | --- |'
+  id: totrans-164
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- | --- |'
 - en: '| $n=1$ | $G_t^{(1)} = R_{t+1} + \gamma V(S_{t+1})$ | TD learning |'
+  id: totrans-165
   prefs: []
   type: TYPE_TB
+  zh: '| $n=1$ | $G_t^{(1)} = R_{t+1} + \gamma V(S_{t+1})$ | TD学习 |'
 - en: '| $n=2$ | $G_t^{(2)} = R_{t+1} + \gamma R_{t+2} + \gamma^2 V(S_{t+2})$ |  |'
+  id: totrans-166
   prefs: []
   type: TYPE_TB
+  zh: '| $n=2$ | $G_t^{(2)} = R_{t+1} + \gamma R_{t+2} + \gamma^2 V(S_{t+2})$ |  |'
 - en: '| … |  |  |'
+  id: totrans-167
   prefs: []
   type: TYPE_TB
+  zh: '| … |  |  |'
 - en: '| $n=n$ | $ G_t^{(n)} = R_{t+1} + \gamma R_{t+2} + \dots + \gamma^{n-1} R_{t+n}
     + \gamma^n V(S_{t+n}) $ |  |'
+  id: totrans-168
   prefs: []
   type: TYPE_TB
+  zh: '| $n=n$ | $ G_t^{(n)} = R_{t+1} + \gamma R_{t+2} + \dots + \gamma^{n-1} R_{t+n}
+    + \gamma^n V(S_{t+n}) $ |  |'
 - en: '| … |  |  |'
+  id: totrans-169
   prefs: []
   type: TYPE_TB
+  zh: '| … |  |  |'
 - en: '| $n=\infty$ | $G_t^{(\infty)} = R_{t+1} + \gamma R_{t+2} + \dots + \gamma^{T-t-1}
     R_T + \gamma^{T-t} V(S_T) $ | MC estimation |'
+  id: totrans-170
   prefs: []
   type: TYPE_TB
+  zh: '| $n=\infty$ | $G_t^{(\infty)} = R_{t+1} + \gamma R_{t+2} + \dots + \gamma^{T-t-1}
+    R_T + \gamma^{T-t} V(S_T) $ | MC估计 |'
 - en: 'The generalized n-step TD learning still has the [same](#value-estimation)
     form for updating the value function:'
+  id: totrans-171
   prefs: []
   type: TYPE_NORMAL
+  zh: 广义的n步TD学习仍然具有相同的[形式](#value-estimation)来更新值函数：
 - en: $$ V(S_t) \leftarrow V(S_t) + \alpha (G_t^{(n)} - V(S_t)) $$![](../Images/eb2d7c2fa9b237e9bf828a0f308a9465.png)
+  id: totrans-172
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ V(S_t) \leftarrow V(S_t) + \alpha (G_t^{(n)} - V(S_t)) $$![](../Images/eb2d7c2fa9b237e9bf828a0f308a9465.png)
 - en: 'We are free to pick any $n$ in TD learning as we like. Now the question becomes
     what is the best $n$? Which $G_t^{(n)}$ gives us the best return approximation?
     A common yet smart solution is to apply a weighted sum of all possible n-step
@@ -794,32 +1193,48 @@
     we want to discount future rewards when computing the return: the more future
     we look into the less confident we would be. To make all the weight (n → ∞) sum
     up to 1, we multiply every weight by (1-λ), because:'
+  id: totrans-173
   prefs: []
   type: TYPE_NORMAL
+  zh: 在TD学习中，我们可以自由选择任何$n$。现在问题变成了什么是最佳的$n$？哪个$G_t^{(n)}$给出了最佳的回报近似？一个常见但聪明的解决方案是应用所有可能的n步TD目标的加权和，而不是选择单个最佳的n。权重随着n按照λ的因子衰减，$\lambda^{n-1}$；直觉类似于[为什么](#value-estimation)在计算回报时我们希望折现未来奖励：我们看得越远，我们就越不确定。为了使所有权重（n
+    → ∞）总和为1，我们将每个权重乘以(1-λ)，因为：
 - en: $$ \begin{aligned} \text{let } S &= 1 + \lambda + \lambda^2 + \dots \\ S &=
     1 + \lambda(1 + \lambda + \lambda^2 + \dots) \\ S &= 1 + \lambda S \\ S &= 1 /
     (1-\lambda) \end{aligned} $$
+  id: totrans-174
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \text{let } S &= 1 + \lambda + \lambda^2 + \dots \\ S &=
+    1 + \lambda(1 + \lambda + \lambda^2 + \dots) \\ S &= 1 + \lambda S \\ S &= 1 /
+    (1-\lambda) \end{aligned} $$
 - en: This weighted sum of many n-step returns is called λ-return $G_t^{\lambda} =
     (1-\lambda) \sum_{n=1}^{\infty} \lambda^{n-1} G_t^{(n)}$. TD learning that adopts
     λ-return for value updating is labeled as **TD(λ)**. The original version we introduced
     [above](#value-estimation) is equivalent to **TD(0)**.
+  id: totrans-175
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个由许多n步回报加权求和得到的λ回报称为λ回报 $G_t^{\lambda} = (1-\lambda) \sum_{n=1}^{\infty} \lambda^{n-1}
+    G_t^{(n)}$。采用λ回报进行值更新的TD学习被标记为**TD(λ)**。我们上面介绍的原始版本等同于**TD(0)**。
 - en: '![](../Images/14323a2a35cab99c2fc2d0a9f78e050d.png)'
+  id: totrans-176
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/14323a2a35cab99c2fc2d0a9f78e050d.png)'
 - en: 'Fig. 8\. Comparison of the backup diagrams of Monte-Carlo, Temporal-Difference
     learning, and Dynamic Programming for state value functions. (Image source: David
     Silver''s RL course [lecture 4](http://www0.cs.ucl.ac.uk/staff/d.silver/web/Teaching_files/MC-TD.pdf):
     "Model-Free Prediction")'
+  id: totrans-177
   prefs: []
   type: TYPE_NORMAL
+  zh: 图8。蒙特卡洛、时序差分学习和动态规划用于状态值函数备份图的比较。（图片来源：David Silver的强化学习课程[第4讲](http://www0.cs.ucl.ac.uk/staff/d.silver/web/Teaching_files/MC-TD.pdf)：“无模型预测”）
 - en: Policy Gradient
+  id: totrans-178
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 策略梯度
 - en: All the methods we have introduced above aim to learn the state/action value
     function and then to select actions accordingly. Policy Gradient methods instead
     learn the policy directly with a parameterized function respect to $\theta$, $\pi(a
@@ -828,72 +1243,114 @@
     reward function. My [next post](https://lilianweng.github.io/posts/2018-04-08-policy-gradient/)
     described why the policy gradient theorem works (proof) and introduced a number
     of policy gradient algorithms.
+  id: totrans-179
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们介绍的所有方法的目标都是学习状态/动作值函数，然后相应地选择动作。而策略梯度方法则直接学习策略，使用参数化函数关于 $\theta$，$\pi(a
+    \vert s; \theta)$。让我们将奖励函数（损失函数的相反）定义为 *期望回报*，并训练算法以最大化奖励函数。我的[下一篇文章](https://lilianweng.github.io/posts/2018-04-08-policy-gradient/)描述了为什么策略梯度定理有效（证明）并介绍了一些策略梯度算法。
 - en: 'In discrete space:'
+  id: totrans-180
   prefs: []
   type: TYPE_NORMAL
+  zh: 在离散空间中：
 - en: $$ \mathcal{J}(\theta) = V_{\pi_\theta}(S_1) = \mathbb{E}_{\pi_\theta}[V_1]
     $$
+  id: totrans-181
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathcal{J}(\theta) = V_{\pi_\theta}(S_1) = \mathbb{E}_{\pi_\theta}[V_1]
+    $$
 - en: where $S_1$ is the initial starting state.
+  id: totrans-182
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 $S_1$ 是初始起始状态。
 - en: 'Or in continuous space:'
+  id: totrans-183
   prefs: []
   type: TYPE_NORMAL
+  zh: 或者在连续空间中：
 - en: $$ \mathcal{J}(\theta) = \sum_{s \in \mathcal{S}} d_{\pi_\theta}(s) V_{\pi_\theta}(s)
     = \sum_{s \in \mathcal{S}} \Big( d_{\pi_\theta}(s) \sum_{a \in \mathcal{A}} \pi(a
     \vert s, \theta) Q_\pi(s, a) \Big) $$
+  id: totrans-184
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathcal{J}(\theta) = \sum_{s \in \mathcal{S}} d_{\pi_\theta}(s) V_{\pi_\theta}(s)
+    = \sum_{s \in \mathcal{S}} \Big( d_{\pi_\theta}(s) \sum_{a \in \mathcal{A}} \pi(a
+    \vert s, \theta) Q_\pi(s, a) \Big) $$
 - en: where $d_{\pi_\theta}(s)$ is stationary distribution of Markov chain for $\pi_\theta$.
     If you are unfamiliar with the definition of a “stationary distribution,” please
     check this [reference](https://jeremykun.com/2015/04/06/markov-chain-monte-carlo-without-all-the-bullshit/).
+  id: totrans-185
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 $d_{\pi_\theta}(s)$ 是 $\pi_\theta$ 的马尔可夫链的稳态分布。如果您对“稳态分布”的定义不熟悉，请查看这个[参考资料](https://jeremykun.com/2015/04/06/markov-chain-monte-carlo-without-all-the-bullshit/)。
 - en: Using *gradient ascent* we can find the best θ that produces the highest return.
     It is natural to expect policy-based methods are more useful in continuous space,
     because there is an infinite number of actions and/or states to estimate the values
     for in continuous space and hence value-based approaches are computationally much
     more expensive.
+  id: totrans-186
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用 *梯度上升* 我们可以找到产生最高回报的最佳 θ。可以预期基于策略的方法在连续空间中更有用，因为在连续空间中有无限数量的动作和/或状态需要估计值，因此基于值的方法在计算上要昂贵得多。
 - en: Policy Gradient Theorem
+  id: totrans-187
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 策略梯度定理
 - en: Computing the gradient *numerically* can be done by perturbing θ by a small
     amount ε in the k-th dimension. It works even when $J(\theta)$ is not differentiable
     (nice!), but unsurprisingly very slow.
+  id: totrans-188
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过在第 k 维度中微调 θ 一小部分 ε，可以通过 *数值方法* 计算梯度。即使 $J(\theta)$ 不可微（很好！），但不出所料地非常慢。
 - en: $$ \frac{\partial \mathcal{J}(\theta)}{\partial \theta_k} \approx \frac{\mathcal{J}(\theta
     + \epsilon u_k) - \mathcal{J}(\theta)}{\epsilon} $$
+  id: totrans-189
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \frac{\partial \mathcal{J}(\theta)}{\partial \theta_k} \approx \frac{\mathcal{J}(\theta
+    + \epsilon u_k) - \mathcal{J}(\theta)}{\epsilon} $$
 - en: Or *analytically*,
+  id: totrans-190
   prefs: []
   type: TYPE_NORMAL
+  zh: 或者 *分析地*，
 - en: $$ \mathcal{J}(\theta) = \mathbb{E}_{\pi_\theta} [r] = \sum_{s \in \mathcal{S}}
     d_{\pi_\theta}(s) \sum_{a \in \mathcal{A}} \pi(a \vert s; \theta) R(s, a) $$
+  id: totrans-191
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathcal{J}(\theta) = \mathbb{E}_{\pi_\theta} [r] = \sum_{s \in \mathcal{S}}
+    d_{\pi_\theta}(s) \sum_{a \in \mathcal{A}} \pi(a \vert s; \theta) R(s, a) $$
 - en: 'Actually we have nice theoretical support for (replacing $d(.)$ with $d_\pi(.)$):'
+  id: totrans-192
   prefs: []
   type: TYPE_NORMAL
+  zh: 实际上，我们有很好的理论支持（用 $d(.)$ 替换为 $d_\pi(.)$）：
 - en: $$ \mathcal{J}(\theta) = \sum_{s \in \mathcal{S}} d_{\pi_\theta}(s) \sum_{a
     \in \mathcal{A}} \pi(a \vert s; \theta) Q_\pi(s, a) \propto \sum_{s \in \mathcal{S}}
     d(s) \sum_{a \in \mathcal{A}} \pi(a \vert s; \theta) Q_\pi(s, a) $$
+  id: totrans-193
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathcal{J}(\theta) = \sum_{s \in \mathcal{S}} d_{\pi_\theta}(s) \sum_{a
+    \in \mathcal{A}} \pi(a \vert s; \theta) Q_\pi(s, a) \propto \sum_{s \in \mathcal{S}}
+    d(s) \sum_{a \in \mathcal{A}} \pi(a \vert s; \theta) Q_\pi(s, a) $$
 - en: Check Sec 13.1 in Sutton & Barto (2017) for why this is the case.
+  id: totrans-194
   prefs: []
   type: TYPE_NORMAL
+  zh: 请查看Sutton & Barto (2017)中的第13.1节，了解为什么会这样。
 - en: Then,
+  id: totrans-195
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，
 - en: $$ \begin{aligned} \mathcal{J}(\theta) &= \sum_{s \in \mathcal{S}} d(s) \sum_{a
     \in \mathcal{A}} \pi(a \vert s; \theta) Q_\pi(s, a) \\ \nabla \mathcal{J}(\theta)
     &= \sum_{s \in \mathcal{S}} d(s) \sum_{a \in \mathcal{A}} \nabla \pi(a \vert s;
@@ -902,242 +1359,354 @@
     Q_\pi(s, a) \\ & = \sum_{s \in \mathcal{S}} d(s) \sum_{a \in \mathcal{A}} \pi(a
     \vert s; \theta) \nabla \ln \pi(a \vert s; \theta) Q_\pi(s, a) \\ & = \mathbb{E}_{\pi_\theta}
     [\nabla \ln \pi(a \vert s; \theta) Q_\pi(s, a)] \end{aligned} $$
+  id: totrans-196
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \mathcal{J}(\theta) &= \sum_{s \in \mathcal{S}} d(s) \sum_{a
+    \in \mathcal{A}} \pi(a \vert s; \theta) Q_\pi(s, a) \\ \nabla \mathcal{J}(\theta)
+    &= \sum_{s \in \mathcal{S}} d(s) \sum_{a \in \mathcal{A}} \nabla \pi(a \vert s;
+    \theta) Q_\pi(s, a) \\ &= \sum_{s \in \mathcal{S}} d(s) \sum_{a \in \mathcal{A}}
+    \pi(a \vert s; \theta) \frac{\nabla \pi(a \vert s; \theta)}{\pi(a \vert s; \theta)}
+    Q_\pi(s, a) \\ & = \sum_{s \in \mathcal{S}} d(s) \sum_{a \in \mathcal{A}} \pi(a
+    \vert s; \theta) \nabla \ln \pi(a \vert s; \theta) Q_\pi(s, a) \\ & = \mathbb{E}_{\pi_\theta}
+    [\nabla \ln \pi(a \vert s; \theta) Q_\pi(s, a)] \end{aligned} $$
 - en: 'This result is named “Policy Gradient Theorem” which lays the theoretical foundation
     for various policy gradient algorithms:'
+  id: totrans-197
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个结果被称为“策略梯度定理”，为各种策略梯度算法奠定了理论基础：
 - en: $$ \nabla \mathcal{J}(\theta) = \mathbb{E}_{\pi_\theta} [\nabla \ln \pi(a \vert
     s, \theta) Q_\pi(s, a)] $$
+  id: totrans-198
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \nabla \mathcal{J}(\theta) = \mathbb{E}_{\pi_\theta} [\nabla \ln \pi(a \vert
+    s, \theta) Q_\pi(s, a)] $$
 - en: REINFORCE
+  id: totrans-199
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 强化
 - en: REINFORCE, also known as Monte-Carlo policy gradient, relies on $Q_\pi(s, a)$,
     an estimated return by [MC](#monte-carlo-methods) methods using episode samples,
     to update the policy parameter $\theta$.
+  id: totrans-200
   prefs: []
   type: TYPE_NORMAL
+  zh: 强化，也称为蒙特卡洛策略梯度，依赖于 $Q_\pi(s, a)$，通过使用回合样本的 [MC](#monte-carlo-methods) 方法估计回报，来更新策略参数
+    $\theta$。
 - en: A commonly used variation of REINFORCE is to subtract a baseline value from
     the return $G_t$ to reduce the variance of gradient estimation while keeping the
     bias unchanged. For example, a common baseline is state-value, and if applied,
     we would use $A(s, a) = Q(s, a) - V(s)$ in the gradient ascent update.
+  id: totrans-201
   prefs: []
   type: TYPE_NORMAL
+  zh: 强化的一个常用变体是从回报 $G_t$ 中减去一个基线值，以减少梯度估计的方差，同时保持偏差不变。例如，一个常见的基线是状态值，如果应用，我们将在梯度上升更新中使用
+    $A(s, a) = Q(s, a) - V(s)$。
 - en: Initialize θ at random
+  id: totrans-202
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 随机初始化 θ
 - en: Generate one episode $S_1, A_1, R_2, S_2, A_2, \dots, S_T$
+  id: totrans-203
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 生成一个回合 $S_1, A_1, R_2, S_2, A_2, \dots, S_T$
 - en: 'For t=1, 2, … , T:'
+  id: totrans-204
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 对于 t=1, 2, … , T：
 - en: Estimate the the return G_t since the time step t.
+  id: totrans-205
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 估计从时间步 t 开始的回报 G_t。
 - en: $\theta \leftarrow \theta + \alpha \gamma^t G_t \nabla \ln \pi(A_t \vert S_t,
     \theta)$.
+  id: totrans-206
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: $\theta \leftarrow \theta + \alpha \gamma^t G_t \nabla \ln \pi(A_t \vert S_t,
+    \theta)$。
 - en: Actor-Critic
+  id: totrans-207
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 演员-评论家
 - en: If the value function is learned in addition to the policy, we would get Actor-Critic
     algorithm.
+  id: totrans-208
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果值函数除了策略外也被学习，我们将得到演员-评论家算法。
 - en: '**Critic**: updates value function parameters w and depending on the algorithm
     it could be action-value $Q(a \vert s; w)$ or state-value $V(s; w)$.'
+  id: totrans-209
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**评论家**：更新值函数参数 w，根据算法的不同，可能是动作值 $Q(a \vert s; w)$ 或状态值 $V(s; w)$。'
 - en: '**Actor**: updates policy parameters θ, in the direction suggested by the critic,
     $\pi(a \vert s; \theta)$.'
+  id: totrans-210
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**演员**：根据评论家建议的方向更新策略参数 θ，$\pi(a \vert s; \theta)$。'
 - en: Let’s see how it works in an action-value actor-critic algorithm.
+  id: totrans-211
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们看看它是如何在一个动作值演员-评论家算法中起作用的。
 - en: Initialize s, θ, w at random; sample $a \sim \pi(a \vert s; \theta)$.
+  id: totrans-212
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 随机初始化 s, θ, w；采样 $a \sim \pi(a \vert s; \theta)$。
 - en: 'For t = 1… T:'
+  id: totrans-213
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 对于 t = 1… T：
 - en: Sample reward $r_t \sim R(s, a)$ and next state $s’ \sim P(s’ \vert s, a)$.
+  id: totrans-214
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 采样奖励 $r_t \sim R(s, a)$ 和下一个状态 $s’ \sim P(s’ \vert s, a)$。
 - en: Then sample the next action $a’ \sim \pi(s’, a’; \theta)$.
+  id: totrans-215
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 然后采样下一个动作 $a’ \sim \pi(s’, a’; \theta)$。
 - en: 'Update policy parameters: $\theta \leftarrow \theta + \alpha_\theta Q(s, a;
     w) \nabla_\theta \ln \pi(a \vert s; \theta)$.'
+  id: totrans-216
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 更新策略参数：$\theta \leftarrow \theta + \alpha_\theta Q(s, a; w) \nabla_\theta \ln
+    \pi(a \vert s; \theta)$。
 - en: 'Compute the correction for action-value at time t:'
+  id: totrans-217
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 计算时间步 t 的动作值的修正：
 - en: $G_{t:t+1} = r_t + \gamma Q(s’, a’; w) - Q(s, a; w)$
+  id: totrans-218
   prefs:
   - PREF_IND
   - PREF_IND
   type: TYPE_NORMAL
+  zh: $G_{t:t+1} = r_t + \gamma Q(s’, a’; w) - Q(s, a; w)$
 - en: 'and use it to update value function parameters:'
+  id: totrans-219
   prefs:
   - PREF_IND
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 并用它来更新值函数参数：
 - en: $w \leftarrow w + \alpha_w G_{t:t+1} \nabla_w Q(s, a; w) $.
+  id: totrans-220
   prefs:
   - PREF_IND
   - PREF_IND
   type: TYPE_NORMAL
+  zh: $w \leftarrow w + \alpha_w G_{t:t+1} \nabla_w Q(s, a; w) $。
 - en: Update $a \leftarrow a’$ and $s \leftarrow s’$.
+  id: totrans-221
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 更新 $a \leftarrow a’$ 和 $s \leftarrow s’$。
 - en: $\alpha_\theta$ and $\alpha_w$ are two learning rates for policy and value function
     parameter updates, respectively.
+  id: totrans-222
   prefs: []
   type: TYPE_NORMAL
+  zh: $\alpha_\theta$ 和 $\alpha_w$ 是用于更新策略和值函数参数的两个学习率。
 - en: A3C
+  id: totrans-223
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: A3C
 - en: '**Asynchronous Advantage Actor-Critic** (Mnih et al., 2016), short for A3C,
     is a classic policy gradient method with the special focus on parallel training.'
+  id: totrans-224
   prefs: []
   type: TYPE_NORMAL
+  zh: '**异步优势演员-评论家**（Mnih 等人，2016），简称 A3C，是一种经典的策略梯度方法，特别关注并行训练。'
 - en: In A3C, the critics learn the state-value function, $V(s; w)$, while multiple
     actors are trained in parallel and get synced with global parameters from time
     to time. Hence, A3C is good for parallel training by default, i.e. on one machine
     with multi-core CPU.
+  id: totrans-225
   prefs: []
   type: TYPE_NORMAL
+  zh: 在A3C中，评论家学习状态值函数$V(s; w)$，而多个执行者并行训练，并不时与全局参数同步。因此，A3C默认适用于并行训练，即在具有多核CPU的一台机器上。
 - en: The loss function for state-value is to minimize the mean squared error, $\mathcal{J}_v
     (w) = (G_t - V(s; w))^2$ and we use gradient descent to find the optimal w. This
     state-value function is used as the baseline in the policy gradient update.
+  id: totrans-226
   prefs: []
   type: TYPE_NORMAL
+  zh: 状态值的损失函数是最小化均方误差，$\mathcal{J}_v (w) = (G_t - V(s; w))^2$，我们使用梯度下降找到最优的w。这个状态值函数被用作策略梯度更新中的基准。
 - en: 'Here is the algorithm outline:'
+  id: totrans-227
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里是算法概述：
 - en: We have global parameters, θ and w; similar thread-specific parameters, θ’ and
     w'.
+  id: totrans-228
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 我们有全局参数θ和w；类似的线程特定参数θ’和w’。
 - en: Initialize the time step t = 1
+  id: totrans-229
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 初始化时间步t = 1
 - en: 'While T <= T_MAX:'
+  id: totrans-230
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 当T <= T_MAX时：
 - en: 'Reset gradient: dθ = 0 and dw = 0.'
+  id: totrans-231
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 重置梯度：dθ = 0，dw = 0。
 - en: 'Synchronize thread-specific parameters with global ones: θ’ = θ and w’ = w.'
+  id: totrans-232
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将线程特定参数与全局参数同步：θ’ = θ，w’ = w。
 - en: $t_\text{start}$ = t and get $s_t$.
+  id: totrans-233
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: $t_\text{start}$ = t并获取$s_t$。
 - en: 'While ($s_t \neq \text{TERMINAL}$) and ($t - t_\text{start} <= t_\text{max}$):'
+  id: totrans-234
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 当（$s_t \neq \text{TERMINAL}$）且（$t - t_\text{start} <= t_\text{max}$）时：
 - en: Pick the action $a_t \sim \pi(a_t \vert s_t; \theta’)$ and receive a new reward
     $r_t$ and a new state $s_{t+1}$.
+  id: totrans-235
   prefs:
   - PREF_IND
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 选择动作$a_t \sim \pi(a_t \vert s_t; \theta’)$并接收新的奖励$r_t$和新状态$s_{t+1}$。
 - en: Update t = t + 1 and T = T + 1.
+  id: totrans-236
   prefs:
   - PREF_IND
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 更新t = t + 1和T = T + 1。
 - en: Initialize the variable that holds the return estimation $$R = \begin{cases}
     0 & \text{if } s_t \text{ is TERMINAL} \ V(s_t; w’) & \text{otherwise} \end{cases}$$.
+  id: totrans-237
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 初始化保存回报估计的变量$$R = \begin{cases} 0 & \text{if } s_t \text{ is TERMINAL} \ V(s_t;
+    w’) & \text{otherwise} \end{cases}$$。
 - en: 'For $i = t-1, \dots, t_\text{start}$:'
+  id: totrans-238
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 对于$i = t-1, \dots, t_\text{start}$：
 - en: $R \leftarrow r_i + \gamma R$; here R is a MC measure of $G_i$.
+  id: totrans-239
   prefs:
   - PREF_IND
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: $R \leftarrow r_i + \gamma R$；这里R是$G_i$的MC度量。
 - en: 'Accumulate gradients w.r.t. θ’: $d\theta \leftarrow d\theta + \nabla_{\theta’}
     \log \pi(a_i \vert s_i; \theta’)(R - V(s_i; w’))$;'
+  id: totrans-240
   prefs:
   - PREF_IND
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 累积关于θ’的梯度：$d\theta \leftarrow d\theta + \nabla_{\theta’} \log \pi(a_i \vert
+    s_i; \theta’)(R - V(s_i; w’))$；
 - en: 'Accumulate gradients w.r.t. w’: $dw \leftarrow dw + \nabla_{w’} (R - V(s_i;
     w’))^2$.'
+  id: totrans-241
   prefs:
   - PREF_IND
   - PREF_IND
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 累积关于w’的梯度：$dw \leftarrow dw + \nabla_{w’} (R - V(s_i; w’))^2$。
 - en: Update synchronously θ using dθ, and w using dw.
+  id: totrans-242
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 同步更新θ使用dθ，w使用dw。
 - en: 'A3C enables the parallelism in multiple agent training. The gradient accumulation
     step (6.2) can be considered as a reformation of minibatch-based stochastic gradient
     update: the values of w or θ get corrected by a little bit in the direction of
     each training thread independently.'
+  id: totrans-243
   prefs: []
   type: TYPE_NORMAL
+  zh: A3C实现了多个代理训练中的并行性。梯度累积步骤（6.2）可以被视为基于小批量的随机梯度更新的改进：w或θ的值在每个训练线程的独立方向上稍微修正。
 - en: Evolution Strategies
+  id: totrans-244
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 进化策略
 - en: '[Evolution Strategies](https://en.wikipedia.org/wiki/Evolution_strategy) (ES)
     is a type of model-agnostic optimization approach. It learns the optimal solution
     by imitating Darwin’s theory of the evolution of species by natural selection.
@@ -1145,23 +1714,29 @@
     the environment and see whether they can solve the problem; (2) we are able to
     compute a **fitness** score of how good each solution is. We don’t have to know
     the environment configuration to solve the problem.'
+  id: totrans-245
   prefs: []
   type: TYPE_NORMAL
+  zh: '[进化策略](https://en.wikipedia.org/wiki/Evolution_strategy)（ES）是一种模型无关的优化方法。它通过模仿达尔文的物种进化理论中的自然选择来学习最优解。应用ES的两个前提条件：（1）我们的解决方案可以自由与环境互动，看看它们是否能解决问题；（2）我们能够计算每个解决方案的**适应度**分数。我们不必了解环境配置来解决问题。'
 - en: Say, we start with a population of random solutions. All of them are capable
     of interacting with the environment and only candidates with high fitness scores
     can survive (*only the fittest can survive in a competition for limited resources*).
     A new generation is then created by recombining the settings (*gene mutation*)
     of high-fitness survivors. This process is repeated until the new solutions are
     good enough.
+  id: totrans-246
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设我们从一群随机解决方案开始。它们都能够与环境互动，只有具有高适应度分数的候选者才能存活（*在有限资源的竞争中，只有最适者才能生存*）。然后通过重新组合高适应度幸存者的设置（*基因突变*）创建新一代。这个过程重复进行，直到新解决方案足够好。
 - en: 'Very different from the popular MDP-based approaches as what we have introduced
     above, ES aims to learn the policy parameter $\theta$ without value approximation.
     Let’s assume the distribution over the parameter $\theta$ is an [isotropic](https://math.stackexchange.com/questions/1991961/gaussian-distribution-is-isotropic)
     multivariate Gaussian with mean $\mu$ and fixed covariance $\sigma^2I$. The gradient
     of $F(\theta)$ is calculated:'
+  id: totrans-247
   prefs: []
   type: TYPE_NORMAL
+  zh: 与我们上面介绍的流行的基于MDP的方法非常不同，ES旨在学习策略参数$\theta$而无需值近似。假设参数$\theta$上的分布是均值为$\mu$，固定协方差$\sigma^2I$的[各向同性](https://math.stackexchange.com/questions/1991961/gaussian-distribution-is-isotropic)多元高斯分布。计算$F(\theta)$的梯度：
 - en: $$ \begin{aligned} & \nabla_\theta \mathbb{E}_{\theta \sim N(\mu, \sigma^2)}
     F(\theta) \\ =& \nabla_\theta \int_\theta F(\theta) \Pr(\theta) && \text{Pr(.)
     is the Gaussian density function.} \\ =& \int_\theta F(\theta) \Pr(\theta) \frac{\nabla_\theta
@@ -1174,75 +1749,116 @@
     \Big( -\log \sqrt{2\pi\sigma^2} - \frac{(\theta - \mu)^2}{2 \sigma^2} \Big) \Big]
     \\ =& \mathbb{E}_{\theta \sim N(\mu, \sigma^2)} \Big[ F(\theta) \frac{\theta -
     \mu}{\sigma^2} \Big] \end{aligned} $$
+  id: totrans-248
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} & \nabla_\theta \mathbb{E}_{\theta \sim N(\mu, \sigma^2)}
+    F(\theta) \\ =& \nabla_\theta \int_\theta F(\theta) \Pr(\theta) && \text{Pr(.)是高斯密度函数。}
+    \\ =& \int_\theta F(\theta) \Pr(\theta) \frac{\nabla_\theta \Pr(\theta)}{\Pr(\theta)}
+    \\ =& \int_\theta F(\theta) \Pr(\theta) \nabla_\theta \log \Pr(\theta) \\ =& \mathbb{E}_{\theta
+    \sim N(\mu, \sigma^2)} [F(\theta) \nabla_\theta \log \Pr(\theta)] && \text{类似于我们进行策略梯度更新的方式。}
+    \\ =& \mathbb{E}_{\theta \sim N(\mu, \sigma^2)} \Big[ F(\theta) \nabla_\theta
+    \log \Big( \frac{1}{\sqrt{2\pi\sigma^2}} e^{-\frac{(\theta - \mu)^2}{2 \sigma^2
+    }} \Big) \Big] \\ =& \mathbb{E}_{\theta \sim N(\mu, \sigma^2)} \Big[ F(\theta)
+    \nabla_\theta \Big( -\log \sqrt{2\pi\sigma^2} - \frac{(\theta - \mu)^2}{2 \sigma^2}
+    \Big) \Big] \\ =& \mathbb{E}_{\theta \sim N(\mu, \sigma^2)} \Big[ F(\theta) \frac{\theta
+    - \mu}{\sigma^2} \Big] \end{aligned} $$
 - en: 'We can rewrite this formula in terms of a “mean” parameter $\theta$ (different
     from the $\theta$ above; this $\theta$ is the base gene for further mutation),
     $\epsilon \sim N(0, I)$ and therefore $\theta + \epsilon \sigma \sim N(\theta,
     \sigma^2)$. $\epsilon$ controls how much Gaussian noises should be added to create
     mutation:'
+  id: totrans-249
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以用一个“均值”参数$\theta$（与上面的$\theta$不同；这个$\theta$是进一步突变的基因），$\epsilon \sim N(0,
+    I)$，因此$\theta + \epsilon \sigma \sim N(\theta, \sigma^2)$。$\epsilon$控制应添加多少高斯噪声以创建突变：
 - en: $$ \nabla_\theta \mathbb{E}_{\epsilon \sim N(0, I)} F(\theta + \sigma \epsilon)
     = \frac{1}{\sigma} \mathbb{E}_{\epsilon \sim N(0, I)} [F(\theta + \sigma \epsilon)
     \epsilon] $$![](../Images/5f9ce9e6a32c8362b0b11c9ebf5870df.png)
+  id: totrans-250
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \nabla_\theta \mathbb{E}_{\epsilon \sim N(0, I)} F(\theta + \sigma \epsilon)
+    = \frac{1}{\sigma} \mathbb{E}_{\epsilon \sim N(0, I)} [F(\theta + \sigma \epsilon)
+    \epsilon] $$![](../Images/5f9ce9e6a32c8362b0b11c9ebf5870df.png)
 - en: 'Fig. 9\. A simple parallel evolution-strategies-based RL algorithm. Parallel
     workers share the random seeds so that they can reconstruct the Gaussian noises
     with tiny communication bandwidth. (Image source: Salimans et al. 2017.)'
+  id: totrans-251
   prefs: []
   type: TYPE_NORMAL
+  zh: 图9。一个简单的基于并行进化策略的RL算法。并行工作者共享随机种子，以便他们可以用极小的通信带宽重建高斯噪声。（图片来源：Salimans等人，2017年。）
 - en: 'ES, as a black-box optimization algorithm, is another approach to RL problems
     (*In my original writing, I used the phrase “a nice alternative”; [Seita](https://danieltakeshi.github.io/)
     pointed me to this [discussion](https://www.reddit.com/r/MachineLearning/comments/6gke6a/d_requesting_openai_to_justify_the_grandiose/dir9wde/)
     and thus I updated my wording.*). It has a couple of good characteristics (Salimans
     et al., 2017) keeping it fast and easy to train:'
+  id: totrans-252
   prefs: []
   type: TYPE_NORMAL
+  zh: ES作为一个黑盒优化算法，是解决RL问题的另一种方法（*在我的原始写作中，我使用了“一个不错的替代方案”这个短语；[Seita](https://danieltakeshi.github.io/)指引我到这个[讨论](https://www.reddit.com/r/MachineLearning/comments/6gke6a/d_requesting_openai_to_justify_the_grandiose/dir9wde/)，因此我更新了我的措辞。*）。它具有一些良好的特性（Salimans等人，2017年），使其快速且易于训练：
 - en: ES does not need value function approximation;
+  id: totrans-253
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: ES不需要值函数近似；
 - en: ES does not perform gradient back-propagation;
+  id: totrans-254
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: ES不执行梯度反向传播；
 - en: ES is invariant to delayed or long-term rewards;
+  id: totrans-255
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: ES对延迟或长期奖励不变；
 - en: ES is highly parallelizable with very little data communication.
+  id: totrans-256
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: ES高度可并行化，数据通信量很小。
 - en: Known Problems
+  id: totrans-257
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 已知问题
 - en: Exploration-Exploitation Dilemma
+  id: totrans-258
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 探索-利用困境
 - en: 'The problem of exploration vs exploitation dilemma has been discussed in my
     previous [post](https://lilianweng.github.io/posts/2018-01-23-multi-armed-bandit/#exploitation-vs-exploration).
     When the RL problem faces an unknown environment, this issue is especially a key
     to finding a good solution: without enough exploration, we cannot learn the environment
     well enough; without enough exploitation, we cannot complete our reward optimization
     task.'
+  id: totrans-259
   prefs: []
   type: TYPE_NORMAL
+  zh: 探索与利用之间的困境问题已在我之前的[文章](https://lilianweng.github.io/posts/2018-01-23-multi-armed-bandit/#exploitation-vs-exploration)中讨论过。当强化学习问题面对未知环境时，这个问题尤其关键，以找到一个好的解决方案：没有足够的探索，我们无法充分了解环境；没有足够的利用，我们无法完成奖励优化任务。
 - en: Different RL algorithms balance between exploration and exploitation in different
     ways. In [MC](#monte-carlo-methods) methods, [Q-learning](#q-learning-off-policy-td-control)
     or many on-policy algorithms, the exploration is commonly implemented by [ε-greedy](https://lilianweng.github.io/posts/2018-01-23-multi-armed-bandit/#%CE%B5-greedy-algorithm);
     In [ES](#evolution-strategies), the exploration is captured by the policy parameter
     perturbation. Please keep this into consideration when develop a new RL algorithm.
+  id: totrans-260
   prefs: []
   type: TYPE_NORMAL
+  zh: 不同的强化学习算法以不同的方式在探索和利用之间取得平衡。在[MC](#monte-carlo-methods)方法中，[Q-learning](#q-learning-off-policy-td-control)或许多离线策略算法中，探索通常通过[ε-greedy](https://lilianweng.github.io/posts/2018-01-23-multi-armed-bandit/#%CE%B5-greedy-algorithm)算法实现；在[ES](#evolution-strategies)中，探索通过策略参数扰动来捕捉。在开发新的强化学习算法时，请考虑这一点。
 - en: Deadly Triad Issue
+  id: totrans-261
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 致命三连问题
 - en: We do seek the efficiency and flexibility of TD methods that involve bootstrapping.
     However, when off-policy, nonlinear function approximation, and bootstrapping
     are combined in one RL algorithm, the training could be unstable and hard to converge.
@@ -1250,12 +1866,17 @@
     using deep learning models were proposed to resolve the problem, including DQN
     to stabilize the training with experience replay and occasionally frozen target
     network.
+  id: totrans-262
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们确实寻求涉及自举的TD方法的效率和灵活性。然而，当离线策略、非线性函数逼近和自举结合在一个强化学习算法中时，训练可能会不稳定且难以收敛。这个问题被称为**致命三连**（Sutton
+    & Barto, 2017）。许多使用深度学习模型的架构被提出来解决这个问题，包括使用经验重放和偶尔冻结目标网络来稳定训练的DQN。
 - en: 'Case Study: AlphaGo Zero'
+  id: totrans-263
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 案例研究：AlphaGo Zero
 - en: The game of [Go](https://en.wikipedia.org/wiki/Go_(game)) has been an extremely
     hard problem in the field of Artificial Intelligence for decades until recent
     years. AlphaGo and AlphaGo Zero are two programs developed by a team at DeepMind.
@@ -1264,45 +1885,63 @@
     level of professional human Go players. Different from AlphaGo that relied on
     supervised learning from expert human moves, AlphaGo Zero used only reinforcement
     learning and self-play without human knowledge beyond the basic rules.
+  id: totrans-264
   prefs: []
   type: TYPE_NORMAL
+  zh: 围棋游戏[Go](https://en.wikipedia.org/wiki/Go_(game))在人工智能领域几十年来一直是一个极其困难的问题，直到最近几年。AlphaGo和AlphaGo
+    Zero是DeepMind团队开发的两个程序。两者都涉及深度卷积神经网络（[CNN](https://lilianweng.github.io/posts/2017-12-15-object-recognition-part-2/#cnn-for-image-classification)）和蒙特卡洛树搜索（MCTS），并且都已被证实达到了职业人类围棋选手的水平。与依赖于专家人类棋步的监督学习的AlphaGo不同，AlphaGo
+    Zero仅使用强化学习和自我对弈，没有超出基本规则的人类知识。
 - en: '![](../Images/2089e35ae2e3d4ccaa055d4f1b6285be.png)'
+  id: totrans-265
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/2089e35ae2e3d4ccaa055d4f1b6285be.png)'
 - en: Fig. 10\. The board of Go. Two players play black and white stones alternatively
     on the vacant intersections of a board with 19 x 19 lines. A group of stones must
     have at least one open point (an intersection, called a "liberty") to remain on
     the board and must have at least two or more enclosed liberties (called "eyes")
     to stay "alive". No stone shall repeat a previous position.
+  id: totrans-266
   prefs: []
   type: TYPE_NORMAL
+  zh: 图10. 围棋棋盘。两名玩家在一个19 x 19线的棋盘的空交叉点上交替放置黑白棋子。一组棋子必须至少有一个开放点（一个交叉点，称为“气”)，才能留在棋盘上，并且必须有至少两个或更多封闭的气（称为“眼”）才能保持“活着”。没有棋子可以重复之前的位置。
 - en: 'With all the knowledge of RL above, let’s take a look at how AlphaGo Zero works.
     The main component is a deep [CNN](https://lilianweng.github.io/posts/2017-12-15-object-recognition-part-2/#cnn-for-image-classification)
     over the game board configuration (precisely, a [ResNet](https://lilianweng.github.io/posts/2017-12-15-object-recognition-part-2/#resnet-he-et-al-2015)
     with batch normalization and ReLU). This network outputs two values:'
+  id: totrans-267
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过以上所有强化学习的知识，让我们看看AlphaGo Zero是如何工作的。主要组件是一个深度[CNN](https://lilianweng.github.io/posts/2017-12-15-object-recognition-part-2/#cnn-for-image-classification)，用于游戏棋盘配置（准确地说，是一个带有批量归一化和ReLU的[ResNet](https://lilianweng.github.io/posts/2017-12-15-object-recognition-part-2/#resnet-he-et-al-2015)）。该网络输出两个值：
 - en: $$ (p, v) = f_\theta(s) $$
+  id: totrans-268
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ (p, v) = f_\theta(s) $$
 - en: '$s$: the game board configuration, 19 x 19 x 17 stacked feature planes; 17
     features for each position, 8 past configurations (including current) for the
     current player + 8 past configurations for the opponent + 1 feature indicating
     the color (1=black, 0=white). We need to code the color specifically because the
     network is playing with itself and the colors of current player and opponents
     are switching between steps.'
+  id: totrans-269
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '$s$: 游戏棋盘配置，19 x 19 x 17叠加特征平面；每个位置有17个特征，当前玩家的8个过去配置（包括当前配置）+ 对手的8个过去配置+ 1个指示颜色的特征（1=黑色，0=白色）。我们需要专门编码颜色，因为网络是自己与自己对弈，当前玩家和对手的颜色在步骤之间切换。'
 - en: '$p$: the probability of selecting a move over 19^2 + 1 candidates (19^2 positions
     on the board, in addition to passing).'
+  id: totrans-270
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '$p$: 在19^2 + 1个候选项中选择移动的概率（棋盘上的19^2个位置，另外还有过关选项）。'
 - en: '$v$: the winning probability given the current setting.'
+  id: totrans-271
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '$v$: 给定当前设置的获胜概率。'
 - en: During self-play, MCTS further improves the action probability distribution
     $\pi \sim p(.)$ and then the action $a_t$ is sampled from this improved policy.
     The reward $z_t$ is a binary value indicating whether the current player *eventually*
@@ -1310,109 +1949,172 @@
     is saved into the replay memory. The details on MCTS are skipped for the sake
     of space in this post; please read the original [paper](https://www.dropbox.com/s/yva172qos2u15hf/2017-silver.pdf?dl=0)
     if you are interested.
+  id: totrans-272
   prefs: []
   type: TYPE_NORMAL
+  zh: 在自我对弈过程中，MCTS进一步改进了动作概率分布 $\pi \sim p(.)$，然后动作 $a_t$ 是从这个改进的策略中抽样得到的。奖励 $z_t$
+    是一个二进制值，指示当前玩家*最终*是否赢得了比赛。每一步都生成一个情节元组 $(s_t, \pi_t, z_t)$，并将其保存到重放记忆中。由于篇幅限制，本文跳过了有关MCTS的详细信息；如果您感兴趣，请阅读原始[论文](https://www.dropbox.com/s/yva172qos2u15hf/2017-silver.pdf?dl=0)。
 - en: '![](../Images/30d5f310b0311db4a52600901ac66f06.png)'
+  id: totrans-273
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/30d5f310b0311db4a52600901ac66f06.png)'
 - en: 'Fig. 11\. AlphaGo Zero is trained by self-play while MCTS improves the output
     policy further in every step. (Image source: Figure 1a in Silver et al., 2017).'
+  id: totrans-274
   prefs: []
   type: TYPE_NORMAL
+  zh: 图11\. AlphaGo Zero通过自我对弈进行训练，而MCTS在每一步进一步改进输出策略。（图片来源：Silver等人，2017年的图1a）。
 - en: 'The network is trained with the samples in the replay memory to minimize the
     loss:'
+  id: totrans-275
   prefs: []
   type: TYPE_NORMAL
+  zh: 该网络通过重放记忆中的样本进行训练，以最小化损失：
 - en: $$ \mathcal{L} = (z - v)^2 - \pi^\top \log p + c \| \theta \|^2 $$
+  id: totrans-276
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathcal{L} = (z - v)^2 - \pi^\top \log p + c \| \theta \|^2 $$
 - en: where $c$ is a hyperparameter controlling the intensity of L2 penalty to avoid
     overfitting.
+  id: totrans-277
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 $c$ 是一个超参数，控制L2惩罚的强度，以避免过拟合。
 - en: AlphaGo Zero simplified AlphaGo by removing supervised learning and merging
     separated policy and value networks into one. It turns out that AlphaGo Zero achieved
     largely improved performance with a much shorter training time! I strongly recommend
     reading these [two](https://pdfs.semanticscholar.org/1740/eb993cc8ca81f1e46ddaadce1f917e8000b5.pdf)
     [papers](https://www.dropbox.com/s/yva172qos2u15hf/2017-silver.pdf?dl=0) side
     by side and compare the difference, super fun.
+  id: totrans-278
   prefs: []
   type: TYPE_NORMAL
+  zh: AlphaGo Zero通过删除监督学习并将分开的策略和价值网络合并为一个简化了AlphaGo。结果表明，AlphaGo Zero在更短的训练时间内取得了大幅提高的性能！我强烈建议一边阅读这两篇[论文](https://pdfs.semanticscholar.org/1740/eb993cc8ca81f1e46ddaadce1f917e8000b5.pdf)一边比较差异，非常有趣。
 - en: I know this is a long read, but hopefully worth it. *If you notice mistakes
     and errors in this post, don’t hesitate to contact me at [lilian dot wengweng
     at gmail dot com].* See you in the next post! :)
+  id: totrans-279
   prefs: []
   type: TYPE_NORMAL
+  zh: 我知道这是一篇长文，但希望是值得的。*如果您注意到本文中的错误，请随时通过[lilian dot wengweng at gmail dot com]与我联系。*
+    下一篇文章见！ :)
 - en: '* * *'
+  id: totrans-280
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'Cited as:'
+  id: totrans-281
   prefs: []
   type: TYPE_NORMAL
+  zh: 引用为：
 - en: '[PRE0]'
+  id: totrans-282
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: References
+  id: totrans-283
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: '[1] Yuxi Li. [Deep reinforcement learning: An overview.](https://arxiv.org/pdf/1701.07274.pdf)
     arXiv preprint arXiv:1701.07274\. 2017.'
+  id: totrans-284
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] Yuxi Li. [深度强化学习：概述。](https://arxiv.org/pdf/1701.07274.pdf) arXiv预印本arXiv:1701.07274\.
+    2017。'
 - en: '[2] Richard S. Sutton and Andrew G. Barto. [Reinforcement Learning: An Introduction;
     2nd Edition](http://incompleteideas.net/book/bookdraft2017nov5.pdf). 2017.'
+  id: totrans-285
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] Richard S. Sutton 和 Andrew G. Barto 的 [强化学习：介绍；第二版](http://incompleteideas.net/book/bookdraft2017nov5.pdf)。2017年。'
 - en: '[3] Volodymyr Mnih, et al. [Asynchronous methods for deep reinforcement learning.](http://proceedings.mlr.press/v48/mniha16.pdf)
     ICML. 2016.'
+  id: totrans-286
   prefs: []
   type: TYPE_NORMAL
+  zh: '[3] Volodymyr Mnih 等人的 [深度强化学习的异步方法。](http://proceedings.mlr.press/v48/mniha16.pdf)
+    ICML。2016年。'
 - en: '[4] Tim Salimans, et al. [Evolution strategies as a scalable alternative to
     reinforcement learning.](https://arxiv.org/pdf/1703.03864.pdf) arXiv preprint
     arXiv:1703.03864 (2017).'
+  id: totrans-287
   prefs: []
   type: TYPE_NORMAL
+  zh: '[4] Tim Salimans 等人的 [进化策略作为强化学习的可扩展替代方案。](https://arxiv.org/pdf/1703.03864.pdf)
+    arXiv 预印本 arXiv:1703.03864 (2017)。'
 - en: '[5] David Silver, et al. [Mastering the game of go without human knowledge](https://www.dropbox.com/s/yva172qos2u15hf/2017-silver.pdf?dl=0).
     Nature 550.7676 (2017): 354.'
+  id: totrans-288
   prefs: []
   type: TYPE_NORMAL
+  zh: '[5] David Silver 等人的 [无需人类知识掌握围棋游戏。](https://www.dropbox.com/s/yva172qos2u15hf/2017-silver.pdf?dl=0)
+    Nature 550.7676 (2017): 354。'
 - en: '[6] David Silver, et al. [Mastering the game of Go with deep neural networks
     and tree search.](https://pdfs.semanticscholar.org/1740/eb993cc8ca81f1e46ddaadce1f917e8000b5.pdf)
     Nature 529.7587 (2016): 484-489.'
+  id: totrans-289
   prefs: []
   type: TYPE_NORMAL
+  zh: '[6] David Silver 等人的 [通过深度神经网络和树搜索掌握围棋游戏。](https://pdfs.semanticscholar.org/1740/eb993cc8ca81f1e46ddaadce1f917e8000b5.pdf)
+    Nature 529.7587 (2016): 484-489。'
 - en: '[7] Volodymyr Mnih, et al. [Human-level control through deep reinforcement
     learning.](https://www.cs.swarthmore.edu/~meeden/cs63/s15/nature15b.pdf) Nature
     518.7540 (2015): 529.'
+  id: totrans-290
   prefs: []
   type: TYPE_NORMAL
+  zh: '[7] Volodymyr Mnih 等人的 [通过深度强化学习实现人类水平控制。](https://www.cs.swarthmore.edu/~meeden/cs63/s15/nature15b.pdf)
+    Nature 518.7540 (2015): 529。'
 - en: '[8] Ziyu Wang, et al. [Dueling network architectures for deep reinforcement
     learning.](https://arxiv.org/pdf/1511.06581.pdf) ICML. 2016.'
+  id: totrans-291
   prefs: []
   type: TYPE_NORMAL
+  zh: '[8] Ziyu Wang 等人的 [用于深度强化学习的对抗网络架构。](https://arxiv.org/pdf/1511.06581.pdf)
+    ICML。2016年。'
 - en: '[9] [Reinforcement Learning lectures](https://www.youtube.com/playlist?list=PL7-jPKtc4r78-wCZcQn5IqyuWhBZ8fOxT)
     by David Silver on YouTube.'
+  id: totrans-292
   prefs: []
   type: TYPE_NORMAL
+  zh: '[9] David Silver 在 YouTube 上的 [强化学习讲座](https://www.youtube.com/playlist?list=PL7-jPKtc4r78-wCZcQn5IqyuWhBZ8fOxT)。'
 - en: '[10] OpenAI Blog: [Evolution Strategies as a Scalable Alternative to Reinforcement
     Learning](https://blog.openai.com/evolution-strategies/)'
+  id: totrans-293
   prefs: []
   type: TYPE_NORMAL
+  zh: '[10] OpenAI 博客：[进化策略作为强化学习的可扩展替代方案](https://blog.openai.com/evolution-strategies/)'
 - en: '[11] Frank Sehnke, et al. [Parameter-exploring policy gradients.](https://mediatum.ub.tum.de/doc/1287490/file.pdf)
     Neural Networks 23.4 (2010): 551-559.'
+  id: totrans-294
   prefs: []
   type: TYPE_NORMAL
+  zh: '[11] Frank Sehnke 等人的 [探索参数策略梯度。](https://mediatum.ub.tum.de/doc/1287490/file.pdf)
+    Neural Networks 23.4 (2010): 551-559。'
 - en: '[12] Csaba Szepesvári. [Algorithms for reinforcement learning.](https://sites.ualberta.ca/~szepesva/papers/RLAlgsInMDPs.pdf)
     1st Edition. Synthesis lectures on artificial intelligence and machine learning
     4.1 (2010): 1-103.'
+  id: totrans-295
   prefs: []
   type: TYPE_NORMAL
+  zh: '[12] Csaba Szepesvári 的 [强化学习算法。](https://sites.ualberta.ca/~szepesva/papers/RLAlgsInMDPs.pdf)
+    第一版。合成人工智能和机器学习的讲座 4.1 (2010): 1-103。'
 - en: '* * *'
+  id: totrans-296
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*If you notice mistakes and errors in this post, please don’t hesitate to contact
     me at [lilian dot wengweng at gmail dot com] and I would be super happy to correct
     them right away!*'
+  id: totrans-297
   prefs: []
   type: TYPE_NORMAL
+  zh: '*如果您注意到此帖子中的错误，请随时通过[lilian dot wengweng at gmail dot com]与我联系，我将非常乐意立即更正！*'

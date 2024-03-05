@@ -1,169 +1,245 @@
 - en: Meta Reinforcement Learning
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 元强化学习
 - en: 原文：[https://lilianweng.github.io/posts/2019-06-23-meta-rl/](https://lilianweng.github.io/posts/2019-06-23-meta-rl/)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://lilianweng.github.io/posts/2019-06-23-meta-rl/](https://lilianweng.github.io/posts/2019-06-23-meta-rl/)
 - en: In my earlier post on [meta-learning](https://lilianweng.github.io/posts/2018-11-30-meta-learning/),
     the problem is mainly defined in the context of few-shot classification. Here
     I would like to explore more into cases when we try to “meta-learn” [Reinforcement
     Learning (RL)](https://lilianweng.github.io/posts/2018-02-19-rl-overview/) tasks
     by developing an agent that can solve unseen tasks fast and efficiently.
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我之前关于[元学习](https://lilianweng.github.io/posts/2018-11-30-meta-learning/)的帖子中，问题主要是在少样本分类的背景下定义的。在这里，我想更深入探讨当我们尝试通过开发一个可以快速高效解决未见任务的代理来“元学习”[强化学习（RL）](https://lilianweng.github.io/posts/2018-02-19-rl-overview/)任务的情况。
 - en: To recap, a good meta-learning model is expected to generalize to new tasks
     or new environments that have never been encountered during training. The adaptation
     process, essentially a *mini learning session*, happens at test with limited exposure
     to the new configurations. Even without any explicit fine-tuning (no gradient
     backpropagation on trainable variables), the meta-learning model autonomously
     adjusts internal hidden states to learn.
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: 总结一下，一个好的元学习模型应该能够推广到在训练期间从未遇到过的新任务或新环境。适应过程，本质上是一个*小型学习会话*，在测试中对新配置进行有限暴露。即使没有任何明确的微调（不对可训练变量进行梯度反向传播），元学习模型也会自主调整内部隐藏状态以学习。
 - en: Training RL algorithms can be notoriously difficult sometimes. If the meta-learning
     agent could become so smart that the distribution of solvable unseen tasks grows
     extremely broad, we are on track towards [general purpose methods](http://incompleteideas.net/IncIdeas/BitterLesson.html)
     — essentially building a “brain” which would solve all kinds of RL problems without
     much human interference or manual feature engineering. Sounds amazing, right?
     💖
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: 训练强化学习算法有时可能非常困难。如果元学习代理能够变得如此聪明，以至于可解决的未见任务的分布变得极其广泛，我们就朝着[通用方法](http://incompleteideas.net/IncIdeas/BitterLesson.html)的方向迈进了——基本上构建一个可以解决各种强化学习问题的“大脑”，几乎不需要人类干预或手动特征工程。听起来很神奇，对吧？💖
 - en: On the Origin of Meta-RL
+  id: totrans-5
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 关于元强化学习的起源
 - en: Back in 2001
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 回到2001年
 - en: I encountered a paper written in 2001 by [Hochreiter et al.](http://snowedin.net/tmp/Hochreiter2001.pdf)
     when reading [Wang et al., 2016](https://arxiv.org/pdf/1611.05763.pdf). Although
     the idea was proposed for supervised learning, there are so many resemblances
     to the current approach to meta-RL.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 当阅读[Wang等人，2016年](https://arxiv.org/pdf/1611.05763.pdf)时，我遇到了[Hochreiter等人，2001年](http://snowedin.net/tmp/Hochreiter2001.pdf)撰写的一篇论文。尽管这个想法是为监督学习提出的，但与当前元强化学习方法有很多相似之处。
 - en: '![](../Images/2463abee23d720181366b8c89906e5e7.png)'
+  id: totrans-8
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/2463abee23d720181366b8c89906e5e7.png)'
 - en: 'Fig. 1\. The meta-learning system consists of the supervisory and the subordinate
     systems. The subordinate system is a recurrent neural network that takes as input
     both the observation at the current time step, $x\_t$ and the label at the last
     time step, $y\_{t-1}$. (Image source: [Hochreiter et al., 2001](http://snowedin.net/tmp/Hochreiter2001.pdf))'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 图1. 元学习系统由监督系统和从属系统组成。从属系统是一个循环神经网络，它以当前时间步的观察$x\_t$和上一个时间步的标签$y\_{t-1}$作为输入。（图片来源：[Hochreiter等人，2001年](http://snowedin.net/tmp/Hochreiter2001.pdf)）
 - en: Hochreiter’s meta-learning model is a recurrent network with LSTM cell. LSTM
     is a good choice because it can internalize a history of inputs and tune its own
     weights effectively through [BPTT](https://en.wikipedia.org/wiki/Backpropagation_through_time).
     The training data contains $K$ sequences and each sequence is consist of $N$ samples
     generated by a target function $f_k(.), k=1, \dots, K$,
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: Hochreiter的元学习模型是一个带有LSTM单元的循环网络。 LSTM 是一个不错的选择，因为它可以内部化输入的历史并通过[BPTT](https://en.wikipedia.org/wiki/Backpropagation_through_time)有效地调整自己的权重。训练数据包含$K$个序列，每个序列由目标函数$f_k(.)$生成的$N$个样本组成，其中$k=1,
+    \dots, K$，
 - en: '$$ \{\text{input: }(\mathbf{x}^k_i, \mathbf{y}^k_{i-1}) \to \text{label: }\mathbf{y}^k_i\}_{i=1}^N
     \text{ where }\mathbf{y}^k_i = f_k(\mathbf{x}^k_i) $$'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: '$$ \{\text{输入: }(\mathbf{x}^k_i, \mathbf{y}^k_{i-1}) \to \text{标签: }\mathbf{y}^k_i\}_{i=1}^N
+    \text{ 其中 }\mathbf{y}^k_i = f_k(\mathbf{x}^k_i) $$'
 - en: Noted that *the last label* $\mathbf{y}^k_{i-1}$ is also provided as an auxiliary
     input so that the function can learn the presented mapping.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意*上一个标签* $\mathbf{y}^k_{i-1}$ 也作为辅助输入提供，以便函数可以学习所呈现的映射。
 - en: In the experiment of decoding two-dimensional quadratic functions, $a x_1^2
     + b x_2^2 + c x_1 x_2 + d x_1 + e x_2 + f$, with coefficients $a$-$f$ are randomly
     sampled from [-1, 1], this meta-learning system was able to approximate the function
     after seeing only ~35 examples.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 在解码二维二次函数$a x_1^2 + b x_2^2 + c x_1 x_2 + d x_1 + e x_2 + f$的实验中，系数$a$-$f$从[-1,
+    1]中随机抽样，这个元学习系统在仅看到约35个示例后就能近似表示函数。
 - en: Proposal in 2016
+  id: totrans-14
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 2016年的提议
 - en: In the modern days of DL, [Wang et al.](https://arxiv.org/abs/1611.05763) (2016)
     and [Duan et al.](https://arxiv.org/abs/1611.02779) (2017) simultaneously proposed
     the very similar idea of **Meta-RL** (it is called **RL^2** in the second paper).
     A meta-RL model is trained over a distribution of MDPs, and at test time, it is
     able to learn to solve a new task quickly. The goal of meta-RL is ambitious, taking
     one step further towards general algorithms.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 在深度学习的现代时代，[Wang等人](https://arxiv.org/abs/1611.05763)（2016年）和[Duan等人](https://arxiv.org/abs/1611.02779)（2017年）同时提出了非常相似的**元强化学习**的想法（在第二篇论文中称为**RL^2**）。元强化学习模型在一系列MDP上进行训练，在测试时，能够快速学习解决新任务。元强化学习的目标是雄心勃勃的，迈出了通向通用算法的一步。
 - en: Define Meta-RL
+  id: totrans-16
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 定义元强化学习
 - en: '*Meta Reinforcement Learning*, in short, is to do [meta-learning](https://lilianweng.github.io/posts/2018-11-30-meta-learning/)
     in the field of [reinforcement learning](https://lilianweng.github.io/posts/2018-02-19-rl-overview/).
     Usually the train and test tasks are different but drawn from the same family
     of problems; i.e., experiments in the papers included multi-armed bandit with
     different reward probabilities, mazes with different layouts, same robots but
     with different physical parameters in simulator, and many others.'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: '*元强化学习*，简而言之，是在[强化学习](https://lilianweng.github.io/posts/2018-02-19-rl-overview/)领域进行[元学习](https://lilianweng.github.io/posts/2018-11-30-meta-learning/)。通常训练和测试任务不同，但来自同一类问题族；即，论文中的实验包括具有不同奖励概率的多臂赌博机，具有不同布局的迷宫，模拟器中具有不同物理参数的相同机器人，以及许多其他实验。'
 - en: Formulation
+  id: totrans-18
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 公式化
 - en: 'Let’s say we have a distribution of tasks, each formularized as an [MDP](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#markov-decision-processes)
     (Markov Decision Process), $M_i \in \mathcal{M}$. An MDP is determined by a 4-tuple,
     $M_i= \langle \mathcal{S}, \mathcal{A}, P_i, R_i \rangle$:'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设我们有一系列任务的分布，每个任务都被形式化为一个[MDP](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#markov-decision-processes)（马尔可夫决策过程），$M_i
+    \in \mathcal{M}$。一个MDP由一个4元组确定，$M_i= \langle \mathcal{S}, \mathcal{A}, P_i, R_i
+    \rangle$：
 - en: '| Symbol | Meaning |'
+  id: totrans-20
   prefs: []
   type: TYPE_TB
+  zh: '| 符号 | 意义 |'
 - en: '| --- | --- |'
+  id: totrans-21
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- |'
 - en: '| $\mathcal{S}$ | A set of states. |'
+  id: totrans-22
   prefs: []
   type: TYPE_TB
+  zh: '| $\mathcal{S}$ | 一组状态。 |'
 - en: '| $\mathcal{A}$ | A set of actions. |'
+  id: totrans-23
   prefs: []
   type: TYPE_TB
+  zh: '| $\mathcal{A}$ | 一组动作。 |'
 - en: '| $P_i: \mathcal{S} \times \mathcal{A} \times \mathcal{S} \to \mathbb{R}_{+}$
     | Transition probability function. |'
+  id: totrans-24
   prefs: []
   type: TYPE_TB
+  zh: '| $P_i: \mathcal{S} \times \mathcal{A} \times \mathcal{S} \to \mathbb{R}_{+}$
+    | 转移概率函数。 |'
 - en: '| $R_i: \mathcal{S} \times \mathcal{A} \to \mathbb{R}$ | Reward function. |'
+  id: totrans-25
   prefs: []
   type: TYPE_TB
+  zh: '| $R_i: \mathcal{S} \times \mathcal{A} \to \mathbb{R}$ | 奖励函数。 |'
 - en: (RL^2 paper adds an extra parameter, horizon $T$, into the MDP tuple to emphasize
     that each MDP should have a finite horizon.)
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: （RL^2论文在MDP元组中添加了一个额外的参数，horizon $T$，以强调每个MDP应具有有限的horizon。）
 - en: 'Note that common state $\mathcal{S}$ and action space $\mathcal{A}$ are used
     above, so that a (stochastic) policy: $\pi_\theta: \mathcal{S} \times \mathcal{A}
     \to \mathbb{R}_{+}$ would get inputs compatible across different tasks. The test
     tasks are sampled from the same distribution $\mathcal{M}$ or slightly modified
     version.'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: '请注意上述使用了常见状态$\mathcal{S}$和动作空间$\mathcal{A}$，以便一个（随机的）策略：$\pi_\theta: \mathcal{S}
+    \times \mathcal{A} \to \mathbb{R}_{+}$能够获得跨不同任务兼容的输入。测试任务从相同分布$\mathcal{M}$或稍作修改中抽样。'
 - en: '![](../Images/871d0aec0b4fad03559e589b55192887.png)'
+  id: totrans-28
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/871d0aec0b4fad03559e589b55192887.png)'
 - en: 'Fig. 2\. Illustration of meta-RL, containing two optimization loops. The outer
     loop samples a new environment in every iteration and adjusts parameters that
     determine the agent''s behavior. In the inner loop, the agent interacts with the
     environment and optimizes for the maximal reward. (Image source: [Botvinick, et
     al. 2019](https://www.cell.com/action/showPdf?pii=S1364-6613%2819%2930061-0))'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 图2. 元强化学习的示意图，包含两个优化循环。外部循环在每次迭代中对新环境进行采样，并调整确定代理行为的参数。在内部循环中，代理与环境交互并优化以获得最大奖励。（图片来源：[Botvinick等人，2019](https://www.cell.com/action/showPdf?pii=S1364-6613%2819%2930061-0)）
 - en: Main Differences from RL
+  id: totrans-30
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 与强化学习的主要区别
 - en: The overall configure of meta-RL is very similar to an ordinary RL algorithm,
     except that **the last reward** $r_{t-1}$ and **the last action** $a_{t-1}$ are
     also incorporated into the policy observation in addition to the current state
     $s_t$.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 元强化学习的整体配置与普通的RL算法非常相似，只是**上一个奖励** $r_{t-1}$ 和**上一个动作** $a_{t-1}$ 也被纳入到策略观察中，除了当前状态
+    $s_t$。
 - en: 'In RL: $\pi_\theta(s_t) \to$ a distribution over $\mathcal{A}$'
+  id: totrans-32
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在RL中：$\pi_\theta(s_t) \to$ 一个关于 $\mathcal{A}$ 的分布
 - en: 'In meta-RL: $\pi_\theta(a_{t-1}, r_{t-1}, s_t) \to$ a distribution over $\mathcal{A}$'
+  id: totrans-33
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在元强化学习中：$\pi_\theta(a_{t-1}, r_{t-1}, s_t) \to$ 一个关于 $\mathcal{A}$ 的分布
 - en: The intention of this design is to feed a history into the model so that the
     policy can internalize the dynamics between states, rewards, and actions in the
     current MDP and adjust its strategy accordingly. This is well aligned with the
@@ -171,81 +247,117 @@
     an LSTM policy and the LSTM’s hidden states serve as a *memory* for tracking characteristics
     of the trajectories. Because the policy is recurrent, there is no need to feed
     the last state as inputs explicitly.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种设计的意图是将历史记录输入模型，以便策略可以内化当前MDP中状态、奖励和动作之间的动态，并相应地调整其策略。这与[Hochreiter的系统](#back-in-2001)中的设置非常一致。元强化学习和RL^2都实现了一个LSTM策略，LSTM的隐藏状态作为跟踪轨迹特征的*记忆*。由于策略是循环的，因此不需要明确地将上一个状态作为输入馈送。
 - en: 'The training procedure works as follows:'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 训练过程如下：
 - en: Sample a new MDP, $M_i \sim \mathcal{M}$;
+  id: totrans-36
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 从 $\mathcal{M}$ 中抽取一个新的MDP，$M_i \sim \mathcal{M}$；
 - en: '**Reset the hidden state** of the model;'
+  id: totrans-37
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**重置模型的隐藏状态**；'
 - en: Collect multiple trajectories and update the model weights;
+  id: totrans-38
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 收集多条轨迹并更新模型权重；
 - en: Repeat from step 1.
+  id: totrans-39
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 重复从步骤1开始。
 - en: '![](../Images/5f38a4ba80cb585699e5ad68e00ecdf1.png)'
+  id: totrans-40
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/5f38a4ba80cb585699e5ad68e00ecdf1.png)'
 - en: 'Fig. 3\. In the meta-RL paper, different actor-critic architectures all use
     a recurrent model. Last reward and last action are additional inputs. The observation
     is fed into the LSTM either as a one-hot vector or as an embedding vector after
     passed through an encoder model. (Image source: [Wang et al., 2016](https://arxiv.org/abs/1611.05763))'
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 图3。在元强化学习论文中，不同的演员-评论家架构都使用了一个循环模型。最后的奖励和最后的动作是额外的输入。观察结果被馈送到LSTM中，可以是一个独热向量，也可以是通过编码器模型传递后的嵌入向量。（图片来源：[Wang等人，2016](https://arxiv.org/abs/1611.05763)）
 - en: '![](../Images/d1cd1a4af792c0d958a3b02001f881e7.png)'
+  id: totrans-42
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d1cd1a4af792c0d958a3b02001f881e7.png)'
 - en: 'Fig. 4\. As described in the RL^2 paper, illustration of the procedure of the
     model interacting with a series of MDPs in training time . (Image source: [Duan
     et al., 2017](https://arxiv.org/abs/1611.02779))'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 图4。如RL^2论文中所述，展示了模型在训练时与一系列MDP交互的过程。（图片来源：[Duan等人，2017](https://arxiv.org/abs/1611.02779)）
 - en: Key Components
+  id: totrans-44
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 关键组件
 - en: 'There are three key components in Meta-RL:'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 元强化学习中有三个关键组件：
 - en: ⭐ **A Model with Memory**
+  id: totrans-46
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: ⭐ **带有记忆的模型**
 - en: A recurrent neural network maintains a hidden state. Thus, it could acquire
     and memorize the knowledge about the current task by updating the hidden state
     during rollouts. Without memory, meta-RL would not work.
+  id: totrans-47
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 一个循环神经网络维护一个隐藏状态。因此，它可以通过在rollouts期间更新隐藏状态来获取和记忆关于当前任务的知识。没有记忆，元强化学习将无法运行。
 - en: ⭐ **Meta-learning Algorithm**
+  id: totrans-48
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: ⭐ **元学习算法**
 - en: A meta-learning algorithm refers to how we can update the model weights to optimize
     for the purpose of solving an unseen task fast at test time. In both Meta-RL and
     RL^2 papers, the meta-learning algorithm is the ordinary gradient descent update
     of LSTM with hidden state reset between a switch of MDPs.
+  id: totrans-49
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 元学习算法指的是我们如何更新模型权重，以便在测试时快速解决未见过的任务。在元强化学习和RL^2论文中，元学习算法是在MDP切换时重置隐藏状态的普通梯度下降更新LSTM。
 - en: ⭐ **A Distribution of MDPs**
+  id: totrans-50
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: ⭐ **MDP的分布**
 - en: While the agent is exposed to a variety of environments and tasks during training,
     it has to learn how to adapt to different MDPs.
+  id: totrans-51
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 当代理在训练过程中暴露于各种环境和任务时，它必须学会如何适应不同的MDP。
 - en: According to [Botvinick et al.](https://www.cell.com/action/showPdf?pii=S1364-6613%2819%2930061-0)
     (2019), one source of slowness in RL training is *weak [inductive bias](https://en.wikipedia.org/wiki/Inductive_bias)*
     ( = “a set of assumptions that the learner uses to predict outputs given inputs
@@ -253,57 +365,78 @@
     weak inductive bias will be able to master a wider range of variance, but usually,
     will be less sample-efficient. Therefore, to narrow down the hypotheses with stronger
     inductive biases help improve the learning speed.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 根据[Botvinick等人](https://www.cell.com/action/showPdf?pii=S1364-6613%2819%2930061-0)（2019）的说法，RL训练中的一种缓慢源于*弱[归纳偏差](https://en.wikipedia.org/wiki/Inductive_bias)*（=“学习者用来预测给定未遇到的输入时的输出的一组假设”）。作为一般的ML规则，具有弱归纳偏差的学习算法将能够掌握更广泛的变化范围，但通常会更少地利用样本。因此，通过缩小具有更强归纳偏差的假设有助于提高学习速度。
 - en: 'In meta-RL, we impose certain types of inductive biases from the *task distribution*
     and store them in *memory*. Which inductive bias to adopt at test time depends
     on the *algorithm*. Together, these three key components depict a compelling view
     of meta-RL: Adjusting the weights of a recurrent network is slow but it allows
     the model to work out a new task fast with its own RL algorithm implemented in
     its internal activity dynamics.'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 在元强化学习中，我们从*任务分布*中施加某些类型的归纳偏差，并将它们存储在*内存*中。在测试时采用哪种归纳偏差取决于*算法*。这三个关键组件共同描绘了元强化学习的一个引人注目的视角：调整循环网络的权重虽然慢，但它允许模型通过其内部活动动态中实现的自己的RL算法快速解决新任务。
 - en: 'Meta-RL interestingly and not very surprisingly matches the ideas in the [AI-GAs](https://arxiv.org/abs/1905.10985)
     (“AI-Generating Algorithms”) paper by Jeff Clune (2019). He proposed that one
     efficient way towards building general AI is to make learning as automatic as
     possible. The AI-GAs approach involves three pillars: (1) meta-learning architectures,
     (2) meta-learning algorithms, and (3) automatically generated environments for
     effective learning.'
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 有趣而又不太令人惊讶的是，元强化学习与Jeff Clune（2019）的[AI-GAs](https://arxiv.org/abs/1905.10985)（“AI-Generating
+    Algorithms”）论文中的想法相匹配。他提出，构建通用人工智能的一种有效方式是尽可能使学习自动化。AI-GAs方法涉及三大支柱：（1）元学习架构，（2）元学习算法，以及（3）为有效学习而自动生成的环境。
 - en: '* * *'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'The topic of designing good recurrent network architectures is a bit too broad
     to be discussed here, so I will skip it. Next, let’s look further into another
     two components: meta-learning algorithms in the context of meta-RL and how to
     acquire a variety of training MDPs.'
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 设计良好的循环网络架构的主题有点太广泛，这里不讨论。接下来，让我们进一步探讨另外两个组成部分：在元强化学习背景下的元学习算法以及如何获取各种训练MDP。
 - en: Meta-Learning Algorithms for Meta-RL
+  id: totrans-57
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 用于元强化学习的元学习算法
 - en: My previous [post](https://lilianweng.github.io/posts/2018-11-30-meta-learning/)
     on meta-learning has covered several classic meta-learning algorithms. Here I’m
     gonna include more related to RL.
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 我之前的[帖子](https://lilianweng.github.io/posts/2018-11-30-meta-learning/)关于元学习已经涵盖了几种经典的元学习算法。在这里，我将包括更多与RL相关的内容。
 - en: Optimizing Model Weights for Meta-learning
+  id: totrans-59
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 为元学习优化模型权重
 - en: Both MAML ([Finn, et al. 2017](https://arxiv.org/abs/1703.03400)) and Reptile
     ([Nichol et al., 2018](https://arxiv.org/abs/1803.02999)) are methods on updating
     model parameters in order to achieve good generalization performance on new tasks.
     See an earlier post [section](https://lilianweng.github.io/posts/2018-11-30-meta-learning/#optimization-based)
     on MAML and Reptile.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: MAML（[Finn等人，2017](https://arxiv.org/abs/1703.03400)）和Reptile（[Nichol等人，2018](https://arxiv.org/abs/1803.02999)）都是更新模型参数以在新任务上实现良好泛化性能的方法。请参阅有关MAML和Reptile的早期帖子[部分](https://lilianweng.github.io/posts/2018-11-30-meta-learning/#optimization-based)。
 - en: Meta-learning Hyperparameters
+  id: totrans-61
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 元学习超参数
 - en: The [return](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#value-function)
     function in an RL problem, $G_t^{(n)}$ or $G_t^\lambda$, involves a few hyperparameters
     that are often set heuristically, like the discount factor [$\gamma$](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#value-function)
@@ -313,42 +446,61 @@
     tuned and learned *online* while an agent is interacting with the environment.
     Therefore, the return becomes a function of $\eta$ and dynamically adapts itself
     to a specific task over time.
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 在强化学习问题中，$G_t^{(n)}$或$G_t^\lambda$的[回报](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#value-function)函数涉及一些经常启发式设置的超参数，如折扣因子[$\gamma$](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#value-function)和自举参数[$\lambda$](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#combining-td-and-mc-learning)。元梯度强化学习（[Xu等，2018](http://papers.nips.cc/paper/7507-meta-gradient-reinforcement-learning.pdf)）将它们视为*元参数*，$\eta=\{\gamma,
+    \lambda \}$，可以在代理与环境交互时*在线*调整和学习。因此，回报成为$\eta$的函数，并随着时间动态地适应特定任务。
 - en: $$ \begin{aligned} G_\eta^{(n)}(\tau_t) &= R_{t+1} + \gamma R_{t+2} + \dots
     + \gamma^{n-1}R_{t+n} + \gamma^n v_\theta(s_{t+n}) & \scriptstyle{\text{; n-step
     return}} \\ G_\eta^{\lambda}(\tau_t) &= (1-\lambda) \sum_{n=1}^\infty \lambda^{n-1}
     G_\eta^{(n)} & \scriptstyle{\text{; λ-return, mixture of n-step returns}} \end{aligned}
     $$
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} G_\eta^{(n)}(\tau_t) &= R_{t+1} + \gamma R_{t+2} + \dots
+    + \gamma^{n-1}R_{t+n} + \gamma^n v_\theta(s_{t+n}) & \scriptstyle{\text{; n步回报}}
+    \\ G_\eta^{\lambda}(\tau_t) &= (1-\lambda) \sum_{n=1}^\infty \lambda^{n-1} G_\eta^{(n)}
+    & \scriptstyle{\text{; λ回报，n步回报的混合}} \end{aligned} $$
 - en: During training, we would like to update the policy parameters with gradients
     as a function of all the information in hand, $\theta’ = \theta + f(\tau, \theta,
     \eta)$, where $\theta$ are the current model weights, $\tau$ is a sequence of
     trajectories, and $\eta$ are the meta-parameters.
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 在训练过程中，我们希望根据手头所有信息的梯度更新策略参数，$\theta' = \theta + f(\tau, \theta, \eta)$，其中$\theta$是当前模型权重，$\tau$是一系列轨迹，$\eta$是元参数。
 - en: 'Meanwhile, let’s say we have a meta-objective function $J(\tau, \theta, \eta)$
     as a performance measure. The training process follows the principle of online
     cross-validation, using a sequence of consecutive experiences:'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 同时，假设我们有一个元目标函数$J(\tau, \theta, \eta)$作为性能度量。训练过程遵循在线交叉验证原则，使用一系列连续的经验：
 - en: Starting with parameter $\theta$, the policy $\pi_\theta$ is updated on the
     first batch of samples $\tau$, resulting in $\theta’$.
+  id: totrans-66
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 从参数$\theta$开始，策略$\pi_\theta$在第一批样本$\tau$上进行更新，得到$\theta'$。
 - en: Then we continue running the policy $\pi_{\theta’}$ to collect a new set of
     experiences $\tau’$, just following $\tau$ consecutively in time. The performance
     is measured as $J(\tau’, \theta’, \bar{\eta})$ with a fixed meta-parameter $\bar{\eta}$.
+  id: totrans-67
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 然后我们继续运行策略$\pi_{\theta'}$以收集一组新的经验$\tau'$，只是按时间顺序连续地跟随$\tau$。性能以固定的元参数$\bar{\eta}$来衡量为$J(\tau',
+    \theta', \bar{\eta})$。
 - en: 'The gradient of meta-objective $J(\tau’, \theta’, \bar{\eta})$ w.r.t. $\eta$
     is used to update $\eta$:'
+  id: totrans-68
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 元目标函数$J(\tau', \theta', \bar{\eta})$相对于$\eta$的梯度用于更新$\eta$：
 - en: $$ \begin{aligned} \Delta \eta &= -\beta \frac{\partial J(\tau', \theta', \bar{\eta})}{\partial
     \eta} \\ &= -\beta \frac{\partial J(\tau', \theta', \bar{\eta})}{\partial \theta'}
     \frac{d\theta'}{d\eta} & \scriptstyle{\text{ ; single variable chain rule.}} \\
@@ -361,53 +513,92 @@
     \theta'} \Big( \color{red}{\big(\mathbf{I} + \frac{\partial f(\tau, \theta, \eta)}{\partial\theta}\big)}\frac{d\theta}{d\eta}
     + \frac{\partial f(\tau, \theta, \eta)}{\partial\eta}\Big) & \scriptstyle{\text{;
     secondary gradient term in red.}} \end{aligned} $$
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \Delta \eta &= -\beta \frac{\partial J(\tau', \theta', \bar{\eta})}{\partial
+    \eta} \\ &= -\beta \frac{\partial J(\tau', \theta', \bar{\eta})}{\partial \theta'}
+    \frac{d\theta'}{d\eta} & \scriptstyle{\text{ ; 单变量链式法则。}} \\ &= -\beta \frac{\partial
+    J(\tau', \theta', \bar{\eta})}{\partial \theta'} \frac{\partial (\theta + f(\tau,
+    \theta, \eta))}{\partial\eta} \\ &= -\beta \frac{\partial J(\tau', \theta', \bar{\eta})}{\partial
+    \theta'} \Big(\frac{d\theta}{d\eta} + \frac{\partial f(\tau, \theta, \eta)}{\partial\theta}\frac{d\theta}{d\eta}
+    + \frac{\partial f(\tau, \theta, \eta)}{\partial\eta}\frac{d\eta}{d\eta} \Big)
+    & \scriptstyle{\text{; 多变量链式法则。}}\\ &= -\beta \frac{\partial J(\tau', \theta',
+    \bar{\eta})}{\partial \theta'} \Big( \color{red}{\big(\mathbf{I} + \frac{\partial
+    f(\tau, \theta, \eta)}{\partial\theta}\big)}\frac{d\theta}{d\eta} + \frac{\partial
+    f(\tau, \theta, \eta)}{\partial\eta}\Big) & \scriptstyle{\text{; 红色的二次梯度项。}} \end{aligned}
+    $$
 - en: where $\beta$ is the learning rate for $\eta$.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 $\beta$ 是 $\eta$ 的学习率。
 - en: 'The meta-gradient RL algorithm simplifies the computation by setting the secondary
     gradient term to zero, $\mathbf{I} + \partial g(\tau, \theta, \eta)/\partial\theta
     = 0$ — this choice prefers the immediate effect of the meta-parameters $\eta$
     on the parameters $\theta$. Eventually we get:'
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 元梯度强化学习算法通过将二次梯度项设置为零来简化计算，$\mathbf{I} + \partial g(\tau, \theta, \eta)/\partial\theta
+    = 0$ — 这个选择更偏向于元参数 $\eta$ 对参数 $\theta$ 的直接影响。最终我们得到：
 - en: $$ \Delta \eta = -\beta \frac{\partial J(\tau', \theta', \bar{\eta})}{\partial
     \theta'} \frac{\partial f(\tau, \theta, \eta)}{\partial\eta} $$
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \Delta \eta = -\beta \frac{\partial J(\tau', \theta', \bar{\eta})}{\partial
+    \theta'} \frac{\partial f(\tau, \theta, \eta)}{\partial\eta} $$
 - en: 'Experiments in the paper adopted the meta-objective function same as $TD(\lambda)$
     algorithm, minimizing the error between the approximated value function $v_\theta(s)$
     and the $\lambda$-return:'
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 论文中的实验采用了与 $TD(\lambda)$ 算法相同的元目标函数，最小化近似值函数 $v_\theta(s)$ 与 $\lambda$-回报之间的误差：
 - en: $$ \begin{aligned} J(\tau, \theta, \eta) &= (G^\lambda_\eta(\tau) - v_\theta(s))^2
     \\ J(\tau', \theta', \bar{\eta}) &= (G^\lambda_{\bar{\eta}}(\tau') - v_{\theta'}(s'))^2
     \end{aligned} $$
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} J(\tau, \theta, \eta) &= (G^\lambda_\eta(\tau) - v_\theta(s))^2
+    \\ J(\tau', \theta', \bar{\eta}) &= (G^\lambda_{\bar{\eta}}(\tau') - v_{\theta'}(s'))^2
+    \end{aligned} $$
 - en: Meta-learning the Loss Function
+  id: totrans-75
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 元学习损失函数
 - en: In policy gradient algorithms, the expected total reward is maximized by updating
     the policy parameters $\theta$ in the direction of estimated gradient ([Schulman
     et al., 2016](https://arxiv.org/abs/1506.02438)),
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 在策略梯度算法中，通过更新策略参数 $\theta$ 朝着估计梯度的方向进行，最大化期望总奖励（[Schulman et al., 2016](https://arxiv.org/abs/1506.02438)），
 - en: $$ g = \mathbb{E}[\sum_{t=0}^\infty \Psi_t \nabla_\theta \log \pi_\theta (a_t
     \mid s_t)] $$
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ g = \mathbb{E}[\sum_{t=0}^\infty \Psi_t \nabla_\theta \log \pi_\theta (a_t
+    \mid s_t)] $$
 - en: 'where the candidates for $\Psi_t$ include the trajectory return $G_t$, the
     Q value $Q(s_t, a_t)$, or the advantage value $A(s_t, a_t)$. The corresponding
     surrogate loss function for the policy gradient can be reverse-engineered:'
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 $\Psi_t$ 的候选包括轨迹回报 $G_t$，Q 值 $Q(s_t, a_t)$，或优势值 $A(s_t, a_t)$。策略梯度的相应替代损失函数可以被反向工程出来：
 - en: $$ L_\text{pg} = \mathbb{E}[\sum_{t=0}^\infty \Psi_t \log \pi_\theta (a_t \mid
     s_t)] $$
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ L_\text{pg} = \mathbb{E}[\sum_{t=0}^\infty \Psi_t \log \pi_\theta (a_t \mid
+    s_t)] $$
 - en: This loss function is a measure over a history of trajectories, $(s_0, a_0,
     r_0, \dots, s_t, a_t, r_t, \dots)$. **Evolved Policy Gradient** (**EPG**; [Houthooft,
     et al, 2018](https://papers.nips.cc/paper/7785-evolved-policy-gradients.pdf))
@@ -415,71 +606,101 @@
     convolution (1-D convolution) over the agent’s past experience, $L_\phi$. The
     parameters $\phi$ of the loss function network are evolved in a way that an agent
     can achieve higher returns.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个损失函数是对轨迹历史$(s_0, a_0, r_0, \dots, s_t, a_t, r_t, \dots)$的度量。**进化策略梯度**（**EPG**；[Houthooft等人，2018](https://papers.nips.cc/paper/7785-evolved-policy-gradients.pdf)）进一步定义了策略梯度损失函数为代理过去经验的时间卷积（1-D卷积）$L_\phi$。损失函数网络的参数$\phi$被演化，以使代理能够获得更高的回报。
 - en: 'Similar to many meta-learning algorithms, EPG has two optimization loops:'
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 与许多元学习算法类似，EPG有两个优化循环：
 - en: In the internal loop, an agent learns to improve its policy $\pi_\theta$.
+  id: totrans-82
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在内部循环中，代理学习改进其策略$\pi_\theta$。
 - en: In the outer loop, the model updates the parameters $\phi$ of the loss function
     $L_\phi$. Because there is no explicit way to write down a differentiable equation
     between the return and the loss, EPG turned to [*Evolutionary Strategies*](https://en.wikipedia.org/wiki/Evolution_strategy)
     (ES).
+  id: totrans-83
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在外循环中，模型更新损失函数$L_\phi$的参数$\phi$。由于回报和损失之间没有明确的可微方程，EPG转向[*进化策略*](https://en.wikipedia.org/wiki/Evolution_strategy)（ES）。
 - en: 'A general idea is to train a population of $N$ agents, each of them is trained
     with the loss function $L_{\phi + \sigma \epsilon_i}$ parameterized with $\phi$
     added with a small Gaussian noise $\epsilon_i \sim \mathcal{N}(0, \mathbf{I})$
     of standard deviation $\sigma$. During the inner loop’s training, EPG tracks a
     history of experience and updates the policy parameters according to the loss
     function $L_{\phi + \sigma\epsilon_i}$ for each agent:'
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个一般的想法是训练一个由$N$个代理组成的群体，每个代理都使用带有$\phi$的损失函数$L_{\phi + \sigma \epsilon_i}$进行训练，加上标准差为$\sigma$的小高斯噪声$\epsilon_i
+    \sim \mathcal{N}(0, \mathbf{I})$。在内循环的训练过程中，EPG跟踪经验历史，并根据每个代理的损失函数$L_{\phi + \sigma\epsilon_i}$更新策略参数：
 - en: $$ \theta_i \leftarrow \theta - \alpha_\text{in} \nabla_\theta L_{\phi + \sigma
     \epsilon_i} (\pi_\theta, \tau_{t-K, \dots, t}) $$
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \theta_i \leftarrow \theta - \alpha_\text{in} \nabla_\theta L_{\phi + \sigma
+    \epsilon_i} (\pi_\theta, \tau_{t-K, \dots, t}) $$
 - en: where $\alpha_\text{in}$ is the learning rate of the inner loop and $\tau_{t-K,
     \dots, t}$ is a sequence of $M$ transitions up to the current time step $t$.
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$\alpha_\text{in}$是内循环的学习率，$\tau_{t-K, \dots, t}$是直到当前时间步$t$的$M$个转换的序列。
 - en: Once the inner loop policy is mature enough, the policy is evaluated by the
     mean return $\bar{G}_{\phi+\sigma\epsilon_i}$ over multiple randomly sampled trajectories.
     Eventually, we are able to estimate the gradient of $\phi$ according to [NES](http://blog.otoro.net/2017/10/29/visual-evolution-strategies/)
     numerically ([Salimans et al, 2017](https://arxiv.org/abs/1703.03864)). While
     repeating this process, both the policy parameters $\theta$ and the loss function
     weights $\phi$ are being updated simultaneously to achieve higher returns.
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦内循环策略足够成熟，该策略将通过多个随机采样的轨迹的平均回报$\bar{G}_{\phi+\sigma\epsilon_i}$进行评估。最终，我们能够根据[NES](http://blog.otoro.net/2017/10/29/visual-evolution-strategies/)在数值上评估$\phi$的梯度（[Salimans等人，2017](https://arxiv.org/abs/1703.03864)）。在重复这个过程的同时，策略参数$\theta$和损失函数权重$\phi$同时更新，以实现更高的回报。
 - en: $$ \phi \leftarrow \phi + \alpha_\text{out} \frac{1}{\sigma N} \sum_{i=1}^N
     \epsilon_i G_{\phi+\sigma\epsilon_i} $$
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \phi \leftarrow \phi + \alpha_\text{out} \frac{1}{\sigma N} \sum_{i=1}^N
+    \epsilon_i G_{\phi+\sigma\epsilon_i} $$
 - en: where $\alpha_\text{out}$ is the learning rate of the outer loop.
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$\alpha_\text{out}$是外循环的学习率。
 - en: In practice, the loss $L_\phi$ is bootstrapped with an ordinary policy gradient
     (such as REINFORCE or PPO) surrogate loss $L_\text{pg}$, $\hat{L} = (1-\alpha)
     L_\phi + \alpha L_\text{pg}$. The weight $\alpha$ is annealing from 1 to 0 gradually
     during training. At test time, the loss function parameter $\phi$ stays fixed
     and the loss value is computed over a history of experience to update the policy
     parameters $\theta$.
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 在实践中，损失$L_\phi$使用普通策略梯度（如REINFORCE或PPO）替代损失$L_\text{pg}$进行引导，$\hat{L} = (1-\alpha)
+    L_\phi + \alpha L_\text{pg}$。权重$\alpha$在训练过程中逐渐从1降至0。在测试时，损失函数参数$\phi$保持固定，损失值是根据经验历史计算的，以更新策略参数$\theta$。
 - en: Meta-learning the Exploration Strategies
+  id: totrans-91
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 元学习探索策略
 - en: The [exploitation vs exploration](https://lilianweng.github.io/posts/2018-01-23-multi-armed-bandit/#exploitation-vs-exploration)
     dilemma is a critical problem in RL. Common ways to do exploration include $\epsilon$-greedy,
     random noise on actions, or stochastic policy with built-in randomness on the
     action space.
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 在强化学习中，[开发 vs 探索](https://lilianweng.github.io/posts/2018-01-23-multi-armed-bandit/#exploitation-vs-exploration)困境是一个关键问题。常见的探索方式包括$\epsilon$-贪心、在动作上添加随机噪声，或者在动作空间上具有内置随机性的随机策略。
 - en: '**MAESN** ([Gupta et al, 2018](http://papers.nips.cc/paper/7776-meta-reinforcement-learning-of-structured-exploration-strategies.pdf))
     is an algorithm to learn structured action noise from prior experience for better
     and more effective exploration. Simply adding random noise on actions cannot capture
@@ -492,8 +713,12 @@
     accordingly. Both the policy parameters and latent space are optimized to maximize
     the total task rewards. In the meantime, the policy learns to make use of the
     latent variables for exploration.'
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: '**MAESN**（[Gupta et al, 2018](http://papers.nips.cc/paper/7776-meta-reinforcement-learning-of-structured-exploration-strategies.pdf)）是一种算法，用于从先前经验中学习结构化的动作噪声，以实现更好更有效的探索。简单地在动作上添加随机噪声无法捕捉任务相关或时间相关的探索策略。MAESN改变策略以依赖于每个任务的随机变量$z_i
+    \sim \mathcal{N}(\mu_i, \sigma_i)$，对于第$i$个任务$M_i$，因此我们会有一个策略$a \sim \pi_\theta(a\mid
+    s, z_i)$。潜变量$z_i$在一个episode中被采样一次并固定。直观地，潜变量确定了在一个rollout开始时应更多探索的一种行为（或技能），代理会相应地调整其动作。策略参数和潜空间都被优化以最大化总任务奖励。同时，策略学会利用潜变量进行探索。'
 - en: In addition, the loss function includes a KL divergence between the learned
     latent variable and a unit Gaussian prior, $D_\text{KL}(\mathcal{N}(\mu_i, \sigma_i)|\mathcal{N}(0,
     \mathbf{I}))$. On one hand, it restricts the learned latent space not too far
@@ -501,33 +726,49 @@
     bound ([ELBO](http://users.umiacs.umd.edu/~xyang35/files/understanding-variational-lower.pdf))
     for the reward function. Interestingly the paper found that $(\mu_i, \sigma_i)$
     for each task are usually close to the prior at convergence.
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，损失函数包括学习的潜变量与单位高斯先验之间的KL散度，$D_\text{KL}(\mathcal{N}(\mu_i, \sigma_i)|\mathcal{N}(0,
+    \mathbf{I}))$。一方面，它限制了学习的潜空间不要离常见先验太远。另一方面，它为奖励函数创建了变分证据下界（[ELBO](http://users.umiacs.umd.edu/~xyang35/files/understanding-variational-lower.pdf)）。有趣的是，论文发现每个任务的$(\mu_i,
+    \sigma_i)$在收敛时通常接近先验。
 - en: '![](../Images/af5b2ce9a9b0fc9948f44823a922e026.png)'
+  id: totrans-95
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/af5b2ce9a9b0fc9948f44823a922e026.png)'
 - en: 'Fig. 5\. The policy is conditioned on a latent variable variable $z\_i \sim
     \mathcal{N}(\mu, \sigma)$ that is sampled once every episode. Each task has different
     hyperparameters for the latent variable distribution, $(\mu\_i, \sigma\_i)$ and
     they are optimized in the outer loop. (Image source: [Gupta et al, 2018](http://papers.nips.cc/paper/7776-meta-reinforcement-learning-of-structured-exploration-strategies.pdf))'
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 图5. 策略以一个每个episode采样一次的潜变量$z\_i \sim \mathcal{N}(\mu, \sigma)$为条件。每个任务对于潜变量分布有不同的超参数$(\mu\_i,
+    \sigma\_i)$，它们在外部循环中被优化。（图片来源：[Gupta et al, 2018](http://papers.nips.cc/paper/7776-meta-reinforcement-learning-of-structured-exploration-strategies.pdf)）
 - en: Episodic Control
+  id: totrans-97
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 情节控制
 - en: A major criticism of RL is on its sample inefficiency. A large number of samples
     and small learning steps are required for incremental parameter adjustment in
     RL in order to maximize generalization and avoid catastrophic forgetting of earlier
     learning ([Botvinick et al., 2019](https://www.cell.com/trends/cognitive-sciences/fulltext/S1364-6613(19)30061-0)).
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 强化学习的一个主要批评是其样本效率低。在强化学习中，为了最大化泛化并避免早期学习的灾难性遗忘，需要大量样本和小的学习步骤进行增量参数调整（[Botvinick
+    et al., 2019](https://www.cell.com/trends/cognitive-sciences/fulltext/S1364-6613(19)30061-0)）。
 - en: '**Episodic control** ([Lengyel & Dayan, 2008](http://papers.nips.cc/paper/3311-hippocampal-contributions-to-control-the-third-way.pdf))
     is proposed as a solution to avoid forgetting and improve generalization while
     training at a faster speed. It is partially inspired by hypotheses on instance-based
     [hippocampal](https://en.wikipedia.org/wiki/Hippocampus) learning.'
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: '**情节控制**（[Lengyel＆Dayan，2008](http://papers.nips.cc/paper/3311-hippocampal-contributions-to-control-the-third-way.pdf)）被提出作为一个解决方案，以避免遗忘并在更快的速度下提高泛化能力。它在一定程度上受到了关于基于实例的[海马](https://en.wikipedia.org/wiki/Hippocampus)学习的假设的启发。'
 - en: 'An *episodic memory* keeps explicit records of past events and uses these records
     directly as point of reference for making new decisions (i.e. just like [metric-based](https://lilianweng.github.io/posts/2018-11-30-meta-learning/#metric-based)
     meta-learning). In **MFEC** (Model-Free Episodic Control; [Blundell et al., 2016](https://arxiv.org/abs/1606.04460)),
@@ -535,59 +776,86 @@
     key and the corresponding Q-value $Q_\text{EC}(s, a)$ as value. When receiving
     a new observation $s$, the Q value is estimated in an non-parametric way as the
     average Q-value of top $k$ most similar samples:'
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: '*情节记忆*会明确记录过去事件，并直接将这些记录用作制定新决策的参考点（即就像[基于度量的](https://lilianweng.github.io/posts/2018-11-30-meta-learning/#metric-based)元学习）。在**MFEC**（无模型情节控制；[Blundell等人，2016](https://arxiv.org/abs/1606.04460)）中，记忆被建模为一个大表格，将状态-动作对$(s,
+    a)$作为键，相应的Q值$Q_\text{EC}(s, a)$作为值进行存储。当接收到新的观察$s$时，Q值以非参数化方式估计为最相似样本的前$k$个的平均Q值：'
 - en: $$ \hat{Q}_\text{EC}(s, a) = \begin{cases} Q_\text{EC}(s, a) & \text{if } (s,a)
     \in Q_\text{EC}, \\ \frac{1}{k} \sum_{i=1}^k Q(s^{(i)}, a) & \text{otherwise}
     \end{cases} $$
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \hat{Q}_\text{EC}(s, a) = \begin{cases} Q_\text{EC}(s, a) & \text{if } (s,a)
+    \in Q_\text{EC}, \\ \frac{1}{k} \sum_{i=1}^k Q(s^{(i)}, a) & \text{otherwise}
+    \end{cases} $$
 - en: 'where $s^{(i)}, i=1, \dots, k$ are top $k$ states with smallest distances to
     the state $s$. Then the action that yields the highest estimated Q value is selected.
     Then the memory table is updated according to the return received at $s_t$:'
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$s^{(i)}, i=1, \dots, k$是与状态$s$距离最小的前$k$个状态。然后选择产生最高估计Q值的动作。然后根据在$s_t$处收到的回报更新记忆表：
 - en: $$ Q_\text{EC}(s, a) \leftarrow \begin{cases} \max\{Q_\text{EC}(s_t, a_t), G_t\}
     & \text{if } (s,a) \in Q_\text{EC}, \\ G_t & \text{otherwise} \end{cases} $$
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ Q_\text{EC}(s, a) \leftarrow \begin{cases} \max\{Q_\text{EC}(s_t, a_t), G_t\}
+    & \text{if } (s,a) \in Q_\text{EC}, \\ G_t & \text{otherwise} \end{cases} $$
 - en: As a tabular RL method, MFEC suffers from large memory consumption and a lack
     of ways to generalize among similar states. The first one can be fixed with an
     LRU cache. Inspired by [metric-based](https://lilianweng.github.io/posts/2018-11-30-meta-learning/#metric-based)
     meta-learning, especially Matching Networks ([Vinyals et al., 2016](http://papers.nips.cc/paper/6385-matching-networks-for-one-shot-learning.pdf)),
     the generalization problem is improved in a follow-up algorithm, **NEC** (Neural
     Episodic Control; [Pritzel et al., 2016](https://arxiv.org/abs/1703.01988)).
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 作为一种表格化强化学习方法，MFEC存在着大量的内存消耗和缺乏在相似状态之间泛化的方法。第一个问题可以通过LRU缓存来解决。受到[基于度量的](https://lilianweng.github.io/posts/2018-11-30-meta-learning/#metric-based)元学习的启发，特别是匹配网络（[Vinyals等人，2016](http://papers.nips.cc/paper/6385-matching-networks-for-one-shot-learning.pdf)），泛化问题在后续算法**NEC**（神经记忆控制；[Pritzel等人，2016](https://arxiv.org/abs/1703.01988)）中得到改善。
 - en: The episodic memory in NEC is a Differentiable Neural Dictionary (**DND**),
     where the key is a convolutional embedding vector of input image pixels and the
     value stores estimated Q value. Given an inquiry key, the output is a weighted
     sum of values of top similar keys, where the weight is a normalized kernel measure
     between the query key and the selected key in the dictionary. This sounds like
     a hard [attention](https://lilianweng.github.io/posts/2018-06-24-attention/) machanism.
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: NEC中的情节记忆是一个可微分神经字典（**DND**），其中键是输入图像像素的卷积嵌入向量，值存储估计的Q值。给定一个查询键，输出是最相似键的值的加权和，其中权重是查询键和字典中选定键之间的归一化核度量。这听起来像是一种复杂的[注意力](https://lilianweng.github.io/posts/2018-06-24-attention/)机制。
 - en: '![](../Images/8cbec10cd1740e403e3fbf9e5a4dd8ba.png)'
+  id: totrans-106
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8cbec10cd1740e403e3fbf9e5a4dd8ba.png)'
 - en: 'Fig. 6 Illustrations of episodic memory module in NEC and two operations on
     a differentiable neural dictionary. (Image source: [Pritzel et al., 2016](https://arxiv.org/abs/1703.01988))'
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 图6 NEC中情节记忆模块的示意图以及可微分神经字典上的两种操作。（图片来源：[Pritzel等人，2016](https://arxiv.org/abs/1703.01988)）
 - en: 'Further, **Episodic LSTM** ([Ritter et al., 2018](https://arxiv.org/abs/1805.09692))
     enhances the basic LSTM architecture with a DND episodic memory, which stores
     task context embeddings as keys and the LSTM cell states as values. The stored
     hidden states are retrieved and added directly to the current cell state through
     the same gating mechanism within LSTM:'
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，**记忆 LSTM**（[Ritter 等人，2018](https://arxiv.org/abs/1805.09692)）通过 DND 记忆增强了基本
+    LSTM 结构，其中将任务上下文嵌入存储为键，将 LSTM 单元状态存储为值。存储的隐藏状态通过 LSTM 内相同的门控机制直接检索并添加到当前单元状态中：
 - en: '![](../Images/313634cf6c32545d7a62dc7e7b4e5575.png)'
+  id: totrans-109
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/313634cf6c32545d7a62dc7e7b4e5575.png)'
 - en: 'Fig. 7\. Illustration of the episodic LSTM architecture. The additional structure
     of episodic memory is in bold. (Image source: [Ritter et al., 2018](https://arxiv.org/abs/1805.09692))'
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 7\. 显示了记忆 LSTM 结构的示意图。记忆结构的额外部分用**粗体**标出。（图片来源：[Ritter 等人，2018](https://arxiv.org/abs/1805.09692)）
 - en: $$ \begin{aligned} \mathbf{c}_t &= \mathbf{i}_t \circ \mathbf{c}_\text{in} +
     \mathbf{f}_t \circ \mathbf{c}_{t-1} + \color{green}{\mathbf{r}_t \circ \mathbf{c}_\text{ep}}
     &\\ \mathbf{i}_t &= \sigma(\mathbf{W}_{i} \cdot [\mathbf{h}_{t-1}, \mathbf{x}_t]
@@ -596,68 +864,101 @@
     forget gate}} \\ \color{green}{\mathbf{r}_t} & \color{green}{=} \color{green}{\sigma(\mathbf{W}_{r}
     \cdot [\mathbf{h}_{t-1}, \mathbf{x}_t] + \mathbf{b}_r)} & \scriptstyle{\text{;
     reinstatement gate}} \end{aligned} $$
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \mathbf{c}_t &= \mathbf{i}_t \circ \mathbf{c}_\text{in} +
+    \mathbf{f}_t \circ \mathbf{c}_{t-1} + \color{green}{\mathbf{r}_t \circ \mathbf{c}_\text{ep}}
+    &\\ \mathbf{i}_t &= \sigma(\mathbf{W}_{i} \cdot [\mathbf{h}_{t-1}, \mathbf{x}_t]
+    + \mathbf{b}_i) & \scriptstyle{\text{; 输入门}} \\ \mathbf{f}_t &= \sigma(\mathbf{W}_{f}
+    \cdot [\mathbf{h}_{t-1}, \mathbf{x}_t] + \mathbf{b}_f) & \scriptstyle{\text{;
+    遗忘门}} \\ \color{green}{\mathbf{r}_t} & \color{green}{=} \color{green}{\sigma(\mathbf{W}_{r}
+    \cdot [\mathbf{h}_{t-1}, \mathbf{x}_t] + \mathbf{b}_r)} & \scriptstyle{\text{;
+    重建门}} \end{aligned} $$
 - en: where $\mathbf{c}_t$ and $\mathbf{h}_t$ are hidden and cell state at time $t$;
     $\mathbf{i}_t$, $\mathbf{f}_t$ and $\mathbf{r}_t$ are input, forget and reinstatement
     gates, respectively; $\mathbf{c}_\text{ep}$ is the retrieved cell state from episodic
     memory. The newly added episodic memory components are marked in green.
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$\mathbf{c}_t$和$\mathbf{h}_t$分别是时间$t$的隐藏状态和单元状态；$\mathbf{i}_t$、$\mathbf{f}_t$和$\mathbf{r}_t$分别是输入、遗忘和重建门；$\mathbf{c}_\text{ep}$是从记忆中检索到的单元状态。新增的记忆组件用绿色标出。
 - en: This architecture provides a shortcut to the prior experience through context-based
     retrieval. Meanwhile, explicitly saving the task-dependent experience in an external
     memory avoids forgetting. In the paper, all the experiments have manually designed
     context vectors. How to construct an effective and efficient format of task context
     embeddings for more free-formed tasks would be an interesting topic.
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: 该架构通过基于上下文的检索提供了对先前经验的快捷方式。同时，明确地将任务相关经验保存在外部存储器中避免了遗忘。在论文中，所有实验都是手动设计的上下文向量。如何为更自由形式的任务构建有效和高效的任务上下文嵌入格式将是一个有趣的课题。
 - en: Overall the capacity of episodic control is limited by the complexity of the
     environment. It is very rare for an agent to repeatedly visit exactly the same
     states in a real-world task, so properly encoding the states is critical. The
     learned embedding space compresses the observation data into a lower dimension
     space and, in the meantime, two states being close in this space are expected
     to demand similar strategies.
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: 总体而言，记忆控制的能力受到环境复杂性的限制。在真实任务中，代理很少会重复访问完全相同的状态，因此正确编码状态至关重要。学习的嵌入空间将观察数据压缩到较低维度空间中，同时，在此空间中接近的两个状态预计需要相似的策略。
 - en: Training Task Acquisition
+  id: totrans-115
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 训练任务获取
 - en: 'Among three key components, how to design a proper distribution of tasks is
     the less studied and probably the most specific one to meta-RL itself. As described
     [above](#formulation), each task is a MDP: $M_i = \langle \mathcal{S}, \mathcal{A},
     P_i, R_i \rangle \in \mathcal{M}$. We can build a distribution of MDPs by modifying:'
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 在三个关键组件中，如何设计适当的任务分布是研究较少且可能是最具体于元强化学习本身的。如上所述，每个任务都是一个马尔可夫决策过程：$M_i = \langle
+    \mathcal{S}, \mathcal{A}, P_i, R_i \rangle \in \mathcal{M}$。我们可以通过修改来构建一个马尔可夫决策过程的分布：
 - en: 'The *reward configuration*: Among different tasks, same behavior might get
     rewarded differently according to $R_i$.'
+  id: totrans-117
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*奖励配置*：在不同任务中，相同行为可能根据$R_i$而获得不同的奖励。'
 - en: 'Or, the *environment*: The transition function $P_i$ can be reshaped by initializing
     the environment with varying shifts between states.'
+  id: totrans-118
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 或者，*环境*：过渡函数$P_i$可以通过在状态之间初始化不同的偏移来重新塑造。
 - en: Task Generation by Domain Randomization
+  id: totrans-119
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 通过领域随机化生成任务
 - en: Randomizing parameters in a simulator is an easy way to obtain tasks with modified
     transition functions. If interested in learning further, check my last [post](https://lilianweng.github.io/posts/2019-05-05-domain-randomization/)
     on **domain randomization**.
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: 在模拟器中随机化参数是获得具有修改过渡函数的任务的简单方法。 如果想进一步了解，请查看我上一篇关于**领域随机化**的[文章](https://lilianweng.github.io/posts/2019-05-05-domain-randomization/)。
 - en: Evolutionary Algorithm on Environment Generation
+  id: totrans-121
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 环境生成上的进化算法
 - en: '[Evolutionary algorithm](https://en.wikipedia.org/wiki/Evolutionary_algorithm)
     is a gradient-free heuristic-based optimization method, inspired by natural selection.
     A population of solutions follows a loop of evaluation, selection, reproduction,
     and mutation. Eventually, good solutions survive and thus get selected.'
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: '[进化算法](https://zh.wikipedia.org/wiki/%E9%80%B2%E5%8C%96%E7%AE%97%E6%B3%95)是一种基于启发式的无梯度优化方法，灵感来自自然选择。
+    一群解决方案遵循评估、选择、繁殖和突变的循环。 最终，好的解决方案会存活下来并被选中。'
 - en: '**POET** ([Wang et al, 2019](https://arxiv.org/abs/1901.01753)), a framework
     based on the evolutionary algorithm, attempts to generate tasks while the problems
     themselves are being solved. The implementation of POET is only specifically designed
@@ -666,40 +967,58 @@
     evolutionary algorithm has had some compelling applications in Deep Learning like
     [EPG](#meta-learning-the-loss-function) and PBT (Population-Based Training; [Jaderberg
     et al, 2017](https://arxiv.org/abs/1711.09846)).'
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: '**POET**（[Wang 等人，2019](https://arxiv.org/abs/1901.01753)），一个基于进化算法的框架，试图在解决问题的同时生成任务。
+    POET 的实现仅针对简单的 2D [双足行走者](https://gym.openai.com/envs/BipedalWalkerHardcore-v2/)
+    环境，但指出了一个有趣的方向。 值得注意的是，进化算法在深度学习中已经有一些引人注目的应用，如[EPG](#meta-learning-the-loss-function)和
+    PBT（基于种群的训练；[Jaderberg 等人，2017](https://arxiv.org/abs/1711.09846)）。'
 - en: '![](../Images/3aee69cb0be032384774980606c2e0f4.png)'
+  id: totrans-124
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3aee69cb0be032384774980606c2e0f4.png)'
 - en: 'Fig. 8\. An example bipedal walking environment (top) and an overview of POET
     (bottom). (Image source: [POET blog post](https://eng.uber.com/poet-open-ended-deep-learning/))'
+  id: totrans-125
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 8\. 一个双足行走环境示例（上）和 POET 概述（下）。 (图片来源：[POET 博客文章](https://eng.uber.com/poet-open-ended-deep-learning/))
 - en: 'The 2D bipedal walking environment is evolving: from a simple flat surface
     to a much more difficult trail with potential gaps, stumps, and rough terrains.
     POET pairs the generation of environmental challenges and the optimization of
     agents together so as to (a) select agents that can resolve current challenges
     and (b) evolve environments to be solvable. The algorithm maintains a list of
     *environment-agent pairs* and repeats the following:'
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: 2D 双足行走环境正在发展：从简单的平坦表面到具有潜在间隙、树桩和崎岖地形的更加困难的路径。 POET 将环境挑战的生成与代理的优化配对在一起，以便 (a)
+    选择能够解决当前挑战的代理和 (b) 进化环境以便解决。 该算法维护一个*环境-代理对*列表，并重复以下步骤：
 - en: '*Mutation*: Generate new environments from currently active environments. Note
     that here types of mutation operations are created just for bipedal walker and
     a new environment would demand a new set of configurations.'
+  id: totrans-127
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*突变*：从当前活跃环境生成新环境。 请注意，这里的突变操作类型仅针对双足行走者，新环境将需要一组新的配置。'
 - en: '*Optimization*: Train paired agents within their respective environments.'
+  id: totrans-128
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*优化*：在各自的环境中训练配对的代理。'
 - en: '*Selection*: Periodically attempt to transfer current agents from one environment
     to another. Copy and update the best performing agent for every environment. The
     intuition is that skills learned in one environment might be helpful for a different
     environment.'
+  id: totrans-129
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*选择*：定期尝试将当前代理从一个环境转移到另一个环境。 复制并更新每个环境中表现最佳的代理。 直觉是在一个环境中学到的技能可能对另一个环境有所帮助。'
 - en: The procedure above is quite similar to [PBT](https://arxiv.org/abs/1711.09846),
     but PBT mutates and evolves hyperparameters instead. To some extent, POET is doing
     [domain randomization](https://lilianweng.github.io/posts/2019-05-05-domain-randomization/),
@@ -707,37 +1026,51 @@
     probability parameters. Different from DR, the agents are not exposed to a fully
     randomized difficult environment all at once, but instead they are learning gradually
     with a curriculum configured by the evolutionary algorithm.
+  id: totrans-130
   prefs: []
   type: TYPE_NORMAL
+  zh: 上述过程与[PBT](https://arxiv.org/abs/1711.09846)非常相似，但PBT会改变和演化超参数。在某种程度上，POET正在进行[领域随机化](https://lilianweng.github.io/posts/2019-05-05-domain-randomization/)，因为所有的间隙、树桩和地形粗糙度都由一些随机化概率参数控制。与DR不同，代理们不会一次性暴露于完全随机化的困难环境中，而是通过进化算法配置的课程逐渐学习。
 - en: Learning with Random Rewards
+  id: totrans-131
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 使用随机奖励进行学习
 - en: An MDP without a reward function $R$ is known as a *Controlled Markov process*
     (CMP). Given a predefined CMP, $\langle \mathcal{S}, \mathcal{A}, P\rangle$, we
     can acquire a variety of tasks by generating a collection of reward functions
     $\mathcal{R}$ that encourage the training of an effective meta-learning policy.
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: 没有奖励函数$R$的MDP被称为*受控马尔可夫过程*（CMP）。给定预定义的CMP，$\langle \mathcal{S}, \mathcal{A},
+    P\rangle$，我们可以通过生成一系列鼓励有效元学习策略训练的奖励函数$\mathcal{R}$来获得各种任务。
 - en: '[Gupta et al. (2018)](https://arxiv.org/abs/1806.04640) proposed two unsupervised
     approaches for growing the task distribution in the context of CMP. Assuming there
     is an underlying latent variable $z \sim p(z)$ associated with every task, it
     parameterizes/determines a reward function: $r_z(s) = \log D(z|s)$, where a “discriminator”
     function $D(.)$ is used to extract the latent variable from the state. The paper
     described two ways to construct a discriminator function:'
+  id: totrans-133
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Gupta等人（2018）](https://arxiv.org/abs/1806.04640)提出了两种无监督方法，用于在CMP背景下扩展任务分布。假设每个任务都有一个潜在的潜变量$z
+    \sim p(z)$，与每个任务相关联，它参数化/确定了一个奖励函数：$r_z(s) = \log D(z|s)$，其中“鉴别器”函数$D(.)$用于从状态中提取潜变量。论文描述了构建鉴别器函数的两种方法：'
 - en: Sample random weights $\phi_\text{rand}$ of the discriminator, $D_{\phi_\text{rand}}(z
     \mid s)$.
+  id: totrans-134
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 样本随机权重$\phi_\text{rand}$的鉴别器，$D_{\phi_\text{rand}}(z \mid s)$。
 - en: Learn a discriminator function to encourage diversity-driven exploration. This
     method is introduced in more details in another sister paper “DIAYN” ([Eysenbach
     et al., 2018](https://arxiv.org/abs/1802.06070)).
+  id: totrans-135
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 学习一个鉴别器函数以鼓励多样化驱动的探索。这种方法在另一篇姊妹论文“DIAYN”中有更详细的介绍（[Eysenbach等人，2018](https://arxiv.org/abs/1802.06070)）。
 - en: 'DIAYN, short for “Diversity is all you need”, is a framework to encourage a
     policy to learn useful skills without a reward function. It explicitly models
     the latent variable $z$ as a *skill* embedding and makes the policy conditioned
@@ -745,22 +1078,31 @@
     same as [MAESN](#meta-learning-the-exploration-strategies) unsurprisingly, as
     the papers are from the same group.) The design of DIAYN is motivated by a few
     hypotheses:'
+  id: totrans-136
   prefs: []
   type: TYPE_NORMAL
+  zh: DIAYN，即“多样性就是你所需要的”，是一种鼓励策略学习有用技能而无需奖励函数的框架。它明确地将潜变量$z$建模为*技能*嵌入，并使策略除了状态$s$外还取决于$z$，$\pi_\theta(a
+    \mid s, z)$。（嗯，这部分与[MAESN](#meta-learning-the-exploration-strategies)一样，毫不奇怪，因为这些论文来自同一团队。）DIAYN的设计受到几个假设的启发：
 - en: Skills should be diverse and lead to visitations of different states. → maximize
     the mutual information between states and skills, $I(S; Z)$
+  id: totrans-137
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 技能应该多样化，并导致访问不同状态。→ 最大化状态和技能之间的互信息，$I(S; Z)$
 - en: Skills should be distinguishable by states, not actions. → minimize the mutual
     information between actions and skills, conditioned on states $I(A; Z \mid S)$
+  id: totrans-138
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 技能应该由状态而不是动作来区分。→ 最小化在给定状态的情况下动作和技能之间的互信息，$I(A; Z \mid S)$
 - en: 'The objective function to maximize is as follows, where the policy entropy
     is also added to encourage diversity:'
+  id: totrans-139
   prefs: []
   type: TYPE_NORMAL
+  zh: 要最大化的目标函数如下，同时还添加了策略熵以鼓励多样性：
 - en: $$ \begin{aligned} \mathcal{F}(\theta) &= I(S; Z) + H[A \mid S] - I(A; Z \mid
     S) & \\ &= (H(Z) - H(Z \mid S)) + H[A \mid S] - (H[A\mid S] - H[A\mid S, Z]) &
     \\ &= H[A\mid S, Z] \color{green}{- H(Z \mid S) + H(Z)} & \\ &= H[A\mid S, Z]
@@ -769,113 +1111,190 @@
     diverse.}} \\ &\ge H[A\mid S, Z] + \mathbb{E}_{z\sim p(z), s\sim\rho(s)}[\color{red}{\log
     D_\phi(z \mid s) - \log p(z)}] & \scriptstyle{\text{; according to Jensen's inequality;
     "pseudo-reward" in red.}} \end{aligned} $$
+  id: totrans-140
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \mathcal{F}(\theta) &= I(S; Z) + H[A \mid S] - I(A; Z \mid
+    S) & \\ &= (H(Z) - H(Z \mid S)) + H[A \mid S] - (H[A\mid S] - H[A\mid S, Z]) &
+    \\ &= H[A\mid S, Z] \color{green}{- H(Z \mid S) + H(Z)} & \\ &= H[A\mid S, Z]
+    + \mathbb{E}_{z\sim p(z), s\sim\rho(s)}[\log p(z \mid s)] - \mathbb{E}_{z\sim
+    p(z)}[\log p(z)] & \scriptstyle{\text{；可以从状态推断技能 & p(z)是多样的。}} \\ &\ge H[A\mid
+    S, Z] + \mathbb{E}_{z\sim p(z), s\sim\rho(s)}[\color{red}{\log D_\phi(z \mid s)
+    - \log p(z)}] & \scriptstyle{\text{；根据Jensen不等式；红色的“伪奖励”。}} \end{aligned} $$
 - en: where $I(.)$ is mutual information and $H[.]$ is entropy measure. We cannot
     integrate all states to compute $p(z \mid s)$, so approximate it with $D_\phi(z
     \mid s)$ — that is the diversity-driven discriminator function.
+  id: totrans-141
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$I(.)$是互信息，$H[.]$是熵度量。我们无法整合所有状态来计算$p(z \mid s)$，因此用$D_\phi(z \mid s)$来近似——这就是以多样性为驱动的鉴别器函数。
 - en: '![](../Images/e4eb400768f80615c99052b80b0afdcc.png)'
+  id: totrans-142
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e4eb400768f80615c99052b80b0afdcc.png)'
 - en: 'Fig. 9\. DIAYN Algorithm. (Image source: [Eysenbach et al., 2019](https://arxiv.org/abs/1802.06070))'
+  id: totrans-143
   prefs: []
   type: TYPE_NORMAL
+  zh: 图9\. DIAYN算法。（图片来源：[Eysenbach等人，2019](https://arxiv.org/abs/1802.06070)）
 - en: 'Once the discriminator function is learned, sampling a new MDP for training
     is strainght-forward: First, sample a latent variable, $z \sim p(z)$ and construct
     a reward function $r_z(s) = \log(D(z \vert s))$. Pairing the reward function with
     a predefined CMP creates a new MDP.'
+  id: totrans-144
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦学习了鉴别器函数，对于训练来说，采样一个新的MDP是直截了当的：首先，采样一个潜变量，$z \sim p(z)$并构建一个奖励函数$r_z(s) =
+    \log(D(z \vert s))$。将奖励函数与预定义的CMP配对，创建一个新的MDP。
 - en: '* * *'
+  id: totrans-145
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'Cited as:'
+  id: totrans-146
   prefs: []
   type: TYPE_NORMAL
+  zh: 引用为：
 - en: '[PRE0]'
+  id: totrans-147
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: References
+  id: totrans-148
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: '[1] Richard S. Sutton. [“The Bitter Lesson.”](http://incompleteideas.net/IncIdeas/BitterLesson.html)
     March 13, 2019.'
+  id: totrans-149
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] Richard S. Sutton。[“苦涩的教训。”](http://incompleteideas.net/IncIdeas/BitterLesson.html)
+    2019年3月13日。'
 - en: '[2] Sepp Hochreiter, A. Steven Younger, and Peter R. Conwell. [“Learning to
     learn using gradient descent.”](http://snowedin.net/tmp/Hochreiter2001.pdf) Intl.
     Conf. on Artificial Neural Networks. 2001.'
+  id: totrans-150
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] Sepp Hochreiter, A. Steven Younger和Peter R. Conwell。[“使用梯度下降学习学习。”](http://snowedin.net/tmp/Hochreiter2001.pdf)
+    人工神经网络国际会议。2001年。'
 - en: '[3] Jane X Wang, et al. [“Learning to reinforcement learn.”](https://arxiv.org/abs/1611.05763)
     arXiv preprint arXiv:1611.05763 (2016).'
+  id: totrans-151
   prefs: []
   type: TYPE_NORMAL
+  zh: '[3] 王简等人。[“学习强化学习。”](https://arxiv.org/abs/1611.05763) arXiv预印本arXiv:1611.05763（2016年）。'
 - en: '[4] Yan Duan, et al. [“RL $^ 2$: Fast Reinforcement Learning via Slow Reinforcement
     Learning.”](https://arxiv.org/abs/1611.02779) ICLR 2017.'
+  id: totrans-152
   prefs: []
   type: TYPE_NORMAL
+  zh: '[4] 段燕等人。[“RL $^ 2$：通过缓慢强化学习快速强化学习。”](https://arxiv.org/abs/1611.02779) ICLR
+    2017。'
 - en: '[5] Matthew Botvinick, et al. [“Reinforcement Learning, Fast and Slow”](https://www.cell.com/trends/cognitive-sciences/fulltext/S1364-6613(19)30061-0)
     Cell Review, Volume 23, Issue 5, P408-422, May 01, 2019.'
+  id: totrans-153
   prefs: []
   type: TYPE_NORMAL
+  zh: '[5] Matthew Botvinick等人。[“强化学习，快与慢”](https://www.cell.com/trends/cognitive-sciences/fulltext/S1364-6613(19)30061-0)
+    Cell Review，第23卷，第5期，P408-422，2019年5月1日。'
 - en: '[6] Jeff Clune. [“AI-GAs: AI-generating algorithms, an alternate paradigm for
     producing general artificial intelligence”](https://arxiv.org/abs/1905.10985)
     arXiv preprint arXiv:1905.10985 (2019).'
+  id: totrans-154
   prefs: []
   type: TYPE_NORMAL
+  zh: '[6] Jeff Clune。[“AI-GAs：生成人工智能的算法，一种产生通用人工智能的替代范式”](https://arxiv.org/abs/1905.10985)
+    arXiv预印本arXiv:1905.10985（2019年）。'
 - en: '[7] Zhongwen Xu, et al. [“Meta-Gradient Reinforcement Learning”](http://papers.nips.cc/paper/7507-meta-gradient-reinforcement-learning.pdf)
     NIPS 2018.'
+  id: totrans-155
   prefs: []
   type: TYPE_NORMAL
+  zh: '[7] 徐中文等人。[“元梯度强化学习”](http://papers.nips.cc/paper/7507-meta-gradient-reinforcement-learning.pdf)
+    NIPS 2018。'
 - en: '[8] Rein Houthooft, et al. [“Evolved Policy Gradients.”](https://papers.nips.cc/paper/7785-evolved-policy-gradients.pdf)
     NIPS 2018.'
+  id: totrans-156
   prefs: []
   type: TYPE_NORMAL
+  zh: '[8] Rein Houthooft等人。[“进化策略梯度。”](https://papers.nips.cc/paper/7785-evolved-policy-gradients.pdf)
+    NIPS 2018。'
 - en: '[9] Tim Salimans, et al. [“Evolution strategies as a scalable alternative to
     reinforcement learning.”](https://arxiv.org/abs/1703.03864) arXiv preprint arXiv:1703.03864
     (2017).'
+  id: totrans-157
   prefs: []
   type: TYPE_NORMAL
+  zh: '[9] Tim Salimans等人。[“进化策略作为可扩展的强化学习替代方案。”](https://arxiv.org/abs/1703.03864)
+    arXiv预印本arXiv:1703.03864（2017年）。'
 - en: '[10] Abhishek Gupta, et al. [“Meta-Reinforcement Learning of Structured Exploration
     Strategies.”](http://papers.nips.cc/paper/7776-meta-reinforcement-learning-of-structured-exploration-strategies.pdf)
     NIPS 2018.'
+  id: totrans-158
   prefs: []
   type: TYPE_NORMAL
+  zh: '[10] Abhishek Gupta等人。[“结构化探索策略的元强化学习。”](http://papers.nips.cc/paper/7776-meta-reinforcement-learning-of-structured-exploration-strategies.pdf)
+    NIPS 2018。'
 - en: '[11] Alexander Pritzel, et al. [“Neural episodic control.”](https://arxiv.org/abs/1703.01988)
     Proc. Intl. Conf. on Machine Learning, Volume 70, 2017.'
+  id: totrans-159
   prefs: []
   type: TYPE_NORMAL
+  zh: '[11] Alexander Pritzel等人 [“神经元情节控制。”](https://arxiv.org/abs/1703.01988) 机器学习国际会议论文集，第70卷，2017.'
 - en: '[12] Charles Blundell, et al. [“Model-free episodic control.”](https://arxiv.org/abs/1606.04460)
     arXiv preprint arXiv:1606.04460 (2016).'
+  id: totrans-160
   prefs: []
   type: TYPE_NORMAL
+  zh: '[12] Charles Blundell等人 [“无模型的情节控制。”](https://arxiv.org/abs/1606.04460) arXiv预印本
+    arXiv:1606.04460 (2016).'
 - en: '[13] Samuel Ritter, et al. [“Been there, done that: Meta-learning with episodic
     recall.”](https://arxiv.org/abs/1805.09692) ICML, 2018.'
+  id: totrans-161
   prefs: []
   type: TYPE_NORMAL
+  zh: '[13] Samuel Ritter等人 [“曾经历过，已经做过：具有情节回忆的元学习。”](https://arxiv.org/abs/1805.09692)
+    ICML, 2018.'
 - en: '[14] Rui Wang et al. [“Paired Open-Ended Trailblazer (POET): Endlessly Generating
     Increasingly Complex and Diverse Learning Environments and Their Solutions”](https://arxiv.org/abs/1901.01753)
     arXiv preprint arXiv:1901.01753 (2019).'
+  id: totrans-162
   prefs: []
   type: TYPE_NORMAL
+  zh: '[14] Rui Wang等人 [“配对开放式先驱者（POET）：不断生成越来越复杂和多样化的学习环境及其解决方案”](https://arxiv.org/abs/1901.01753)
+    arXiv预印本 arXiv:1901.01753 (2019).'
 - en: '[15] Uber Engineering Blog: [“POET: Endlessly Generating Increasingly Complex
     and Diverse Learning Environments and their Solutions through the Paired Open-Ended
     Trailblazer.”](https://eng.uber.com/poet-open-ended-deep-learning/) Jan 8, 2019.'
+  id: totrans-163
   prefs: []
   type: TYPE_NORMAL
+  zh: '[15] Uber工程博客: [“POET：通过配对开放式先驱者不断生成越来越复杂和多样化的学习环境及其解决方案。”](https://eng.uber.com/poet-open-ended-deep-learning/)
+    2019年1月8日.'
 - en: '[16] Abhishek Gupta, et al.[“Unsupervised meta-learning for Reinforcement Learning”](https://arxiv.org/abs/1806.04640)
     arXiv preprint arXiv:1806.04640 (2018).'
+  id: totrans-164
   prefs: []
   type: TYPE_NORMAL
+  zh: '[16] Abhishek Gupta等人 [“强化学习的无监督元学习”](https://arxiv.org/abs/1806.04640) arXiv预印本
+    arXiv:1806.04640 (2018).'
 - en: '[17] Eysenbach, Benjamin, et al. [“Diversity is all you need: Learning skills
     without a reward function.”](https://arxiv.org/abs/1802.06070) ICLR 2019.'
+  id: totrans-165
   prefs: []
   type: TYPE_NORMAL
+  zh: '[17] Eysenbach, Benjamin等人 [“多样性就是你所需要的：在没有奖励函数的情况下学习技能。”](https://arxiv.org/abs/1802.06070)
+    ICLR 2019.'
 - en: '[18] Max Jaderberg, et al. [“Population Based Training of Neural Networks.”](https://arxiv.org/abs/1711.09846)
     arXiv preprint arXiv:1711.09846 (2017).'
+  id: totrans-166
   prefs: []
   type: TYPE_NORMAL
+  zh: '[18] Max Jaderberg等人 [“基于种群的神经网络训练。”](https://arxiv.org/abs/1711.09846) arXiv预印本
+    arXiv:1711.09846 (2017).'

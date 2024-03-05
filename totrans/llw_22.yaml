@@ -1,31 +1,45 @@
 - en: Self-Supervised Representation Learning
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 自监督表示学习
 - en: 原文：[https://lilianweng.github.io/posts/2019-11-10-self-supervised/](https://lilianweng.github.io/posts/2019-11-10-self-supervised/)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://lilianweng.github.io/posts/2019-11-10-self-supervised/](https://lilianweng.github.io/posts/2019-11-10-self-supervised/)
 - en: '[Updated on 2020-01-09: add a new section on [Contrastive Predictive Coding](#contrastive-predictive-coding)].'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: '[更新于2020-01-09：添加了一个关于[对比预测编码](#contrastive-predictive-coding)的新部分]。'
 - en: '~~[Updated on 2020-04-13: add a “Momentum Contrast” section on MoCo, SimCLR
     and CURL.]~~'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: ~~[更新于2020-04-13：在MoCo、SimCLR和CURL上添加了一个“动量对比”部分。]~~
 - en: '[Updated on 2020-07-08: add a [“Bisimulation”](#bisimulation) section on DeepMDP
     and DBC.]'
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: '[更新于2020-07-08：在DeepMDP和DBC上添加了一个[“双模拟”](#bisimulation)部分。]'
 - en: '~~[Updated on 2020-09-12: add [MoCo V2](https://lilianweng.github.io/posts/2021-05-31-contrastive/#moco--moco-v2)
     and [BYOL](https://lilianweng.github.io/posts/2021-05-31-contrastive/#byol) in
     the “Momentum Contrast” section.]~~'
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: ~~[更新于2020-09-12：在“动量对比”部分添加了[MoCo V2](https://lilianweng.github.io/posts/2021-05-31-contrastive/#moco--moco-v2)和[BYOL](https://lilianweng.github.io/posts/2021-05-31-contrastive/#byol)。]~~
 - en: '[Updated on 2021-05-31: remove section on “Momentum Contrast” and add a pointer
     to a full post on [“Contrastive Representation Learning”](https://lilianweng.github.io/posts/2021-05-31-contrastive/)]'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: '[更新于2021-05-31：删除了“动量对比”部分，并添加了指向[“对比表示学习”](https://lilianweng.github.io/posts/2021-05-31-contrastive/)完整文章的链接]'
 - en: Given a task and enough labels, supervised learning can solve it really well.
     Good performance usually requires a decent amount of labels, but collecting manual
     labels is expensive (i.e. ImageNet) and hard to be scaled up. Considering the
@@ -33,214 +47,297 @@
     substantially more than a limited number of human curated labelled datasets, it
     is kinda wasteful not to use them. However, unsupervised learning is not easy
     and usually works much less efficiently than supervised learning.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 给定一个任务和足够的标签，监督学习可以很好地解决问题。良好的性能通常需要相当数量的标签，但收集手动标签是昂贵的（例如ImageNet），而且很难扩展。考虑到未标记数据的数量（例如自由文本，互联网上的所有图像）远远超过有限数量的人工策划的标记数据集，不利用它们有点浪费。然而，无监督学习并不容易，通常效率远低于监督学习。
 - en: What if we can get labels for free for unlabelled data and train unsupervised
     dataset in a supervised manner? We can achieve this by framing a supervised learning
     task in a special form to predict only a subset of information using the rest.
     In this way, all the information needed, both inputs and labels, has been provided.
     This is known as *self-supervised learning*.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们可以免费为未标记数据获取标签，并以监督方式训练无监督数据集，会怎样？我们可以通过以特殊形式构建一个监督学习任务来实现这一点，仅使用其余部分来预测信息的子集。通过这种方式，提供了所需的所有信息，包括输入和标签。这被称为*自监督学习*。
 - en: This idea has been widely used in language modeling. The default task for a
     language model is to predict the next word given the past sequence. [BERT](https://lilianweng.github.io/posts/2019-01-31-lm/#bert)
     adds two other auxiliary tasks and both rely on self-generated labels.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个想法已被广泛应用于语言建模。语言模型的默认任务是在给定过去序列的情况下预测下一个单词。[BERT](https://lilianweng.github.io/posts/2019-01-31-lm/#bert)添加了另外两个辅助任务，两者都依赖于自动生成的标签。
 - en: '![](../Images/4f8f8754f2f9d1b22deb84cadba21406.png)'
+  id: totrans-10
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/4f8f8754f2f9d1b22deb84cadba21406.png)'
 - en: 'Fig. 1\. A great summary of how self-supervised learning tasks can be constructed
     (Image source: [LeCun’s talk](https://www.youtube.com/watch?v=7I0Qt7GALVk))'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 图1. 一个很好的总结，展示了如何构建自监督学习任务（图片来源：[LeCun的演讲](https://www.youtube.com/watch?v=7I0Qt7GALVk)）
 - en: '[Here](https://github.com/jason718/awesome-self-supervised-learning) is a nicely
     curated list of papers in self-supervised learning. Please check it out if you
     are interested in reading more in depth.'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: '[这里](https://github.com/jason718/awesome-self-supervised-learning)是一个精心策划的自监督学习论文列表。如果您对深入阅读感兴趣，请查看。'
 - en: Note that this post does not focus on either NLP / [language modeling](https://lilianweng.github.io/posts/2019-01-31-lm/)
     or [generative modeling](https://lilianweng.github.io/tags/generative-model/).
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 请注意，本文不专注于自然语言处理/NLP或[语言建模](https://lilianweng.github.io/posts/2019-01-31-lm/)或[生成建模](https://lilianweng.github.io/tags/generative-model/)。
 - en: Why Self-Supervised Learning?
+  id: totrans-14
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 为什么要进行自监督学习？
 - en: Self-supervised learning empowers us to exploit a variety of labels that come
     with the data for free. The motivation is quite straightforward. Producing a dataset
     with clean labels is expensive but unlabeled data is being generated all the time.
     To make use of this much larger amount of unlabeled data, one way is to set the
     learning objectives properly so as to get supervision from the data itself.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 自监督学习使我们能够免费利用数据中附带的各种标签。动机非常直接。生成一个带有清晰标签的数据集是昂贵的，但未标记数据一直在生成。为了利用这个更大量的未标记数据，一个方法是适当设置学习目标，以便从数据本身获得监督。
 - en: The *self-supervised task*, also known as *pretext task*, guides us to a supervised
     loss function. However, we usually don’t care about the final performance of this
     invented task. Rather we are interested in the learned intermediate representation
     with the expectation that this representation can carry good semantic or structural
     meanings and can be beneficial to a variety of practical downstream tasks.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: '*自监督任务*，也称为*假任务*，引导我们到一个监督损失函数。然而，我们通常不关心这个虚构任务的最终表现。相反，我们对学到的中间表示感兴趣，期望这个表示能够携带良好的语义或结构含义，并对各种实际下游任务有益。'
 - en: For example, we might rotate images at random and train a model to predict how
     each input image is rotated. The rotation prediction task is made-up, so the actual
     accuracy is unimportant, like how we treat auxiliary tasks. But we expect the
     model to learn high-quality latent variables for real-world tasks, such as constructing
     an object recognition classifier with very few labeled samples.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，我们可以随机旋转图像并训练模型来预测每个输入图像的旋转方式。旋转预测任务是虚构的，因此实际准确性并不重要，就像我们对待辅助任务一样。但我们期望模型学习到高质量的潜在变量，以用极少标记样本构建物体识别分类器等真实世界任务。
 - en: 'Broadly speaking, all the generative models can be considered as self-supervised,
     but with different goals: Generative models focus on creating diverse and realistic
     images, while self-supervised representation learning care about producing good
     features generally helpful for many tasks. Generative modeling is not the focus
     of this post, but feel free to check my [previous posts](https://lilianweng.github.io/tags/generative-model/).'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 广义上说，所有生成模型都可以被视为自监督的，但目标不同：生成模型专注于创建多样且逼真的图像，而自监督表示学习关注于生成对许多任务有帮助的良好特征。生成建模不是本文的重点，但欢迎查看我的[之前的文章](https://lilianweng.github.io/tags/generative-model/)。
 - en: Images-Based
+  id: totrans-19
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 基于图像
 - en: Many ideas have been proposed for self-supervised representation learning on
     images. A common workflow is to train a model on one or multiple pretext tasks
     with unlabelled images and then use one intermediate feature layer of this model
     to feed a multinomial logistic regression classifier on ImageNet classification.
     The final classification accuracy quantifies how good the learned representation
     is.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于图像的自监督表示学习已经提出了许多想法。一个常见的工作流程是在未标记的图像上训练一个模型进行一个或多个假任务，然后使用该模型的一个中间特征层来为ImageNet分类上的多项式逻辑回归分类器提供输入。最终的分类准确度量化了学习到的表示有多好。
 - en: Recently, some researchers proposed to train supervised learning on labelled
     data and self-supervised pretext tasks on unlabelled data simultaneously with
     shared weights, like in [Zhai et al, 2019](https://arxiv.org/abs/1905.03670) and
     [Sun et al, 2019](https://arxiv.org/abs/1909.11825).
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 最近，一些研究人员提出同时在标记数据上进行监督学习和在未标记数据上进行自监督假任务学习，共享权重，例如[Zhai等人，2019](https://arxiv.org/abs/1905.03670)和[Sun等人，2019](https://arxiv.org/abs/1909.11825)。
 - en: Distortion
+  id: totrans-22
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 扭曲
 - en: We expect small distortion on an image does not modify its original semantic
     meaning or geometric forms. Slightly distorted images are considered the same
     as original and thus the learned features are expected to be invariant to distortion.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们期望对图像进行轻微扭曲不会改变其原始语义含义或几何形式。轻微扭曲的图像被视为与原始图像相同，因此学到的特征预期对扭曲具有不变性。
 - en: '**Exemplar-CNN** ([Dosovitskiy et al., 2015](https://arxiv.org/abs/1406.6909))
     create surrogate training datasets with unlabeled image patches:'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: '**典范-CNN**（[Dosovitskiy等人，2015](https://arxiv.org/abs/1406.6909)）使用未标记的图像补丁创建替代训练数据集：'
 - en: Sample $N$ patches of size 32 × 32 pixels from different images at varying positions
     and scales, only from regions containing considerable gradients as those areas
     cover edges and tend to contain objects or parts of objects. They are *“exemplary”*
     patches.
+  id: totrans-25
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 从不同图像中的不同位置和比例中随机采样大小为32×32像素的$N$个补丁，仅从包含相当梯度的区域中采样，因为这些区域涵盖边缘并倾向于包含对象或对象的部分。它们是*“典型的”*补丁。
 - en: Each patch is distorted by applying a variety of random transformations (i.e.,
     translation, rotation, scaling, etc.). All the resulting distorted patches are
     considered to belong to the *same surrogate class*.
+  id: totrans-26
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 通过应用各种随机变换（即平移、旋转、缩放等）来扭曲每个补丁。所有生成的扭曲补丁都被视为属于*同一代理类*。
 - en: The pretext task is to discriminate between a set of surrogate classes. We can
     arbitrarily create as many surrogate classes as we want.
+  id: totrans-27
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 假设任务是区分一组代理类。我们可以任意创建任意多个代理类。
 - en: '![](../Images/7f15603f558e01d6c6c4cbaeca886a61.png)'
+  id: totrans-28
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/7f15603f558e01d6c6c4cbaeca886a61.png)'
 - en: 'Fig. 2\. The original patch of a cute deer is in the top left corner. Random
     transformations are applied, resulting in a variety of distorted patches. All
     of them should be classified into the same class in the pretext task. (Image source:
     [Dosovitskiy et al., 2015](https://arxiv.org/abs/1406.6909))'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 图2。一只可爱鹿的原始补丁位于左上角。应用随机变换后，产生各种扭曲补丁。所有这些补丁在假设任务中应被分类为同一类。（图片来源：[Dosovitskiy等人，2015](https://arxiv.org/abs/1406.6909)）
 - en: '**Rotation** of an entire image ([Gidaris et al. 2018](https://arxiv.org/abs/1803.07728)
     is another interesting and cheap way to modify an input image while the semantic
     content stays unchanged. Each input image is first rotated by a multiple of $90^\circ$
     at random, corresponding to $[0^\circ, 90^\circ, 180^\circ, 270^\circ]$. The model
     is trained to predict which rotation has been applied, thus a 4-class classification
     problem.'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: '**旋转**整个图像（[Gidaris等人，2018](https://arxiv.org/abs/1803.07728)是另一种有趣且廉价的修改输入图像的方式，同时语义内容保持不变。每个输入图像首先以随机的$90^\circ$的倍数旋转，对应于$[0^\circ,
+    90^\circ, 180^\circ, 270^\circ]$。模型被训练以预测应用了哪种旋转，因此是一个4类分类问题。'
 - en: In order to identify the same image with different rotations, the model has
     to learn to recognize high level object parts, such as heads, noses, and eyes,
     and the relative positions of these parts, rather than local patterns. This pretext
     task drives the model to learn semantic concepts of objects in this way.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了识别不同旋转的相同图像，模型必须学会识别高级对象部分，如头部、鼻子和眼睛，以及这些部分的相对位置，而不是局部模式。这个假设任务驱使模型以这种方式学习对象的语义概念。
 - en: '![](../Images/5225c1f883fa2169372b06c75cb40e2f.png)'
+  id: totrans-32
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/5225c1f883fa2169372b06c75cb40e2f.png)'
 - en: 'Fig. 3\. Illustration of self-supervised learning by rotating the entire input
     images. The model learns to predict which rotation is applied. (Image source:
     [Gidaris et al. 2018](https://arxiv.org/abs/1803.07728))'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 图3。通过旋转整个输入图像进行自监督学习的示意图。模型学会预测应用了哪种旋转。（图片来源：[Gidaris等人，2018](https://arxiv.org/abs/1803.07728)）
 - en: Patches
+  id: totrans-34
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 补丁
 - en: The second category of self-supervised learning tasks extract multiple patches
     from one image and ask the model to predict the relationship between these patches.
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 第二类自监督学习任务从一幅图像中提取多个补丁，并要求模型预测这些补丁之间的关系。
 - en: '[Doersch et al. (2015)](https://arxiv.org/abs/1505.05192) formulates the pretext
     task as predicting the **relative position** between two random patches from one
     image. A model needs to understand the spatial context of objects in order to
     tell the relative position between parts.'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Doersch等人（2015）](https://arxiv.org/abs/1505.05192)将假设任务规定为预测一幅图像中两个随机补丁之间的**相对位置**。模型需要理解对象的空间上下文，以便告知部分之间的相对位置。'
 - en: 'The training patches are sampled in the following way:'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 训练补丁的采样方式如下：
 - en: Randomly sample the first patch without any reference to image content.
+  id: totrans-38
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 随机采样第一个补丁，不参考图像内容。
 - en: Considering that the first patch is placed in the middle of a 3x3 grid, and
     the second patch is sampled from its 8 neighboring locations around it.
+  id: totrans-39
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 考虑第一个补丁放置在3x3网格的中间，第二个补丁从其周围8个相邻位置中采样。
 - en: 'To avoid the model only catching low-level trivial signals, such as connecting
     a straight line across boundary or matching local patterns, additional noise is
     introduced by:'
+  id: totrans-40
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 为了避免模型仅捕捉低级琐碎信号，如穿过边界连接一条直线或匹配局部模式，通过引入额外的噪声来增加：
 - en: Add gaps between patches
+  id: totrans-41
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在补丁之间添加间隙
 - en: Small jitters
+  id: totrans-42
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 小的抖动
 - en: Randomly downsample some patches to as little as 100 total pixels, and then
     upsampling it, to build robustness to pixelation.
+  id: totrans-43
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 随机降低一些补丁的分辨率至少为100个像素，然后上采样，以增强对像素化的鲁棒性。
 - en: Shift green and magenta toward gray or randomly drop 2 of 3 color channels (See
     [“chromatic aberration”](#chromatic-aberration) below)
+  id: totrans-44
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 将绿色和品红色向灰色移动或随机丢弃3种颜色通道中的2种（见下文的[“色差”](#chromatic-aberration)）
 - en: The model is trained to predict which one of 8 neighboring locations the second
     patch is selected from, a classification problem over 8 classes.
+  id: totrans-45
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 模型被训练来预测第二个补丁选自8个相邻位置中的哪一个，这是一个包含8个类别的分类问题。
 - en: '![](../Images/ee55f2776ae5ad6f080c2915988b3558.png)'
+  id: totrans-46
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ee55f2776ae5ad6f080c2915988b3558.png)'
 - en: 'Fig. 4\. Illustration of self-supervised learning by predicting the relative
     position of two random patches. (Image source: [Doersch et al., 2015](https://arxiv.org/abs/1505.05192))'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 图4\. 通过预测两个随机补丁的相对位置进行自监督学习的示意图。（图片来源：[Doersch et al., 2015](https://arxiv.org/abs/1505.05192)）
 - en: Other than trivial signals like boundary patterns or textures continuing, another
     interesting and a bit surprising trivial solution was found, called [*“chromatic
     aberration”*](https://en.wikipedia.org/wiki/Chromatic_aberration). It is triggered
@@ -251,83 +348,123 @@
     solution and has nothing to do with the image content. Pre-processing images by
     shifting green and magenta toward gray or randomly dropping 2 of 3 color channels
     can avoid this trivial solution.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 除了像边界模式或纹理等微不足道的信号持续外，另一个有趣且有点令人惊讶的微不足道解决方案被发现，称为[*“色差”*](https://en.wikipedia.org/wiki/Chromatic_aberration)。这是由于不同波长的光在透过镜头时具有不同的焦距而触发的。在这个过程中，颜色通道之间可能存在小的偏移。因此，模型可以通过简单比较两个补丁中绿色和品红的分离方式来学会告诉相对位置。这是一个微不足道的解决方案，与图像内容无关。通过将图像预处理为将绿色和品红向灰色移动或随机丢弃3个颜色通道中的2个来避免这个微不足道的解决方案。
 - en: '![](../Images/8eabea36304d8c70112b9f856468bc98.png)'
+  id: totrans-49
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8eabea36304d8c70112b9f856468bc98.png)'
 - en: 'Fig. 5\. Illustration of how chromatic aberration happens. (Image source: [wikipedia](https://upload.wikimedia.org/wikipedia/commons/a/aa/Chromatic_aberration_lens_diagram.svg))'
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 图5\. 色差发生的示意图。（图片来源：[维基百科](https://upload.wikimedia.org/wikipedia/commons/a/aa/Chromatic_aberration_lens_diagram.svg)）
 - en: 'Since we have already set up a 3x3 grid in each image in the above task, why
     not use all of 9 patches rather than only 2 to make the task more difficult? Following
     this idea, [Noroozi & Favaro (2016)](https://arxiv.org/abs/1603.09246) designed
     a **jigsaw puzzle** game as pretext task: The model is trained to place 9 shuffled
     patches back to the original locations.'
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 既然在上述任务中每个图像中已经设置了一个3x3的网格，为什么不使用所有9个补丁而不仅仅是2个来使任务更加困难呢？根据这个想法，[Noroozi & Favaro
+    (2016)](https://arxiv.org/abs/1603.09246)设计了一个**拼图游戏**作为预文本任务：模型被训练将9个洗牌后的补丁放回原始位置。
 - en: A convolutional network processes each patch independently with shared weights
     and outputs a probability vector per patch index out of a predefined set of permutations.
     To control the difficulty of jigsaw puzzles, the paper proposed to shuffle patches
     according to a predefined permutation set and configured the model to predict
     a probability vector over all the indices in the set.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 卷积网络独立处理每个补丁，共享权重，并为预定义的排列集合中的每个补丁索引输出一个概率向量。为了控制拼图谜题的难度，该论文建议根据预定义的排列集合对补丁进行洗牌，并配置模型以预测整个集合中所有索引的概率向量。
 - en: Because how the input patches are shuffled does not alter the correct order
     to predict. A potential improvement to speed up training is to use permutation-invariant
     graph convolutional network (GCN) so that we don’t have to shuffle the same set
     of patches multiple times, same idea as in this [paper](https://arxiv.org/abs/1911.00025).
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 因为输入补丁的洗牌方式不会改变正确的预测顺序。加快训练的一个潜在改进是使用不变排列图卷积网络（GCN），这样我们就不必多次洗牌相同的补丁集，与这篇[论文](https://arxiv.org/abs/1911.00025)中的想法相同。
 - en: '![](../Images/ee71c0b521934b5cd14b09bb69625ce2.png)'
+  id: totrans-54
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ee71c0b521934b5cd14b09bb69625ce2.png)'
 - en: 'Fig. 6\. Illustration of self-supervised learning by solving jigsaw puzzle.
     (Image source: [Noroozi & Favaro, 2016](https://arxiv.org/abs/1603.09246))'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 图6\. 通过解决拼图谜题进行自监督学习的示意图。（图片来源：[Noroozi & Favaro, 2016](https://arxiv.org/abs/1603.09246)）
 - en: Another idea is to consider “feature” or “visual primitives” as a scalar-value
     attribute that can be summed up over multiple patches and compared across different
     patches. Then the relationship between patches can be defined by **counting features**
     and simple arithmetic ([Noroozi, et al, 2017](https://arxiv.org/abs/1708.06734)).
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一个想法是将“特征”或“视觉基元”视为可以在多个补丁上求和并在不同补丁之间进行比较的标量属性。然后，通过**计数特征**和简单算术来定义补丁之间的关系（[Noroozi,
+    et al, 2017](https://arxiv.org/abs/1708.06734)）。
 - en: 'The paper considers two transformations:'
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文考虑了两种变换：
 - en: '*Scaling*: If an image is scaled up by 2x, the number of visual primitives
     should stay the same.'
+  id: totrans-58
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*缩放*：如果一个图像被放大 2 倍，视觉基元的数量应该保持不变。'
 - en: '*Tiling*: If an image is tiled into a 2x2 grid, the number of visual primitives
     is expected to be the sum, 4 times the original feature counts.'
+  id: totrans-59
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*平铺*：如果一个图像被平铺成一个 2x2 的网格，预期视觉基元的数量将是原始特征计数的四倍。'
 - en: 'The model learns a feature encoder $\phi(.)$ using the above feature counting
     relationship. Given an input image $\mathbf{x} \in \mathbb{R}^{m \times n \times
     3}$, considering two types of transformation operators:'
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 该模型通过上述特征计数关系学习特征编码器 $\phi(.)$。给定一个输入图像 $\mathbf{x} \in \mathbb{R}^{m \times
+    n \times 3}$，考虑两种类型的变换操作：
 - en: 'Downsampling operator, $D: \mathbb{R}^{m \times n \times 3} \mapsto \mathbb{R}^{\frac{m}{2}
     \times \frac{n}{2} \times 3}$: downsample by a factor of 2'
+  id: totrans-61
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '下采样操作符，$D: \mathbb{R}^{m \times n \times 3} \mapsto \mathbb{R}^{\frac{m}{2}
+    \times \frac{n}{2} \times 3}$：按 2 倍下采样'
 - en: 'Tiling operator $T_i: \mathbb{R}^{m \times n \times 3} \mapsto \mathbb{R}^{\frac{m}{2}
     \times \frac{n}{2} \times 3}$: extract the $i$-th tile from a 2x2 grid of the
     image.'
+  id: totrans-62
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '平铺操作符 $T_i: \mathbb{R}^{m \times n \times 3} \mapsto \mathbb{R}^{\frac{m}{2}
+    \times \frac{n}{2} \times 3}$：从图像的 2x2 网格中提取第 $i$ 个瓦片。'
 - en: 'We expect to learn:'
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们期望学习：
 - en: $$ \phi(\mathbf{x}) = \phi(D \circ \mathbf{x}) = \sum_{i=1}^4 \phi(T_i \circ
     \mathbf{x}) $$
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \phi(\mathbf{x}) = \phi(D \circ \mathbf{x}) = \sum_{i=1}^4 \phi(T_i \circ
+    \mathbf{x}) $$
 - en: 'Thus the MSE loss is: $\mathcal{L}_\text{feat} = |\phi(D \circ \mathbf{x})
     - \sum_{i=1}^4 \phi(T_i \circ \mathbf{x})|^2_2$. To avoid trivial solution $\phi(\mathbf{x})
     = \mathbf{0}, \forall{\mathbf{x}}$, another loss term is added to encourage the
@@ -335,50 +472,75 @@
     = \max(0, c -|\phi(D \circ \mathbf{y}) - \sum_{i=1}^4 \phi(T_i \circ \mathbf{x})|^2_2)$,
     where $\mathbf{y}$ is another input image different from $\mathbf{x}$ and $c$
     is a scalar constant. The final loss is:'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，均方误差损失为：$\mathcal{L}_\text{feat} = |\phi(D \circ \mathbf{x}) - \sum_{i=1}^4
+    \phi(T_i \circ \mathbf{x})|^2_2$。为了避免平凡解 $\phi(\mathbf{x}) = \mathbf{0}, \forall{\mathbf{x}}$，另一个损失项被添加以鼓励两个不同图像特征之间的差异：$\mathcal{L}_\text{diff}
+    = \max(0, c -|\phi(D \circ \mathbf{y}) - \sum_{i=1}^4 \phi(T_i \circ \mathbf{x})|^2_2)$，其中
+    $\mathbf{y}$ 是与 $\mathbf{x}$ 不同的另一个输入图像，$c$ 是一个标量常数。最终损失为：
 - en: $$ \mathcal{L} = \mathcal{L}_\text{feat} + \mathcal{L}_\text{diff} = \|\phi(D
     \circ \mathbf{x}) - \sum_{i=1}^4 \phi(T_i \circ \mathbf{x})\|^2_2 + \max(0, M
     -\|\phi(D \circ \mathbf{y}) - \sum_{i=1}^4 \phi(T_i \circ \mathbf{x})\|^2_2) $$![](../Images/c4ca05d54f791f8effc2c2ae667205fc.png)
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathcal{L} = \mathcal{L}_\text{feat} + \mathcal{L}_\text{diff} = \|\phi(D
+    \circ \mathbf{x}) - \sum_{i=1}^4 \phi(T_i \circ \mathbf{x})\|^2_2 + \max(0, M
+    -\|\phi(D \circ \mathbf{y}) - \sum_{i=1}^4 \phi(T_i \circ \mathbf{x})\|^2_2) $$![](../Images/c4ca05d54f791f8effc2c2ae667205fc.png)
 - en: 'Fig. 7\. Self-supervised representation learning by counting features. (Image
     source: [Noroozi, et al, 2017](https://arxiv.org/abs/1708.06734))'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 7\. 通过计数特征进行自监督表示学习。（图片来源：[Noroozi 等人，2017](https://arxiv.org/abs/1708.06734)）
 - en: Colorization
+  id: totrans-68
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 上色
 - en: '**Colorization** can be used as a powerful self-supervised task: a model is
     trained to color a grayscale input image; precisely the task is to map this image
     to a distribution over quantized color value outputs ([Zhang et al. 2016](https://arxiv.org/abs/1603.08511)).'
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: '**上色**可以作为一个强大的自监督任务：模型被训练为给灰度输入图像上色；准确地说，任务是将这个图像映射到一个分布上的量化颜色值输出（[Zhang 等人，2016](https://arxiv.org/abs/1603.08511)）。'
 - en: The model outputs colors in the the [CIE L*a*b* color space](https://en.wikipedia.org/wiki/CIELAB_color_space).
     The L*a*b* color is designed to approximate human vision, while, in contrast,
     RGB or CMYK models the color output of physical devices.
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 该模型在[CIE L*a*b*颜色空间](https://en.wikipedia.org/wiki/CIELAB_color_space)中输出颜色。L*a*b*颜色旨在近似人类视觉，而相比之下，RGB或CMYK模型则输出物理设备的颜色。
 - en: L* component matches human perception of lightness; L* = 0 is black and L* =
     100 indicates white.
+  id: totrans-71
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: L* 组件匹配了光亮度的人类感知；L* = 0 代表黑色，L* = 100 代表白色。
 - en: a* component represents green (negative) / magenta (positive) value.
+  id: totrans-72
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: a* 组件代表绿色（负值）/品红色（正值）。
 - en: b* component models blue (negative) /yellow (positive) value.
+  id: totrans-73
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: b* 组件模拟蓝色（负值）/黄色（正值）。
 - en: Due to the multimodal nature of the colorization problem, cross-entropy loss
     of predicted probability distribution over binned color values works better than
     L2 loss of the raw color values. The a*b* color space is quantized with bucket
     size 10.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于上色问题的多模态性质，预测的颜色值分布的交叉熵损失比原始颜色值的 L2 损失效果更好。a*b* 颜色空间被量化为桶大小为 10。
 - en: 'To balance between common colors (usually low a*b* values, of common backgrounds
     like clouds, walls, and dirt) and rare colors (which are likely associated with
     key objects in the image), the loss function is rebalanced with a weighting term
@@ -387,46 +549,69 @@
     in information retrieval model. The weighting term is constructed as: (1-λ) *
     Gaussian-kernel-smoothed empirical probability distribution + λ * a uniform distribution,
     where both distributions are over the quantized a*b* color space.'
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了在常见颜色（通常是低a*b*值，如云、墙壁和泥土等常见背景）和稀有颜色之间取得平衡（这些颜色可能与图像中的关键对象相关），损失函数通过加权项进行重新平衡，增加了罕见颜色桶的损失。这就像我们在信息检索模型中为什么需要[tf和idf](https://en.wikipedia.org/wiki/Tf%E2%80%93idf)来评分单词一样。加权项构造如下：(1-λ)
+    * 高斯核平滑的经验概率分布 + λ * 均匀分布，其中两个分布都是在量化的a*b*颜色空间上。
 - en: Generative Modeling
+  id: totrans-76
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 生成建模
 - en: The pretext task in generative modeling is to reconstruct the original input
     while learning meaningful latent representation.
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 生成建模中的预设任务是在学习有意义的潜在表示的同时重建原始输入。
 - en: The **denoising autoencoder** ([Vincent, et al, 2008](https://www.cs.toronto.edu/~larocheh/publications/icml-2008-denoising-autoencoders.pdf))
     learns to recover an image from a version that is partially corrupted or has random
     noise. The design is inspired by the fact that humans can easily recognize objects
     in pictures even with noise, indicating that key visual features can be extracted
     and separated from noise. See my [old post](https://lilianweng.github.io/posts/2018-08-12-vae/#denoising-autoencoder).
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: '**去噪自动编码器**（[Vincent等人，2008](https://www.cs.toronto.edu/~larocheh/publications/icml-2008-denoising-autoencoders.pdf)）学习从部分损坏或带有随机噪声的图像中恢复图像。该设计灵感来自于人类即使在有噪声的图片中也能轻松识别物体，表明关键的视觉特征可以从噪声中提取和分离出来。查看我的[旧文章](https://lilianweng.github.io/posts/2018-08-12-vae/#denoising-autoencoder)。'
 - en: The **context encoder** ([Pathak, et al., 2016](https://arxiv.org/abs/1604.07379))
     is trained to fill in a missing piece in the image. Let $\hat{M}$ be a binary
     mask, 0 for dropped pixels and 1 for remaining input pixels. The model is trained
     with a combination of the reconstruction (L2) loss and the adversarial loss. The
     removed regions defined by the mask could be of any shape.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: '**上下文编码器**（[Pathak等人，2016](https://arxiv.org/abs/1604.07379)）被训练用于填补图像中的缺失部分。设$\hat{M}$为二进制掩码，0表示删除的像素，1表示剩余的输入像素。该模型通过重建（L2）损失和对抗损失的组合进行训练。由掩码定义的移除区域可以是任意形状。'
 - en: $$ \begin{aligned} \mathcal{L}(\mathbf{x}) &= \mathcal{L}_\text{recon}(\mathbf{x})
     + \mathcal{L}_\text{adv}(\mathbf{x})\\ \mathcal{L}_\text{recon}(\mathbf{x}) &=
     \|(1 - \hat{M}) \odot (\mathbf{x} - E(\hat{M} \odot \mathbf{x})) \|_2^2 \\ \mathcal{L}_\text{adv}(\mathbf{x})
     &= \max_D \mathbb{E}_{\mathbf{x}} [\log D(\mathbf{x}) + \log(1 - D(E(\hat{M} \odot
     \mathbf{x})))] \end{aligned} $$
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \mathcal{L}(\mathbf{x}) &= \mathcal{L}_\text{recon}(\mathbf{x})
+    + \mathcal{L}_\text{adv}(\mathbf{x})\\ \mathcal{L}_\text{recon}(\mathbf{x}) &=
+    \|(1 - \hat{M}) \odot (\mathbf{x} - E(\hat{M} \odot \mathbf{x})) \|_2^2 \\ \mathcal{L}_\text{adv}(\mathbf{x})
+    &= \max_D \mathbb{E}_{\mathbf{x}} [\log D(\mathbf{x}) + \log(1 - D(E(\hat{M} \odot
+    \mathbf{x})))] \end{aligned} $$
 - en: where $E(.)$ is the encoder and $D(.)$ is the decoder.
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$E(.)$是编码器，$D(.)$是解码器。
 - en: '![](../Images/d65baf71378fba6b38330daf8a8484ff.png)'
+  id: totrans-82
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/d65baf71378fba6b38330daf8a8484ff.png)'
 - en: 'Fig. 8\. Illustration of context encoder. (Image source: [Pathak, et al., 2016](https://arxiv.org/abs/1604.07379))'
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 图8\. 上下文编码器的示意图。（图片来源：[Pathak等人，2016](https://arxiv.org/abs/1604.07379)）
 - en: 'When applying a mask on an image, the context encoder removes information of
     all the color channels in partial regions. How about only hiding a subset of channels?
     The **split-brain autoencoder** ([Zhang et al., 2017](https://arxiv.org/abs/1611.09842))
@@ -439,27 +624,42 @@
     two complementary predictions: one network $f_1$ predicts $\mathbf{x}_2$ from
     $\mathbf{x}_1$ and the other network $f_1$ predicts $\mathbf{x}_1$ from $\mathbf{x}_2$.
     The loss is either L1 loss or cross entropy if color values are quantized.'
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 在图像上应用遮罩时，上下文编码器会删除部分区域中所有颜色通道的信息。 那么只隐藏一部分通道呢？ **分裂脑自动编码器**（[Zhang等人，2017](https://arxiv.org/abs/1611.09842)）通过从其余通道预测一部分颜色通道来实现这一点。
+    让数据张量 $\mathbf{x} \in \mathbb{R}^{h \times w \times \vert C \vert }$，其中 $C$ 为颜色通道，成为网络的第
+    $l$ 层的输入。 它被分成两个不相交的部分，$\mathbf{x}_1 \in \mathbb{R}^{h \times w \times \vert C_1
+    \vert}$ 和 $\mathbf{x}_2 \in \mathbb{R}^{h \times w \times \vert C_2 \vert}$，其中
+    $C_1 , C_2 \subseteq C$。 然后训练两个子网络进行两个互补的预测：一个网络 $f_1$ 从 $\mathbf{x}_1$ 预测 $\mathbf{x}_2$，另一个网络
+    $f_1$ 从 $\mathbf{x}_2$ 预测 $\mathbf{x}_1$。 如果颜色值被量化，则损失可以是 L1 损失或交叉熵损失。
 - en: The split can happen once on the RGB-D or L*a*b* colorspace, or happen even
     in every layer of a CNN network in which the number of channels can be arbitrary.
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 分割可以在RGB-D或L*a*b*颜色空间中进行一次，也可以在CNN网络的每一层中进行，其中通道数可以是任意的。
 - en: '![](../Images/37be59d024322461ff50d61ff93494f7.png)'
+  id: totrans-86
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/37be59d024322461ff50d61ff93494f7.png)'
 - en: 'Fig. 9\. Illustration of split-brain autoencoder. (Image source: [Zhang et
     al., 2017](https://arxiv.org/abs/1611.09842))'
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 9\. 分裂脑自动编码器的示意图。 (图片来源：[Zhang等人，2017](https://arxiv.org/abs/1611.09842))
 - en: The generative adversarial networks (GANs) are able to learn to map from simple
     latent variables to arbitrarily complex data distributions. Studies have shown
     that the latent space of such generative models captures semantic variation in
     the data; e.g. when training GAN models on human faces, some latent variables
     are associated with facial expression, glasses, gender, etc ([Radford et al.,
     2016](https://arxiv.org/abs/1511.06434)).
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 生成对抗网络（GANs）能够学习将简单的潜变量映射到任意复杂的数据分布。 研究表明，这种生成模型的潜空间捕捉了数据中的语义变化；例如，在训练 GAN 模型时，一些潜变量与面部表情、眼镜、性别等相关联（[Radford等人，2016](https://arxiv.org/abs/1511.06434)）。
 - en: '**Bidirectional GANs** ([Donahue, et al, 2017](https://arxiv.org/abs/1605.09782))
     introduces an additional encoder $E(.)$ to learn the mappings from the input to
     the latent variable $\mathbf{z}$. The discriminator $D(.)$ predicts in the joint
@@ -470,23 +670,39 @@
     to generate data and latent variables that are realistic enough to confuse the
     discriminator and at the same time the discriminator $D$ tries to differentiate
     real and generated data.'
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: '**双向 GANs**（[Donahue等人，2017](https://arxiv.org/abs/1605.09782)）引入了额外的编码器 $E(.)$
+    来学习从输入到潜变量 $\mathbf{z}$ 的映射。 判别器 $D(.)$ 在输入数据和潜在表示 $(\mathbf{x}, \mathbf{z})$
+    的联合空间中进行预测，以区分生成的对 $(\mathbf{x}, E(\mathbf{x}))$ 和真实对 $(G(\mathbf{z}), \mathbf{z})$。
+    该模型被训练以优化目标：$\min_{G, E} \max_D V(D, E, G)$，其中生成器 $G$ 和编码器 $E$ 学习生成足够逼真的数据和潜变量，以混淆判别器，同时判别器
+    $D$ 试图区分真实数据和生成数据。'
 - en: $$ V(D, E, G) = \mathbb{E}_{\mathbf{x} \sim p_\mathbf{x}} [ \underbrace{\mathbb{E}_{\mathbf{z}
     \sim p_E(.\vert\mathbf{x})}[\log D(\mathbf{x}, \mathbf{z})]}_{\log D(\text{real})}
     ] + \mathbb{E}_{\mathbf{z} \sim p_\mathbf{z}} [ \underbrace{\mathbb{E}_{\mathbf{x}
     \sim p_G(.\vert\mathbf{z})}[\log 1 - D(\mathbf{x}, \mathbf{z})]}_{\log(1- D(\text{fake}))})
     ] $$![](../Images/d69f79a686651de000f1445d690f1ff8.png)
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ V(D, E, G) = \mathbb{E}_{\mathbf{x} \sim p_\mathbf{x}} [ \underbrace{\mathbb{E}_{\mathbf{z}
+    \sim p_E(.\vert\mathbf{x})}[\log D(\mathbf{x}, \mathbf{z})]}_{\log D(\text{real})}
+    ] + \mathbb{E}_{\mathbf{z} \sim p_\mathbf{z}} [ \underbrace{\mathbb{E}_{\mathbf{x}
+    \sim p_G(.\vert\mathbf{z})}[\log 1 - D(\mathbf{x}, \mathbf{z})]}_{\log(1- D(\text{fake}))})
+    ] $$![](../Images/d69f79a686651de000f1445d690f1ff8.png)
 - en: 'Fig. 10\. Illustration of how Bidirectional GAN works. (Image source: [Donahue,
     et al, 2017](https://arxiv.org/abs/1605.09782))'
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: '图 10\. 双向 GAN 的工作原理示意图。 (图片来源: [Donahue, et al, 2017](https://arxiv.org/abs/1605.09782))'
 - en: Contrastive Learning
+  id: totrans-92
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 对比学习
 - en: The **Contrastive Predictive Coding (CPC)** ([van den Oord, et al. 2018](https://arxiv.org/abs/1807.03748))
     is an approach for unsupervised learning from high-dimensional data by translating
     a generative modeling problem to a classification problem. The *contrastive loss*
@@ -495,112 +711,169 @@
     representation amongst a set of unrelated “negative” samples. Such design is partially
     motivated by the fact that the unimodal loss like MSE has no enough capacity but
     learning a full generative model could be too expensive.
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: '**对比预测编码（CPC）** ([van den Oord, et al. 2018](https://arxiv.org/abs/1807.03748))
+    是一种从高维数据中无监督学习的方法，通过将生成建模问题转化为分类问题。 CPC 中的*对比损失*或*InfoNCE 损失*，受到[噪声对比估计（NCE）](https://lilianweng.github.io/posts/2017-10-15-word-embedding/#noise-contrastive-estimation-nce)的启发，使用交叉熵损失来衡量模型在一组不相关的“负样本”中对“未来”表示进行分类的能力。这种设计部分受到的启发是，单模损失如
+    MSE 没有足够的容量，但学习完整的生成模型可能太昂贵。'
 - en: '![](../Images/db27daabce7dbc6edb1c43d4165a582a.png)'
+  id: totrans-94
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/db27daabce7dbc6edb1c43d4165a582a.png)'
 - en: 'Fig. 11\. Illustration of applying Contrastive Predictive Coding on the audio
     input. (Image source: [van den Oord, et al. 2018](https://arxiv.org/abs/1807.03748))'
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: '图 11\. 展示了如何在音频输入上应用对比预测编码。 (图片来源: [van den Oord, et al. 2018](https://arxiv.org/abs/1807.03748))'
 - en: CPC uses an encoder to compress the input data $z_t = g_\text{enc}(x_t)$ and
     an *autoregressive* decoder to learn the high-level context that is potentially
     shared across future predictions, $c_t = g_\text{ar}(z_{\leq t})$. The end-to-end
     training relies on the NCE-inspired contrastive loss.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: CPC 使用编码器来压缩输入数据 $z_t = g_\text{enc}(x_t)$，并使用*自回归*解码器来学习可能在未来预测中共享的高级上下文，$c_t
+    = g_\text{ar}(z_{\leq t})$。端到端的训练依赖于受 NCE 启发的对比损失。
 - en: 'While predicting future information, CPC is optimized to maximize the the mutual
     information between input $x$ and context vector $c$:'
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 在预测未来信息时，CPC 被优化以最大化输入 $x$ 和上下文向量 $c$ 之间的互信息：
 - en: $$ I(x; c) = \sum_{x, c} p(x, c) \log\frac{p(x, c)}{p(x)p(c)} = \sum_{x, c}
     p(x, c)\log\frac{p(x|c)}{p(x)} $$
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ I(x; c) = \sum_{x, c} p(x, c) \log\frac{p(x, c)}{p(x)p(c)} = \sum_{x, c}
+    p(x, c)\log\frac{p(x|c)}{p(x)} $$
 - en: 'Rather than modeling the future observations $p_k(x_{t+k} \vert c_t)$ directly
     (which could be fairly expensive), CPC models a density function to preserve the
     mutual information between $x_{t+k}$ and $c_t$:'
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: CPC 不直接对未来观察结果 $p_k(x_{t+k} \vert c_t)$ 建模（这可能相当昂贵），而是模拟一个密度函数以保留 $x_{t+k}$
+    和 $c_t$ 之间的互信息：
 - en: $$ f_k(x_{t+k}, c_t) = \exp(z_{t+k}^\top W_k c_t) \propto \frac{p(x_{t+k}|c_t)}{p(x_{t+k})}
     $$
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ f_k(x_{t+k}, c_t) = \exp(z_{t+k}^\top W_k c_t) \propto \frac{p(x_{t+k}|c_t)}{p(x_{t+k})}
+    $$
 - en: where $f_k$ can be unnormalized and a linear transformation $W_k^\top c_t$ is
     used for the prediction with a different $W_k$ matrix for every step $k$.
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 $f_k$ 可以是未归一化的，用于预测的是一个线性变换 $W_k^\top c_t$，对于每一步 $k$ 使用不同的 $W_k$ 矩阵。
 - en: 'Given a set of $N$ random samples $X = \{x_1, \dots, x_N\}$ containing only
     one positive sample $x_t \sim p(x_{t+k} \vert c_t)$ and $N-1$ negative samples
     $x_{i \neq t} \sim p(x_{t+k})$, the cross-entropy loss for classifying the positive
     sample (where $\frac{f_k}{\sum f_k}$ is the prediction) correctly is:'
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: 给定一个包含仅一个正样本 $x_t \sim p(x_{t+k} \vert c_t)$ 和 $N-1$ 个负样本 $x_{i \neq t} \sim
+    p(x_{t+k})$ 的 $N$ 个随机样本集 $X = \{x_1, \dots, x_N\}$，正确分类正样本的交叉熵损失（其中 $\frac{f_k}{\sum
+    f_k}$ 是预测）为：
 - en: $$ \mathcal{L}_N = - \mathbb{E}_X \Big[\log \frac{f_k(x_{t+k}, c_t)}{\sum_{i=1}^N
     f_k (x_i, c_t)}\Big] $$![](../Images/d557ab76e629f89710f51d3a08680026.png)
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathcal{L}_N = - \mathbb{E}_X \Big[\log \frac{f_k(x_{t+k}, c_t)}{\sum_{i=1}^N
+    f_k (x_i, c_t)}\Big] $$![](../Images/d557ab76e629f89710f51d3a08680026.png)
 - en: 'Fig. 12\. Illustration of applying Contrastive Predictive Coding on images.
     (Image source: [van den Oord, et al. 2018](https://arxiv.org/abs/1807.03748))'
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: '图 12\. 展示了如何在图像上应用对比预测编码。 (图片来源: [van den Oord, et al. 2018](https://arxiv.org/abs/1807.03748))'
 - en: 'When using CPC on images ([Henaff, et al. 2019](https://arxiv.org/abs/1905.09272)),
     the predictor network should only access a masked feature set to avoid a trivial
     prediction. Precisely:'
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 当在图像上使用 CPC 时 ([Henaff, et al. 2019](https://arxiv.org/abs/1905.09272))，预测网络应该只访问一个屏蔽的特征集，以避免平凡的预测。具体来说：
 - en: Each input image is divided into a set of overlapped patches and each patch
     is encoded by a resnet encoder, resulting in compressed feature vector $z_{i,j}$.
+  id: totrans-106
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 每个输入图像被划分为一组重叠的补丁，每个补丁由一个resnet编码器编码，得到压缩特征向量$z_{i,j}$。
 - en: A masked conv net makes prediction with a mask such that the receptive field
     of a given output neuron can only see things above it in the image. Otherwise,
     the prediction problem would be trivial. The prediction can be made in both directions
     (top-down and bottom-up).
+  id: totrans-107
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 掩蔽卷积网络通过一个掩码进行预测，以使给定输出神经元的感受野只能看到图像中它上方的内容。否则，预测问题将变得平凡。预测可以在两个方向（自上而下和自下而上）进行。
 - en: 'The prediction is made for $z_{i+k, j}$ from context $c_{i,j}$: $\hat{z}_{i+k,
     j} = W_k c_{i,j}$.'
+  id: totrans-108
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 预测是从上下文$c_{i,j}$中对$z_{i+k, j}$进行的：$\hat{z}_{i+k, j} = W_k c_{i,j}$。
 - en: 'A contrastive loss quantifies this prediction with a goal to correctly identify
     the target among a set of negative representation $\{z_l\}$ sampled from other
     patches in the same image and other images in the same batch:'
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 对比损失通过一个目标来量化这种预测，即正确识别目标在同一图像中其他补丁和同一批次中其他图像中采样的一组负表示$\{z_l\}$：
 - en: $$ \mathcal{L}_\text{CPC} = -\sum_{i,j,k} \log p(z_{i+k, j} \vert \hat{z}_{i+k,
     j}, \{z_l\}) = -\sum_{i,j,k} \log \frac{\exp(\hat{z}_{i+k, j}^\top z_{i+k, j})}{\exp(\hat{z}_{i+k,
     j}^\top z_{i+k, j}) + \sum_l \exp(\hat{z}_{i+k, j}^\top z_l)} $$
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathcal{L}_\text{CPC} = -\sum_{i,j,k} \log p(z_{i+k, j} \vert \hat{z}_{i+k,
+    j}, \{z_l\}) = -\sum_{i,j,k} \log \frac{\exp(\hat{z}_{i+k, j}^\top z_{i+k, j})}{\exp(\hat{z}_{i+k,
+    j}^\top z_{i+k, j}) + \sum_l \exp(\hat{z}_{i+k, j}^\top z_l)} $$
 - en: For more content on contrastive learning, check out the post on [“Contrastive
     Representation Learning”](https://lilianweng.github.io/posts/2021-05-31-contrastive/).
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 欲了解更多关于对比学习的内容，请查看[“对比表示学习”](https://lilianweng.github.io/posts/2021-05-31-contrastive/)的文章。
 - en: Video-Based
+  id: totrans-112
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 基于视频的
 - en: A video contains a sequence of semantically related frames. Nearby frames are
     close in time and more correlated than frames further away. The order of frames
     describes certain rules of reasonings and physical logics; such as that object
     motion should be smooth and gravity is pointing down.
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个视频包含一系列语义相关的帧。相邻帧在时间上接近且相关性更高，比远离的帧更相关。帧的顺序描述了某种推理和物理逻辑的规则；比如物体运动应该平滑，重力指向下方。
 - en: A common workflow is to train a model on one or multiple pretext tasks with
     unlabelled videos and then feed one intermediate feature layer of this model to
     fine-tune a simple model on downstream tasks of action classification, segmentation
     or object tracking.
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个常见的工作流程是在未标记的视频上训练一个模型，然后将该模型的一个中间特征层馈送到一个简单模型上，用于下游任务的动作分类、分割或对象跟踪。
 - en: Tracking
+  id: totrans-115
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 跟踪
 - en: The movement of an object is traced by a sequence of video frames. The difference
     between how the same object is captured on the screen in close frames is usually
     not big, commonly triggered by small motion of the object or the camera. Therefore
@@ -608,8 +881,11 @@
     be close in the latent feature space. Motivated by this idea, [Wang & Gupta, 2015](https://arxiv.org/abs/1505.00687)
     proposed a way of unsupervised learning of visual representation by **tracking
     moving objects** in videos.
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个物体的运动是由一系列视频帧跟踪的。同一物体在接近帧中在屏幕上的捕捉方式之间的差异通常不大，通常由物体或相机的微小运动触发。因此，学习同一物体在接近帧中的任何视觉表示应该在潜在特征空间中接近。受到这个想法的启发，[Wang
+    & Gupta, 2015](https://arxiv.org/abs/1505.00687)提出了一种通过在视频中**跟踪移动物体**来无监督学习视觉表示的方法。
 - en: Precisely patches with motion are tracked over a small time window (e.g. 30
     frames). The first patch $\mathbf{x}$ and the last patch $\mathbf{x}^+$ are selected
     and used as training data points. If we train the model directly to minimize the
@@ -619,25 +895,40 @@
     by enforcing the distance between two tracked patches to be closer than the distance
     between the first patch and a random one in the feature space, $D(\mathbf{x},
     \mathbf{x}^-)) > D(\mathbf{x}, \mathbf{x}^+)$, where $D(.)$ is the cosine distance,
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: 精确地跟踪具有运动的补丁在一个小时间窗口内（例如30帧）。选择第一个补丁$\mathbf{x}$和最后一个补丁$\mathbf{x}^+$作为训练数据点。如果直接训练模型以最小化两个补丁特征向量之间的差异，模型可能只学会将所有内容映射到相同的值。为避免这样的平凡解，与[上文](#counting-feature-loss)相同，添加一个随机第三个补丁$\mathbf{x}^-$。模型通过强制执行两个跟踪补丁之间的距离比特征空间中第一个补丁和随机补丁之间的距离更近来学习表示，$D(\mathbf{x},
+    \mathbf{x}^-)) > D(\mathbf{x}, \mathbf{x}^+)$，其中$D(.)$是余弦距离，
 - en: $$ D(\mathbf{x}_1, \mathbf{x}_2) = 1 - \frac{f(\mathbf{x}_1) f(\mathbf{x}_2)}{\|f(\mathbf{x}_1)\|
     \|f(\mathbf{x}_2\|)} $$
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ D(\mathbf{x}_1, \mathbf{x}_2) = 1 - \frac{f(\mathbf{x}_1) f(\mathbf{x}_2)}{\|f(\mathbf{x}_1)\|
+    \|f(\mathbf{x}_2\|)} $$
 - en: 'The loss function is:'
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: 损失函数为：
 - en: $$ \mathcal{L}(\mathbf{x}, \mathbf{x}^+, \mathbf{x}^-) = \max\big(0, D(\mathbf{x},
     \mathbf{x}^+) - D(\mathbf{x}, \mathbf{x}^-) + M\big) + \text{weight decay regularization
     term} $$
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathcal{L}(\mathbf{x}, \mathbf{x}^+, \mathbf{x}^-) = \max\big(0, D(\mathbf{x},
+    \mathbf{x}^+) - D(\mathbf{x}, \mathbf{x}^-) + M\big) + \text{weight decay regularization
+    term} $$
 - en: where $M$ is a scalar constant controlling for the minimum gap between two distances;
     $M=0.5$ in the paper. The loss enforces $D(\mathbf{x}, \mathbf{x}^-) >= D(\mathbf{x},
     \mathbf{x}^+) + M$ at the optimal case.
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$M$是一个标量常数，控制两个距离之间的最小间隙；本文中$M=0.5$。该损失在最佳情况下强制执行$D(\mathbf{x}, \mathbf{x}^-)
+    >= D(\mathbf{x}, \mathbf{x}^+) + M$。
 - en: 'This form of loss function is also known as [triplet loss](https://arxiv.org/abs/1503.03832)
     in the face recognition task, in which the dataset contains images of multiple
     people from multiple camera angles. Let $\mathbf{x}^a$ be an anchor image of a
@@ -645,65 +936,92 @@
     different angle and $\mathbf{x}^n$ be a negative image of a different person.
     In the embedding space, $\mathbf{x}^a$ should be closer to $\mathbf{x}^p$ than
     $\mathbf{x}^n$:'
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种形式的损失函数在人脸识别任务中也被称为[三元损失](https://arxiv.org/abs/1503.03832)，其中数据集包含来自多个摄像机角度的多个人的图像。设$\mathbf{x}^a$为特定人员的锚定图像，$\mathbf{x}^p$为该同一人员的不同角度的正图像，$\mathbf{x}^n$为不同人员的负图像。在嵌入空间中，$\mathbf{x}^a$应比$\mathbf{x}^n$更接近$\mathbf{x}^p$：
 - en: $$ \mathcal{L}_\text{triplet}(\mathbf{x}^a, \mathbf{x}^p, \mathbf{x}^n) = \max(0,
     \|\phi(\mathbf{x}^a) - \phi(\mathbf{x}^p) \|_2^2 - \|\phi(\mathbf{x}^a) - \phi(\mathbf{x}^n)
     \|_2^2 + M) $$
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathcal{L}_\text{triplet}(\mathbf{x}^a, \mathbf{x}^p, \mathbf{x}^n) = \max(0,
+    \|\phi(\mathbf{x}^a) - \phi(\mathbf{x}^p) \|_2^2 - \|\phi(\mathbf{x}^a) - \phi(\mathbf{x}^n)
+    \|_2^2 + M) $$
 - en: A slightly different form of the triplet loss, named [n-pair loss](https://papers.nips.cc/paper/6200-improved-deep-metric-learning-with-multi-class-n-pair-loss-objective)
     is also commonly used for learning observation embedding in robotics tasks. See
     a [later section](#multi-view-metric-learning) for more related content.
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: 一种略有不同的三元损失形式，名为[n-pair loss](https://papers.nips.cc/paper/6200-improved-deep-metric-learning-with-multi-class-n-pair-loss-objective)也常用于机器人任务中学习观测嵌入。更多相关内容请参见[后续章节](#multi-view-metric-learning)。
 - en: '![](../Images/a5017f065e6b538ddf4ec71f4d5b886e.png)'
+  id: totrans-125
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a5017f065e6b538ddf4ec71f4d5b886e.png)'
 - en: 'Fig. 13\. Overview of learning representation by tracking objects in videos.
     (a) Identify moving patches in short traces; (b) Feed two related patched and
     one random patch into a conv network with shared weights. (c) The loss function
     enforces the distance between related patches to be closer than the distance between
     random patches. (Image source: [Wang & Gupta, 2015](https://arxiv.org/abs/1505.00687))'
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: 图13. 视频中通过跟踪物体学习表示的概述。 (a) 在短跟踪中识别移动补丁； (b) 将两个相关补丁和一个随机补丁输入具有共享权重的卷积网络。 (c)
+    损失函数强制执行相关补丁之间的距离比随机补丁之间的距离更近。 (图片来源：[Wang & Gupta, 2015](https://arxiv.org/abs/1505.00687))
 - en: 'Relevant patches are tracked and extracted through a two-step unsupervised
     [optical flow](https://en.wikipedia.org/wiki/Optical_flow) approach:'
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过两步无监督的[光流](https://en.wikipedia.org/wiki/Optical_flow)方法跟踪和提取相关补丁：
 - en: Obtain [SURF](https://www.vision.ee.ethz.ch/~surf/eccv06.pdf) interest points
     and use [IDT](https://hal.inria.fr/hal-00873267v2/document) to obtain motion of
     each SURF point.
+  id: totrans-128
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 获取[SURF](https://www.vision.ee.ethz.ch/~surf/eccv06.pdf)兴趣点并使用[IDT](https://hal.inria.fr/hal-00873267v2/document)获取每个SURF点的运动。
 - en: Given the trajectories of SURF interest points, classify these points as moving
     if the flow magnitude is more than 0.5 pixels.
+  id: totrans-129
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 给定SURF兴趣点的轨迹，如果流量大小超过0.5像素，则将这些点分类为移动点。
 - en: During training, given a pair of correlated patches $\mathbf{x}$ and $\mathbf{x}^+$,
     $K$ random patches $\{\mathbf{x}^-\}$ are sampled in this same batch to form $K$
     training triplets. After a couple of epochs, *hard negative mining* is applied
     to make the training harder and more efficient, that is, to search for random
     patches that maximize the loss and use them to do gradient updates.
+  id: totrans-130
   prefs: []
   type: TYPE_NORMAL
+  zh: 在训练期间，给定一对相关的补丁$\mathbf{x}$和$\mathbf{x}^+$，在同一批次中随机采样$K$个补丁$\{\mathbf{x}^-\}$以形成$K$个训练三元组。经过几个时期后，应用*硬负样本挖掘*使训练更加困难和高效，即搜索最大化损失的随机补丁，并使用它们进行梯度更新。
 - en: Frame Sequence
+  id: totrans-131
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 帧序列
 - en: Video frames are naturally positioned in chronological order. Researchers have
     proposed several self-supervised tasks, motivated by the expectation that good
     representation should learn the *correct sequence* of frames.
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: 视频帧自然地按时间顺序排列。研究人员提出了几个自监督任务，这些任务的动机是良好的表示应该学习*正确的帧序列*。
 - en: One idea is to **validate frame order** ([Misra, et al 2016](https://arxiv.org/abs/1603.08561)).
     The pretext task is to determine whether a sequence of frames from a video is
     placed in the correct temporal order (“temporal valid”). The model needs to track
     and reason about small motion of an object across frames to complete such a task.
+  id: totrans-133
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中一个想法是**验证帧序列**（[Misra等人，2016](https://arxiv.org/abs/1603.08561)）。预设任务是确定视频中的一系列帧是否按正确的时间顺序排列（“时间有效”）。模型需要跟踪和推理物体在帧之间的微小运动，以完成这样的任务。
 - en: The training frames are sampled from high-motion windows. Every time 5 frames
     are sampled $(f_a, f_b, f_c, f_d, f_e)$ and the timestamps are in order $a < b
     < c < d < e$. Out of 5 frames, one positive tuple $(f_b, f_c, f_d)$ and two negative
@@ -711,113 +1029,159 @@
     = \vert b-d \vert$ controls the difficulty of positive training instances (i.e.
     higher → harder) and the parameter $\tau_\min = \min(\vert a-b \vert, \vert d-e
     \vert)$ controls the difficulty of negatives (i.e. lower → harder).
+  id: totrans-134
   prefs: []
   type: TYPE_NORMAL
+  zh: 训练帧从高运动窗口中采样。每次采样5帧$(f_a, f_b, f_c, f_d, f_e)$，时间戳按顺序排列$a < b < c < d < e$。在5帧中，创建一个正元组$(f_b,
+    f_c, f_d)$和两个负元组，$(f_b, f_a, f_d)$和$(f_b, f_e, f_d)$。参数$\tau_\max = \vert b-d
+    \vert$控制正训练实例的难度（即越高→越难），参数$\tau_\min = \min(\vert a-b \vert, \vert d-e \vert)$控制负样本的难度（即越低→越难）。
 - en: The pretext task of video frame order validation is shown to improve the performance
     on the downstream task of action recognition when used as a pretraining step.
+  id: totrans-135
   prefs: []
   type: TYPE_NORMAL
+  zh: 视频帧顺序验证的预设任务被证明在作为预训练步骤时，可以提高动作识别等下游任务的性能。
 - en: '![](../Images/ff920e6e53ed7a3da7c6f9f03bc72d66.png)'
+  id: totrans-136
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ff920e6e53ed7a3da7c6f9f03bc72d66.png)'
 - en: 'Fig. 14\. Overview of learning representation by validating the order of video
     frames. (a) the data sample process; (b) the model is a triplet siamese network,
     where all input frames have shared weights. (Image source: [Misra, et al 2016](https://arxiv.org/abs/1603.08561))'
+  id: totrans-137
   prefs: []
   type: TYPE_NORMAL
+  zh: 图14。通过验证视频帧顺序学习表示的概述。 (a) 数据样本处理过程；(b) 模型是一个三元组孪生网络，其中所有输入帧共享权重。 (图片来源：[Misra等人，2016](https://arxiv.org/abs/1603.08561))
 - en: The task in *O3N* (Odd-One-Out Network; [Fernando et al. 2017](https://arxiv.org/abs/1611.06646))
     is based on video frame sequence validation too. One step further from above,
     the task is to **pick the incorrect sequence** from multiple video clips.
+  id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: '*O3N*（Odd-One-Out Network；[Fernando等人，2017](https://arxiv.org/abs/1611.06646)）中的任务也是基于视频帧序列验证。比上述进一步，任务是**从多个视频剪辑中选择错误的序列**。'
 - en: Given $N+1$ input video clips, one of them has frames shuffled, thus in the
     wrong order, and the rest $N$ of them remain in the correct temporal order. O3N
     learns to predict the location of the odd video clip. In their experiments, there
     are 6 input clips and each contain 6 frames.
+  id: totrans-139
   prefs: []
   type: TYPE_NORMAL
+  zh: 给定$N+1$个输入视频剪辑，其中一个剪辑的帧被打乱，因此顺序错误，其余$N$个剪辑保持正确的时间顺序。O3N学习预测奇数视频剪辑的位置。在他们的实验中，有6个输入剪辑，每个剪辑包含6帧。
 - en: The **arrow of time** in a video contains very informative messages, on both
     low-level physics (e.g. gravity pulls objects down to the ground; smoke rises
     up; water flows downward.) and high-level event reasoning (e.g. fish swim forward;
     you can break an egg but cannot revert it.). Thus another idea is inspired by
     this to learn latent representation by predicting the arrow of time (AoT) — whether
     video playing forwards or backwards ([Wei et al., 2018](https://www.robots.ox.ac.uk/~vgg/publications/2018/Wei18/wei18.pdf)).
+  id: totrans-140
   prefs: []
   type: TYPE_NORMAL
+  zh: 视频中的**时间箭头**包含非常丰富的信息，既有低级物理（例如重力将物体拉向地面；烟雾上升；水向下流动），也有高级事件推理（例如鱼向前游动；你可以打破一个鸡蛋但不能逆转它）。因此，受此启发，另一个想法是通过预测时间箭头（AoT）来学习潜在表示，即视频是正向播放还是反向播放（[Wei
+    et al., 2018](https://www.robots.ox.ac.uk/~vgg/publications/2018/Wei18/wei18.pdf)）。
 - en: A classifier should capture both low-level physics and high-level semantics
     in order to predict the arrow of time. The proposed *T-CAM* (Temporal Class-Activation-Map)
     network accepts $T$ groups, each containing a number of frames of optical flow.
     The conv layer outputs from each group are concatenated and fed into binary logistic
     regression for predicting the arrow of time.
+  id: totrans-141
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个分类器应该捕捉低级物理和高级语义，以便预测时间的箭头。所提出的*T-CAM*（时间类激活图）网络接受$T$组，每组包含一定数量的光流帧。来自每组的卷积层输出被串联并馈入二元逻辑回归，用于预测时间的箭头。
 - en: '![](../Images/157d0d17e4f0aa1b763d16c67b4a773b.png)'
+  id: totrans-142
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/157d0d17e4f0aa1b763d16c67b4a773b.png)'
 - en: 'Fig. 15\. Overview of learning representation by predicting the arrow of time.
     (a) Conv features of multiple groups of frame sequences are concatenated. (b)
     The top level contains 3 conv layers and average pooling. (Image source: [Wei
     et al, 2018](https://www.robots.ox.ac.uk/~vgg/publications/2018/Wei18/wei18.pdf))'
+  id: totrans-143
   prefs: []
   type: TYPE_NORMAL
+  zh: 图15\. 通过预测时间箭头学习表示的概述。（a）多组帧序列的卷积特征被串联。（b）顶层包含3个卷积层和平均池化。（图片来源：[Wei et al, 2018](https://www.robots.ox.ac.uk/~vgg/publications/2018/Wei18/wei18.pdf))
 - en: 'Interestingly, there exist a couple of artificial cues in the dataset. If not
     handled properly, they could lead to a trivial classifier without relying on the
     actual video content:'
+  id: totrans-144
   prefs: []
   type: TYPE_NORMAL
+  zh: 有趣的是，数据集中存在一些人工线索。如果处理不当，可能会导致一个不依赖于实际视频内容的琐碎分类器：
 - en: Due to the video compression, the black framing might not be completely black
     but instead may contain certain information on the chronological order. Hence
     black framing should be removed in the experiments.
+  id: totrans-145
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 由于视频压缩，黑色边框可能不完全是黑色，而是可能包含某些关于时间顺序的信息。因此，在实验中应该去除黑色边框。
 - en: Large camera motion, like vertical translation or zoom-in/out, also provides
     strong signals for the arrow of time but independent of content. The processing
     stage should stabilize the camera motion.
+  id: totrans-146
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 大的摄像机运动，如垂直平移或缩放，也提供了时间箭头的强烈信号，但与内容无关。处理阶段应稳定摄像机运动。
 - en: The AoT pretext task is shown to improve the performance on action classification
     downstream task when used as a pretraining step. Note that fine-tuning is still
     needed.
+  id: totrans-147
   prefs: []
   type: TYPE_NORMAL
+  zh: 当作为预训练步骤使用时，AoT预文本任务被证明可以提高下游任务中的动作分类性能。请注意，仍然需要微调。
 - en: Video Colorization
+  id: totrans-148
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 视频着色
 - en: '[Vondrick et al. (2018)](https://arxiv.org/abs/1806.09594) proposed **video
     colorization** as a self-supervised learning problem, resulting in a rich representation
     that can be used for video segmentation and unlabelled visual region tracking,
     *without extra fine-tuning*.'
+  id: totrans-149
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Vondrick et al. (2018)](https://arxiv.org/abs/1806.09594)提出了**视频着色**作为一个自监督学习问题，产生了一个丰富的表示，可用于视频分割和未标记的视觉区域跟踪，*无需额外微调*。'
 - en: Unlike the image-based [colorization](#colorization), here the task is to copy
     colors from a normal reference frame in color to another target frame in grayscale
     by leveraging the natural temporal coherency of colors across video frames (thus
     these two frames shouldn’t be too far apart in time). In order to copy colors
     consistently, the model is designed to learn to keep track of correlated pixels
     in different frames.
+  id: totrans-150
   prefs: []
   type: TYPE_NORMAL
+  zh: 与基于图像的[着色](#colorization)不同，这里的任务是通过利用视频帧之间的自然时间一致性，从一个彩色参考帧中复制颜色到另一个灰度目标帧，因此这两个帧在时间上不应该相隔太远。为了一致地复制颜色，模型被设计为学习跟踪不同帧中相关像素。
 - en: '![](../Images/62629f50c402e2c8dfcdd6478c14ab1a.png)'
+  id: totrans-151
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/62629f50c402e2c8dfcdd6478c14ab1a.png)'
 - en: 'Fig. 16\. Video colorization by copying colors from a reference frame to target
     frames in grayscale. (Image source: [Vondrick et al. 2018](https://arxiv.org/abs/1806.09594))'
+  id: totrans-152
   prefs: []
   type: TYPE_NORMAL
+  zh: 图16\. 通过从参考帧复制颜色到灰度目标帧进行视频着色。（图片来源：[Vondrick et al. 2018](https://arxiv.org/abs/1806.09594)）
 - en: 'The idea is quite simple and smart. Let $c_i$ be the true color of the $i-th$
     pixel in the reference frame and $c_j$ be the color of $j$-th pixel in the target
     frame. The predicted color of $j$-th color in the target $\hat{c}_j$ is a weighted
     sum of colors of all the pixels in reference, where the weighting term measures
     the similarity:'
+  id: totrans-153
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个想法非常简单而聪明。让$c_i$表示参考帧中第$i$个像素的真实颜色，$c_j$表示目标帧中第$j$个像素的颜色。目标帧中第$j$个像素的预测颜色$\hat{c}_j$是参考帧中所有像素颜色的加权和，其中加权项衡量了相似性：
 - en: $$ \hat{c}_j = \sum_i A_{ij} c_i \text{ where } A_{ij} = \frac{\exp(f_i f_j)}{\sum_{i'}
     \exp(f_{i'} f_j)} $$
+  id: totrans-154
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \hat{c}_j = \sum_i A_{ij} c_i \text{ where } A_{ij} = \frac{\exp(f_i f_j)}{\sum_{i'}
+    \exp(f_{i'} f_j)} $$
 - en: where $f$ are learned embeddings for corresponding pixels; $i’$ indexes all
     the pixels in the reference frame. The weighting term implements an attention-based
     pointing mechanism, similar to [matching network](https://lilianweng.github.io/posts/2018-11-30-meta-learning/#matching-networks)
@@ -825,47 +1189,66 @@
     As the full similarity matrix could be really large, both frames are downsampled.
     The categorical cross-entropy loss between $c_j$ and $\hat{c}_j$ is used with
     quantized colors, just like in [Zhang et al. 2016](https://arxiv.org/abs/1603.08511).
+  id: totrans-155
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$f$是对应像素的学习嵌入；$i'$索引参考帧中的所有像素。加权项实现了一种基于注意力的指向机制，类似于[匹配网络](https://lilianweng.github.io/posts/2018-11-30-meta-learning/#matching-networks)和[指针网络](https://lilianweng.github.io/posts/2018-06-24-attention/#pointer-network)。由于完整的相似性矩阵可能非常庞大，因此对两个帧进行了降采样。使用$c_j$和$\hat{c}_j$之间的分类交叉熵损失，使用量化颜色，就像[Zhang等人2016年](https://arxiv.org/abs/1603.08511)中一样。
 - en: Based on how the reference frame are marked, the model can be used to complete
     several color-based downstream tasks such as tracking segmentation or human pose
     in time. No fine-tuning is needed. See Fig. 15.
+  id: totrans-156
   prefs: []
   type: TYPE_NORMAL
+  zh: 根据参考帧的标记方式，该模型可用于完成多个基于颜色的下游任务，如时间上的跟踪分割或人体姿势。无需微调。参见图15。
 - en: '![](../Images/fca0cac524d9392692a9f4aac202a234.png)'
+  id: totrans-157
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/fca0cac524d9392692a9f4aac202a234.png)'
 - en: 'Fig. 17\. Use video colorization to track object segmentation and human pose
     in time. (Image source: [Vondrick et al. (2018)](https://arxiv.org/abs/1806.09594))'
+  id: totrans-158
   prefs: []
   type: TYPE_NORMAL
+  zh: 图17。使用视频着色来跟踪对象分割和人体姿势随时间变化。（图片来源：[Vondrick et al. (2018)](https://arxiv.org/abs/1806.09594)）
 - en: 'A couple common observations:'
+  id: totrans-159
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 几个常见观察：
 - en: ''
+  id: totrans-160
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: Combining multiple pretext tasks improves performance;
+  id: totrans-161
   prefs:
   - PREF_BQ
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 结合多个预训练任务可以提高性能；
 - en: Deeper networks improve the quality of representation;
+  id: totrans-162
   prefs:
   - PREF_BQ
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 更深的网络提高了表示的质量；
 - en: Supervised learning baselines still beat all of them by far.
+  id: totrans-163
   prefs:
   - PREF_BQ
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 监督学习基线仍然远远超过所有其他方法。
 - en: Control-Based
+  id: totrans-164
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 基于控制
 - en: When running a RL policy in the real world, such as controlling a physical robot
     on visual inputs, it is non-trivial to properly track states, obtain reward signals
     or determine whether a goal is achieved for real. The visual data has a lot of
@@ -873,119 +1256,174 @@
     cannot be inferred from pixel-level comparison. Self-supervised representation
     learning has shown great potential in learning useful state embedding that can
     be used directly as input to a control policy.
+  id: totrans-165
   prefs: []
   type: TYPE_NORMAL
+  zh: 在现实世界中运行RL策略，比如控制一个基于视觉输入的物理机器人，正确跟踪状态、获取奖励信号或确定是否实现目标并不是一件简单的事情。视觉数据中存在许多与真实状态无关的噪音，因此无法通过像素级比较推断状态的等价性。自监督表示学习在学习可用作控制策略输入的有用状态嵌入方面表现出巨大潜力。
 - en: All the cases discussed in this section are in robotic learning, mainly for
     state representation from multiple camera views and goal representation.
+  id: totrans-166
   prefs: []
   type: TYPE_NORMAL
+  zh: 本节讨论的所有案例都是关于机器人学习的，主要是从多个摄像头视图中获取状态表示和目标表示。
 - en: Multi-View Metric Learning
+  id: totrans-167
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 多视图度量学习
 - en: 'The concept of metric learning has been mentioned multiple times in the [previous](#counting-feature-loss)
     [sections](#tracking). A common setting is: Given a triple of samples, (*anchor*
     $s_a$, *positive* sample $s_p$, *negative* sample $s_n$), the learned representation
     embedding $\phi(s)$ fulfills that $s_a$ stays close to $s_p$ but far away from
     $s_n$ in the latent space.'
+  id: totrans-168
   prefs: []
   type: TYPE_NORMAL
+  zh: 在[前面](#counting-feature-loss)的多个部分中多次提到了度量学习的概念。一个常见的设置是：给定一组样本三元组，（*锚点* $s_a$，*正样本*
+    $s_p$，*负样本* $s_n$），学习到的表示嵌入$\phi(s)$使得在潜在空间中$s_a$与$s_p$保持接近，但与$s_n$保持远离。
 - en: '**Grasp2Vec** ([Jang & Devin et al., 2018](https://arxiv.org/abs/1811.06964))
     aims to learn an object-centric vision representation in the robot grasping task
     from free, unlabelled grasping activities. By object-centric, it means that, irrespective
     of how the environment or the robot looks like, if two images contain similar
     items, they should be mapped to similar representation; otherwise the embeddings
     should be far apart.'
+  id: totrans-169
   prefs: []
   type: TYPE_NORMAL
+  zh: '**Grasp2Vec**（[Jang & Devin等人，2018](https://arxiv.org/abs/1811.06964)）旨在从自由、未标记的抓取活动中学习机器人抓取任务中的以物体为中心的视觉表示。所谓以物体为中心，意味着无论环境或机器人的外观如何，如果两幅图像包含相似的物品，它们应该被映射到相似的表示；否则，嵌入应该相距甚远。'
 - en: '![](../Images/f47e69b53d1993b136a4cdb27c455209.png)'
+  id: totrans-170
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/f47e69b53d1993b136a4cdb27c455209.png)'
 - en: 'Fig. 18\. A conceptual illustration of how grasp2vec learns an object-centric
     state embedding. (Image source: [Jang & Devin et al., 2018](https://arxiv.org/abs/1811.06964))'
+  id: totrans-171
   prefs: []
   type: TYPE_NORMAL
+  zh: 图18. grasp2vec学习以物体为中心的状态嵌入的概念示意图。（图片来源：[Jang & Devin等人，2018](https://arxiv.org/abs/1811.06964)）
 - en: 'The grasping system can tell whether it moves an object but cannot tell which
     object it is. Cameras are set up to take images of the entire scene and the grasped
     object. During early training, the grasp robot is executed to grasp any object
     $o$ at random, producing a triple of images, $(s_\text{pre}, s_\text{post}, o)$:'
+  id: totrans-172
   prefs: []
   type: TYPE_NORMAL
+  zh: 抓取系统可以告诉它是否移动了一个物体，但无法告诉是哪个物体。摄像头设置为拍摄整个场景和被抓取的物体的图像。在早期训练期间，抓取机器人被执行以随机抓取任何物体$o$，产生一组图像，$(s_\text{pre},
+    s_\text{post}, o)$：
 - en: $o$ is an image of the grasped object held up to the camera;
+  id: totrans-173
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $o$是被抓取的物体的图像，被举到摄像头前；
 - en: $s_\text{pre}$ is an image of the scene *before* grasping, with the object $o$
     in the tray;
+  id: totrans-174
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $s_\text{pre}$是抓取前的场景图像，托盘中有物体$o`。
 - en: $s_\text{post}$ is an image of the same scene *after* grasping, without the
     object $o$ in the tray.
+  id: totrans-175
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $s_\text{post}$是同一场景的一幅图像，在抓取后，托盘中没有物体$o$。
 - en: To learn object-centric representation, we expect the difference between embeddings
     of $s_\text{pre}$ and $s_\text{post}$ to capture the removed object $o$. The idea
     is quite interesting and similar to relationships that have been observed in [word
     embedding](https://lilianweng.github.io/posts/2017-10-15-word-embedding/), [e.g.](https://developers.google.com/machine-learning/crash-course/embeddings/translating-to-a-lower-dimensional-space)
     distance(“king”, “queen”) ≈ distance(“man”, “woman”).
+  id: totrans-176
   prefs: []
   type: TYPE_NORMAL
+  zh: 学习以物体为中心的表示，我们期望$s_\text{pre}$和$s_\text{post}$的嵌入之间的差异能够捕捉到被移除的物体$o$。这个想法非常有趣，类似于在[word
+    embedding](https://lilianweng.github.io/posts/2017-10-15-word-embedding/)中观察到的关系，例如距离(“king”,
+    “queen”) ≈ 距离(“man”, “woman”)。
 - en: 'Let $\phi_s$ and $\phi_o$ be the embedding functions for the scene and the
     object respectively. The model learns the representation by minimizing the distance
     between $\phi_s(s_\text{pre}) - \phi_s(s_\text{post})$ and $\phi_o(o)$ using *n-pair
     loss*:'
+  id: totrans-177
   prefs: []
   type: TYPE_NORMAL
+  zh: 让$\phi_s$和$\phi_o$分别是场景和物体的嵌入函数。模型通过最小化$\phi_s(s_\text{pre}) - \phi_s(s_\text{post})$和$\phi_o(o)$之间的距离来学习表示，使用*n-pair
+    loss*：
 - en: $$ \begin{aligned} \mathcal{L}_\text{grasp2vec} &= \text{NPair}(\phi_s(s_\text{pre})
     - \phi_s(s_\text{post}), \phi_o(o)) + \text{NPair}(\phi_o(o), \phi_s(s_\text{pre})
     - \phi_s(s_\text{post})) \\ \text{where }\text{NPair}(a, p) &= \sum_{i
+  id: totrans-178
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \mathcal{L}_\text{grasp2vec} &= \text{NPair}(\phi_s(s_\text{pre})
+    - \phi_s(s_\text{post}), \phi_o(o)) + \text{NPair}(\phi_o(o), \phi_s(s_\text{pre})
+    - \phi_s(s_\text{post})) \\ \text{where }\text{NPair}(a, p) &= \sum_{i
 - en: where $B$ refers to a batch of (anchor, positive) sample pairs.
+  id: totrans-179
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$B$指的是一批（锚点，正样本）样本对。
 - en: When framing representation learning as metric learning, [**n-pair loss**](https://papers.nips.cc/paper/6200-improved-deep-metric-learning-with-multi-class-n-pair-loss-objective)
     is a common choice. Rather than processing explicit a triple of (anchor, positive,
     negative) samples, the n-pairs loss treats all other positive instances in one
     mini-batch across pairs as negatives.
+  id: totrans-180
   prefs: []
   type: TYPE_NORMAL
+  zh: 当将表示学习构建为度量学习时，[**n-pair loss**](https://papers.nips.cc/paper/6200-improved-deep-metric-learning-with-multi-class-n-pair-loss-objective)是一个常见选择。与处理显式的三元组（锚点，正样本，负样本）样本不同，n-pairs
+    loss将一个小批次中的所有其他正实例视为负实例。
 - en: The embedding function $\phi_o$ works great for presenting a goal $g$ with an
     image. The reward function that quantifies how close the actually grasped object
     $o$ is close to the goal is defined as $r = \phi_o(g) \cdot \phi_o(o)$. Note that
     computing rewards only relies on the learned latent space and doesn’t involve
     ground truth positions, so it can be used for training on real robots.
+  id: totrans-181
   prefs: []
   type: TYPE_NORMAL
+  zh: 嵌入函数 $\phi_o$ 在展示目标 $g$ 与图像时效果很好。量化实际抓取物体 $o$ 与目标之间接近程度的奖励函数定义为 $r = \phi_o(g)
+    \cdot \phi_o(o)$。请注意，计算奖励仅依赖于学习到的潜在空间，不涉及地面真实位置，因此可用于在真实机器人上进行训练。
 - en: '![](../Images/44f15aa0a61f3a9059d4f50bd3375d9e.png)'
+  id: totrans-182
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/44f15aa0a61f3a9059d4f50bd3375d9e.png)'
 - en: 'Fig. 19\. Localization results of grasp2vec embedding. The heatmap of localizing
     a goal object in a pre-grasping scene is defined as $\phi\_o(o)^\top \phi\_{s,
     \text{spatial}} (s\_\text{pre})$, where $\phi\_{s, \text{spatial}}$ is the output
     of the last resnet block after ReLU. The fourth column is a failure case and the
     last three columns take real images as goals. (Image source: [Jang & Devin et
     al., 2018](https://arxiv.org/abs/1811.06964))'
+  id: totrans-183
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 19\. grasp2vec 嵌入的定位结果。在抓取前场景中定位目标物体的热图定义为 $\phi\_o(o)^\top \phi\_{s, \text{spatial}}
+    (s\_\text{pre})$，其中 $\phi\_{s, \text{spatial}}$ 是经过 ReLU 后的最后一个 resnet 块的输出。第四列是一个失败案例，最后三列使用真实图像作为目标。（图片来源：[Jang
+    & Devin 等人，2018](https://arxiv.org/abs/1811.06964)）
 - en: 'Other than the embedding-similarity-based reward function, there are a few
     other tricks for training the RL policy in the grasp2vec framework:'
+  id: totrans-184
   prefs: []
   type: TYPE_NORMAL
+  zh: 除了基于嵌入相似性的奖励函数外，在 grasp2vec 框架中训练 RL 策略还有一些其他技巧：
 - en: '*Posthoc labeling*: Augment the dataset by labeling a randomly grasped object
     as a correct goal, like HER (Hindsight Experience Replay; [Andrychowicz, et al.,
     2017](https://papers.nips.cc/paper/7090-hindsight-experience-replay.pdf)).'
+  id: totrans-185
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*事后标记*：通过将随机抓取的物体标记为正确目标来增强数据集，类似于 HER（回顾经验重放；[Andrychowicz, et al., 2017](https://papers.nips.cc/paper/7090-hindsight-experience-replay.pdf)）。'
 - en: '*Auxiliary goal augmentation*: Augment the replay buffer even further by relabeling
     transitions with unachieved goals; precisely, in each iteration, two goals are
     sampled $(g, g’)$ and both are used to add new transitions into replay buffer.'
+  id: totrans-186
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*辅助目标增强*：通过使用未实现目标重新标记转换来进一步增强重放缓冲区；准确地说，在每次迭代中，会随机抽取两个目标 $(g, g’)$ 并将两者用于向重放缓冲区添加新的转换。'
 - en: '**TCN** (**Time-Contrastive Networks**; [Sermanet, et al. 2018](https://arxiv.org/abs/1704.06888))
     learn from multi-camera view videos with the intuition that different viewpoints
     at the same timestep of the same scene should share the same embedding (like in
@@ -993,27 +1431,39 @@
     even of the same camera viewpoint. Therefore embedding captures the semantic meaning
     of the underlying state rather than visual similarity. The TCN embedding is trained
     with [triplet loss](#triplet-loss).'
+  id: totrans-187
   prefs: []
   type: TYPE_NORMAL
+  zh: '**TCN**（**时间对比网络**；[Sermanet, et al. 2018](https://arxiv.org/abs/1704.06888)）从多摄像头视角视频中学习，其直觉是同一场景在同一时间步的不同视角应该共享相同的嵌入（类似于
+    [FaceNet](https://arxiv.org/abs/1503.03832)），而嵌入在时间上应该变化，即使是相同摄像头视角。因此，嵌入捕捉了潜在状态的语义含义，而不是视觉相似性。TCN
+    嵌入使用 [三元组损失](#triplet-loss) 进行训练。'
 - en: The training data is collected by taking videos of the same scene simultaneously
     but from different angles. All the videos are unlabelled.
+  id: totrans-188
   prefs: []
   type: TYPE_NORMAL
+  zh: 训练数据是通过同时从不同角度拍摄同一场景的视频收集的。所有视频都没有标签。
 - en: '![](../Images/b7b511f34d4538626b06603a1f8ccc8f.png)'
+  id: totrans-189
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/b7b511f34d4538626b06603a1f8ccc8f.png)'
 - en: Fig. 20\. An illustration of time-contrastive approach for learning state embedding.
     The blue frames selected from two camera views at the same timestep are anchor
     and positive samples, while the red frame at a different timestep is the negative
     sample.
+  id: totrans-190
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 20\. 时间对比学习状态嵌入方法的示意图。在同一时间步从两个摄像头视角选择的蓝色帧是锚点和正样本，而在不同时间步的红色帧是负样本。
 - en: TCN embedding extracts visual features that are invariant to camera configurations.
     It can be used to construct a reward function for imitation learning based on
     the euclidean distance between the demo video and the observations in the latent
     space.
+  id: totrans-191
   prefs: []
   type: TYPE_NORMAL
+  zh: TCN 嵌入提取对摄像头配置不变的视觉特征。它可以用于构建基于欧氏距离的模仿学习奖励函数，该距离是演示视频与潜在空间中的观察之间的距离。
 - en: A further improvement over TCN is to learn embedding over multiple frames jointly
     rather than a single frame, resulting in **mfTCN** (**Multi-frame Time-Contrastive
     Networks**; [Dwibedi et al., 2019](https://arxiv.org/abs/1808.00928)). Given a
@@ -1023,86 +1473,127 @@
     lookback window of size $(n−1) \times s + 1$. Each frame first goes through a
     CNN to extract low-level features and then we use 3D temporal convolutions to
     aggregate frames in time. The model is trained with [n-pairs loss](#n-pair-loss).
+  id: totrans-192
   prefs: []
   type: TYPE_NORMAL
+  zh: 对TCN的进一步改进是联合学习多帧的嵌入，而不是单帧，从而产生**mfTCN**（**多帧时间对比网络**；[Dwibedi等人，2019](https://arxiv.org/abs/1808.00928)）。给定来自多个同步摄像机视角的视频集$v_1,
+    v_2, \dots, v_k$，在每个视频中以步长$s$选择时间$t$和前$n-1$帧的帧，将其聚合并映射为一个嵌入向量，从而产生大小为$(n−1) \times
+    s + 1$的回顾窗口。每帧首先经过CNN提取低级特征，然后我们使用3D时间卷积在时间上聚合帧。该模型使用[n-pairs loss](#n-pair-loss)进行训练。
 - en: '![](../Images/7c33aad9321cb07e3f167db2f9e3e746.png)'
+  id: totrans-193
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/7c33aad9321cb07e3f167db2f9e3e746.png)'
 - en: 'Fig. 21\. The sampling process for training mfTCN. (Image source: [Dwibedi
     et al., 2019](https://arxiv.org/abs/1808.00928))'
+  id: totrans-194
   prefs: []
   type: TYPE_NORMAL
+  zh: 图21。训练mfTCN的采样过程。（图片来源：[Dwibedi等人，2019](https://arxiv.org/abs/1808.00928)）
 - en: 'The training data is sampled as follows:'
+  id: totrans-195
   prefs: []
   type: TYPE_NORMAL
+  zh: 训练数据的采样方式如下：
 - en: First we construct two pairs of video clips. Each pair contains two clips from
     different camera views but with synchronized timesteps. These two sets of videos
     should be far apart in time.
+  id: totrans-196
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 首先构建两对视频剪辑。每对包含来自不同摄像机视图但具有同步时间步的两个剪辑。这两组视频应该在时间上相隔很远。
 - en: Sample a fixed number of frames from each video clip in the same pair simultaneously
     with the same stride.
+  id: totrans-197
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 同时从同一对视频剪辑中抽取固定数量的帧，步幅相同。
 - en: Frames with the same timesteps are trained as positive samples in the n-pair
     loss, while frames across pairs are negative samples.
+  id: totrans-198
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 具有相同时间步的帧在n-pair loss中被训练为正样本，而跨对的帧则为负样本。
 - en: mfTCN embedding can capture the position and velocity of objects in the scene
     (e.g. in cartpole) and can also be used as inputs for policy.
+  id: totrans-199
   prefs: []
   type: TYPE_NORMAL
+  zh: mfTCN嵌入可以捕捉场景中物体的位置和速度（例如在倒立摆中），也可以用作策略的输入。
 - en: Autonomous Goal Generation
+  id: totrans-200
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 自主目标生成
 - en: '**RIG** (**Reinforcement learning with Imagined Goals**; [Nair et al., 2018](https://arxiv.org/abs/1807.04742))
     described a way to train a goal-conditioned policy with unsupervised representation
     learning. A policy learns from self-supervised practice by first imagining “fake”
     goals and then trying to achieve them.'
+  id: totrans-201
   prefs: []
   type: TYPE_NORMAL
+  zh: '**RIG**（**具有想象目标的强化学习**；[Nair等人，2018](https://arxiv.org/abs/1807.04742)）描述了一种训练带有无监督表示学习的目标条件策略的方法。策略通过首先想象“虚假”目标，然后尝试实现这些目标来从自我监督练习中学习。'
 - en: '![](../Images/4b34b3ae77cd181a90ddba6b172fc052.png)'
+  id: totrans-202
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/4b34b3ae77cd181a90ddba6b172fc052.png)'
 - en: 'Fig. 22\. The workflow of RIG. (Image source: [Nair et al., 2018](https://arxiv.org/abs/1807.04742))'
+  id: totrans-203
   prefs: []
   type: TYPE_NORMAL
+  zh: 图22。RIG的工作流程。（图片来源：[Nair等人，2018](https://arxiv.org/abs/1807.04742)）
 - en: The task is to control a robot arm to push a small puck on a table to a desired
     position. The desired position, or the goal, is present in an image. During training,
     it learns latent embedding of both state $s$ and goal $g$ through $\beta$-VAE
     encoder and the control policy operates entirely in the latent space.
+  id: totrans-204
   prefs: []
   type: TYPE_NORMAL
+  zh: 任务是控制机器臂将桌子上的小冰球推到所需位置。所需位置或目标在图像中呈现。在训练过程中，通过$\beta$-VAE编码器学习状态$s$和目标$g$的潜在嵌入，控制策略完全在潜在空间中运行。
 - en: Let’s say a [$\beta$-VAE](https://lilianweng.github.io/posts/2018-08-12-vae/#beta-vae)
     has an encoder $q_\phi$ mapping input states to latent variable $z$ which is modeled
     by a Gaussian distribution and a decoder $p_\psi$ mapping $z$ back to the states.
     The state encoder in RIG is set to be the mean of $\beta$-VAE encoder.
+  id: totrans-205
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设一个[$\beta$-VAE](https://lilianweng.github.io/posts/2018-08-12-vae/#beta-vae)具有一个编码器$q_\phi$将输入状态映射到由高斯分布建模的潜在变量$z$，并且一个解码器$p_\psi$将$z$映射回状态。RIG中的状态编码器设置为$\beta$-VAE编码器的均值。
 - en: $$ \begin{aligned} z &\sim q_\phi(z \vert s) = \mathcal{N}(z; \mu_\phi(s), \sigma^2_\phi(s))
     \\ \mathcal{L}_{\beta\text{-VAE}} &= - \mathbb{E}_{z \sim q_\phi(z \vert s)} [\log
     p_\psi (s \vert z)] + \beta D_\text{KL}(q_\phi(z \vert s) \| p_\psi(s)) \\ e(s)
     &\triangleq \mu_\phi(s) \end{aligned} $$
+  id: totrans-206
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} z &\sim q_\phi(z \vert s) = \mathcal{N}(z; \mu_\phi(s), \sigma^2_\phi(s))
+    \\ \mathcal{L}_{\beta\text{-VAE}} &= - \mathbb{E}_{z \sim q_\phi(z \vert s)} [\log
+    p_\psi (s \vert z)] + \beta D_\text{KL}(q_\phi(z \vert s) \| p_\psi(s)) \\ e(s)
+    &\triangleq \mu_\phi(s) \end{aligned} $$
 - en: 'The reward is the Euclidean distance between state and goal embedding vectors:
     $r(s, g) = -|e(s) - e(g)|$. Similar to [grasp2vec](#grasp2vec), RIG applies data
     augmentation as well by latent goal relabeling: precisely half of the goals are
     generated from the prior at random and the other half are selected using HER.
     Also same as grasp2vec, rewards do not depend on any ground truth states but only
     the learned state encoding, so it can be used for training on real robots.'
+  id: totrans-207
   prefs: []
   type: TYPE_NORMAL
+  zh: 奖励是状态和目标嵌入向量之间的欧氏距离：$r(s, g) = -|e(s) - e(g)|$。类似于[grasp2vec](#grasp2vec)，RIG通过潜在目标重新标记的数据增强来实现：随机生成一半的目标来自先验，另一半使用HER选择。与grasp2vec一样，奖励不依赖于任何地面真实状态，而只依赖于学习到的状态编码，因此可以用于在真实机器人上进行训练。
 - en: '![](../Images/33a041e3271106a810858741d95de93a.png)'
+  id: totrans-208
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/33a041e3271106a810858741d95de93a.png)'
 - en: 'Fig. 23\. The algorithm of RIG. (Image source: [Nair et al., 2018](https://arxiv.org/abs/1807.04742))'
+  id: totrans-209
   prefs: []
   type: TYPE_NORMAL
+  zh: 图23. RIG的算法。（图片来源：[Nair等，2018](https://arxiv.org/abs/1807.04742)）
 - en: The problem with RIG is a lack of object variations in the imagined goal pictures.
     If $\beta$-VAE is only trained with a black puck, it would not be able to create
     a goal with other objects like blocks of different shapes and colors. A follow-up
@@ -1110,33 +1601,48 @@
     et al., 2019](https://arxiv.org/abs/1910.11670)), inspired by **CVAE** (Conditional
     VAE; [Sohn, Lee & Yan, 2015](https://papers.nips.cc/paper/5775-learning-structured-output-representation-using-deep-conditional-generative-models)),
     for goal generation.
+  id: totrans-210
   prefs: []
   type: TYPE_NORMAL
+  zh: RIG的问题在于在想象的目标图片中缺乏物体变化。如果$\beta$-VAE只用黑色的冰球进行训练，它将无法创建具有其他形状和颜色的块等其他物体的目标。后续改进将$\beta$-VAE替换为**CC-VAE**（上下文条件化VAE；[Nair等，2019](https://arxiv.org/abs/1910.11670)），灵感来自**CVAE**（条件化VAE；[Sohn，Lee和Yan，2015](https://papers.nips.cc/paper/5775-learning-structured-output-representation-using-deep-conditional-generative-models)），用于目标生成。
 - en: '![](../Images/78a4445398281d4993f37d901124ab1c.png)'
+  id: totrans-211
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/78a4445398281d4993f37d901124ab1c.png)'
 - en: 'Fig. 24\. The workflow of context-conditioned RIG. (Image source: [Nair, et
     al., 2019](https://arxiv.org/abs/1910.11670)).'
+  id: totrans-212
   prefs: []
   type: TYPE_NORMAL
+  zh: 图24. 上下文条件化RIG的工作流程。（图片来源：[Nair等，2019](https://arxiv.org/abs/1910.11670)）。
 - en: A CVAE conditions on a context variable $c$. It trains an encoder $q_\phi(z
     \vert s, c)$ and a decoder $p_\psi (s \vert z, c)$ and note that both have access
     to $c$. The CVAE loss penalizes information passing from the input state $s$ through
     an information bottleneck but allows for *unrestricted* information flow from
     $c$ to both encoder and decoder.
+  id: totrans-213
   prefs: []
   type: TYPE_NORMAL
+  zh: CVAE在上下文变量$c$上进行条件化。它训练一个编码器$q_\phi(z \vert s, c)$和一个解码器$p_\psi (s \vert z,
+    c)$，请注意两者都可以访问$c$。CVAE损失惩罚从输入状态$s$通过信息瓶颈传递信息，但允许*无限制*地从$c$传递信息到编码器和解码器。
 - en: $$ \mathcal{L}_\text{CVAE} = - \mathbb{E}_{z \sim q_\phi(z \vert s,c)} [\log
     p_\psi (s \vert z, c)] + \beta D_\text{KL}(q_\phi(z \vert s, c) \| p_\psi(s))
     $$
+  id: totrans-214
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathcal{L}_\text{CVAE} = - \mathbb{E}_{z \sim q_\phi(z \vert s,c)} [\log
+    p_\psi (s \vert z, c)] + \beta D_\text{KL}(q_\phi(z \vert s, c) \| p_\psi(s))
+    $$
 - en: To create plausible goals, CC-VAE conditions on a starting state $s_0$ so that
     the generated goal presents a consistent type of object as in $s_0$. This goal
     consistency is necessary; e.g. if the current scene contains a red puck but the
     goal has a blue block, it would confuse the policy.
+  id: totrans-215
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了创建合理的目标，CC-VAE在起始状态$s_0$上进行条件化，以便生成的目标呈现与$s_0$中相同类型的对象。这种目标一致性是必要的；例如，如果当前场景包含红色冰球，但目标是蓝色块，这将使策略混淆。
 - en: Other than the state encoder $e(s) \triangleq \mu_\phi(s)$, CC-VAE trains a
     second convolutional encoder $e_0(.)$ to translate the starting state $s_0$ into
     a compact context representation $c = e_0(s_0)$. Two encoders, $e(.)$ and $e_0(.)$,
@@ -1144,21 +1650,32 @@
     different factors of image variation. In addition to the loss function of CVAE,
     CC-VAE adds an extra term to learn to reconstruct $c$ back to $s_0$, $\hat{s}_0
     = d_0(c)$.
+  id: totrans-216
   prefs: []
   type: TYPE_NORMAL
+  zh: 除了状态编码器$e(s) \triangleq \mu_\phi(s)$之外，CC-VAE还训练第二个卷积编码器$e_0(.)$将起始状态$s_0$转换为紧凑的上下文表示$c
+    = e_0(s_0)$。两个编码器$e(.)$和$e_0(.)$有意不共享权重，因为它们预期编码图像变化的不同因素。除了CVAE的损失函数外，CC-VAE还添加了一个额外项来学习将$c$重构回$s_0$，$\hat{s}_0
+    = d_0(c)$。
 - en: $$ \mathcal{L}_\text{CC-VAE} = \mathcal{L}_\text{CVAE} + \log p(s_0\vert c)
     $$![](../Images/44e70163ea82a251cc0de439a2dd8925.png)
+  id: totrans-217
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathcal{L}_\text{CC-VAE} = \mathcal{L}_\text{CVAE} + \log p(s_0\vert c)
+    $$![](../Images/44e70163ea82a251cc0de439a2dd8925.png)
 - en: 'Fig. 25\. Examples of imagined goals generated by CVAE that conditions on the
     context image (the first row), while VAE fails to capture the object consistency.
     (Image source: [Nair, et al., 2019](https://arxiv.org/abs/1910.11670)).'
+  id: totrans-218
   prefs: []
   type: TYPE_NORMAL
+  zh: 图25\. CVAE生成的想象目标示例，条件是上下文图像（第一行），而VAE无法捕捉对象的一致性。（图片来源：[Nair等人，2019](https://arxiv.org/abs/1910.11670)）。
 - en: Bisimulation
+  id: totrans-219
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 双模拟
 - en: Task-agnostic representation (e.g. a model that intends to represent all the
     dynamics in the system) may distract the RL algorithms as irrelevant information
     is also presented. For example, if we just train an auto-encoder to reconstruct
@@ -1166,101 +1683,154 @@
     will be useful for RL. Therefore, we need to move away from reconstruction-based
     representation learning if we only want to learn information relevant to control,
     as irrelevant details are still important for reconstruction.
+  id: totrans-220
   prefs: []
   type: TYPE_NORMAL
+  zh: 任务不可知的表示（例如，一个旨在表示系统中所有动态的模型）可能会分散RL算法，因为还会呈现不相关信息。例如，如果我们只是训练一个自动编码器来重构输入图像，那么不能保证整个学习到的表示对RL有用。因此，如果我们只想学习与控制相关的信息，那么我们需要摆脱基于重构的表示学习，因为不相关的细节对于重构仍然很重要。
 - en: Representation learning for control based on bisimulation does not depend on
     reconstruction, but aims to group states based on their behavioral similarity
     in MDP.
+  id: totrans-221
   prefs: []
   type: TYPE_NORMAL
+  zh: 基于双模拟的控制表示学习不依赖于重构，而是旨在根据MDP中的行为相似性对状态进行分组。
 - en: '**Bisimulation** ([Givan et al. 2003](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.61.2493&rep=rep1&type=pdf))
     refers to an equivalence relation between two states with similar long-term behavior.
     *Bisimulation metrics* quantify such relation so that we can aggregate states
     to compress a high-dimensional state space into a smaller one for more efficient
     computation. The *bisimulation distance* between two states corresponds to how
     behaviorally different these two states are.'
+  id: totrans-222
   prefs: []
   type: TYPE_NORMAL
+  zh: '**双模拟**（[Givan等人，2003](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.61.2493&rep=rep1&type=pdf)）指的是两个具有相似长期行为的状态之间的等价关系。*双模拟度量*量化这种关系，以便我们可以聚合状态以将高维状态空间压缩为更小的空间以进行更有效的计算。两个状态之间的*双模拟距离*对应于这两个状态在行为上有多大不同。'
 - en: 'Given a [MDP](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#markov-decision-processes)
     $\mathcal{M} = \langle \mathcal{S}, \mathcal{A}, \mathcal{P}, \mathcal{R}, \gamma
     \rangle$ and a bisimulation relation $B$, two states that are equal under relation
     $B$ (i.e. $s_i B s_j$) should have the same immediate reward for all actions and
     the same transition probabilities over the next bisimilar states:'
+  id: totrans-223
   prefs: []
   type: TYPE_NORMAL
+  zh: 给定一个[MDP](https://lilianweng.github.io/posts/2018-02-19-rl-overview/#markov-decision-processes)
+    $\mathcal{M} = \langle \mathcal{S}, \mathcal{A}, \mathcal{P}, \mathcal{R}, \gamma
+    \rangle$和一个双模拟关系$B$，在关系$B$下相等的两个状态（即$s_i B s_j$）应该对所有动作具有相同的即时奖励和相同的转移概率到下一个双模拟状态：
 - en: $$ \begin{aligned} \mathcal{R}(s_i, a) &= \mathcal{R}(s_j, a) \; \forall a \in
     \mathcal{A} \\ \mathcal{P}(G \vert s_i, a) &= \mathcal{P}(G \vert s_j, a) \; \forall
     a \in \mathcal{A} \; \forall G \in \mathcal{S}_B \end{aligned} $$
+  id: totrans-224
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \mathcal{R}(s_i, a) &= \mathcal{R}(s_j, a) \; \forall a \in
+    \mathcal{A} \\ \mathcal{P}(G \vert s_i, a) &= \mathcal{P}(G \vert s_j, a) \; \forall
+    a \in \mathcal{A} \; \forall G \in \mathcal{S}_B \end{aligned} $$
 - en: where $\mathcal{S}_B$ is a partition of the state space under the relation $B$.
+  id: totrans-225
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$\mathcal{S}_B$是在关系$B$下状态空间的一个分区。
 - en: Note that $=$ is always a bisimulation relation. The most interesting one is
     the maximal bisimulation relation $\sim$, which defines a partition $\mathcal{S}_\sim$
     with *fewest* groups of states.
+  id: totrans-226
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意$=$始终是一个双模拟关系。最有趣的是最大双模拟关系$\sim$，它定义了一个具有*最少*状态组的分区$\mathcal{S}_\sim$。
 - en: '![](../Images/a29a234b2d55e09460ca0c803d59d2ea.png)'
+  id: totrans-227
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a29a234b2d55e09460ca0c803d59d2ea.png)'
 - en: 'Fig. 26\. DeepMDP learns a latent space model by minimizing two losses on a
     reward model and a dynamics model. (Image source: [Gelada, et al. 2019](https://arxiv.org/abs/1906.02736))'
+  id: totrans-228
   prefs: []
   type: TYPE_NORMAL
+  zh: 图26\. DeepMDP通过在奖励模型和动态模型上最小化两个损失来学习潜在空间模型。（图片来源：[Gelada等人，2019](https://arxiv.org/abs/1906.02736)）
 - en: 'With a goal similar to bisimulation metric, **DeepMDP** ([Gelada, et al. 2019](https://arxiv.org/abs/1906.02736))
     simplifies high-dimensional observations in RL tasks and learns a latent space
     model via minimizing two losses:'
+  id: totrans-229
   prefs: []
   type: TYPE_NORMAL
+  zh: 与双模拟度量类似，**DeepMDP**（[Gelada等人，2019](https://arxiv.org/abs/1906.02736)）简化了RL任务中的高维观察，并通过最小化两个损失来学习潜在空间模型：
 - en: prediction of rewards and
+  id: totrans-230
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 奖励的预测和
 - en: prediction of the distribution over next latent states.
+  id: totrans-231
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 预测下一个潜在状态的分布。
 - en: $$ \begin{aligned} \mathcal{L}_{\bar{\mathcal{R}}}(s, a) = \vert \mathcal{R}(s,
     a) - \bar{\mathcal{R}}(\phi(s), a) \vert \\ \mathcal{L}_{\bar{\mathcal{P}}}(s,
     a) = D(\phi \mathcal{P}(s, a), \bar{\mathcal{P}}(. \vert \phi(s), a)) \end{aligned}
     $$
+  id: totrans-232
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \mathcal{L}_{\bar{\mathcal{R}}}(s, a) = \vert \mathcal{R}(s,
+    a) - \bar{\mathcal{R}}(\phi(s), a) \vert \\ \mathcal{L}_{\bar{\mathcal{P}}}(s,
+    a) = D(\phi \mathcal{P}(s, a), \bar{\mathcal{P}}(. \vert \phi(s), a)) \end{aligned}
+    $$
 - en: where $\phi(s)$ is the embedding of state $s$; symbols with bar are functions
     (reward function $R$ and transition function $P$) in the same MDP but running
     in the latent low-dimensional observation space. Here the embedding representation
     $\phi$ can be connected to bisimulation metrics, as the bisimulation distance
     is proved to be upper-bounded by the L2 distance in the latent space.
+  id: totrans-233
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 $\phi(s)$ 是状态 $s$ 的嵌入；带有横线的符号是在潜在的低维观察空间中运行的函数（奖励函数 $R$ 和转移函数 $P$）在同一个MDP中。这里的嵌入表示
+    $\phi$ 可以与双模拟度量联系起来，因为双模拟距离被证明上界由潜在空间中的L2距离给出。
 - en: 'The function $D$ quantifies the distance between two probability distributions
     and should be chosen carefully. DeepMDP focuses on *Wasserstein-1* metric (also
     known as [“earth-mover distance”](https://lilianweng.github.io/posts/2017-08-20-gan/#what-is-wasserstein-distance)).
     The Wasserstein-1 distance between distributions $P$ and $Q$ on a metric space
     $(M, d)$ (i.e., $d: M \times M \to \mathbb{R}$) is:'
+  id: totrans-234
   prefs: []
   type: TYPE_NORMAL
+  zh: '函数 $D$ 量化了两个概率分布之间的距离，应该谨慎选择。DeepMDP专注于*Wasserstein-1*度量（也称为[“地球移动者距离”](https://lilianweng.github.io/posts/2017-08-20-gan/#what-is-wasserstein-distance)）。度量空间
+    $(M, d)$ 上分布 $P$ 和 $Q$ 之间的Wasserstein-1距离（即 $d: M \times M \to \mathbb{R}$）是：'
 - en: $$ W_d (P, Q) = \inf_{\lambda \in \Pi(P, Q)} \int_{M \times M} d(x, y) \lambda(x,
     y) \; \mathrm{d}x \mathrm{d}y $$
+  id: totrans-235
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ W_d (P, Q) = \inf_{\lambda \in \Pi(P, Q)} \int_{M \times M} d(x, y) \lambda(x,
+    y) \; \mathrm{d}x \mathrm{d}y $$
 - en: where $\Pi(P, Q)$ is the set of all [couplings](https://en.wikipedia.org/wiki/Coupling_(probability))
     of $P$ and $Q$. $d(x, y)$ defines the cost of moving a particle from point $x$
     to point $y$.
+  id: totrans-236
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 $\Pi(P, Q)$ 是 $P$ 和 $Q$ 的所有[耦合](https://en.wikipedia.org/wiki/Coupling_(probability))的集合。$d(x,
+    y)$ 定义了将粒子从点 $x$ 移动到点 $y$ 的成本。
 - en: 'The Wasserstein metric has a dual form according to the Monge-Kantorovich duality:'
+  id: totrans-237
   prefs: []
   type: TYPE_NORMAL
+  zh: Wasserstein度量具有根据蒙日-坎托罗维奇对偶的双重形式：
 - en: $$ W_d (P, Q) = \sup_{f \in \mathcal{F}_d} \vert \mathbb{E}_{x \sim P} f(x)
     - \mathbb{E}_{y \sim Q} f(y) \vert $$
+  id: totrans-238
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ W_d (P, Q) = \sup_{f \in \mathcal{F}_d} \vert \mathbb{E}_{x \sim P} f(x)
+    - \mathbb{E}_{y \sim Q} f(y) \vert $$
 - en: 'where $\mathcal{F}_d$ is the set of 1-Lipschitz functions under the metric
     $d$ - $\mathcal{F}_d = \{ f: \vert f(x) - f(y) \vert \leq d(x, y) \}$.'
+  id: totrans-239
   prefs: []
   type: TYPE_NORMAL
+  zh: '其中 $\mathcal{F}_d$ 是在度量 $d$ 下的1-利普希茨函数集 - $\mathcal{F}_d = \{ f: \vert f(x)
+    - f(y) \vert \leq d(x, y) \}$。'
 - en: DeepMDP generalizes the model to the Norm Maximum Mean Discrepancy (Norm-[MMD](https://en.wikipedia.org/wiki/Kernel_embedding_of_distributions#Measuring_distance_between_distributions))
     metrics to improve the tightness of the bounds of its deep value function and,
     at the same time, to save computation (Wasserstein is expensive computationally).
@@ -1268,270 +1838,433 @@
     model can have a big impact on the performance. Adding these DeepMDP losses as
     auxiliary losses when training model-free RL agents leads to good improvement
     on most of the Atari games.
+  id: totrans-240
   prefs: []
   type: TYPE_NORMAL
+  zh: DeepMDP将模型推广到规范最大均值差异（Norm-[MMD](https://en.wikipedia.org/wiki/Kernel_embedding_of_distributions#Measuring_distance_between_distributions)）度量，以改善其深度值函数的界限紧密度，并同时节省计算（Wasserstein在计算上很昂贵）。在他们的实验中，他们发现转移预测模型的模型架构对性能有很大影响。在训练无模型RL代理时添加这些DeepMDP损失作为辅助损失会在大多数Atari游戏中带来很好的改进。
 - en: '**Deep Bisimulatioin for Control** (short for **DBC**; [Zhang et al. 2020](https://arxiv.org/abs/2006.10742))
     learns the latent representation of observations that are good for control in
     RL tasks, without domain knowledge or pixel-level reconstruction.'
+  id: totrans-241
   prefs: []
   type: TYPE_NORMAL
+  zh: '**控制的深度双模拟**（简称**DBC**；[Zhang et al. 2020](https://arxiv.org/abs/2006.10742)）学习了在RL任务中对控制有利的观察的潜在表示，无需领域知识或像素级重建。'
 - en: '![](../Images/627be498f917d2bc63c086fd944705fa.png)'
+  id: totrans-242
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/627be498f917d2bc63c086fd944705fa.png)'
 - en: 'Fig. 27\. The Deep Bisimulation for Control algorithm learns a bisimulation
     metric representation via learning a reward model and a dynamics model. The model
     architecture is a siamese network. (Image source: [Zhang et al. 2020](https://arxiv.org/abs/2006.10742))'
+  id: totrans-243
   prefs: []
   type: TYPE_NORMAL
+  zh: 图27. 控制的深度双模拟算法通过学习奖励模型和动力学模型学习双模拟度量表示。模型架构是孪生网络。（图片来源：[Zhang et al. 2020](https://arxiv.org/abs/2006.10742)）
 - en: 'Similar to DeepMDP, DBC models the dynamics by learning a reward model and
     a transition model. Both models operate in the latent space, $\phi(s)$. The optimization
     of embedding $\phi$ depends on one important conclusion from [Ferns, et al. 2004](https://arxiv.org/abs/1207.4114)
     (Theorem 4.5) and [Ferns, et al 2011](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.295.2114&rep=rep1&type=pdf)
     (Theorem 2.6):'
+  id: totrans-244
   prefs: []
   type: TYPE_NORMAL
+  zh: 与 DeepMDP 类似，DBC 通过学习奖励模型和转移模型来建模动态。这两个模型在潜在空间 $\phi(s)$ 中运行。嵌入 $\phi$ 的优化取决于
+    [Ferns 等人 2004](https://arxiv.org/abs/1207.4114)（定理 4.5）和 [Ferns 等人 2011](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.295.2114&rep=rep1&type=pdf)（定理
+    2.6）中的一个重要结论：
 - en: 'Given $c \in (0, 1)$ a discounting factor, $\pi$ a policy that is being improved
     continuously, and $M$ the space of bounded [pseudometric](https://mathworld.wolfram.com/Pseudometric.html)
     on the state space $\mathcal{S}$, we can define $\mathcal{F}: M \mapsto M$:'
+  id: totrans-245
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '给定 $c \in (0, 1)$ 为折扣因子，$\pi$ 为持续改进的策略，$M$ 为状态空间 $\mathcal{S}$ 上有界[伪度量](https://mathworld.wolfram.com/Pseudometric.html)的空间，我们可以定义
+    $\mathcal{F}: M \mapsto M$：'
 - en: ''
+  id: totrans-246
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: $$ \mathcal{F}(d; \pi)(s_i, s_j) = (1-c) \vert \mathcal{R}_{s_i}^\pi - \mathcal{R}_{s_j}^\pi
     \vert + c W_d (\mathcal{P}_{s_i}^\pi, \mathcal{P}_{s_j}^\pi) $$
+  id: totrans-247
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: $$ \mathcal{F}(d; \pi)(s_i, s_j) = (1-c) \vert \mathcal{R}_{s_i}^\pi - \mathcal{R}_{s_j}^\pi
+    \vert + c W_d (\mathcal{P}_{s_i}^\pi, \mathcal{P}_{s_j}^\pi) $$
 - en: ''
+  id: totrans-248
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: Then, $\mathcal{F}$ has a unique fixed point $\tilde{d}$ which is a $\pi^*$-bisimulation
     metric and $\tilde{d}(s_i, s_j) = 0 \iff s_i \sim s_j$.
+  id: totrans-249
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 然后，$\mathcal{F}$ 有一个唯一的不动点 $\tilde{d}$，它是一个 $\pi^*$-双模拟度量，且 $\tilde{d}(s_i,
+    s_j) = 0 \iff s_i \sim s_j$.
 - en: '[The proof is not trivial. I may or may not add it in the future _(:3」∠)_ …]'
+  id: totrans-250
   prefs: []
   type: TYPE_NORMAL
+  zh: '[证明并不是微不足道的。我可能会在将来添加或不添加 _(:3」∠)_ …]'
 - en: 'Given batches of observations pairs, the training loss for $\phi$, $J(\phi)$,
     minimizes the mean square error between the on-policy bisimulation metric and
     Euclidean distance in the latent space:'
+  id: totrans-251
   prefs: []
   type: TYPE_NORMAL
+  zh: 给定观察对的批次，$\phi$ 的训练损失 $J(\phi)$ 最小化策略内的双模拟度量和潜在空间中的欧氏距离之间的均方误差：
 - en: $$ J(\phi) = \Big( \|\phi(s_i) - \phi(s_j)\|_1 - \vert \hat{\mathcal{R}}(\bar{\phi}(s_i))
     - \hat{\mathcal{R}}(\bar{\phi}(s_j)) \vert - \gamma W_2(\hat{\mathcal{P}}(\cdot
     \vert \bar{\phi}(s_i), \bar{\pi}(\bar{\phi}(s_i))), \hat{\mathcal{P}}(\cdot \vert
     \bar{\phi}(s_j), \bar{\pi}(\bar{\phi}(s_j)))) \Big)^2 $$
+  id: totrans-252
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ J(\phi) = \Big( \|\phi(s_i) - \phi(s_j)\|_1 - \vert \hat{\mathcal{R}}(\bar{\phi}(s_i))
+    - \hat{\mathcal{R}}(\bar{\phi}(s_j)) \vert - \gamma W_2(\hat{\mathcal{P}}(\cdot
+    \vert \bar{\phi}(s_i), \bar{\pi}(\bar{\phi}(s_i))), \hat{\mathcal{P}}(\cdot \vert
+    \bar{\phi}(s_j), \bar{\pi}(\bar{\phi}(s_j)))) \Big)^2 $$
 - en: where $\bar{\phi}(s)$ denotes $\phi(s)$ with stop gradient and $\bar{\pi}$ is
     the mean policy output. The learned reward model $\hat{\mathcal{R}}$ is deterministic
     and the learned forward dynamics model $\hat{\mathcal{P}}$ outputs a Gaussian
     distribution.
+  id: totrans-253
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 $\bar{\phi}(s)$ 表示带有停止梯度的 $\phi(s)$，$\bar{\pi}$ 是平均策略输出。学习的奖励模型 $\hat{\mathcal{R}}$
+    是确定性的，学习的前向动力学模型 $\hat{\mathcal{P}}$ 输出一个高斯分布。
 - en: 'DBC is based on SAC but operates on the latent space:'
+  id: totrans-254
   prefs: []
   type: TYPE_NORMAL
+  zh: DBC 基于 SAC，但在潜在空间中运行：
 - en: '![](../Images/579df37ba2e91b0e0cc947c2d8a222b4.png)'
+  id: totrans-255
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/579df37ba2e91b0e0cc947c2d8a222b4.png)'
 - en: 'Fig. 28\. The algorithm of Deep Bisimulation for Control. (Image source: [Zhang
     et al. 2020](https://arxiv.org/abs/2006.10742))'
+  id: totrans-256
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 28\. Deep Bisimulation for Control 的算法。（图片来源：[Zhang 等人 2020](https://arxiv.org/abs/2006.10742)）
 - en: '* * *'
+  id: totrans-257
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'Cited as:'
+  id: totrans-258
   prefs: []
   type: TYPE_NORMAL
+  zh: 引用为：
 - en: '[PRE0]'
+  id: totrans-259
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: References
+  id: totrans-260
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: '[1] Alexey Dosovitskiy, et al. [“Discriminative unsupervised feature learning
     with exemplar convolutional neural networks.”](https://arxiv.org/abs/1406.6909)
     IEEE transactions on pattern analysis and machine intelligence 38.9 (2015): 1734-1747.'
+  id: totrans-261
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] Alexey Dosovitskiy 等人。[“利用示例卷积神经网络进行有区别的无监督特征学习。”](https://arxiv.org/abs/1406.6909)
+    IEEE transactions on pattern analysis and machine intelligence 38.9 (2015): 1734-1747.'
 - en: '[2] Spyros Gidaris, Praveer Singh & Nikos Komodakis. [“Unsupervised Representation
     Learning by Predicting Image Rotations”](https://arxiv.org/abs/1803.07728) ICLR
     2018.'
+  id: totrans-262
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] Spyros Gidaris, Praveer Singh & Nikos Komodakis. [“通过预测图像旋转进行无监督表示学习”](https://arxiv.org/abs/1803.07728)
+    ICLR 2018.'
 - en: '[3] Carl Doersch, Abhinav Gupta, and Alexei A. Efros. [“Unsupervised visual
     representation learning by context prediction.”](https://arxiv.org/abs/1505.05192)
     ICCV. 2015.'
+  id: totrans-263
   prefs: []
   type: TYPE_NORMAL
+  zh: '[3] Carl Doersch, Abhinav Gupta, 和 Alexei A. Efros. [“通过上下文预测进行无监督视觉表示学习。”](https://arxiv.org/abs/1505.05192)
+    ICCV. 2015.'
 - en: '[4] Mehdi Noroozi & Paolo Favaro. [“Unsupervised learning of visual representations
     by solving jigsaw puzzles.”](https://arxiv.org/abs/1603.09246) ECCV, 2016.'
+  id: totrans-264
   prefs: []
   type: TYPE_NORMAL
+  zh: '[4] Mehdi Noroozi & Paolo Favaro. [“通过解决拼图难题进行视觉表示的无监督学习。”](https://arxiv.org/abs/1603.09246)
+    ECCV, 2016.'
 - en: '[5] Mehdi Noroozi, Hamed Pirsiavash, and Paolo Favaro. [“Representation learning
     by learning to count.”](https://arxiv.org/abs/1708.06734) ICCV. 2017.'
+  id: totrans-265
   prefs: []
   type: TYPE_NORMAL
+  zh: '[5] Mehdi Noroozi, Hamed Pirsiavash, 和 Paolo Favaro. [“通过学习计数进行表示学习。”](https://arxiv.org/abs/1708.06734)
+    ICCV. 2017.'
 - en: '[6] Richard Zhang, Phillip Isola & Alexei A. Efros. [“Colorful image colorization.”](https://arxiv.org/abs/1603.08511)
     ECCV, 2016.'
+  id: totrans-266
   prefs: []
   type: TYPE_NORMAL
+  zh: '[6] Richard Zhang，Phillip Isola和Alexei A. Efros。[“丰富多彩的图像着色。”](https://arxiv.org/abs/1603.08511)
+    ECCV，2016。'
 - en: '[7] Pascal Vincent, et al. [“Extracting and composing robust features with
     denoising autoencoders.”](https://www.cs.toronto.edu/~larocheh/publications/icml-2008-denoising-autoencoders.pdf)
     ICML, 2008.'
+  id: totrans-267
   prefs: []
   type: TYPE_NORMAL
+  zh: '[7] Pascal Vincent等人。[“使用去噪自动编码器提取和组合稳健特征。”](https://www.cs.toronto.edu/~larocheh/publications/icml-2008-denoising-autoencoders.pdf)
+    ICML，2008。'
 - en: '[8] Jeff Donahue, Philipp Krähenbühl, and Trevor Darrell. [“Adversarial feature
     learning.”](https://arxiv.org/abs/1605.09782) ICLR 2017.'
+  id: totrans-268
   prefs: []
   type: TYPE_NORMAL
+  zh: '[8] Jeff Donahue，Philipp Krähenbühl和Trevor Darrell。[“对抗特征学习。”](https://arxiv.org/abs/1605.09782)
+    ICLR 2017。'
 - en: '[9] Deepak Pathak, et al. [“Context encoders: Feature learning by inpainting.”](https://arxiv.org/abs/1604.07379)
     CVPR. 2016.'
+  id: totrans-269
   prefs: []
   type: TYPE_NORMAL
+  zh: '[9] Deepak Pathak等人。[“上下文编码器：通过修补学习特征。”](https://arxiv.org/abs/1604.07379)
+    CVPR。2016。'
 - en: '[10] Richard Zhang, Phillip Isola, and Alexei A. Efros. [“Split-brain autoencoders:
     Unsupervised learning by cross-channel prediction.”](https://arxiv.org/abs/1611.09842)
     CVPR. 2017.'
+  id: totrans-270
   prefs: []
   type: TYPE_NORMAL
+  zh: '[10] Richard Zhang，Phillip Isola和Alexei A. Efros。[“分裂脑自动编码器：通过跨通道预测进行无监督学习。”](https://arxiv.org/abs/1611.09842)
+    CVPR。2017。'
 - en: '[11] Xiaolong Wang & Abhinav Gupta. [“Unsupervised Learning of Visual Representations
     using Videos.”](https://arxiv.org/abs/1505.00687) ICCV. 2015.'
+  id: totrans-271
   prefs: []
   type: TYPE_NORMAL
+  zh: '[11] Xiaolong Wang和Abhinav Gupta。[“使用视频进行视觉表示的无监督学习。”](https://arxiv.org/abs/1505.00687)
+    ICCV。2015。'
 - en: '[12] Carl Vondrick, et al. [“Tracking Emerges by Colorizing Videos”](https://arxiv.org/pdf/1806.09594.pdf)
     ECCV. 2018.'
+  id: totrans-272
   prefs: []
   type: TYPE_NORMAL
+  zh: '[12] Carl Vondrick等人。[“通过给视频上色来跟踪的出现”](https://arxiv.org/pdf/1806.09594.pdf)
+    ECCV。2018。'
 - en: '[13] Ishan Misra, C. Lawrence Zitnick, and Martial Hebert. [“Shuffle and learn:
     unsupervised learning using temporal order verification.”](https://arxiv.org/abs/1603.08561)
     ECCV. 2016.'
+  id: totrans-273
   prefs: []
   type: TYPE_NORMAL
+  zh: '[13] Ishan Misra，C. Lawrence Zitnick和Martial Hebert。[“洗牌和学习：使用时间顺序验证的无监督学习。”](https://arxiv.org/abs/1603.08561)
+    ECCV。2016。'
 - en: '[14] Basura Fernando, et al. [“Self-Supervised Video Representation Learning
     With Odd-One-Out Networks”](https://arxiv.org/abs/1611.06646) CVPR. 2017.'
+  id: totrans-274
   prefs: []
   type: TYPE_NORMAL
+  zh: '[14] Basura Fernando等人。[“使用奇偶网络进行自监督视频表示学习”](https://arxiv.org/abs/1611.06646)
+    CVPR。2017。'
 - en: '[15] Donglai Wei, et al. [“Learning and Using the Arrow of Time”](https://www.robots.ox.ac.uk/~vgg/publications/2018/Wei18/wei18.pdf)
     CVPR. 2018.'
+  id: totrans-275
   prefs: []
   type: TYPE_NORMAL
+  zh: '[15] Donglai Wei等人。[“学习并使用时间的箭头”](https://www.robots.ox.ac.uk/~vgg/publications/2018/Wei18/wei18.pdf)
+    CVPR。2018。'
 - en: '[16] Florian Schroff, Dmitry Kalenichenko and James Philbin. [“FaceNet: A Unified
     Embedding for Face Recognition and Clustering”](https://arxiv.org/abs/1503.03832)
     CVPR. 2015.'
+  id: totrans-276
   prefs: []
   type: TYPE_NORMAL
+  zh: '[16] Florian Schroff，Dmitry Kalenichenko和James Philbin。[“FaceNet：用于人脸识别和聚类的统一嵌入”](https://arxiv.org/abs/1503.03832)
+    CVPR。2015。'
 - en: '[17] Pierre Sermanet, et al. [“Time-Contrastive Networks: Self-Supervised Learning
     from Video”](https://arxiv.org/abs/1704.06888) CVPR. 2018.'
+  id: totrans-277
   prefs: []
   type: TYPE_NORMAL
+  zh: '[17] Pierre Sermanet等人。[“时间对比网络：从视频中自监督学习”](https://arxiv.org/abs/1704.06888)
+    CVPR。2018。'
 - en: '[18] Debidatta Dwibedi, et al. [“Learning actionable representations from visual
     observations.”](https://arxiv.org/abs/1808.00928) IROS. 2018.'
+  id: totrans-278
   prefs: []
   type: TYPE_NORMAL
+  zh: '[18] Debidatta Dwibedi等人。[“从视觉观察中学习可操作表示。”](https://arxiv.org/abs/1808.00928)
+    IROS。2018。'
 - en: '[19] Eric Jang & Coline Devin, et al. [“Grasp2Vec: Learning Object Representations
     from Self-Supervised Grasping”](https://arxiv.org/abs/1811.06964) CoRL. 2018.'
+  id: totrans-279
   prefs: []
   type: TYPE_NORMAL
+  zh: '[19] Eric Jang和Coline Devin等人。[“Grasp2Vec：从自监督抓取中学习对象表示”](https://arxiv.org/abs/1811.06964)
+    CoRL。2018。'
 - en: '[20] Ashvin Nair, et al. [“Visual reinforcement learning with imagined goals”](https://arxiv.org/abs/1807.04742)
     NeuriPS. 2018.'
+  id: totrans-280
   prefs: []
   type: TYPE_NORMAL
+  zh: '[20] Ashvin Nair等人。[“具有想象目标的视觉强化学习”](https://arxiv.org/abs/1807.04742) NeuriPS。2018。'
 - en: '[21] Ashvin Nair, et al. [“Contextual imagined goals for self-supervised robotic
     learning”](https://arxiv.org/abs/1910.11670) CoRL. 2019.'
+  id: totrans-281
   prefs: []
   type: TYPE_NORMAL
+  zh: '[21] Ashvin Nair等人。[“自监督机器人学习的情境想象目标”](https://arxiv.org/abs/1910.11670) CoRL。2019。'
 - en: '[22] Aaron van den Oord, Yazhe Li & Oriol Vinyals. [“Representation Learning
     with Contrastive Predictive Coding”](https://arxiv.org/abs/1807.03748) arXiv preprint
     arXiv:1807.03748, 2018.'
+  id: totrans-282
   prefs: []
   type: TYPE_NORMAL
+  zh: '[22] Aaron van den Oord，Yazhe Li和Oriol Vinyals。[“对比预测编码的表示学习”](https://arxiv.org/abs/1807.03748)
+    arXiv预印本arXiv:1807.03748，2018。'
 - en: '[23] Olivier J. Henaff, et al. [“Data-Efficient Image Recognition with Contrastive
     Predictive Coding”](https://arxiv.org/abs/1905.09272) arXiv preprint arXiv:1905.09272,
     2019.'
+  id: totrans-283
   prefs: []
   type: TYPE_NORMAL
+  zh: '[23] Olivier J. Henaff等人。[“对比预测编码的数据高效图像识别”](https://arxiv.org/abs/1905.09272)
+    arXiv预印本arXiv:1905.09272，2019。'
 - en: '[24] Kaiming He, et al. [“Momentum Contrast for Unsupervised Visual Representation
     Learning.”](https://arxiv.org/abs/1911.05722) CVPR 2020.'
+  id: totrans-284
   prefs: []
   type: TYPE_NORMAL
+  zh: '[24] Kaiming He等人。[“动量对比用于无监督视觉表示学习。”](https://arxiv.org/abs/1911.05722) CVPR
+    2020。'
 - en: '[25] Zhirong Wu, et al. [“Unsupervised Feature Learning via Non-Parametric
     Instance-level Discrimination.”](https://arxiv.org/abs/1805.01978v1) CVPR 2018.'
+  id: totrans-285
   prefs: []
   type: TYPE_NORMAL
+  zh: '[25] Zhirong Wu等人。[“通过非参数实例级别区分进行无监督特征学习。”](https://arxiv.org/abs/1805.01978v1)
+    CVPR 2018。'
 - en: '[26] Ting Chen, et al. [“A Simple Framework for Contrastive Learning of Visual
     Representations.”](https://arxiv.org/abs/2002.05709) arXiv preprint arXiv:2002.05709,
     2020.'
+  id: totrans-286
   prefs: []
   type: TYPE_NORMAL
+  zh: '[26] Ting Chen等人。[“一种用于对比学习视觉表示的简单框架。”](https://arxiv.org/abs/2002.05709) arXiv预印本
+    arXiv:2002.05709，2020年。'
 - en: '[27] Aravind Srinivas, Michael Laskin & Pieter Abbeel [“CURL: Contrastive Unsupervised
     Representations for Reinforcement Learning.”](https://arxiv.org/abs/2004.04136)
     arXiv preprint arXiv:2004.04136, 2020.'
+  id: totrans-287
   prefs: []
   type: TYPE_NORMAL
+  zh: '[27] Aravind Srinivas, Michael Laskin & Pieter Abbeel [“CURL: 对比无监督表示用于强化学习。”](https://arxiv.org/abs/2004.04136)
+    arXiv预印本 arXiv:2004.04136，2020年。'
 - en: '[28] Carles Gelada, et al. [“DeepMDP: Learning Continuous Latent Space Models
     for Representation Learning”](https://arxiv.org/abs/1906.02736) ICML 2019.'
+  id: totrans-288
   prefs: []
   type: TYPE_NORMAL
+  zh: '[28] Carles Gelada等人。[“DeepMDP: 学习连续潜在空间模型进行表示学习”](https://arxiv.org/abs/1906.02736)
+    ICML 2019。'
 - en: '[29] Amy Zhang, et al. [“Learning Invariant Representations for Reinforcement
     Learning without Reconstruction”](https://arxiv.org/abs/2006.10742) arXiv preprint
     arXiv:2006.10742, 2020.'
+  id: totrans-289
   prefs: []
   type: TYPE_NORMAL
+  zh: '[29] Amy Zhang等人。[“学习无需重构的强化学习不变表示”](https://arxiv.org/abs/2006.10742) arXiv预印本
+    arXiv:2006.10742，2020年。'
 - en: '[30] Xinlei Chen, et al. [“Improved Baselines with Momentum Contrastive Learning”](https://arxiv.org/abs/2003.04297)
     arXiv preprint arXiv:2003.04297, 2020.'
+  id: totrans-290
   prefs: []
   type: TYPE_NORMAL
+  zh: '[30] Xinlei Chen等人。[“通过动量对比学习改进基线”](https://arxiv.org/abs/2003.04297) arXiv预印本
+    arXiv:2003.04297，2020年。'
 - en: '[31] Jean-Bastien Grill, et al. [“Bootstrap Your Own Latent: A New Approach
     to Self-Supervised Learning”](https://arxiv.org/abs/2006.07733) arXiv preprint
     arXiv:2006.07733, 2020.'
+  id: totrans-291
   prefs: []
   type: TYPE_NORMAL
+  zh: '[31] Jean-Bastien Grill等人。[“Bootstrap Your Own Latent: 一种新的自监督学习方法”](https://arxiv.org/abs/2006.07733)
+    arXiv预印本 arXiv:2006.07733，2020年。'
 - en: '[32] Abe Fetterman & Josh Albrecht. [“Understanding self-supervised and contrastive
     learning with Bootstrap Your Own Latent (BYOL)”](https://untitled-ai.github.io/understanding-self-supervised-contrastive-learning.html)
     Untitled blog. Aug 24, 2020.'
+  id: totrans-292
   prefs: []
   type: TYPE_NORMAL
+  zh: '[32] Abe Fetterman & Josh Albrecht. [“通过 Bootstrap Your Own Latent (BYOL) 了解自监督和对比学习”](https://untitled-ai.github.io/understanding-self-supervised-contrastive-learning.html)
+    无标题博客。2020年8月24日。'
 - en: '[representation-learning](https://lilianweng.github.io/tags/representation-learning/)'
+  id: totrans-293
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[表示学习](https://lilianweng.github.io/tags/representation-learning/)'
 - en: '[long-read](https://lilianweng.github.io/tags/long-read/)'
+  id: totrans-294
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[长文](https://lilianweng.github.io/tags/long-read/)'
 - en: '[generative-model](https://lilianweng.github.io/tags/generative-model/)'
+  id: totrans-295
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[生成模型](https://lilianweng.github.io/tags/generative-model/)'
 - en: '[object-recognition](https://lilianweng.github.io/tags/object-recognition/)'
+  id: totrans-296
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[目标识别](https://lilianweng.github.io/tags/object-recognition/)'
 - en: '[reinforcement-learning](https://lilianweng.github.io/tags/reinforcement-learning/)'
+  id: totrans-297
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[强化学习](https://lilianweng.github.io/tags/reinforcement-learning/)'
 - en: '[unsupervised-learning](https://lilianweng.github.io/tags/unsupervised-learning/)'
+  id: totrans-298
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[无监督学习](https://lilianweng.github.io/tags/unsupervised-learning/)'
 - en: '[«'
+  id: totrans-299
   prefs: []
   type: TYPE_NORMAL
+  zh: '[«'
 - en: Curriculum for Reinforcement Learning](https://lilianweng.github.io/posts/2020-01-29-curriculum-rl/)
     [»
+  id: totrans-300
   prefs: []
   type: TYPE_NORMAL
+  zh: 强化学习课程](https://lilianweng.github.io/posts/2020-01-29-curriculum-rl/) [»
 - en: Evolution Strategies](https://lilianweng.github.io/posts/2019-09-05-evolution-strategies/)[](https://twitter.com/intent/tweet/?text=Self-Supervised%20Representation%20Learning&url=https%3a%2f%2flilianweng.github.io%2fposts%2f2019-11-10-self-supervised%2f&hashtags=representation-learning%2clong-read%2cgenerative-model%2cobject-recognition%2creinforcement-learning%2cunsupervised-learning)[](https://www.linkedin.com/shareArticle?mini=true&url=https%3a%2f%2flilianweng.github.io%2fposts%2f2019-11-10-self-supervised%2f&title=Self-Supervised%20Representation%20Learning&summary=Self-Supervised%20Representation%20Learning&source=https%3a%2f%2flilianweng.github.io%2fposts%2f2019-11-10-self-supervised%2f)[](https://reddit.com/submit?url=https%3a%2f%2flilianweng.github.io%2fposts%2f2019-11-10-self-supervised%2f&title=Self-Supervised%20Representation%20Learning)[](https://facebook.com/sharer/sharer.php?u=https%3a%2f%2flilianweng.github.io%2fposts%2f2019-11-10-self-supervised%2f)[](https://api.whatsapp.com/send?text=Self-Supervised%20Representation%20Learning%20-%20https%3a%2f%2flilianweng.github.io%2fposts%2f2019-11-10-self-supervised%2f)[](https://telegram.me/share/url?text=Self-Supervised%20Representation%20Learning&url=https%3a%2f%2flilianweng.github.io%2fposts%2f2019-11-10-self-supervised%2f)©
     2024 [Lil'Log](https://lilianweng.github.io/) Powered by [Hugo](https://gohugo.io/)
     & [PaperMod](https://git.io/hugopapermod)[](#top "Go to Top (Alt + G)")
+  id: totrans-301
   prefs: []
   type: TYPE_NORMAL
+  zh: '[进化策略](https://lilianweng.github.io/posts/2019-09-05-evolution-strategies/)©
+    2024 [Lil''Log](https://lilianweng.github.io/) 由[Hugo](https://gohugo.io/) & [PaperMod](https://git.io/hugopapermod)提供[](#top
+    "返回顶部（Alt + G)")'

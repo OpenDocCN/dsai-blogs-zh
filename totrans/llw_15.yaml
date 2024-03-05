@@ -1,268 +1,369 @@
 - en: Reducing Toxicity in Language Models
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 减少语言模型中的毒性
 - en: 原文：[https://lilianweng.github.io/posts/2021-03-21-lm-toxicity/](https://lilianweng.github.io/posts/2021-03-21-lm-toxicity/)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://lilianweng.github.io/posts/2021-03-21-lm-toxicity/](https://lilianweng.github.io/posts/2021-03-21-lm-toxicity/)
 - en: Large pretrained [language models](https://lilianweng.github.io/posts/2019-01-31-lm/)
     are trained over a sizable collection of online data. They unavoidably acquire
     certain toxic behavior and biases from the Internet. Pretrained language models
     are very powerful and have shown great success in many NLP tasks. However, to
     safely deploy them for practical real-world applications demands a strong safety
     control over the model generation process.
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 大型预训练[语言模型](https://lilianweng.github.io/posts/2019-01-31-lm/)是在大量在线数据集上训练的。它们不可避免地从互联网中获得某些有毒行为和偏见。预训练语言模型非常强大，在许多自然语言处理任务中取得了巨大成功。然而，要安全地将它们部署到实际的应用程序中，需要对模型生成过程进行严格的安全控制。
 - en: 'Many challenges are associated with the effort to diminish various types of
     unsafe content:'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: 在减少各种类型不安全内容的努力中存在许多挑战：
 - en: First, there are a variety of unsafe content types, such as toxicity, abusiveness,
     hate speech, biases, stereotypes, cyberbullying, identity attacks and more, which
     may or may not demand different treatment.
+  id: totrans-4
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 首先，有各种类型的不安全内容，如毒性、辱骂、仇恨言论、偏见、刻板印象、网络欺凌、身份攻击等，可能需要不同的处理方式。
 - en: Second, there is no clearly and widely agreed-upon categorization and definition
     of unsafe behavior in pretrained language models. Individual perceptions could
     vary a lot due to different social backgrounds.
+  id: totrans-5
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 其次，在预训练语言模型中，对于不安全行为的分类和定义并没有明确且广泛达成一致。由于不同的社会背景，个人对此的看法可能会有很大差异。
 - en: In this post, we delve into the issue of toxicity in language models. As I’m
     still struggling to find a concrete definition of toxic content, I list a couple
     in the literature below.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们深入探讨了语言模型中的毒性问题。由于我仍在努力找到有毒内容的明确定义，我在下面列出了一些文献中的定义。
 - en: '[[Perspective API](https://support.perspectiveapi.com/s/about-the-api-attributes-and-languages)]
     A rude, disrespectful, or unreasonable comment; likely to make people leave a
     discussion.'
+  id: totrans-7
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '[[透视API](https://support.perspectiveapi.com/s/about-the-api-attributes-and-languages)]
+    一种粗鲁、不尊重或不合理的评论；可能会导致人们离开讨论。'
 - en: '[[Kurita et al. 2019](https://arxiv.org/abs/1912.06872)] Content that can offend
     or harm its recipients, including hate speech, racism, and offensive language.'
+  id: totrans-8
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '[[Kurita等人2019](https://arxiv.org/abs/1912.06872)] 可能会冒犯或伤害接收者的内容，包括仇恨言论、种族主义和冒犯性语言。'
 - en: '[[Pavlopoulos et al. 2020](https://arxiv.org/abs/2006.00998)] We use the term
     ’toxic’ as an umbrella term, but we note that the literature uses several terms
     for different kinds of toxic language or related phenomena: ‘offensive’, ‘abusive’,
     ‘hateful’, etc.'
+  id: totrans-9
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '[[Pavlopoulos等人2020](https://arxiv.org/abs/2006.00998)] 我们使用“有毒”这个术语作为一个总称，但我们注意到文献中使用了几个术语来描述不同类型的有毒语言或相关现象：“冒犯性的”、“辱骂的”、“仇恨的”等等。'
 - en: Overall, toxicity is a broad term to describe several types of unsafe content.
     Methodologies in this post can be applied given some form of definition of toxicity;
     e.g. presented in the instruction for annotators. How to properly define the concept
     of toxicity and thus collect accurate annotation labels is out of the scope of
     this post.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 总的来说，毒性是一个广泛的术语，用来描述几种类型的不安全内容。本文中的方法可以应用于对毒性的某种形式的定义；例如，在为注释者提供的说明中呈现。如何正确定义毒性概念，从而收集准确的注释标签，超出了本文的范围。
 - en: Categorization of Toxic Content
+  id: totrans-11
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 有毒内容的分类
 - en: How to categorize toxic content is not a straightforward task. Which content
     should be considered toxic and what types of toxic content exist can be very subjective.
     Language that does not look offensive to one group might seem inappropriate to
     another.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 如何对有毒内容进行分类并不是一项简单的任务。哪些内容应被视为有毒，以及有哪些类型的有毒内容可能是非常主观的。对一个群体来说不具冒犯性的语言，对另一个群体可能看起来不合适。
 - en: One popular categorization of offensive language is proposed by [Zampieri et
     al. (2019)](https://arxiv.org/abs/1902.09666), a three-level hierarchical taxonomy
     considering both the type and the target of offense. The Offensive Language Identification
     Dataset ([OLID](#OLID)) dataset is collected based on this taxonomy.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 一种流行的冒犯性语言分类是由[Zampieri等人（2019）](https://arxiv.org/abs/1902.09666)提出的，这是一个考虑到冒犯类型和目标的三级分层分类法。基于这个分类法收集的冒犯性语言识别数据集([OLID](#OLID))。
 - en: '![](../Images/108dd0ae1c63abf98afe3c8e1f1fbdb6.png)'
+  id: totrans-14
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/108dd0ae1c63abf98afe3c8e1f1fbdb6.png)'
 - en: Fig. 1\. The three-level hierarchical taxonomy for categorizing offensive language,
     proposed by [Zampieri et al. (2019)](https://arxiv.org/abs/1902.09666).
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 图1。由[Zampieri等人（2019）](https://arxiv.org/abs/1902.09666)提出的用于分类冒犯性语言的三级分层分类法。
 - en: 'Level A: “Is it offensive?”'
+  id: totrans-16
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: A级别：“它是否冒犯性的？”
 - en: '`[OFF]` Offensive: Inappropriate language, insults, or threats.'
+  id: totrans-17
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`[OFF]` 冒犯性：不当的语言、侮辱或威胁。'
 - en: '`[NOT]` Not offensive: No offense or profanity.'
+  id: totrans-18
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`[NOT]` 非冒犯性：没有冒犯或亵渎。'
 - en: 'Level B: “Is the offensive text targeted?”'
+  id: totrans-19
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: B级别：“冒犯性文本是否有特定目标？”
 - en: '`[TIN]` Targeted Insult: Targeted insult or threat towards an individual, a
     group or other.'
+  id: totrans-20
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`[TIN]` 目标侮辱：针对个人、群体或其他目标的侮辱或威胁。'
 - en: '`[UNT]` Untargeted: Non-targeted profanity and swearing.'
+  id: totrans-21
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`[UNT]` 未指定目标：非指定目标的亵渎和咒骂。'
 - en: 'Level C: What is the target?'
+  id: totrans-22
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: C级别：目标是什么？
 - en: '`[IND]` The offense targets an individual, often defined as “cyberbullying”.'
+  id: totrans-23
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`[IND]` 侮辱针对个人，通常被定义为“网络欺凌”。'
 - en: '`[GRP]` The offense targets a group of people based on ethnicity, gender, sexual
     orientation, religion, or other common characteristic, often defined as “hate
     speech”.'
+  id: totrans-24
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`[GRP]` 侮辱针对一群人，基于种族、性别、性取向、宗教或其他共同特征，通常被定义为“仇恨言论”。'
 - en: '`[OTH]` The target can belong to other categories, such as an organization,
     an event, an issue, etc.'
+  id: totrans-25
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`[OTH]` 目标可以属于其他类别，例如组织、事件、问题等。'
 - en: Data Collection
+  id: totrans-26
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 数据收集
 - en: Preparing a dataset of samples labelled as “safe” vs “unsafe” is the foundation
     for training a toxic language classifier and further providing signals for model
     detoxification.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 准备一个标记为“安全”与“不安全”的样本数据集是训练有毒语言分类器的基础，并进一步为模型排毒提供信号。
 - en: Human Annotations
+  id: totrans-28
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 人工标注
 - en: '[Vidgen & Derczynski (2020)](https://arxiv.org/abs/2004.01670) summarized that
     training data annotations for toxicity detection on the high level can be collected
     by:'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Vidgen & Derczynski（2020）](https://arxiv.org/abs/2004.01670)总结了高级别毒性检测训练数据注释可以通过以下方式收集：'
 - en: '*Expert coding*: An expert has enough knowledge or training to complete the
     annotation tasks with good quality, such as a researcher who studies prejudice,
     a student with moderate level of training, or a NLP practitioner. It is more expensive
     but produces high-quality data.'
+  id: totrans-30
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*专家编码*：专家具有足够的知识或培训来完成具有良好质量的注释任务，例如研究偏见的研究人员、具有适度培训水平的学生或自然语言处理从业者。成本更高，但产生高质量数据。'
 - en: '*Crowdsourcing*: Crowdsourcing platform pairs a large number of non-expert
     annotators with tasks. It is easier to scale up but demands more attention on
     quality control.'
+  id: totrans-31
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*众包*：众包平台将大量非专家标注者与任务配对。扩展性更强，但需要更多关注质量控制。'
 - en: '*Professional moderators*: Professional moderators are experienced, well-trained
     on the tasks, but their goals are likely to optimize for the output specific to
     the platform.'
+  id: totrans-32
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*专业主持人*：专业主持人经验丰富，接受过良好的培训，但他们的目标很可能是优化特定平台的输出。'
 - en: '*Synthetic data*: Training dataset can also be manually created by relevant
     content creators to cover a broad range of toxic content types.'
+  id: totrans-33
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*合成数据*：培训数据集也可以由相关内容创作者手动创建，以涵盖各种有毒内容类型。'
 - en: 'Crowdsourcing is the most common approach among them ([Davidson et al. 2017](https://arxiv.org/abs/1703.04009),
     [Zampieri et al. 2019](https://arxiv.org/abs/1902.09666)) and there are several
     good practices to improve the data quality:'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中众包是最常见的方法（[Davidson等人2017](https://arxiv.org/abs/1703.04009)，[Zampieri等人2019](https://arxiv.org/abs/1902.09666)），并有几种良好的实践方法来提高数据质量：
 - en: '*Test data*: A small set of annotations collected from a few experts can be
     used as test questions ([Zampieri et al. 2019](https://arxiv.org/abs/1902.09666))
     to filter out human annotators on the crowdsourcing platform who cannot achieve
     a certain threshold.'
+  id: totrans-35
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*测试数据*：从少数专家收集的一小部分注释可以用作测试问题（[Zampieri等人2019](https://arxiv.org/abs/1902.09666)），以筛选出在众包平台上无法达到一定阈值的人工标注者。'
 - en: '*Clear guidelines*: Detailed instructions are useful to guide annotators to
     produce aligned and consistent labels. Without any guideline, annotators are encouraged
     to apply their personal perceptions, which could be problematic because (1) subjective
     interpretation of toxic content varies across individuals greatly and (2) it is
     tricky to mark certain types of noise like sarcasm and irony without any guideline.'
+  id: totrans-36
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*明确指导方针*：详细说明对指导标注者产生一致的标签非常有用。没有任何指导方针，标注者被鼓励应用他们的个人看法，这可能会有问题，因为（1）有毒内容的主观解释在个体之间差异很大，（2）在没有任何指导方针的情况下标记某些类型的噪音，如讽刺和反讽，是棘手的。'
 - en: '*Majority vote*: It is very common that we need labels from multiple annotators
     per sample and take the majority vote.'
+  id: totrans-37
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*多数投票*：很常见的是我们需要来自多个标注者的标签，并采取多数投票。'
 - en: '*Understanding annotators’ identities*: Demographic background has a big impact
     on the annotator’s understanding of the task. We should aim to recruit diverse
     and qualified annotators.'
+  id: totrans-38
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*理解标注者的身份*：人口统计背景对标注者对任务的理解有很大影响。我们应该招募多样化和合格的标注者。'
 - en: Semi-supervised Dataset
+  id: totrans-39
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 半监督数据集
 - en: '[Khatri et al. (2018)](https://arxiv.org/abs/1811.12900) proposed a simple
     approach to bootstrap a large amount of semi-supervised dataset for learning toxic
     content classifiers. Their approach relies on a small annotated dataset and a
     large unlabelled dataset.'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Khatri et al. (2018)](https://arxiv.org/abs/1811.12900)提出了一种简单的方法来为学习有毒内容分类器引导大量的半监督数据集。他们的方法依赖于一个小的带标注数据集和一个大型未标记数据集。'
 - en: First, they gather a blacklist of 800+ words covering topics of profanity, hate,
     sexual content and insults. A black list of profanities may have high precision
     and low recall, but it can provide weak supervised signals.
+  id: totrans-41
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 首先，他们收集了一个包含800+涵盖亵渎、仇恨、性内容和侮辱主题的黑名单词汇。亵渎词汇的黑名单可能具有高精度和低召回率，但它可以提供弱监督信号。
 - en: Subreddits are sorted by the percentage of blacklisted words. Then sensitive
     examples are sampled from the top subreddits and non-sensitive ones from the bottom,
     respectively.
+  id: totrans-42
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 子社区按照黑名单词汇的百分比进行排序。然后从顶部子社区中抽取敏感示例，从底部抽取非敏感示例。
 - en: Train a weak binary classifier to further select more samples from the sorted
     subreddits,
+  id: totrans-43
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 训练一个弱二元分类器，进一步从排序后的子社区中选择更多样本，
 - en: 'Sensitive: contain blacklisted words or toxic classifier confidence > 0.8;'
+  id: totrans-44
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 敏感：包含黑名单词汇或有毒分类器置信度 > 0.8；
 - en: 'Non-sensitive: not contain blacklisted words and toxic classifier confidence
     < 0.3'
+  id: totrans-45
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 非敏感：不包含黑名单词汇和有毒分类器置信度 < 0.3
 - en: Given this large expanded dataset, train a new classifier named “Two-stage bootstrap”
     (**TS bootstrap**).
+  id: totrans-46
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 鉴于这个大规模扩展的数据集，训练一个名为“两阶段引导”（**TS bootstrap**）的新分类器。
 - en: Their experiments showed that the TS bootstrap classifier achieved pretty good
     numbers on F1 score, accuracy and recall and it could also transfer to out-of-domain
     test data.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 他们的实验表明，TS引导分类器在F1分数、准确率和召回率上取得了相当不错的成绩，而且还可以转移到领域外的测试数据。
 - en: '![](../Images/82a4efd256fb62ebe226e3caa9573c60.png)'
+  id: totrans-48
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/82a4efd256fb62ebe226e3caa9573c60.png)'
 - en: 'Fig. 2\. The two-stage bootstrap classifier is trained on a dataset bootstrapped
     by a weak toxic binary classifier on Reddit data. (Image source: [Khatri et al.
     2018](https://arxiv.org/abs/1811.12900))'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 图2。两阶段引导分类器是在Reddit数据上由一个弱有毒二元分类器引导的数据集上训练的。（图片来源：[Khatri et al. 2018](https://arxiv.org/abs/1811.12900)）
 - en: '[SOLID](#SOLID) (Semi-Supervised Offensive Language Identification Dataset;
     [Rosenthal et al. 2020](https://arxiv.org/abs/2004.14454)) contains 9+ M tweets
     annotated with the same taxonomy system as for [OLID](#OLID). SOLID treats OLID
@@ -270,149 +371,206 @@
     Democratic co-training ([Zhou & Goldman, 2004](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.76.3152&rep=rep1&type=pdf))
     creates a large dataset from noisy labels provided by a collection of diverse
     models trained on a small supervised dataset. SOLID is constructed by:'
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: '[SOLID](#SOLID)（半监督攻击性语言识别数据集；[Rosenthal et al. 2020](https://arxiv.org/abs/2004.14454)）包含了9+百万条带有与[OLID](#OLID)相同分类系统的标注推文。SOLID将OLID视为种子，并通过一种名为**民主协同训练**的半监督技术扩展它。民主协同训练（[Zhou
+    & Goldman, 2004](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.76.3152&rep=rep1&type=pdf)）通过由在小型监督数据集上训练的多样化模型提供的嘈杂标签创建一个大型数据集。SOLID的构建方式包括：'
 - en: First, train a diverse set of supervised models on the labeled dataset OLID.
     The paper experimented with PMI (n-gram-based similarity), FastText (shallow neural
     model similar to BoW model), LSTM and BERT.
+  id: totrans-51
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 首先，在标记数据集OLID上训练一组多样化的监督模型。该论文尝试了PMI（基于n-gram的相似性）、FastText（类似于BoW模型的浅层神经模型）、LSTM和BERT。
 - en: For each sample in the unannotated dataset, each model predicts a confidence
     score for the target class. The scores are aggregated by taking `avg()` or `min()`.
     Samples with high confidence are added into the dataset.
+  id: totrans-52
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 对于未标记数据集中的每个样本，每个模型为目标类别预测一个置信度分数。通过`avg()`或`min()`来聚合分数。置信度高的样本被添加到数据集中。
 - en: BERT model performance does not improve when the supervised dataset is large
     enough for a simple task, but can benefit from a big semi-supervised dataset if
     the original supervised dataset is too small for the task.
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 当监督数据集对于简单任务足够大时，BERT模型的性能不会提高，但如果原始监督数据集对于任务太小，则可以从一个大的半监督数据集中受益。
 - en: Toxicity Detection
+  id: totrans-54
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 毒性检测
 - en: Given a supervised dataset, we can train a text classifier from scratch or fine-tune
     a pretrained language model to perform the classification task. But what if training
     samples are not good or sufficient enough? What if we don’t have access to such
     a supervised dataset?
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 给定一个监督数据集，我们可以从头开始训练文本分类器，或微调预训练的语言模型来执行分类任务。但如果训练样本不好或不足够呢？如果我们无法访问这样的监督数据集呢？
 - en: Adversarial Attacks
+  id: totrans-56
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 对抗攻击
 - en: To create a toxicity detection model that is robust to adversarial attacks,
     [Dinan et al. (2019)](https://arxiv.org/abs/1908.06083) proposed an iterative
     “**build it, break it, fix it**” strategy to improve the dialogue system safety
     with humans in the loop.
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了创建一个对抗攻击鲁棒的毒性检测模型，[Dinan等人（2019）](https://arxiv.org/abs/1908.06083)提出了一种迭代的“**构建、破坏、修复**”策略，以提高对话系统与人类的安全性。
 - en: '*Build it*: A BERT model is trained to classify toxic comments on the [Jigsaw
     dataset](#jigsaw).'
+  id: totrans-58
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*构建*：训练一个BERT模型来对[Jigsaw数据集](#jigsaw)上的有毒评论进行分类。'
 - en: '*Break it*: Crowdsourced workers are asked to write toxic messages that are
     mistakenly labelled as “safe” by the model.'
+  id: totrans-59
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*破坏*：众包工作者被要求编写被模型错误标记为“安全”的有毒消息。'
 - en: '*Fix it*: The model is re-trained on the combination of the original dataset
     and newly collected adversarial samples.'
+  id: totrans-60
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*修复*：模型在原始数据集和新收集的对抗样本的组合上重新训练。'
 - en: '*Repeat*: Redeploy the robustified model and repeat a new round from step 1.'
+  id: totrans-61
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*重复*：重新部署经过强化的模型，并从第1步开始重复一个新的轮次。'
 - en: '![](../Images/66c44ea66a06ae258aa8bf54038df125.png)'
+  id: totrans-62
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/66c44ea66a06ae258aa8bf54038df125.png)'
 - en: 'Fig. 3\. The illustration of iteratively improving a toxic content detection
     model via the "build it, break it, fix it" process. (Image source: [Dinan et al.
     2019](https://arxiv.org/abs/1908.06083))'
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 图3。通过“构建、破坏、修复”过程迭代改进有毒内容检测模型的示意图。（图片来源：[Dinan等人，2019](https://arxiv.org/abs/1908.06083)）
 - en: One baseline in their experiments is to replace the adversarial collection in
     the “break it” step with the standard collection where workers are asked to submit
     “offensive” messages directly . Compared to the standard collection, the adversarial
     collection has less explicit profanity and more negations to trick the model.
     The tasks become more challenging in the later rounds.
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 在他们的实验中，一个基线是在“破坏”步骤中用标准集合替换对抗集合，其中工作者被要求直接提交“冒犯性”消息。与标准集合相比，对抗集合中的明确粗话更少，更多的否定词来欺骗模型。随着轮次的增加，任务变得更具挑战性。
 - en: Adversarial models are more robust against adversarial attacks than baseline
     models trained on the standard collection. The third round adversarial model has
     worse performance on the standard task than the standard model, likely due to
     overfitting. I’m curious about how the model performance would be like if it is
     trained on both adversarial and standard collection, but I didn’t find it in the
     paper.
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 对抗模型比在标准集合上训练的基线模型更具抗干扰攻击的鲁棒性。第三轮对抗模型在标准任务上的表现比标准模型差，可能是由于过拟合。我很好奇如果模型同时在对抗和标准集合上训练，其性能会如何，但我在论文中没有找到相关内容。
 - en: '![](../Images/3176c8a103debb8f4a64f22889f95b64.png)'
+  id: totrans-66
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3176c8a103debb8f4a64f22889f95b64.png)'
 - en: 'Fig. 4\. The comparison of performance on standard and adversarial tasks of
     models trained on standard ($S\_i$) and adversarial data collection ($A\_i$).
     The subscript $i$ indicates the number of training rounds. (Image source: [Dinan
     et al. 2019](https://arxiv.org/abs/1908.06083))'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 图4。在标准（$S\_i$）和对抗数据集合（$A\_i$）上训练的模型在标准和对抗任务上性能的比较。下标$i$表示训练轮次。（图片来源：[Dinan等人，2019](https://arxiv.org/abs/1908.06083)）
 - en: 'Another type of adversarial attack is to trick the detection model to mistakenly
     classify a toxic sentence as safe by replacing or scrambling a subset of characters.
     [Kurita et al. (2019)](https://arxiv.org/abs/1912.06872) developed a method of
     generating such model-agnostic adversarial attacks, incorporating several types
     of character-level perturbations:'
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一种对抗攻击类型是通过替换或混淆字符子集来欺骗检测模型，使其错误地将有毒句子分类为安全。[Kurita等人（2019）](https://arxiv.org/abs/1912.06872)开发了一种生成这种与模型无关的对抗攻击的方法，包括几种类型的字符级扰动：
 - en: '*Character scrambling*: randomly permute character positions.'
+  id: totrans-69
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*字符混淆*：随机排列字符位置。'
 - en: '*Homoglyph substitution*: replace one or multiple letters with similar looking
     international letters.'
+  id: totrans-70
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*同形替换*：用看起来相似的国际字母替换一个或多个字母。'
 - en: '*Dictionary-based near-neighbor replacement*: find closest but distinct token
     in terms of Levenshtein distance.'
+  id: totrans-71
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*基于字典的近邻替换*：找到与Levenshtein距离最接近但不同的标记。'
 - en: '*Distractor injection*: inject distractor tokens by repeating random selected
     sequences of non-toxic tokens.'
+  id: totrans-72
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*干扰注入*：通过重复随机选择的非毒性标记序列注入干扰标记。'
 - en: Adversarial noise combining token obfuscation and distractor tokens leads to
     substantial performance degradation of a toxic classifier. Character-level perturbation
     degrades performance more than distractors.
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 将标记模糊和干扰标记结合的对抗性噪声会导致毒性分类器性能显著下降。字符级扰动比干扰标记更严重地降低了性能。
 - en: 'The paper proposed two ways to resolve adversarial attacks:'
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 该论文提出了解决对抗攻击的两种方法：
 - en: '*Adversarial training* refers to training the model on a dataset with noise.
     However, you need to know the details of the incoming attacks in advance. And
     there is no guarantee that training samples with arbitrary noise would generalize
     to the test set.'
+  id: totrans-75
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*对抗训练*指的是在带有噪声的数据集上训练模型。然而，你需要提前了解入侵攻击的细节。并且不能保证训练样本带有任意噪声会推广到测试集。'
 - en: '*CDAE (contextual denoising autoencoder)* uses character-level and contextual
     information to denoise obfuscated tokens. CDAE takes a noise sample to predict
     the denoised version. Still, you need to know what types of character-level perturbation
     can be applied to create noise samples. CDAE performs comparable to BERT, but
     not substantially better.'
+  id: totrans-76
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*CDAE（上下文去噪自动编码器）*使用字符级和上下文信息去噪模糊标记。CDAE采用噪声样本来预测去噪版本。但是，你需要知道可以应用哪些类型的字符级扰动来创建噪声样本。CDAE的性能与BERT相当，但并没有显著更好。'
 - en: Perspective API
+  id: totrans-77
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 透视API
 - en: '**perspective API** ([www.perspectiveapi.com](https://www.perspectiveapi.com/))
     is the most widely used commercial API for toxic content detection. Perspective
     trains machine learning models to provide scores for several different [attributes](https://support.perspectiveapi.com/s/about-the-api-attributes-and-languages):
@@ -420,15 +578,22 @@
     explicit. Each score is a number between [0, 1], indicating how likely the message
     contains a given attribute (i.e. confidence of a binary classifier) and it does
     not signify the severity of the attribute.'
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: '**透视API**（[www.perspectiveapi.com](https://www.perspectiveapi.com/)）是最广泛使用的商业API，用于检测有毒内容。透视训练机器学习模型，为几种不同的[属性](https://support.perspectiveapi.com/s/about-the-api-attributes-and-languages)提供分数：毒性、严重毒性、侮辱、亵渎、身份攻击、威胁和性暗示。每个分数是介于[0,
+    1]之间的数字，表示消息包含给定属性的可能性（即二元分类器的置信度），并不表示属性的严重程度。'
 - en: '![](../Images/46fb30e9438028bb0a7365d179cdc3b5.png)'
+  id: totrans-79
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/46fb30e9438028bb0a7365d179cdc3b5.png)'
 - en: 'Fig. 5\. The overview of Perspective API scores. (Image source: [About Perspective
     API](https://support.perspectiveapi.com/s/about-the-api))'
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 图5。透视API分数概览。（图片来源：[关于透视API](https://support.perspectiveapi.com/s/about-the-api)）
 - en: '[Gehman et al. (2020)](https://arxiv.org/abs/2009.11462) measured the Perspective
     API toxicity scores of unprompted generations sampled from several pretrained
     language models. “Unprompted” means that the generation is only conditioned on
@@ -436,162 +601,237 @@
     all the tested models get to the expected maximum toxicity > 0.5 after 100 generations.
     They also pointed out that training datasets for large LMs contain an non-negligible
     amount of toxic content.'
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Gehman等人（2020）](https://arxiv.org/abs/2009.11462)测量了从几个预训练语言模型中抽样的未提示生成的透视API毒性分数。“未提示”意味着生成仅在句子开头标记的条件下进行，没有注入任何额外上下文。值得注意的是，所有测试的模型在100代后都达到了预期的最大毒性值大于0.5。他们还指出，大型语言模型的训练数据集包含相当数量的有毒内容。'
 - en: '![](../Images/a9d8471c819210301549c43f42baff02.png)'
+  id: totrans-82
   prefs: []
   type: TYPE_IMG
+  zh: '![图片](../Images/a9d8471c819210301549c43f42baff02.png)'
 - en: 'Fig. 6\. Perspective API toxicity scores of unprompted generations. Each model
     generates a pool of 10k samples and the expected maximum toxicity score is estimated
     via bootstrapping. (Image source: [Gehman et al. 2020](https://arxiv.org/abs/2009.11462))'
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 图6。透视API毒性分数的未提示生成。每个模型生成一个包含10k个样本的池，并通过自举法估计预期的最大毒性分数。（图片来源：[Gehman等人，2020](https://arxiv.org/abs/2009.11462)）
 - en: They collected the [**RealToxicityPrompt** dataset](#RealToxicityPrompt) for
     studying toxicity in conditional language model generation. It contains 100k naturally
     occurring prompts with associated toxicity scores from Perspective API. Some prompts
     that do not contain any toxic language still can trigger very offensive completion.
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 他们收集了用于研究条件语言模型生成中毒性的 [**RealToxicityPrompt** 数据集](#RealToxicityPrompt)。其中包含了来自
+    Perspective API 的 100k 个自然发生的提示及其相关的毒性评分。一些不包含任何毒性语言的提示仍然可能触发非常冒犯的完成。
 - en: 'Despite of its popularity, Perspective API contains known biases, as summarized
     by [Gehman et al. (2020)](https://arxiv.org/abs/2009.11462):'
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管 Perspective API 非常受欢迎，但包含已知偏见，如 [Gehman et al. (2020)](https://arxiv.org/abs/2009.11462)
+    总结的那样：
 - en: … exhibit biases against minorities and suffer from low agreement in annotations,
     partially due to annotator identity influencing their perception of hate speech
     and differences in annotation task setup.
+  id: totrans-86
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: … 对少数群体存在偏见，并在注释中存在低一致性，部分原因是注释者身份影响其对仇恨言论的看法和注释任务设置的差异。
 - en: Notably, recent work has found that systems are overestimating the prevalence
     of toxicity in text that contains a minority identity mention (e.g., “I’m a gay
     man”) or text by racial minorities (e.g., text in African American English). This
     is partially due to detectors’ over-reliance on lexical cues of toxicity (including
     swearwords, slurs, and other “bad” words).
+  id: totrans-87
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 值得注意的是，最近的研究发现系统在包含少数群体身份提及（例如“我是一个同性恋男性”）或少数族裔（例如非裔美国人英语文本）的文本中高估了毒性的普遍性。这部分是由于检测器过度依赖毒性的词汇线索（包括脏话、侮辱性词语和其他“坏”词语）。
 - en: Prompt-based Detection
+  id: totrans-88
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 基于提示的检测
 - en: '**Self-diagnosis** ([Schick, et al. 2021](https://arxiv.org/abs/2103.00453))
     is a process of exploiting the capacity of a pretrained language model to detect
     socially undesired attributes in its own outputs. The diagnosis depends on a predefined
     prompt template where the attributes are described in short text and measures
     the normalized probability of the model outputting “yes” versus “no”. Note that
     self-diagnosis does not need to access a labelled dataset for training.'
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: '**自我诊断** ([Schick, et al. 2021](https://arxiv.org/abs/2103.00453)) 是利用预训练语言模型检测其输出中的社会不良属性的过程。诊断依赖于预定义的提示模板，在其中以简短文本描述属性，并测量模型输出“是”与“否”的标准化概率。需要注意的是，自我诊断不需要访问标记数据集进行训练。'
 - en: '[PRE0]'
+  id: totrans-90
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: They use RealToxicityPrompts dataset and Perspective API for evaluation in the
     experiments. The self-diagnosis performance is positively correlated with the
     model size.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 他们在实验中使用了 RealToxicityPrompts 数据集和 Perspective API 进行评估。自我诊断性能与模型大小呈正相关。
 - en: '![](../Images/a075004854ca1bfc0beea40584ab9e02.png)'
+  id: totrans-92
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/a075004854ca1bfc0beea40584ab9e02.png)'
 - en: 'Fig. 7\. Self-diagnosis abilities for identifying undesired attributes. The
     ground truth is provided by Perspective API. (Image source: [Schick, et al. 2021](https://arxiv.org/abs/2103.00453))'
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 7\. 用于识别不良属性的自我诊断能力。地面真相由 Perspective API 提供。（图片来源：[Schick, et al. 2021](https://arxiv.org/abs/2103.00453)）
 - en: Detoxification
+  id: totrans-94
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 排毒
 - en: Blacklisting
+  id: totrans-95
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 黑名单
 - en: '**Bad word filtering** is a pretty intuitive and effective way to avoid explicit
     profane [words](https://github.com/%20LDNOOBW/List-of-Dirty-Naughty-Obscene-%20and-Otherwise-Bad-Words)
     in the language model generation. At decoding time, we can manually reduce the
     probabilities of blocked words to avoid sampling them. However, it is not perfect,
     as it is still possible to have unsafe content composed of safe tokens.'
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: '**脏词过滤** 是避免语言模型生成中明确粗俗 [词语](https://github.com/%20LDNOOBW/List-of-Dirty-Naughty-Obscene-%20and-Otherwise-Bad-Words)
+    的一种直观有效的方法。在解码时，我们可以手动降低被屏蔽词语的概率，以避免对其进行采样。然而，这并不完美，因为仍然可能存在由安全标记组成的不安全内容。'
 - en: '**Vocabulary shifting** ([Gehman et al. 2020](https://arxiv.org/abs/2009.11462))
     learns a 2-dimensional representation of toxicity versus non-toxicity for every
     token in the vocabulary of the pretrained model. Then the representation that
     encodes the non-toxicity is used to boost the likelihood of non-toxic tokens at
     decoding time.'
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: '**词汇转移** ([Gehman et al. 2020](https://arxiv.org/abs/2009.11462)) 学习了一个预训练模型词汇中每个标记的毒性与非毒性的二维表示。然后，编码非毒性的表示被用来在解码时增加非毒性标记的可能性。'
 - en: Prompt-based Detox
+  id: totrans-98
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 基于提示的排毒
 - en: '**Self-debiasing** ([Schick et al. 2021](https://arxiv.org/abs/2103.00453))
     follows the similar idea as in [self-diagnosis](#prompt-based-detection). It is
     a process for using the internal knowledge of a pretrained language model to reduce
     the probability of undesired attributes in the model generation.'
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: '**自去偏** ([Schick et al. 2021](https://arxiv.org/abs/2103.00453)) 遵循与 [自诊断](#prompt-based-detection)
+    中相似的思想。这是一种利用预训练语言模型的内部知识来减少模型生成中不良属性概率的过程。'
 - en: '[PRE1]'
+  id: totrans-100
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'Given an input prompt $\mathbf{x}$, a textual description of undesired attributes
     $s$, and the language model $M$, self-debiasing computes the difference between
     the probability of next words without and with the self-debiasing template $\text{sdb}(.)$:'
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 给定输入提示 $\mathbf{x}$，不良属性的文本描述 $s$，以及语言模型 $M$，自去偏计算没有和有自去偏模板 $\text{sdb}(.)$
+    的下一个词的概率之间的差异：
 - en: $$ \Delta(w, \mathbf{x}, s) = p_M(w\vert\mathbf{x}) - p_M(w\vert\text{sdb}(\mathbf{x},
     s)) $$
+  id: totrans-102
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \Delta(w, \mathbf{x}, s) = p_M(w\vert\mathbf{x}) - p_M(w\vert\text{sdb}(\mathbf{x},
+    s)) $$
 - en: Because $\text{sdb}(.)$ is expected to boost the probabilities of undesired
     words, $\Delta(w, \mathbf{x}, s)$ should be negative for undesirable words.
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 因为 $\text{sdb}(.)$ 预计会提升不良词的概率，所以对于不良词，$\Delta(w, \mathbf{x}, s)$ 应为负值。
 - en: 'In self-diasing decoding, a scaling function of the probability difference
     $\alpha(\Delta(w, \mathbf{x}, s)): \mathbb{R}\to[0,1]$ is used to alter the true
     sampling distribution,'
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: '在自诊断解码中，使用概率差异的缩放函数 $\alpha(\Delta(w, \mathbf{x}, s)): \mathbb{R}\to[0,1]$
+    来改变真实的采样分布，'
 - en: $$ \tilde{p}_M(w\vert\mathbf{x}) \propto \alpha(\Delta(w, \mathbf{x}, s)) p_M(w\vert\mathbf{x})
     $$
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \tilde{p}_M(w\vert\mathbf{x}) \propto \alpha(\Delta(w, \mathbf{x}, s)) p_M(w\vert\mathbf{x})
+    $$
 - en: 'In the paper, they used a soft variant where the probabilities of the words
     with negative $\Delta$ are reduced w.r.t. the magnitude of $\Delta(w, \mathbf{x},
     s)$:'
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: 在论文中，他们使用了一个软变体，其中具有负 $\Delta$ 的词的概率相对于 $\Delta(w, \mathbf{x}, s)$ 的大小而降低：
 - en: $$ \alpha(x)=\begin{cases} 1 & \text{ if } x\geq 0 \\ e^{\lambda\cdot x} & \text{
     otherwise} \end{cases} $$![](../Images/b23a593824041199db7e02c72219d56a.png)
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \alpha(x)=\begin{cases} 1 & \text{ if } x\geq 0 \\ e^{\lambda\cdot x} & \text{
+    otherwise} \end{cases} $$![](../Images/b23a593824041199db7e02c72219d56a.png)
 - en: 'Fig. 8\. Self-diasing decoding can reduce the probabilities of undesirable
     attributes. The scores are provided by Perspective API. (Image source: [Schick
     et al. 2021](https://arxiv.org/abs/2103.00453))'
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: '图 8\. 自诊断解码可以降低不良属性的概率。分数由 Perspective API 提供。 (图片来源: [Schick et al. 2021](https://arxiv.org/abs/2103.00453))'
 - en: 'There are a couple of major limitations in self-debiasing detoxification:'
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 自去偏去毒化存在一些主要限制：
 - en: The evaluation solely relies on Perspective API, so it cannot capture bias &
     toxicity attributes that are [not covered](#perspective-api-biases) by Perspective
     API, such as gender biases. Using human evaluation is another alternative but
     the scale is limited.
+  id: totrans-110
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 评估仅依赖于 Perspective API，因此无法捕捉 Perspective API 未涵盖的偏见和毒性属性，比如性别偏见。使用人工评估是另一种选择，但规模有限。
 - en: Self-debiasing sometimes acts too aggressively and filters out harmless words
     and it does not maintain the same level of perplexity as the original model.
+  id: totrans-111
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 自去偏有时会过于激进，过滤掉无害的词语，并且不保持与原始模型相同水平的困惑度。
 - en: The approach is constrained by the internal capacity of the model. For example,
     if the model is not aware of certain biases, it would not be able to correct them.
+  id: totrans-112
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 该方法受模型内部容量的限制。例如，如果模型不了解某些偏见，它将无法纠正它们。
 - en: Text Style Transfer
+  id: totrans-113
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 文本风格转移
 - en: '**Unsupervised style transfer** can be used to translate offensive sentences
     into innocuous ones ([Santos et al. 2018](https://arxiv.org/abs/1805.07685)).
     The approach should work for non-parallel datasets, meaning that we only have
@@ -599,518 +839,771 @@
     paired versions. To preserve the content when transferring the text into another
     style, a cycle consistency loss ([Zhu et al. 2017](https://arxiv.org/abs/1703.10593))
     is adopted.'
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: '**无监督风格转移** 可用于将冒犯性句子翻译为无害的句子 ([Santos et al. 2018](https://arxiv.org/abs/1805.07685))。该方法适用于非平行数据集，意味着我们只能访问两个单独的数据集，包括冒犯性和非冒犯性样本，但没有配对版本。为了在将文本转换为另一种风格时保留内容，采用了循环一致性损失
+    ([Zhu et al. 2017](https://arxiv.org/abs/1703.10593))。'
 - en: '![](../Images/e03966991c38c72f4c8a638d757ccc5d.png)'
+  id: totrans-115
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/e03966991c38c72f4c8a638d757ccc5d.png)'
 - en: 'Fig. 9\. The training process of a neural text style transfer algorithm using
     non-parallel data. (Image source: [Santos et al. 2018](https://arxiv.org/abs/1805.07685))'
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: '图 9\. 使用非平行数据的神经文本风格转移算法的训练过程。 (图片来源: [Santos et al. 2018](https://arxiv.org/abs/1805.07685))'
 - en: Let $s_i$ be the desired style ($i=0$ for offensive and $i=1$ for non-offensive),
     and $\mathbf{x}^i_k$ be the $k$-th sample of style $s_i$, $k = 1, \dots, n$. Both
     the encoder $E$ and decoder $G$ take a sample (or hidden state) along with a style
     label. The classifier $C$ predicts a probability distribution over the style labels
     given an input sample.
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: 令$s_i$为期望的风格（$i=0$表示冒犯性，$i=1$表示非冒犯性），$\mathbf{x}^i_k$为风格$s_i$的第$k$个样本，$k = 1,
+    \dots, n$。编码器$E$和解码器$G$都接受一个样本（或隐藏状态）以及一个风格标签。分类器$C$根据输入样本预测风格标签的概率分布。
 - en: 'Following the illustration in Fig. 9:'
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: 根据图9中的示例：
 - en: 'The top branch of forward transfer is auto encoder: ​$E(\mathbf{x}^i_k, s_i)
     \to H^i_k \to G(H^i_k, s_i) \to \hat{\mathbf{x}}^{i\to i}_k$. Two losses are computed:'
+  id: totrans-119
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 前向传递的顶部分支是自动编码器：$E(\mathbf{x}^i_k, s_i) \to H^i_k \to G(H^i_k, s_i) \to \hat{\mathbf{x}}^{i\to
+    i}_k$。计算两个损失：
 - en: 'Reconstruction loss measures how well the decoder can reconstruct the sample
     back:'
+  id: totrans-120
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 重建损失衡量解码器能够多好地重建样本：
 - en: $$ \mathcal{L}_\text{self} = \mathbb{E}_{\mathbf{x}^i_k \sim \mathcal{X}} [-\log
     p_G(\mathbf{x}_k^i \mid E(\mathbf{x}^i_k, s_i), s_i)] $$
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathcal{L}_\text{self} = \mathbb{E}_{\mathbf{x}^i_k \sim \mathcal{X}} [-\log
+    p_G(\mathbf{x}_k^i \mid E(\mathbf{x}^i_k, s_i), s_i)] $$
 - en: 'The bottom branch of forward transfer: $E(\mathbf{x}^i_k, s_i) \to H^i_k \to
     G(H^i_k, s_j) \to \hat{\mathbf{x}}^{i\to j}_k$'
+  id: totrans-122
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 前向传递的底部分支：$E(\mathbf{x}^i_k, s_i) \to H^i_k \to G(H^i_k, s_j) \to \hat{\mathbf{x}}^{i\to
+    j}_k$
 - en: 'Classification loss measures the effectiveness of style transfer:'
+  id: totrans-123
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 分类损失衡量风格转换的有效性：
 - en: $$ \mathcal{L}_\text{style_fwd} = \mathbb{E}_{\hat{\mathbf{x}}^{i\to j}_k \sim
     \hat{\mathcal{X}}} [-\log p_C(s_j \mid \hat{\mathbf{x}}^{i\to j}_k)] $$
+  id: totrans-124
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathcal{L}_\text{style_fwd} = \mathbb{E}_{\hat{\mathbf{x}}^{i\to j}_k \sim
+    \hat{\mathcal{X}}} [-\log p_C(s_j \mid \hat{\mathbf{x}}^{i\to j}_k)] $$
 - en: 'The back transfer uses cycle consistency loss: $E(\hat{\mathbf{x}}^{i\to j}_k,
     s_j) \to H^{i\to j}_k \to G(H^{i\to j}_k, s_i) \to \hat{\mathbf{x}}^{i\to j \to
     i}_k$'
+  id: totrans-125
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 反向传递使用循环一致性损失：$E(\hat{\mathbf{x}}^{i\to j}_k, s_j) \to H^{i\to j}_k \to G(H^{i\to
+    j}_k, s_i) \to \hat{\mathbf{x}}^{i\to j \to i}_k$
 - en: 'The cycle consistency loss controls how well the transferred sample can be
     converted back to the original form to encourage content preservation:'
+  id: totrans-126
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 循环一致性损失控制转移样本能够多好地转换回原始形式以鼓励内容保留：
 - en: $$ \mathcal{L}_\text{cycle} = \mathbb{E}_{\mathbf{x}^i_k \sim \mathcal{X}} [-\log
     p_G(\mathbf{x}_k^i \mid E(\hat{\mathbf{x}}^{i \to j}_k, s_j), s_i)] $$
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathcal{L}_\text{cycle} = \mathbb{E}_{\mathbf{x}^i_k \sim \mathcal{X}} [-\log
+    p_G(\mathbf{x}_k^i \mid E(\hat{\mathbf{x}}^{i \to j}_k, s_j), s_i)] $$
 - en: '[PRE2]'
+  id: totrans-128
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: $$ \mathcal{L}_\text{style_back} = \mathbb{E}_{\hat{\mathbf{x}}^{i\to j}_k \sim
     \hat{\mathcal{X}}} [-\log p_C(s_i \mid G(E(\hat{\mathbf{x}}^{i\to j}_k, s_j),
     s_i))] $$
+  id: totrans-129
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathcal{L}_\text{style_back} = \mathbb{E}_{\hat{\mathbf{x}}^{i\to j}_k \sim
+    \hat{\mathcal{X}}} [-\log p_C(s_i \mid G(E(\hat{\mathbf{x}}^{i\to j}_k, s_j),
+    s_i))] $$
 - en: 'There is an additional supervised classification loss for training an accurate
     classifier:'
+  id: totrans-130
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 还有一个额外的监督分类损失用于训练准确的分类器：
 - en: $$ \mathcal{L}_\text{class} = \mathbb{E}_{\hat{\mathbf{x}}^{i\to j}_k \sim \hat{\mathcal{X}}}
     [-\log p_C(s_i \mid \hat{\mathbf{x}}^i_k)] $$
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathcal{L}_\text{class} = \mathbb{E}_{\hat{\mathbf{x}}^{i\to j}_k \sim \hat{\mathcal{X}}}
+    [-\log p_C(s_i \mid \hat{\mathbf{x}}^i_k)] $$
 - en: 'The final training objective is as follows and the encoder, decoder and classifier
     are jointly trained:'
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: 最终的训练目标如下，编码器、解码器和分类器一起训练：
 - en: $$ \mathcal{L}(\theta_E, \theta_G, \theta_C) = \min_{E, G, C} \mathcal{L}_\text{self}
     + \mathcal{L}_\text{style_fwd} + \mathcal{L}_\text{cycle} + \mathcal{L}_\text{style_back}+
     \mathcal{L}_\text{class} $$
+  id: totrans-133
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathcal{L}(\theta_E, \theta_G, \theta_C) = \min_{E, G, C} \mathcal{L}_\text{self}
+    + \mathcal{L}_\text{style_fwd} + \mathcal{L}_\text{cycle} + \mathcal{L}_\text{style_back}+
+    \mathcal{L}_\text{class} $$
 - en: '**Style Transformer** ([Dai et al. 2019](https://arxiv.org/abs/1905.05621))
     also aims to learn unsupervised text style transfer. Different from the encoder-decoder
     model in [Santos et al. 2018](https://arxiv.org/abs/1805.07685), it learns a Transformer-based
     style transfer function $f_\theta(\mathbf{x}, s)$ for a given input sample $\mathbf{x}$
     and a desired style control variable $s$.'
+  id: totrans-134
   prefs: []
   type: TYPE_NORMAL
+  zh: '**风格转换器**（[Dai等人，2019](https://arxiv.org/abs/1905.05621)）也旨在学习无监督文本风格转换。与[Santos等人，2018](https://arxiv.org/abs/1805.07685)中的编码器-解码器模型不同，它学习了一个基于Transformer的风格转换函数$f_\theta(\mathbf{x},
+    s)$，用于给定输入样本$\mathbf{x}$和期望的风格控制变量$s$。'
 - en: '![](../Images/35a68c84609c610483c40cf96a4f292a.png)'
+  id: totrans-135
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/35a68c84609c610483c40cf96a4f292a.png)'
 - en: 'Fig. 10\. The comparison of style transformer and previous models that depend
     on disentangled latent representation. (Image source: [Dai et al. 2019](https://arxiv.org/abs/1905.05621))'
+  id: totrans-136
   prefs: []
   type: TYPE_NORMAL
+  zh: 图10。风格转换器与依赖于分解潜在表示的先前模型的比较。 (图片来源：[Dai等人，2019](https://arxiv.org/abs/1905.05621))
 - en: Without access to the parallel corpus, the style transformer adopts a discriminator
     to create supervision from non-parallel dataset.
+  id: totrans-137
   prefs: []
   type: TYPE_NORMAL
+  zh: 在没有访问平行语料库的情况下，风格转换器采用鉴别器从非平行数据集中创建监督。
 - en: 'Let $s$ and $\hat{s}$ be two mutually exclusive style variables and $\mathbf{x}$
     is a sample of style $s$, style transformer computes several losses:'
+  id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: 让$s$和$\hat{s}$是两个互斥的风格变量，$\mathbf{x}$是风格$s$的样本，风格转换器计算几个损失：
 - en: 'Self reconstruction loss: $\mathcal{L}_\text{self} = - p_\theta (\mathbf{x}
     \vert \mathbf{x}, s)$'
+  id: totrans-139
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 自重构损失：$\mathcal{L}_\text{self} = - p_\theta (\mathbf{x} \vert \mathbf{x}, s)$
 - en: 'Cycle-consistency loss: $\mathcal{L}_\text{cycle} = - p_\theta (\mathbf{x}
     \vert f_\theta(\mathbf{x}, \hat{s}), s)$'
+  id: totrans-140
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 循环一致性损失：$\mathcal{L}_\text{cycle} = - p_\theta (\mathbf{x} \vert f_\theta(\mathbf{x},
+    \hat{s}), s)$
 - en: 'Style controlling loss: This is necessary because otherwise the model would
     simply learn to copy the input over.'
+  id: totrans-141
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 风格控制损失：这是必要的，否则模型将简单地学会复制输入。
 - en: $$ \mathcal{L}_\text{style} = - p_\phi(\text{class} = 1 \vert f_\theta(\mathbf{x},
     \hat{s}), \hat{s}) $$
+  id: totrans-142
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathcal{L}_\text{style} = - p_\phi(\text{class} = 1 \vert f_\theta(\mathbf{x},
+    \hat{s}), \hat{s}) $$
 - en: ', where the discriminator is a simple binary classifier trained to optimize
     the negative log-likelihood of the correct style. The discriminator is trained
     by labelling'
+  id: totrans-143
   prefs: []
   type: TYPE_NORMAL
+  zh: ，其中鉴别器是一个简单的二元分类器，训练以优化正确风格的负对数似然。鉴别器通过标记训练
 - en: $\{(\mathbf{x}, s), (f_\theta(\mathbf{x}, s), s), (f_\theta(\mathbf{x}, \hat{s}),
     \hat{s})\}$ as positive class 1
+  id: totrans-144
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $\{(\mathbf{x}, s), (f_\theta(\mathbf{x}, s), s), (f_\theta(\mathbf{x}, \hat{s}),
+    \hat{s})\}$作为正类1
 - en: $\{(\mathbf{x}, \hat{s}), (f_\theta(\mathbf{x}, s), \hat{s}), (f_\theta(\mathbf{x},
     \hat{s}), s)\}$ as negative class 0.
+  id: totrans-145
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $\{(\mathbf{x}, \hat{s}), (f_\theta(\mathbf{x}, s), \hat{s}), (f_\theta(\mathbf{x},
+    \hat{s}), s)\}$作为负类0。
 - en: '![](../Images/3857c290d5a000e1e23f2ce6cf41edb6.png)'
+  id: totrans-146
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3857c290d5a000e1e23f2ce6cf41edb6.png)'
 - en: 'Fig. 11\. The training process of Style Transformer. (Image source: [Dai et
     al. 2019](https://arxiv.org/abs/1905.05621))'
+  id: totrans-147
   prefs: []
   type: TYPE_NORMAL
+  zh: 图11。Style Transformer的训练过程。（图片来源：[Dai等人，2019](https://arxiv.org/abs/1905.05621)）
 - en: Driven by the research question “Can we fine-tune a pre-trained language model
     to suggest civil rephrasings of rude comments using a dataset solely annotated
     in toxicity?”, [Laugier et al. (2021)](https://arxiv.org/abs/2102.05456) fine-tuned
     a pretrained text-to-text transformer with a denoising and cyclic auto-encoder
     loss.
+  id: totrans-148
   prefs: []
   type: TYPE_NORMAL
+  zh: 由研究问题“我们能否通过仅使用毒性标注的数据集来微调预训练的语言模型，以建议对粗鲁评论进行文明改写？”驱动，[Laugier等人（2021）](https://arxiv.org/abs/2102.05456)
+    使用去噪和循环自编码器损失微调了一个预训练的文本到文本转换器。
 - en: Let $s$ be the attribute of $\mathbf{x}$ (e.g. “civil”) and $\bar{s}$ be the
     other opposite attribute (e.g. “toxic”). These two attributes are mutually exclusive.
     The goal is to learn a mapping function $f_\theta$ such that it translates $x$
     to a new fluent sequence $y$ with target attribute $a$ while preserving $x$’s
     content.
+  id: totrans-149
   prefs: []
   type: TYPE_NORMAL
+  zh: 让$s$是$\mathbf{x}$的属性（例如“文明”），$\bar{s}$是另一个相反的属性（例如“有毒”）。这两个属性是互斥的。目标是学习一个映射函数$f_\theta$，使其将$x$翻译为具有目标属性$a$的新流畅序列$y$，同时保留$x$的内容。
 - en: 'The encoder-decoder model is trained with the loss:'
+  id: totrans-150
   prefs: []
   type: TYPE_NORMAL
+  zh: 编码器-解码器模型使用以下损失进行训练：
 - en: $$ \mathcal{L} = \lambda_\text{DAE} \mathcal{L}_\text{DAE} + \lambda_\text{cycle}
     \mathcal{L}_\text{cycle} $$
+  id: totrans-151
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathcal{L} = \lambda_\text{DAE} \mathcal{L}_\text{DAE} + \lambda_\text{cycle}
+    \mathcal{L}_\text{cycle} $$
 - en: 'The denoising auto-encoder loss is the loss for denoising auto-encoders, where
     $\eta$ is a [masking](https://lilianweng.github.io/posts/2019-01-31-lm/#pre-training-tasks)
     function same as in BERT training:'
+  id: totrans-152
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 去噪自编码器损失是去噪自编码器的损失，其中$\eta$是一个[掩码](https://lilianweng.github.io/posts/2019-01-31-lm/#pre-training-tasks)函数，与BERT训练中相同：
 - en: $$ \mathcal{L}_\text{DAE} = \mathbb{E}_{\mathbf{x} \sim \mathcal{X}} [−\log
     p_\theta(\mathbf{x} \mid \eta(\mathbf{x}), s)] $$
+  id: totrans-153
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathcal{L}_\text{DAE} = \mathbb{E}_{\mathbf{x} \sim \mathcal{X}} [−\log
+    p_\theta(\mathbf{x} \mid \eta(\mathbf{x}), s)] $$
 - en: The cycle consistency loss ([Zhu et al. 2017](https://arxiv.org/abs/1703.10593))
     has $\tilde{\theta}$ to produce a non-differentiable pseudo-prediction $\hat{\mathbf{y}}$
     and it does not take gradient backpropagation.
+  id: totrans-154
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 循环一致性损失（[Zhu等人，2017](https://arxiv.org/abs/1703.10593)）有$\tilde{\theta}$产生一个不可微分的伪预测$\hat{\mathbf{y}$，并且不进行梯度反向传播。
 - en: $$ \mathcal{L}_\text{cycle} = \mathbb{E}_{\mathbf{x} \sim \mathcal{X}} [−\log
     p_\theta(\mathbf{x} \mid f_{\tilde{\theta}}(\mathbf{x}, \bar{s}), s)] $$
+  id: totrans-155
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathcal{L}_\text{cycle} = \mathbb{E}_{\mathbf{x} \sim \mathcal{X}} [−\log
+    p_\theta(\mathbf{x} \mid f_{\tilde{\theta}}(\mathbf{x}, \bar{s}), s)] $$
 - en: They used the above loss to fine-tune a T5 model, resulting in a model named
     **CAE-T5**. The conditioning is implemented like CTRL via control code (“civil”
     or “toxic”) prepended to the start of a sequence.
+  id: totrans-156
   prefs: []
   type: TYPE_NORMAL
+  zh: 他们使用上述损失来微调T5模型，得到一个名为**CAE-T5**的模型。通过控制代码（“文明”或“有毒”）作为序列开头的前缀来实现条件。
 - en: 'Automatic evaluation of the text style transferred results relies on three
     metrics:'
+  id: totrans-157
   prefs: []
   type: TYPE_NORMAL
+  zh: 文本风格转移结果的自动评估依赖于三个指标：
 - en: '*Accuracy*: Classification accuracy measures how successful the style transfer
     is.'
+  id: totrans-158
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*准确性*：分类准确性衡量了风格转移的成功程度。'
 - en: '*Fluency*: Fluency is commonly measured by perplexity by another separately
     trained LM on non-toxic samples.'
+  id: totrans-159
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*流畅性*：流畅性通常由另一个单独训练的语言模型在非毒性样本上的困惑度来衡量。'
 - en: '*Content preservation*: It is the content similarity between transferred and
     original sentences, measured by BLEU or embedding based content similarity.'
+  id: totrans-160
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*内容保留*：它是转移和原始句子之间的内容相似度，通过BLEU或基于嵌入的内容相似度来衡量。'
 - en: Human evaluation is also necessary but more costly.
+  id: totrans-161
   prefs: []
   type: TYPE_NORMAL
+  zh: 人类评估也是必要的，但成本更高。
 - en: Compared to the baseline ([Shen et al. 2017](https://arxiv.org/abs/1705.09655)),
     the style transfer method by [Santos et al. 2018](https://arxiv.org/abs/1805.07685)
     achieves better classification accuracy, better content preservation, but worse
     perplexity. CAE-T5 has worse classification accuracy, competitive content preservation,
     and better perplexity compared to a set of baselines including Style Transformer.
+  id: totrans-162
   prefs: []
   type: TYPE_NORMAL
+  zh: 与基线（[Shen等人，2017](https://arxiv.org/abs/1705.09655)）相比，[Santos等人，2018](https://arxiv.org/abs/1805.07685)的风格转移方法在分类准确性、内容保留方面表现更好，但困惑度更差。与包括Style
+    Transformer在内的一组基线相比，CAE-T5的分类准确性更差，内容保留竞争力强，困惑度更好。
 - en: Controllable Generation
+  id: totrans-163
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 可控生成
 - en: 'We can try to avoid toxic outputs via *controllable text generation*. There
     are several popular approaches for steering a pretrained language model toward
     desired styles, topics or safety criteria:'
+  id: totrans-164
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以通过*可控文本生成*来避免有毒输出。有几种流行的方法可以引导预训练语言模型朝向期望的风格、主题或安全标准：
 - en: Apply guided decoding strategies and select desired outputs at test time.
+  id: totrans-165
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在测试时应用引导解码策略并选择所需的输出。
 - en: Optimize for the most desired outcomes via good prompt design.
+  id: totrans-166
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 通过良好的提示设计优化以获得最理想的结果。
 - en: Fine-tune the base model or steerable layers to do conditioned content generation.
+  id: totrans-167
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 对基础模型或可控层进行微调以进行条件内容生成。
 - en: Read more in my [last post](https://lilianweng.github.io/posts/2021-01-02-controllable-text-generation/)
     on controllable neural text generation, introducing methods like [AutoPrompt](https://arxiv.org/abs/2010.15980),
     [CTRL](https://arxiv.org/abs/1909.05858), [PPLM](https://arxiv.org/abs/1912.02164),
     [GeDi](https://arxiv.org/abs/2009.06367) and many more.
+  id: totrans-168
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我的[上一篇文章](https://lilianweng.github.io/posts/2021-01-02-controllable-text-generation/)中阅读更多关于可控神经文本生成的内容，介绍了诸如[AutoPrompt](https://arxiv.org/abs/2010.15980)、[CTRL](https://arxiv.org/abs/1909.05858)、[PPLM](https://arxiv.org/abs/1912.02164)、[GeDi](https://arxiv.org/abs/2009.06367)等方法。
 - en: '[Gehman et al. (2020)](https://arxiv.org/abs/2009.11462) experimented with
     both data-based (supervised fine-tuning, CTRL training) and decoding-based (vocabulary
     shifting, blocked word filtering, PPLM) methods for language model detoxification.
     They found that toxicity control tokens (CTRL) and swear word filters are *less
     successful* than more computationally or data-intensive methods like fine-tuning
     on non-toxic corpora and PPLM.'
+  id: totrans-169
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Gehman等人（2020）](https://arxiv.org/abs/2009.11462)尝试了基于数据的（监督微调，CTRL训练）和基于解码的（词汇转移，屏蔽词过滤，PPLM）方法来进行语言模型解毒实验。他们发现毒性控制令牌（CTRL）和脏话过滤器比微调非毒性语料库和PPLM等计算或数据密集型方法*不那么成功*。'
 - en: '![](../Images/6e10a84bb27e73c9fb1838a63681d490.png)'
+  id: totrans-170
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6e10a84bb27e73c9fb1838a63681d490.png)'
 - en: 'Fig. 12\. Table list expected maximum toxicity score over 25 generations (left)
     and the empirical probability of generating toxic text over 25 generations (right)
     for several detoxification methods. Scores are provided by Perspective API. (Image
     source: [Gehman et al., 2020](https://arxiv.org/abs/2009.11462))'
+  id: totrans-171
   prefs: []
   type: TYPE_NORMAL
+  zh: 图12。表列出了25代中预期最大毒性分数（左）和生成有毒文本的经验概率（右）的几种解毒方法。分数由Perspective API提供。（图片来源：[Gehman等人，2020](https://arxiv.org/abs/2009.11462)）
 - en: System-level Safety Solution
+  id: totrans-172
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 系统级安全解决方案
 - en: '[Xu et al. (2020)](https://arxiv.org/abs/2010.07079) presented a thorough system-level
     design for building safe chatbots.'
+  id: totrans-173
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Xu等人（2020）](https://arxiv.org/abs/2010.07079)提出了一个详尽的系统级设计来构建安全的聊天机器人。'
 - en: '![](../Images/224c728f44b6c6350a2d08c001c0afc2.png)'
+  id: totrans-174
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/224c728f44b6c6350a2d08c001c0afc2.png)'
 - en: 'Fig. 13\. Illustration of a safe chat bot system. (Image source: [Xu et al.
     2020](https://arxiv.org/abs/2010.07079))'
+  id: totrans-175
   prefs: []
   type: TYPE_NORMAL
+  zh: 图13. 安全聊天机器人系统的示意图。（图片来源：[Xu等人，2020](https://arxiv.org/abs/2010.07079)）
 - en: 'They consider four general strategies in the recipes for making the bot safer:'
+  id: totrans-176
   prefs: []
   type: TYPE_NORMAL
+  zh: 他们在制作机器人更安全的配方中考虑了四种一般策略：
 - en: '*Detect unsafe content*: Adopt a classifier for detecting unsafe language on
     both the input and output side, as an extra safety layer on top of the language
     model.'
+  id: totrans-177
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*检测不安全内容*：采用分类器来检测输入和输出端的不安全语言，作为语言模型顶部的额外安全层。'
 - en: The classifier is trained on an enhanced version of the [Jigsaw toxic](#jigsaw)
     comment dataset (safe vs unsafe binary labels), extended with [adversarial human
     attacks](#adversarial-attacks) ([Dinan et al. 2019](https://arxiv.org/abs/1908.06083))
     and [semi-supervision](#semi-supervised-dataset) ([Khatri et al. 2018](https://arxiv.org/abs/1811.12900)).
+  id: totrans-178
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 分类器是在增强版本的[Jigsaw toxic](#jigsaw)评论数据集（安全 vs 不安全的二进制标签）上进行训练的，该数据集通过[对抗性人类攻击](#adversarial-attacks)（[Dinan等人，2019](https://arxiv.org/abs/1908.06083)）和[半监督数据集](#semi-supervised-dataset)（[Khatri等人，2018](https://arxiv.org/abs/1811.12900)）进行了扩展。
 - en: The safety classifier can be used on both the user input and the model output.
     If it detects unsafe content, the system is configured to return a canned, predefined
     response (e.g “I’m sorry I’m not sure what to say.”), or decide to change topics.
     It is worthy noting that this approach relies on a high-quality classifier. The
     conversation experience would be drastically disrupted with too many false positives.
+  id: totrans-179
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 安全分类器可以用于用户输入和模型输出。如果检测到不安全内容，系统将配置为返回一个预定义的回应（例如“对不起，我不确定该说什么。”），或者决定改变话题。值得注意的是，这种方法依赖于高质量的分类器。如果有太多误报，对话体验将受到严重干扰。
 - en: 'Bot adversarial dialogue (BAD) safety: The idea is to collect data on humans
     adversarially probing the system to make mistakes and then use the data for further
     training. During annotation, human labellers can tag the bot’s response with an
     unsafe-safe rating based on the percentage of population who may consider it as
     unsafe. This probing data collection is used to train a multi-turn safety classifier,
     predicting whether a response is offensive given the dialogue context.'
+  id: totrans-180
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 机器人对抗性对话（BAD）安全：这个想法是收集人类对系统进行对抗性探测以制造错误的数据，然后将数据用于进一步训练。在注释过程中，人类标注者可以根据可能认为其不安全的人口比例为机器人的回应打标签。这种探测数据收集用于训练一个多轮安全分类器，预测在对话上下文中给出的回应是否具有攻击性。
 - en: '*Safe generation*: Train a model that is less likely to output unsafe responses.'
+  id: totrans-181
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*安全生成*：训练一个更不太可能输出不安全回应的模型。'
 - en: A predefined list of unsafe words/n-grams can be [blocked](#blacklisting) at
     decoding time.
+  id: totrans-182
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在解码时，可以预先定义一组不安全词语/ n-gram进行[屏蔽](#blacklisting)。
 - en: The pretraining data is filtered by the above safety classifier, or filtered
     based on known authors.
+  id: totrans-183
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 预训练数据通过上述安全分类器进行过滤，或者基于已知作者进行过滤。
 - en: The problem with pre-training only with safe datasets is that if the model has
     never seen toxic language during training, it would not know how to respond at
     test time (OOD; e.g. may just copy the offensive content). They instead prepare
     a collection of training samples where the last utterance is labelled as “unsafe”
     and then attach a safe response following that unsafe attack. Then the model is
     fine-tuned on the “baked-in” safety data.
+  id: totrans-184
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 仅使用安全数据集进行预训练的问题在于，如果模型在训练期间从未见过有毒语言，那么在测试时就不会知道如何做出响应（OOD；例如，可能只是复制冒犯性内容）。相反，他们准备了一系列训练样本，其中最后一句话被标记为“不安全”，然后跟随不安全攻击的是一个安全的回应。然后在“内置”安全数据上对模型进行微调。
 - en: Do [CTRL](https://arxiv.org/abs/1909.05858) style training by assigning “safe”
     vs “unsafe” label using the safety classifier.
+  id: totrans-185
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 通过使用安全分类器分配“安全” vs “不安全”标签来进行[CTRL](https://arxiv.org/abs/1909.05858)风格的训练。
 - en: '*Avoid sensitive topics*:'
+  id: totrans-186
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*避免敏感话题*：'
 - en: In order to avoid sensitive topics (politics, religion, drug use, medical advice,
     and NSFW and relationships/dating), they trained a multi-class classifier to detect
     those topics using crowdsourced lists of subreddits. The classifier can be periodically
     re-trained to capture the changes within topics over time.
+  id: totrans-187
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 为了避免敏感话题（政治、宗教、药物使用、医疗建议、不适宜工作场所的内容和关系/约会），他们训练了一个多类分类器，使用众包列表的子社区来检测这些话题。分类器可以定期重新训练，以捕捉随时间变化的话题内部的变化。
 - en: A small validation set is collected by recruiting crowdsourced workers to discuss
     one of the target topics.
+  id: totrans-188
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 通过招募众包工作者讨论目标话题来收集一个小的验证集。
 - en: '*Gender bias mitigation*:'
+  id: totrans-189
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*性别偏见缓解*：'
 - en: They used [CTRL](https://arxiv.org/abs/1909.05858) style training to mitigate
     gender biases.
+  id: totrans-190
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 他们使用[CTRL](https://arxiv.org/abs/1909.05858)风格的训练来减轻性别偏见。
 - en: Precisely, given a gendered word list, tag the training samples with $F^0 M^0$,
     $F^0 M^+$, $F^+ M^+$, and $F^+ M^0$ labels, indicating whether the response contains
     female / male words ($+$ contains, $-$ does not contain). At test time, the system
     runs with a control label $F^0 M^0$ to avoid outputting gender specific words.
+  id: totrans-191
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 给定一个性别化词汇表，使用$F^0 M^0$、$F^0 M^+$、$F^+ M^+$和$F^+ M^0$标签对训练样本进行标记，指示响应是否包含女性/男性词汇（$+$包含，$-$不包含）。在测试时，系统以控制标签$F^0
+    M^0$运行，以避免输出特定性别的词汇。
 - en: 'Appendix: Datasets'
+  id: totrans-192
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 附录：数据集
 - en: (*Only datasets in English are listed here.)
+  id: totrans-193
   prefs: []
   type: TYPE_NORMAL
+  zh: （*仅列出英文数据集。）
 - en: '**Hate Speech and Offensive Language** Dataset (2017): contains about 25k tweets,
     each labelled manually as one of three categories: hate speech, offensive but
     not hate speech, or neither offensive nor hate speech. [[Download](https://github.com/t-davidson/hate-speech-and-offensive-language/blob/master/data/readme.md)]'
+  id: totrans-194
   prefs: []
   type: TYPE_NORMAL
+  zh: '**仇恨言论和攻击性语言**数据集（2017）：包含约25k条推文，每条手动标记为三个类别之一：仇恨言论、冒犯但非仇恨言论，或既非冒犯也非仇恨言论。[[下载链接](https://github.com/t-davidson/hate-speech-and-offensive-language/blob/master/data/readme.md)]'
 - en: '**Jigsaw Toxic** Comments Classification Dataset (2018): contains about 160k
     examples extracted from Wikipedia discussion pages, each annotated for 7 classes:
     toxic, severe toxic, obscene, threat, insult, identity hate and non-toxic. The
     labelling process involved 5000 crowdsourced annotators. [[Download](https://www.kaggle.com/c/jigsaw-toxic-comment-classification-challenge)]'
+  id: totrans-195
   prefs: []
   type: TYPE_NORMAL
+  zh: '**拼图有毒**评论分类数据集（2018）：包含约160k个示例，提取自维基百科讨论页面，每个示例标注了7个类别：有毒、严重有毒、淫秽、威胁、侮辱、身份仇恨和非有毒。标注过程涉及5000名众包标注者。[[下载链接](https://www.kaggle.com/c/jigsaw-toxic-comment-classification-challenge)]'
 - en: '**Jigsaw Unintended Bias in Toxicity** Classification Dataset (2019): contains
     about 2 Millions comments from the Civil Comments platform, which shut down in
     2017\. This data is annotated for toxicity, toxicity sub-types, and mentions of
     identities, which enables evaluation of unintended bias with respect to identity
     mentions. [[Download](https://www.kaggle.com/c/jigsaw-unintended-bias-in-toxicity-classification)]'
+  id: totrans-196
   prefs: []
   type: TYPE_NORMAL
+  zh: '**拼图毒性中的意外偏见**分类数据集（2019）：包含约200万条来自Civil Comments平台的评论，该平台于2017年关闭。这些数据标注了毒性、毒性子类型和身份提及，从而评估了与身份提及相关的意外偏见。[[下载链接](https://www.kaggle.com/c/jigsaw-unintended-bias-in-toxicity-classification)]'
 - en: '**OLID** (Offensive Language Identification Dataset; 2019): contains 14,100
     English tweets, annotated according to the three-level taxonomy as described [here](#categorization-of-toxic-content).
     [[Download](https://sites.google.com/site/offensevalsharedtask/olid)]'
+  id: totrans-197
   prefs: []
   type: TYPE_NORMAL
+  zh: '**OLID**（攻击性语言识别数据集；2019）：包含14,100条英文推文，根据[这里](#categorization-of-toxic-content)描述的三级分类法进行标注。[[下载链接](https://sites.google.com/site/offensevalsharedtask/olid)]'
 - en: '**SOLID** (Semi-Supervised Offensive Language Identification Dataset; 2020):
     contains 9+ Millions tweets annotated following OLID’s three level taxonomy. [[Download](https://sites.google.com/site/offensevalsharedtask/solid)]'
+  id: totrans-198
   prefs: []
   type: TYPE_NORMAL
+  zh: '**SOLID**（半监督攻击性语言识别数据集；2020）：包含900万多条推文，按照OLID的三级分类法进行标注。[[下载链接](https://sites.google.com/site/offensevalsharedtask/solid)]'
 - en: '**RealToxicityPrompts** dataset (2020): contains 100k sentence snippets from
     the web with Perspective API toxicity scores for studying the risk of neural toxic
     degeneration in language models. [[Download](https://allenai.org/data/real-toxicity-prompts)]'
+  id: totrans-199
   prefs: []
   type: TYPE_NORMAL
+  zh: '**真实有毒提示**数据集（2020）：包含来自网络的100k个句子片段，具有透视API毒性评分，用于研究语言模型中神经毒性退化的风险。[[下载链接](https://allenai.org/data/real-toxicity-prompts)]'
 - en: Citation
+  id: totrans-200
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 引用
 - en: 'Cited as:'
+  id: totrans-201
   prefs: []
   type: TYPE_NORMAL
+  zh: 引用为：
 - en: Weng, Lilian. (Mar 2021). Reducing toxicity in language models. Lil’Log. https://lilianweng.github.io/posts/2021-03-21-lm-toxicity/.
+  id: totrans-202
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: Weng, Lilian.（2021年3月）。减少语言模型中的毒性。Lil’Log。https://lilianweng.github.io/posts/2021-03-21-lm-toxicity/.
 - en: Or
+  id: totrans-203
   prefs: []
   type: TYPE_NORMAL
+  zh: 或
 - en: '[PRE3]'
+  id: totrans-204
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: References
+  id: totrans-205
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: '[1] Vidgen, et al. [“Challenges and frontiers in abusive content detection.”](https://www.aclweb.org/anthology/W19-3509/)
     Workshop on Abusive Language Online 2019.'
+  id: totrans-206
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] Vidgen等人 [“滥用内容检测中的挑战和前沿。”](https://www.aclweb.org/anthology/W19-3509/)
+    2019年在线滥用语言研讨会。'
 - en: '[2] Zampieri et al. [“Predicting the type and target of offensive posts in
     social media.”](https://arxiv.org/abs/1902.09666) NAACL 2019.'
+  id: totrans-207
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] Zampieri等人 [“在社交媒体中预测攻击性帖子的类型和目标。”](https://arxiv.org/abs/1902.09666) NAACL
+    2019.'
 - en: '[3] Vidgen & Deczynski. [“Directions in abusive language training data, a systematic
     review: Garbage in, garbage out.”](https://arxiv.org/abs/2004.01670) PLoS ONE
     15(12): e0243300 (2020).'
+  id: totrans-208
   prefs: []
   type: TYPE_NORMAL
+  zh: '[3] Vidgen & Deczynski. [“滥用语言训练数据的方向，系统性回顾：垃圾进，垃圾出。”](https://arxiv.org/abs/2004.01670)
+    PLoS ONE 15(12): e0243300 (2020).'
 - en: '[4] Davidson et al. [“Automated hate speech detection and the problem of offensive
     language.”](https://arxiv.org/abs/1703.04009) ICWSM 2017.'
+  id: totrans-209
   prefs: []
   type: TYPE_NORMAL
+  zh: '[4] Davidson等人[“自动检测仇恨言论和冒犯性语言问题。”](https://arxiv.org/abs/1703.04009) ICWSM
+    2017.'
 - en: '[5] Khatri et al. [“Detecting offensive content in open-domain conversations
     using two stage semi-supervision.”](https://arxiv.org/abs/1811.12900) NeuriIPS
     CONVAI Workshop 2018.'
+  id: totrans-210
   prefs: []
   type: TYPE_NORMAL
+  zh: '[5] Khatri等人[“使用两阶段半监督在开放领域对话中检测冒犯性内容。”](https://arxiv.org/abs/1811.12900)
+    NeuriIPS CONVAI Workshop 2018.'
 - en: '[6] Rosenthal et al. [“A Large-Scale Semi-Supervised Dataset for Offensive
     Language Identification”](https://arxiv.org/abs/2004.14454) arXiv:2004.14454 (2020).'
+  id: totrans-211
   prefs: []
   type: TYPE_NORMAL
+  zh: '[6] Rosenthal等人[“用于辱骂语言识别的大规模半监督数据集”](https://arxiv.org/abs/2004.14454) arXiv:2004.14454
+    (2020).'
 - en: '[7] Pavlopoulos et al. [“Toxicity Detection: Does Context Really Matter?”](https://arxiv.org/abs/2006.00998)
     arXiv:2006.00998 (2020).'
+  id: totrans-212
   prefs: []
   type: TYPE_NORMAL
+  zh: '[7] Pavlopoulos等人[“毒性检测：上下文真的很重要吗？”](https://arxiv.org/abs/2006.00998) arXiv:2006.00998
+    (2020).'
 - en: '[8] Dinan et al. [“Build it, break it, fix it for dialogue safety: Robustness
     from adversarial human attack.”](https://arxiv.org/abs/1908.06083) arXiv:1908.06083
     (2019).'
+  id: totrans-213
   prefs: []
   type: TYPE_NORMAL
+  zh: '[8] Dinan等人[“为对话安全性构建、破坏、修复：来自对抗人类攻击的鲁棒性。”](https://arxiv.org/abs/1908.06083)
+    arXiv:1908.06083 (2019).'
 - en: '[9] Kurita et al. [“Towards Robust Toxic Content Classification”](https://arxiv.org/abs/1912.06872)
     arXiv:1912.06872 (2019)'
+  id: totrans-214
   prefs: []
   type: TYPE_NORMAL
+  zh: '[9] Kurita等人[“走向强大的有毒内容分类”](https://arxiv.org/abs/1912.06872) arXiv:1912.06872
+    (2019)'
 - en: '[10] Santos et al. [“Fighting offensive language on social media with unsupervised
     text style transfer.”](https://arxiv.org/abs/1805.07685) arXiv:1805.07685 (2018)'
+  id: totrans-215
   prefs: []
   type: TYPE_NORMAL
+  zh: '[10] Santos等人[“使用无监督文本风格转换在社交媒体上打击冒犯性语言。”](https://arxiv.org/abs/1805.07685)
+    arXiv:1805.07685 (2018)'
 - en: '[11] Dai et al. [“Style Transformer: Unpaired Text Style Transfer without Disentangled
     Latent Representation”](https://arxiv.org/abs/1905.05621) ACL 2019.'
+  id: totrans-216
   prefs: []
   type: TYPE_NORMAL
+  zh: '[11] Dai等人[“风格变换器：无配对文本风格转换而无需分解潜在表示”](https://arxiv.org/abs/1905.05621) ACL
+    2019.'
 - en: '[12] Laugier et al. [“Civil Rephrases Of Toxic Texts With Self-Supervised Transformers”](https://arxiv.org/abs/2102.05456)
     arXiv:2102.05456 (2021). [code](https://github.com/LeoLaugier/conditional-auto-encoder-text-to-text-transfer-transformer)'
+  id: totrans-217
   prefs: []
   type: TYPE_NORMAL
+  zh: '[12] Laugier等人[“使用自监督变压器重述有毒文本”](https://arxiv.org/abs/2102.05456) arXiv:2102.05456
+    (2021). [code](https://github.com/LeoLaugier/conditional-auto-encoder-text-to-text-transfer-transformer)'
 - en: '[13] Schick et al. [“Self-Diagnosis and Self-Debiasing: A Proposal for Reducing
     Corpus-Based Bias in NLP”](https://arxiv.org/abs/2103.00453) arXiv:2103.00453
     (2021).'
+  id: totrans-218
   prefs: []
   type: TYPE_NORMAL
+  zh: '[13] Schick等人[“自诊断和自去偏见：减少自然语言处理中基于语料库的偏见的提案”](https://arxiv.org/abs/2103.00453)
+    arXiv:2103.00453 (2021).'
 - en: '[14] Gehman et al. [“RealToxicityPrompts: Evaluating Neural Toxic Degeneration
     in Language Models”](https://arxiv.org/abs/2009.11462) EMNLP 2020.'
+  id: totrans-219
   prefs: []
   type: TYPE_NORMAL
+  zh: '[14] Gehman等人[“RealToxicityPrompts：评估语言模型中神经毒性退化”](https://arxiv.org/abs/2009.11462)
+    EMNLP 2020.'
 - en: '[15] Xu et al. [“Recipes for Safety in Open-domain Chatbots”](https://arxiv.org/abs/2010.07079)
     arXiv:2010.07079 (2020).'
+  id: totrans-220
   prefs: []
   type: TYPE_NORMAL
+  zh: '[15] Xu等人[“开放领域聊天机器人安全配方”](https://arxiv.org/abs/2010.07079) arXiv:2010.07079
+    (2020).'

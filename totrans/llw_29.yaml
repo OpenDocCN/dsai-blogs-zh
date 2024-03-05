@@ -1,15 +1,21 @@
 - en: 'Meta-Learning: Learning to Learn Fast'
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 元学习：学会快速学习
 - en: 原文：[https://lilianweng.github.io/posts/2018-11-30-meta-learning/](https://lilianweng.github.io/posts/2018-11-30-meta-learning/)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://lilianweng.github.io/posts/2018-11-30-meta-learning/](https://lilianweng.github.io/posts/2018-11-30-meta-learning/)
 - en: '[Updated on 2019-10-01: thanks to Tianhao, we have this post translated in
     [Chinese](https://wei-tianhao.github.io/blog/2019/09/17/meta-learning.html)!]'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: '[更新于2019-10-01：感谢天豪，我们有这篇文章的[中文翻译](https://wei-tianhao.github.io/blog/2019/09/17/meta-learning.html)！]'
 - en: A good machine learning model often requires training with a large number of
     samples. Humans, in contrast, learn new concepts and skills much faster and more
     efficiently. Kids who have seen cats and birds only a few times can quickly tell
@@ -18,208 +24,306 @@
     to design a machine learning model with similar properties — learning new concepts
     and skills fast with a few training examples? That’s essentially what **meta-learning**
     aims to solve.
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个良好的机器学习模型通常需要使用大量样本进行训练。相比之下，人类学习新概念和技能的速度更快，更有效。只见过几次猫和鸟的孩子可以很快区分它们。知道如何骑自行车的人很可能会快速学会如何骑摩托车，甚至几乎不需要演示。是否可能设计一个具有类似特性的机器学习模型——用少量训练示例快速学习新概念和技能？这基本上是**元学习**的目标所在。
 - en: We expect a good meta-learning model capable of well adapting or generalizing
     to new tasks and new environments that have never been encountered during training
     time. The adaptation process, essentially a mini learning session, happens during
     test but with a limited exposure to the new task configurations. Eventually, the
     adapted model can complete new tasks. This is why meta-learning is also known
     as [learning to learn](https://www.cs.cmu.edu/~rsalakhu/papers/LakeEtAl2015Science.pdf).
+  id: totrans-4
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们期望一个良好的元学习模型能够很好地适应或泛化到在训练时从未遇到过的新任务和新环境。适应过程，本质上是一个小型的学习会话，在测试时发生，但对新任务配置的暴露有限。最终，适应后的模型可以完成新任务。这就是为什么元学习也被称为[学会学习](https://www.cs.cmu.edu/~rsalakhu/papers/LakeEtAl2015Science.pdf)。
 - en: 'The tasks can be any well-defined family of machine learning problems: supervised
     learning, reinforcement learning, etc. For example, here are a couple concrete
     meta-learning tasks:'
+  id: totrans-5
   prefs: []
   type: TYPE_NORMAL
+  zh: 任务可以是任何明确定义的机器学习问题族：监督学习，强化学习等。例如，这里有一些具体的元学习任务：
 - en: A classifier trained on non-cat images can tell whether a given image contains
     a cat after seeing a handful of cat pictures.
+  id: totrans-6
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一个在非猫图像上训练的分类器，在看过几张猫的图片后就能判断给定的图片是否包含猫。
 - en: A game bot is able to quickly master a new game.
+  id: totrans-7
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一个游戏机器人能够迅速掌握一个新游戏。
 - en: A mini robot completes the desired task on an uphill surface during test even
     through it was only trained in a flat surface environment.
+  id: totrans-8
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一个小型机器人在测试期间在上坡表面上完成所需的任务，即使它只在平坦表面环境中接受过训练。
 - en: Define the Meta-Learning Problem
+  id: totrans-9
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 定义元学习问题
 - en: In this post, we focus on the case when each desired task is a supervised learning
     problem like image classification. There is a lot of interesting literature on
     meta-learning with reinforcement learning problems (aka “Meta Reinforcement Learning”),
     but we would not cover them here.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我们关注的是每个期望的任务都是像图像分类这样的监督学习问题的情况。关于使用强化学习问题进行元学习的有很多有趣的文献（也称为“元强化学习”），但我们在这里不会涉及到。
 - en: A Simple View
+  id: totrans-11
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 一个简单的观点
 - en: 'A good meta-learning model should be trained over a variety of learning tasks
     and optimized for the best performance on a distribution of tasks, including potentially
     unseen tasks. Each task is associated with a dataset $\mathcal{D}$, containing
     both feature vectors and true labels. The optimal model parameters are:'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个良好的元学习模型应该在各种学习任务上进行训练，并针对任务分布进行优化，包括潜在的未见任务。每个任务都与一个包含特征向量和真实标签的数据集$\mathcal{D}$相关联。最佳模型参数为：
 - en: $$ \theta^* = \arg\min_\theta \mathbb{E}_{\mathcal{D}\sim p(\mathcal{D})} [\mathcal{L}_\theta(\mathcal{D})]
     $$
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \theta^* = \arg\min_\theta \mathbb{E}_{\mathcal{D}\sim p(\mathcal{D})} [\mathcal{L}_\theta(\mathcal{D})]
+    $$
 - en: It looks very similar to a normal learning task, but *one dataset* is considered
     as *one data sample*.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 它看起来非常类似于普通的学习任务，但*一个数据集*被视为*一个数据样本*。
 - en: '*Few-shot classification* is an instantiation of meta-learning in the field
     of supervised learning. The dataset $\mathcal{D}$ is often split into two parts,
     a support set $S$ for learning and a prediction set $B$ for training or testing,
     $\mathcal{D}=\langle S, B\rangle$. Often we consider a *K-shot N-class classification*
     task: the support set contains K labelled examples for each of N classes.'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: '*少样本分类*是监督学习领域中元学习的一个实例。数据集$\mathcal{D}$通常被分为两部分，一个用于学习的支持集$S$和一个用于训练或测试的预测集$B$，$\mathcal{D}=\langle
+    S, B\rangle$。通常我们考虑*K-shot N-class分类*任务：支持集包含每个N类别的K个带标签示例。'
 - en: '![](../Images/eb231e7281cc76aad6991deeb97a87da.png)'
+  id: totrans-16
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/eb231e7281cc76aad6991deeb97a87da.png)'
 - en: Fig. 1\. An example of 4-shot 2-class image classification. (Image thumbnails
     are from [Pinterest](https://www.pinterest.com/))
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 图1\. 一个4-shot 2-class图像分类的示例。（图片缩略图来自[Pinterest](https://www.pinterest.com/)）
 - en: Training in the Same Way as Testing
+  id: totrans-18
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 训练方式与测试方式相同
 - en: A dataset $\mathcal{D}$ contains pairs of feature vectors and labels, $\mathcal{D}
     = \{(\mathbf{x}_i, y_i)\}$ and each label belongs to a known label set $\mathcal{L}^\text{label}$.
     Let’s say, our classifier $f_\theta$ with parameter $\theta$ outputs a probability
     of a data point belonging to the class $y$ given the feature vector $\mathbf{x}$,
     $P_\theta(y\vert\mathbf{x})$.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据集$\mathcal{D}$包含特征向量和标签对，$\mathcal{D} = \{(\mathbf{x}_i, y_i)\}$，每个标签属于已知标签集$\mathcal{L}^\text{label}$。假设我们的分类器$f_\theta$使用参数$\theta$输出给定特征向量$\mathbf{x}$的数据点属于类别$y$的概率，$P_\theta(y\vert\mathbf{x})$。
 - en: 'The optimal parameters should maximize the probability of true labels across
     multiple training batches $B \subset \mathcal{D}$:'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 最优参数应该最大化跨多个训练批次$B \subset \mathcal{D}$的真实标签概率：
 - en: $$ \begin{aligned} \theta^* &= {\arg\max}_{\theta} \mathbb{E}_{(\mathbf{x},
     y)\in \mathcal{D}}[P_\theta(y \vert \mathbf{x})] &\\ \theta^* &= {\arg\max}_{\theta}
     \mathbb{E}_{B\subset \mathcal{D}}[\sum_{(\mathbf{x}, y)\in B}P_\theta(y \vert
     \mathbf{x})] & \scriptstyle{\text{; trained with mini-batches.}} \end{aligned}
     $$
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \theta^* &= {\arg\max}_{\theta} \mathbb{E}_{(\mathbf{x},
+    y)\in \mathcal{D}}[P_\theta(y \vert \mathbf{x})] &\\ \theta^* &= {\arg\max}_{\theta}
+    \mathbb{E}_{B\subset \mathcal{D}}[\sum_{(\mathbf{x}, y)\in B}P_\theta(y \vert
+    \mathbf{x})] & \scriptstyle{\text{; 使用小批量进行训练。}} \end{aligned} $$
 - en: 'In few-shot classification, the goal is to reduce the prediction error on data
     samples with unknown labels given a small support set for “fast learning” (think
     of how “fine-tuning” works). To make the training process mimics what happens
     during inference, we would like to “fake” datasets with a subset of labels to
     avoid exposing all the labels to the model and modify the optimization procedure
     accordingly to encourage fast learning:'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 在少样本分类中，目标是在给定一个小支持集进行“快速学习”（想想“微调”是如何工作的）的情况下减少对具有未知标签数据样本的预测错误。为了使训练过程模拟推断过程中发生的情况，我们希望“伪造”数据集，其中包含一部分标签，以避免向模型暴露所有标签，并相应地修改优化过程以鼓励快速学习：
 - en: Sample a subset of labels, $L\subset\mathcal{L}^\text{label}$.
+  id: totrans-23
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 抽取标签的子集，$L\subset\mathcal{L}^\text{label}$。
 - en: Sample a support set $S^L \subset \mathcal{D}$ and a training batch $B^L \subset
     \mathcal{D}$. Both of them only contain data points with labels belonging to the
     sampled label set $L$, $y \in L, \forall (x, y) \in S^L, B^L$.
+  id: totrans-24
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 从数据集$\mathcal{D}$中抽取一个支持集$S^L$和一个训练批次$B^L$。它们只包含属于抽样标签集$L$的带标签数据点，$y \in L,
+    \forall (x, y) \in S^L, B^L$。
 - en: The support set is part of the model input.
+  id: totrans-25
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 支持集是模型输入的一部分。
 - en: The final optimization uses the mini-batch $B^L$ to compute the loss and update
     the model parameters through backpropagation, in the same way as how we use it
     in the supervised learning.
+  id: totrans-26
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 最终的优化使用小批量$B^L$来计算损失并通过反向传播更新模型参数，与我们在监督学习中使用的方式相同。
 - en: You may consider each pair of sampled dataset $(S^L, B^L)$ as one data point.
     The model is trained such that it can generalize to other datasets. Symbols in
     red are added for meta-learning in addition to the supervised learning objective.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 您可以将每对抽样数据集$(S^L, B^L)$视为一个数据点。模型被训练以便能够推广到其他数据集。除了监督学习目标外，红色符号被添加用于元学习。
 - en: $$ \theta = \arg\max_\theta \color{red}{E_{L\subset\mathcal{L}}[} E_{\color{red}{S^L
     \subset\mathcal{D}, }B^L \subset\mathcal{D}} [\sum_{(x, y)\in B^L} P_\theta(x,
     y\color{red}{, S^L})] \color{red}{]} $$
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \theta = \arg\max_\theta \color{red}{E_{L\subset\mathcal{L}}[} E_{\color{red}{S^L
+    \subset\mathcal{D}, }B^L \subset\mathcal{D}} [\sum_{(x, y)\in B^L} P_\theta(x,
+    y\color{red}{, S^L})] \color{red}{]} $$
 - en: The idea is to some extent similar to using a pre-trained model in image classification
     (ImageNet) or language modeling (big text corpora) when only a limited set of
     task-specific data samples are available. Meta-learning takes this idea one step
     further, rather than fine-tuning according to one down-steam task, it optimizes
     the model to be good at many, if not all.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个想法在某种程度上类似于在图像分类（ImageNet）或语言建模（大文本语料库）中使用预训练模型，当只有有限的任务特定数据样本可用时。元学习将这个想法推进一步，而不是根据一个下游任务微调，它优化模型使其在许多甚至所有任务上表现良好。
 - en: Learner and Meta-Learner
+  id: totrans-30
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 学习者和元学习者
 - en: 'Another popular view of meta-learning decomposes the model update into two
     stages:'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 元学习的另一个流行观点将模型更新分解为两个阶段：
 - en: A classifier $f_\theta$ is the “learner” model, trained for operating a given
     task;
+  id: totrans-32
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 分类器$f_\theta$是“学习者”模型，用于执行给定任务；
 - en: In the meantime, a optimizer $g_\phi$ learns how to update the learner model’s
     parameters via the support set $S$, $\theta’ = g_\phi(\theta, S)$.
+  id: totrans-33
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 与此同时，优化器$g_\phi$学习如何通过支持集$S$更新学习者模型的参数，$\theta' = g_\phi(\theta, S)$。
 - en: 'Then in final optimization step, we need to update both $\theta$ and $\phi$
     to maximize:'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后在最终优化步骤中，我们需要更新$\theta$和$\phi$以最大化：
 - en: $$ \mathbb{E}_{L\subset\mathcal{L}}[ \mathbb{E}_{S^L \subset\mathcal{D}, B^L
     \subset\mathcal{D}} [\sum_{(\mathbf{x}, y)\in B^L} P_{g_\phi(\theta, S^L)}(y \vert
     \mathbf{x})]] $$
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathbb{E}_{L\subset\mathcal{L}}[ \mathbb{E}_{S^L \subset\mathcal{D}, B^L
+    \subset\mathcal{D}} [\sum_{(\mathbf{x}, y)\in B^L} P_{g_\phi(\theta, S^L)}(y \vert
+    \mathbf{x})]] $$
 - en: Common Approaches
+  id: totrans-36
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 常见方法
 - en: 'There are three common approaches to meta-learning: metric-based, model-based,
     and optimization-based. Oriol Vinyals has a nice summary in his [talk](http://metalearning-symposium.ml/files/vinyals.pdf)
     at meta-learning symposium @ NIPS 2018:'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 元学习有三种常见方法：基于度量、基于模型和基于优化。Oriol Vinyals在他在2018年NIPS元学习研讨会上的[演讲](http://metalearning-symposium.ml/files/vinyals.pdf)中有一个很好的总结：
 - en: '| ————- | ————- | ————- | ————- |'
+  id: totrans-38
   prefs: []
   type: TYPE_TB
+  zh: '| ————- | ————- | ————- | ————- |'
 - en: '|  | Model-based | Metric-based | Optimization-based |'
+  id: totrans-39
   prefs: []
   type: TYPE_TB
+  zh: '|  | 基于模型 | 基于度量 | 基于优化 |'
 - en: '| --- | --- | --- | --- |'
+  id: totrans-40
   prefs: []
   type: TYPE_TB
+  zh: '| --- | --- | --- | --- |'
 - en: '| **Key idea** | RNN; memory | Metric learning | Gradient descent |'
+  id: totrans-41
   prefs: []
   type: TYPE_TB
+  zh: '| **关键思想** | RNN；记忆 | 度量学习 | 梯度下降 |'
 - en: '| **How $P_\theta(y \vert \mathbf{x})$ is modeled?** | $f_\theta(\mathbf{x},
     S)$ | $\sum_{(\mathbf{x}_i, y_i) \in S} k_\theta(\mathbf{x}, \mathbf{x}_i)y_i$
     (*) | $P_{g_\phi(\theta, S^L)}(y \vert \mathbf{x})$ |'
+  id: totrans-42
   prefs: []
   type: TYPE_TB
+  zh: '| **$P_\theta(y \vert \mathbf{x})$是如何建模的？** | $f_\theta(\mathbf{x}, S)$ | $\sum_{(\mathbf{x}_i,
+    y_i) \in S} k_\theta(\mathbf{x}, \mathbf{x}_i)y_i$ (*) | $P_{g_\phi(\theta, S^L)}(y
+    \vert \mathbf{x})$ |'
 - en: (*) $k_\theta$ is a kernel function measuring the similarity between $\mathbf{x}_i$
     and $\mathbf{x}$.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: (*) $k_\theta$是一个核函数，衡量$\mathbf{x}_i$和$\mathbf{x}$之间的相似性。
 - en: Next we are gonna review classic models in each approach.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来我们将回顾每种方法中的经典模型。
 - en: Metric-Based
+  id: totrans-45
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 基于度量
 - en: The core idea in metric-based meta-learning is similar to nearest neighbors
     algorithms (i.e., [k-NN](https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm)
     classificer and [k-means](https://en.wikipedia.org/wiki/K-means_clustering) clustering)
@@ -227,36 +331,49 @@
     The predicted probability over a set of known labels $y$ is a weighted sum of
     labels of support set samples. The weight is generated by a kernel function $k_\theta$,
     measuring the similarity between two data samples.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 基于度量的元学习的核心思想类似于最近邻算法（即，[k-NN](https://en.wikipedia.org/wiki/K-nearest_neighbors_algorithm)分类器和[k-means](https://en.wikipedia.org/wiki/K-means_clustering)聚类）和[核密度估计](https://en.wikipedia.org/wiki/Kernel_density_estimation)。对于一组已知标签$y$的预测概率是支持集样本标签的加权和。权重由核函数$k_\theta$生成，衡量两个数据样本之间的相似性。
 - en: $$ P_\theta(y \vert \mathbf{x}, S) = \sum_{(\mathbf{x}_i, y_i) \in S} k_\theta(\mathbf{x},
     \mathbf{x}_i)y_i $$
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ P_\theta(y \vert \mathbf{x}, S) = \sum_{(\mathbf{x}_i, y_i) \in S} k_\theta(\mathbf{x},
+    \mathbf{x}_i)y_i $$
 - en: To learn a good kernel is crucial to the success of a metric-based meta-learning
     model. [Metric learning](https://en.wikipedia.org/wiki/Similarity_learning#Metric_learning)
     is well aligned with this intention, as it aims to learn a metric or distance
     function over objects. The notion of a good metric is problem-dependent. It should
     represent the relationship between inputs in the task space and facilitate problem
     solving.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 学习一个好的核对于基于度量的元学习模型的成功至关重要。[度量学习](https://en.wikipedia.org/wiki/Similarity_learning#Metric_learning)与此意图高度一致，因为它旨在学习对象之间的度量或距离函数。一个好的度量概念是依赖于问题的。它应该代表输入在任务空间中的关系，并促进问题解决。
 - en: All the models introduced below learn embedding vectors of input data explicitly
     and use them to design proper kernel functions.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面介绍的所有模型都明确学习输入数据的嵌入向量，并使用它们设计适当的核函数。
 - en: Convolutional Siamese Neural Network
+  id: totrans-50
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 卷积暹罗神经网络
 - en: The [Siamese Neural Network](https://papers.nips.cc/paper/769-signature-verification-using-a-siamese-time-delay-neural-network.pdf)
     is composed of two twin networks and their outputs are jointly trained on top
     with a function to learn the relationship between pairs of input data samples.
     The twin networks are identical, sharing the same weights and network parameters.
     In other words, both refer to the same embedding network that learns an efficient
     embedding to reveal relationship between pairs of data points.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: '[暹罗神经网络](https://papers.nips.cc/paper/769-signature-verification-using-a-siamese-time-delay-neural-network.pdf)由两个孪生网络组成，它们的输出通过一个函数联合训练，学习输入数据样本对之间的关系。这两个孪生网络是相同的，共享相同的权重和网络参数。换句话说，两者都指向相同的嵌入网络，该网络学习有效的嵌入以揭示数据点对之间的关系。'
 - en: '[Koch, Zemel & Salakhutdinov (2015)](http://www.cs.toronto.edu/~rsalakhu/papers/oneshot1.pdf)
     proposed a method to use the siamese neural network to do one-shot image classification.
     First, the siamese network is trained for a verification task for telling whether
@@ -264,59 +381,88 @@
     belonging to the same class. Then, during test time, the siamese network processes
     all the image pairs between a test image and every image in the support set. The
     final prediction is the class of the support image with the highest probability.'
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Koch, Zemel & Salakhutdinov (2015)](http://www.cs.toronto.edu/~rsalakhu/papers/oneshot1.pdf)
+    提出了一种使用暹罗神经网络进行一次性图像分类的方法。首先，暹罗网络被训练用于验证任务，告诉两个输入图像是否属于同一类。它输出两个图像属于同一类的概率。然后，在测试时，暹罗网络处理测试图像与支持集中每个图像之间的所有图像对。最终预测是支持图像的类别，其概率最高。'
 - en: '![](../Images/3e0b0ba68efca63322047a65ba6aebfc.png)'
+  id: totrans-53
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3e0b0ba68efca63322047a65ba6aebfc.png)'
 - en: Fig. 2\. The architecture of convolutional siamese neural network for few-show
     image classification.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 图2\. 用于少样本图像分类的卷积暹罗神经网络架构。
 - en: First, convolutional siamese network learns to encode two images into feature
     vectors via a embedding function $f_\theta$ which contains a couple of convolutional
     layers.
+  id: totrans-55
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 首先，卷积暹罗网络通过一个包含几个卷积层的嵌入函数 $f_\theta$ 学习将两个图像编码为特征向量。
 - en: The L1-distance between two embeddings is $\vert f_\theta(\mathbf{x}_i) - f_\theta(\mathbf{x}_j)
     \vert$.
+  id: totrans-56
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 两个嵌入之间的 L1 距离是 $\vert f_\theta(\mathbf{x}_i) - f_\theta(\mathbf{x}_j) \vert$。
 - en: The distance is converted to a probability $p$ by a linear feedforward layer
     and sigmoid. It is the probability of whether two images are drawn from the same
     class.
+  id: totrans-57
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 距离通过线性前馈层和 Sigmoid 转换为概率 $p$。这是两个图像是否来自同一类的概率。
 - en: Intuitively the loss is cross entropy because the label is binary.
+  id: totrans-58
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 直观上，损失是交叉熵，因为标签是二进制的。
 - en: $$ \begin{aligned} p(\mathbf{x}_i, \mathbf{x}_j) &= \sigma(\mathbf{W}\vert f_\theta(\mathbf{x}_i)
     - f_\theta(\mathbf{x}_j) \vert) \\ \mathcal{L}(B) &= \sum_{(\mathbf{x}_i, \mathbf{x}_j,
     y_i, y_j)\in B} \mathbf{1}_{y_i=y_j}\log p(\mathbf{x}_i, \mathbf{x}_j) + (1-\mathbf{1}_{y_i=y_j})\log
     (1-p(\mathbf{x}_i, \mathbf{x}_j)) \end{aligned} $$
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} p(\mathbf{x}_i, \mathbf{x}_j) &= \sigma(\mathbf{W}\vert f_\theta(\mathbf{x}_i)
+    - f_\theta(\mathbf{x}_j) \vert) \\ \mathcal{L}(B) &= \sum_{(\mathbf{x}_i, \mathbf{x}_j,
+    y_i, y_j)\in B} \mathbf{1}_{y_i=y_j}\log p(\mathbf{x}_i, \mathbf{x}_j) + (1-\mathbf{1}_{y_i=y_j})\log
+    (1-p(\mathbf{x}_i, \mathbf{x}_j)) \end{aligned} $$
 - en: Images in the training batch $B$ can be augmented with distortion. Of course,
     you can replace the L1 distance with other distance metric, L2, cosine, etc. Just
     make sure they are differential and then everything else works the same.
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 训练批次 $B$ 中的图像可以通过失真进行增强。当然，您可以用其他距离度量替换 L1 距离，如 L2、余弦等。只需确保它们是可微的，然后其他一切都一样。
 - en: 'Given a support set $S$ and a test image $\mathbf{x}$, the final predicted
     class is:'
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 给定一个支持集 $S$ 和一个测试图像 $\mathbf{x}$，最终预测的类别是：
 - en: $$ \hat{c}_S(\mathbf{x}) = c(\arg\max_{\mathbf{x}_i \in S} P(\mathbf{x}, \mathbf{x}_i))
     $$
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \hat{c}_S(\mathbf{x}) = c(\arg\max_{\mathbf{x}_i \in S} P(\mathbf{x}, \mathbf{x}_i))
+    $$
 - en: where $c(\mathbf{x})$ is the class label of an image $\mathbf{x}$ and $\hat{c}(.)$
     is the predicted label.
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 $c(\mathbf{x})$ 是图像 $\mathbf{x}$ 的类标签，$\hat{c}(.)$ 是预测标签。
 - en: The assumption is that the learned embedding can be generalized to be useful
     for measuring the distance between images of unknown categories. This is the same
     assumption behind transfer learning via the adoption of a pre-trained model; for
@@ -324,12 +470,16 @@
     are expected to help other image tasks. However, the benefit of a pre-trained
     model decreases when the new task diverges from the original task that the model
     was trained on.
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设学习到的嵌入可以推广为用于测量未知类别图像之间距离的有用工具。这与通过采用预训练模型进行迁移学习的假设相同；例如，通过ImageNet预训练的模型中学习的卷积特征预计将有助于其他图像任务。然而，当新任务与模型训练的原始任务偏离时，预训练模型的好处会减少。
 - en: Matching Networks
+  id: totrans-65
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 匹配网络
 - en: The task of **Matching Networks** ([Vinyals et al., 2016](http://papers.nips.cc/paper/6385-matching-networks-for-one-shot-learning.pdf))
     is to learn a classifier $c_S$ for any given (small) support set $S=\{x_i, y_i\}_{i=1}^k$
     (*k-shot* classification). This classifier defines a probability distribution
@@ -337,186 +487,278 @@
     models, the classifier output is defined as a sum of labels of support samples
     weighted by attention kernel $a(\mathbf{x}, \mathbf{x}_i)$ - which should be proportional
     to the similarity between $\mathbf{x}$ and $\mathbf{x}_i$.
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: '**匹配网络**的任务（[Vinyals等人，2016](http://papers.nips.cc/paper/6385-matching-networks-for-one-shot-learning.pdf)）是为任何给定的（小型）支持集$S=\{x_i,
+    y_i\}_{i=1}^k$学习一个分类器$c_S$（*k-shot*分类）。该分类器定义了在给定测试样本$\mathbf{x}$的情况下输出标签$y$的概率分布。与其他基于度量的模型类似，分类器的输出被定义为由注意力核$a(\mathbf{x},
+    \mathbf{x}_i)$加权的支持样本标签的总和 - 这应与$\mathbf{x}$和$\mathbf{x}_i$之间的相似性成比例。'
 - en: '![](../Images/8c97ad2d973325a042e85ca1f20e2c31.png)'
+  id: totrans-67
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/8c97ad2d973325a042e85ca1f20e2c31.png)'
 - en: 'Fig. 3\. The architecture of Matching Networks. (Image source: [original paper](http://papers.nips.cc/paper/6385-matching-networks-for-one-shot-learning.pdf))'
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 图3. 匹配网络的架构。（图片来源：[原始论文](http://papers.nips.cc/paper/6385-matching-networks-for-one-shot-learning.pdf)）
 - en: $$ c_S(\mathbf{x}) = P(y \vert \mathbf{x}, S) = \sum_{i=1}^k a(\mathbf{x}, \mathbf{x}_i)
     y_i \text{, where }S=\{(\mathbf{x}_i, y_i)\}_{i=1}^k $$
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ c_S(\mathbf{x}) = P(y \vert \mathbf{x}, S) = \sum_{i=1}^k a(\mathbf{x}, \mathbf{x}_i)
+    y_i \text{，其中} S=\{(\mathbf{x}_i, y_i)\}_{i=1}^k $$
 - en: 'The attention kernel depends on two embedding functions, $f$ and $g$, for encoding
     the test sample and the support set samples respectively. The attention weight
     between two data points is the cosine similarity, $\text{cosine}(.)$, between
     their embedding vectors, normalized by softmax:'
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意力核取决于两个嵌入函数$f$和$g$，用于编码测试样本和支持集样本。两个数据点之间的注意力权重是它们嵌入向量之间的余弦相似性，通过softmax进行归一化：
 - en: $$ a(\mathbf{x}, \mathbf{x}_i) = \frac{\exp(\text{cosine}(f(\mathbf{x}), g(\mathbf{x}_i))}{\sum_{j=1}^k\exp(\text{cosine}(f(\mathbf{x}),
     g(\mathbf{x}_j))} $$
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ a(\mathbf{x}, \mathbf{x}_i) = \frac{\exp(\text{cosine}(f(\mathbf{x}), g(\mathbf{x}_i))}{\sum_{j=1}^k\exp(\text{cosine}(f(\mathbf{x}),
+    g(\mathbf{x}_j))} $$
 - en: Simple Embedding
+  id: totrans-72
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 简单嵌入
 - en: In the simple version, an embedding function is a neural network with a single
     data sample as input. Potentially we can set $f=g$.
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 在简单版本中，嵌入函数是一个具有单个数据样本作为输入的神经网络。潜在地，我们可以设置$f=g$。
 - en: Full Context Embeddings
+  id: totrans-74
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 完整上下文嵌入
 - en: The embedding vectors are critical inputs for building a good classifier. Taking
     a single data point as input might not be enough to efficiently gauge the entire
     feature space. Therefore, the Matching Network model further proposed to enhance
     the embedding functions by taking as input the whole support set $S$ in addition
     to the original input, so that the learned embedding can be adjusted based on
     the relationship with other support samples.
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 嵌入向量是构建良好分类器的关键输入。仅以单个数据点作为输入可能不足以有效地衡量整个特征空间。因此，匹配网络模型进一步提出通过除原始输入外还将整个支持集$S$作为输入来增强嵌入函数，以便根据与其他支持样本的关系调整学习到的嵌入。
 - en: $g_\theta(\mathbf{x}_i, S)$ uses a bidirectional LSTM to encode $\mathbf{x}_i$
     in the context of the entire support set $S$.
+  id: totrans-76
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $g_\theta(\mathbf{x}_i, S)$使用双向LSTM对$\mathbf{x}_i$在整个支持集$S$的上下文中进行编码。
 - en: $f_\theta(\mathbf{x}, S)$ encodes the test sample $\mathbf{x}$ visa an LSTM
     with read attention over the support set $S$.
+  id: totrans-77
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $f_\theta(\mathbf{x}, S)$通过对支持集$S$进行读取注意力的LSTM对测试样本$\mathbf{x}$进行编码。
 - en: First the test sample goes through a simple neural network, such as a CNN, to
     extract basic features, $f’(\mathbf{x})$.
+  id: totrans-78
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 首先，测试样本通过一个简单的神经网络（如CNN）进行处理，提取基本特征$f'(\mathbf{x})$。
 - en: 'Then an LSTM is trained with a read attention vector over the support set as
     part of the hidden state:'
+  id: totrans-79
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 然后，一个LSTM被训练，其中包括对支持集的读取注意力向量作为隐藏状态的一部分。
 - en: $$ \begin{aligned} \hat{\mathbf{h}}_t, \mathbf{c}_t &= \text{LSTM}(f'(\mathbf{x}),
     [\mathbf{h}_{t-1}, \mathbf{r}_{t-1}], \mathbf{c}_{t-1}) \\ \mathbf{h}_t &= \hat{\mathbf{h}}_t
     + f'(\mathbf{x}) \\ \mathbf{r}_{t-1} &= \sum_{i=1}^k a(\mathbf{h}_{t-1}, g(\mathbf{x}_i))
     g(\mathbf{x}_i) \\ a(\mathbf{h}_{t-1}, g(\mathbf{x}_i)) &= \text{softmax}(\mathbf{h}_{t-1}^\top
     g(\mathbf{x}_i)) = \frac{\exp(\mathbf{h}_{t-1}^\top g(\mathbf{x}_i))}{\sum_{j=1}^k
     \exp(\mathbf{h}_{t-1}^\top g(\mathbf{x}_j))} \end{aligned} $$
+  id: totrans-80
   prefs:
   - PREF_IND
   - PREF_IND
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \hat{\mathbf{h}}_t, \mathbf{c}_t &= \text{LSTM}(f'(\mathbf{x}),
+    [\mathbf{h}_{t-1}, \mathbf{r}_{t-1}], \mathbf{c}_{t-1}) \\ \mathbf{h}_t &= \hat{\mathbf{h}}_t
+    + f'(\mathbf{x}) \\ \mathbf{r}_{t-1} &= \sum_{i=1}^k a(\mathbf{h}_{t-1}, g(\mathbf{x}_i))
+    g(\mathbf{x}_i) \\ a(\mathbf{h}_{t-1}, g(\mathbf{x}_i)) &= \text{softmax}(\mathbf{h}_{t-1}^\top
+    g(\mathbf{x}_i)) = \frac{\exp(\mathbf{h}_{t-1}^\top g(\mathbf{x}_i))}{\sum_{j=1}^k
+    \exp(\mathbf{h}_{t-1}^\top g(\mathbf{x}_j))} \end{aligned} $$
 - en: Eventually $f(\mathbf{x}, S)=\mathbf{h}_K$ if we do K steps of “read”.
+  id: totrans-81
   prefs:
   - PREF_IND
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 最终，如果我们进行K步“读取”，则$f(\mathbf{x}, S)=\mathbf{h}_K$。
 - en: This embedding method is called “Full Contextual Embeddings (FCE)”. Interestingly
     it does help improve the performance on a hard task (few-shot classification on
     mini ImageNet), but makes no difference on a simple task (Omniglot).
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种嵌入方法被称为“全上下文嵌入（FCE）”。有趣的是，它确实有助于提高在一个困难任务（在迷你ImageNet上的少样本分类）上的性能，但在一个简单任务（Omniglot）上没有任何区别。
 - en: The training process in Matching Networks is designed to match inference at
     test time, see the details in the earlier [section](#training-in-the-same-way-as-testing).
     It is worthy of mentioning that the Matching Networks paper refined the idea that
     training and testing conditions should match.
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: Matching Networks中的训练过程旨在匹配测试时的推理，详细信息请参见之前的[部分](#training-in-the-same-way-as-testing)。值得一提的是，Matching
+    Networks论文完善了训练和测试条件应该匹配的想法。
 - en: $$ \theta^* = \arg\max_\theta \mathbb{E}_{L\subset\mathcal{L}}[ \mathbb{E}_{S^L
     \subset\mathcal{D}, B^L \subset\mathcal{D}} [\sum_{(\mathbf{x}, y)\in B^L} P_\theta(y\vert\mathbf{x},
     S^L)]] $$
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \theta^* = \arg\max_\theta \mathbb{E}_{L\subset\mathcal{L}}[ \mathbb{E}_{S^L
+    \subset\mathcal{D}, B^L \subset\mathcal{D}} [\sum_{(\mathbf{x}, y)\in B^L} P_\theta(y\vert\mathbf{x},
+    S^L)]] $$
 - en: Relation Network
+  id: totrans-85
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 关系网络
 - en: '**Relation Network (RN)** ([Sung et al., 2018](http://openaccess.thecvf.com/content_cvpr_2018/papers_backup/Sung_Learning_to_Compare_CVPR_2018_paper.pdf))
     is similar to [siamese network](#convolutional-siamese-neural-network) but with
     a few differences:'
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: '**关系网络（RN）**（[Sung等，2018](http://openaccess.thecvf.com/content_cvpr_2018/papers_backup/Sung_Learning_to_Compare_CVPR_2018_paper.pdf)）类似于[孪生网络](#convolutional-siamese-neural-network)，但有一些区别：'
 - en: The relationship is not captured by a simple L1 distance in the feature space,
     but predicted by a CNN classifier $g_\phi$. The relation score between a pair
     of inputs, $\mathbf{x}_i$ and $\mathbf{x}_j$, is $r_{ij} = g_\phi([\mathbf{x}_i,
     \mathbf{x}_j])$ where $[.,.]$ is concatenation.
+  id: totrans-87
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在特征空间中，关系不是通过简单的L1距离来捕捉，而是由CNN分类器$g_\phi$来预测。一对输入$\mathbf{x}_i$和$\mathbf{x}_j$之间的关系分数为$r_{ij}
+    = g_\phi([\mathbf{x}_i, \mathbf{x}_j])$，其中$[.,.]$表示连接。
 - en: The objective function is MSE loss instead of cross-entropy, because conceptually
     RN focuses more on predicting relation scores which is more like regression, rather
     than binary classification, $\mathcal{L}(B) = \sum_{(\mathbf{x}_i, \mathbf{x}_j,
     y_i, y_j)\in B} (r_{ij} - \mathbf{1}_{y_i=y_j})^2$.
+  id: totrans-88
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 目标函数是均方误差损失而不是交叉熵，因为概念上RN更注重预测关系分数，更像回归，而不是二元分类，$\mathcal{L}(B) = \sum_{(\mathbf{x}_i,
+    \mathbf{x}_j, y_i, y_j)\in B} (r_{ij} - \mathbf{1}_{y_i=y_j})^2$。
 - en: '![](../Images/6e327c13d8d28c8c0a06effa5aeaaf90.png)'
+  id: totrans-89
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/6e327c13d8d28c8c0a06effa5aeaaf90.png)'
 - en: 'Fig. 4\. Relation Network architecture for a 5-way 1-shot problem with one
     query example. (Image source: [original paper](http://openaccess.thecvf.com/content_cvpr_2018/papers_backup/Sung_Learning_to_Compare_CVPR_2018_paper.pdf))'
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 图4. 一个5路1样本问题的关系网络架构，带有一个查询示例。（图片来源：[原始论文](http://openaccess.thecvf.com/content_cvpr_2018/papers_backup/Sung_Learning_to_Compare_CVPR_2018_paper.pdf)）
 - en: '(Note: There is another [Relation Network](https://deepmind.com/blog/neural-approach-relational-reasoning/)
     for relational reasoning, proposed by DeepMind. Don’t get confused.)'
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: （注意：DeepMind提出了另一个[关系网络](https://deepmind.com/blog/neural-approach-relational-reasoning/)用于关系推理。不要混淆。）
 - en: Prototypical Networks
+  id: totrans-92
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 原型网络
 - en: '**Prototypical Networks** ([Snell, Swersky & Zemel, 2017](http://papers.nips.cc/paper/6996-prototypical-networks-for-few-shot-learning.pdf))
     use an embedding function $f_\theta$ to encode each input into a $M$-dimensional
     feature vector. A *prototype* feature vector is defined for every class $c \in
     \mathcal{C}$, as the mean vector of the embedded support data samples in this
     class.'
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: '**原型网络**（[Snell, Swersky & Zemel, 2017](http://papers.nips.cc/paper/6996-prototypical-networks-for-few-shot-learning.pdf)）使用嵌入函数$f_\theta$将每个输入编码为$M$维特征向量。为每个类$c
+    \in \mathcal{C}$定义一个*原型*特征向量，作为该类中嵌入支持数据样本的平均向量。'
 - en: $$ \mathbf{v}_c = \frac{1}{|S_c|} \sum_{(\mathbf{x}_i, y_i) \in S_c} f_\theta(\mathbf{x}_i)
     $$![](../Images/ba956df8e7275c6cfed9e7bd5de0e0e7.png)
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathbf{v}_c = \frac{1}{|S_c|} \sum_{(\mathbf{x}_i, y_i) \in S_c} f_\theta(\mathbf{x}_i)
+    $$![](../Images/ba956df8e7275c6cfed9e7bd5de0e0e7.png)
 - en: 'Fig. 5\. Prototypical networks in the few-shot and zero-shot scenarios. (Image
     source: [original paper](http://papers.nips.cc/paper/6996-prototypical-networks-for-few-shot-learning.pdf))'
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 图5。少样本和零样本情景中的原型网络。（图片来源：[原始论文](http://papers.nips.cc/paper/6996-prototypical-networks-for-few-shot-learning.pdf)）
 - en: The distribution over classes for a given test input $\mathbf{x}$ is a softmax
     over the inverse of distances between the test data embedding and prototype vectors.
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于给定的测试输入$\mathbf{x}$，类别分布是测试数据嵌入和原型向量之间距离的逆softmax。
 - en: $$ P(y=c\vert\mathbf{x})=\text{softmax}(-d_\varphi(f_\theta(\mathbf{x}), \mathbf{v}_c))
     = \frac{\exp(-d_\varphi(f_\theta(\mathbf{x}), \mathbf{v}_c))}{\sum_{c' \in \mathcal{C}}\exp(-d_\varphi(f_\theta(\mathbf{x}),
     \mathbf{v}_{c'}))} $$
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ P(y=c\vert\mathbf{x})=\text{softmax}(-d_\varphi(f_\theta(\mathbf{x}), \mathbf{v}_c))
+    = \frac{\exp(-d_\varphi(f_\theta(\mathbf{x}), \mathbf{v}_c))}{\sum_{c' \in \mathcal{C}}\exp(-d_\varphi(f_\theta(\mathbf{x}),
+    \mathbf{v}_{c'}))} $$
 - en: where $d_\varphi$ can be any distance function as long as $\varphi$ is differentiable.
     In the paper, they used the squared euclidean distance.
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$d_\varphi$可以是任何距离函数，只要$\varphi$是可微的。在论文中，他们使用了平方欧氏距离。
 - en: 'The loss function is the negative log-likelihood: $\mathcal{L}(\theta) = -\log
     P_\theta(y=c\vert\mathbf{x})$.'
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 损失函数是负对数似然：$\mathcal{L}(\theta) = -\log P_\theta(y=c\vert\mathbf{x})$。
 - en: Model-Based
+  id: totrans-100
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 基于模型
 - en: Model-based meta-learning models make no assumption on the form of $P_\theta(y\vert\mathbf{x})$.
     Rather it depends on a model designed specifically for fast learning — a model
     that updates its parameters rapidly with a few training steps. This rapid parameter
     update can be achieved by its internal architecture or controlled by another meta-learner
     model.
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 基于模型的元学习模型不对$P_\theta(y\vert\mathbf{x})$的形式做任何假设。相反，它依赖于专门设计用于快速学习的模型 —— 一个通过少量训练步骤快速更新参数的模型。这种快速参数更新可以通过其内部架构实现，或者由另一个元学习模型控制。
 - en: Memory-Augmented Neural Networks
+  id: totrans-102
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 增强记忆神经网络
 - en: A family of model architectures use external memory storage to facilitate the
     learning process of neural networks, including [Neural Turing Machines](https://lilianweng.github.io/posts/2018-06-24-attention/#neural-turing-machines)
     and [Memory Networks](https://arxiv.org/abs/1410.3916). With an explicit storage
@@ -524,8 +766,10 @@
     not to forget in the future. Such a model is known as **MANN**, short for “**Memory-Augmented
     Neural Network**”. Note that recurrent neural networks with only *internal memory*
     such as vanilla RNN or LSTM are not MANNs.
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: 一类模型架构使用外部存储器来促进神经网络的学习过程，包括[神经图灵机](https://lilianweng.github.io/posts/2018-06-24-attention/#neural-turing-machines)和[记忆网络](https://arxiv.org/abs/1410.3916)。通过显式存储缓冲区，网络更容易快速整合新信息，并且不会在未来遗忘。这样的模型被称为**MANN**，即“**增强记忆神经网络**”。请注意，仅具有*内部记忆*的递归神经网络，如普通RNN或LSTM，并不是MANN。
 - en: Because MANN is expected to encode new information fast and thus to adapt to
     new tasks after only a few samples, it fits well for meta-learning. Taking the
     Neural Turing Machine (NTM) as the base model, [Santoro et al. (2016)](http://proceedings.mlr.press/v48/santoro16.pdf)
@@ -534,160 +778,234 @@
     to memory vectors). Please go through [the NTM section](https://lilianweng.github.io/posts/2018-06-24-attention/#neural-turing-machines)
     in my other post first if you are not familiar with this matter before reading
     forward.
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: 因为MANN预计能够快速编码新信息，因此在仅有少量样本后适应新任务，非常适合元学习。以神经图灵机（NTM）为基础模型，[Santoro等人（2016）](http://proceedings.mlr.press/v48/santoro16.pdf)在训练设置和记忆检索机制（或“寻址机制”，决定如何分配注意力权重给记忆向量）上提出了一系列修改。如果您对此事不熟悉，请先阅读[我的另一篇文章中的NTM部分](https://lilianweng.github.io/posts/2018-06-24-attention/#neural-turing-machines)。
 - en: 'As a quick recap, NTM couples a controller neural network with external memory
     storage. The controller learns to read and write memory rows by soft attention,
     while the memory serves as a knowledge repository. The attention weights are generated
     by its addressing mechanism: content-based + location based.'
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: 简要回顾一下，NTM将控制器神经网络与外部存储器耦合。控制器通过软注意力学习读写记忆行，而记忆作为知识库。注意力权重由其寻址机制生成：基于内容+基于位置。
 - en: '![](../Images/5a5a055ffc5f104c765e100b27c07ca4.png)'
+  id: totrans-106
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/5a5a055ffc5f104c765e100b27c07ca4.png)'
 - en: Fig. 6\. The architecture of Neural Turing Machine (NTM). The memory at time
     t, $\mathbf{M}\_t$ is a matrix of size $N \times M$, containing N vector rows
     and each has M dimensions.
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: 图6. 神经图灵机（NTM）的架构。时间t的记忆$\mathbf{M}\_t$是一个大小为$N \times M$的矩阵，包含N个向量行，每个向量有M个维度。
 - en: MANN for Meta-Learning
+  id: totrans-108
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 用于元学习的MANN
 - en: To use MANN for meta-learning tasks, we need to train it in a way that the memory
     can encode and capture information of new tasks fast and, in the meantime, any
     stored representation is easily and stably accessible.
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 要将MANN用于元学习任务，我们需要以一种方式训练它，使得记忆能够快速编码和捕获新任务的信息，并且同时任何存储的表示都能够轻松稳定地访问。
 - en: 'The training described in [Santoro et al., 2016](http://proceedings.mlr.press/v48/santoro16.pdf)
     happens in an interesting way so that the memory is forced to hold information
     for longer until the appropriate labels are presented later. In each training
     episode, the truth label $y_t$ is presented with **one step offset**, $(\mathbf{x}_{t+1},
     y_t)$: it is the true label for the input at the previous time step t, but presented
     as part of the input at time step t+1.'
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Santoro等人，2016](http://proceedings.mlr.press/v48/santoro16.pdf)描述的训练以一种有趣的方式进行，使得记忆被迫保存信息更长时间，直到适当的标签稍后出现。在每个训练周期中，真实标签$y_t$与**一个步骤偏移**$(\mathbf{x}_{t+1},
+    y_t)$一起呈现：这是前一个时间步t的输入的真实标签，但作为时间步t+1的一部分呈现。'
 - en: '![](../Images/4df76d0f0b806535b93595c749a59ac5.png)'
+  id: totrans-111
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/4df76d0f0b806535b93595c749a59ac5.png)'
 - en: 'Fig. 7\. Task setup in MANN for meta-learning (Image source: [original paper](http://proceedings.mlr.press/v48/santoro16.pdf)).'
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 图7. 元学习中MANN的任务设置（图片来源：[原始论文](http://proceedings.mlr.press/v48/santoro16.pdf)）。
 - en: In this way, MANN is motivated to memorize the information of a new dataset,
     because the memory has to hold the current input until the label is present later
     and then retrieve the old information to make a prediction accordingly.
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: 这样，MANN被激励去记忆新数据集的信息，因为记忆必须保存当前输入，直到稍后出现标签，然后检索旧信息以做出相应预测。
 - en: Next let us see how the memory is updated for efficient information retrieval
     and storage.
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来让我们看看如何更新记忆以实现高效的信息检索和存储。
 - en: Addressing Mechanism for Meta-Learning
+  id: totrans-115
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 用于元学习的寻址机制
 - en: Aside from the training process, a new pure content-based addressing mechanism
     is utilized to make the model better suitable for meta-learning.
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: 除了训练过程外，还利用了一种新的纯内容为基础的寻址机制，使模型更适合元学习。
 - en: '**» How to read from memory?**'
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: '**» 如何从记忆中读取？**'
 - en: The read attention is constructed purely based on the content similarity.
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: 基于内容相似性构建的读取注意力。
 - en: 'First, a key feature vector $\mathbf{k}_t$ is produced at the time step t by
     the controller as a function of the input $\mathbf{x}$. Similar to NTM, a read
     weighting vector $\mathbf{w}_t^r$ of N elements is computed as the cosine similarity
     between the key vector and every memory vector row, normalized by softmax. The
     read vector $\mathbf{r}_t$ is a sum of memory records weighted by such weightings:'
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，在时间步骤t，控制器根据输入$\mathbf{x}$生成关键特征向量$\mathbf{k}_t$。类似于NTM，读取加权向量$\mathbf{w}_t^r$由N个元素计算为关键向量与每个存储向量行之间的余弦相似性，通过softmax进行归一化。读取向量$\mathbf{r}_t$是通过这些权重加权的存储记录之和：
 - en: $$ \mathbf{r}_i = \sum_{i=1}^N w_t^r(i)\mathbf{M}_t(i) \text{, where } w_t^r(i)
     = \text{softmax}(\frac{\mathbf{k}_t \cdot \mathbf{M}_t(i)}{\|\mathbf{k}_t\| \cdot
     \|\mathbf{M}_t(i)\|}) $$
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathbf{r}_i = \sum_{i=1}^N w_t^r(i)\mathbf{M}_t(i) \text{，其中 } w_t^r(i)
+    = \text{softmax}(\frac{\mathbf{k}_t \cdot \mathbf{M}_t(i)}{\|\mathbf{k}_t\| \cdot
+    \|\mathbf{M}_t(i)\|}) $$
 - en: where $M_t$ is the memory matrix at time t and $M_t(i)$ is the i-th row in this
     matrix.
+  id: totrans-121
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$M_t$是时间t的内存矩阵，$M_t(i)$是该矩阵中的第i行。
 - en: '**» How to write into memory?**'
+  id: totrans-122
   prefs: []
   type: TYPE_NORMAL
+  zh: '**» 如何写入内存？**'
 - en: The addressing mechanism for writing newly received information into memory
     operates a lot like the [cache replacement](https://en.wikipedia.org/wiki/Cache_replacement_policies)
     policy. The **Least Recently Used Access (LRUA)** writer is designed for MANN
     to better work in the scenario of meta-learning. A LRUA write head prefers to
     write new content to either the *least used* memory location or the *most recently
     used* memory location.
+  id: totrans-123
   prefs: []
   type: TYPE_NORMAL
+  zh: 将新接收的信息写入内存的寻址机制操作方式很像[缓存替换](https://en.wikipedia.org/wiki/Cache_replacement_policies)策略。**最近最少使用访问（LRUA）**写入头设计为MANN在元学习场景中更好地工作。LRUA写入头更倾向于将新内容写入*最少使用*的存储位置或*最近使用*的存储位置。
 - en: 'Rarely used locations: so that we can preserve frequently used information
     (see [LFU](https://en.wikipedia.org/wiki/Least_frequently_used));'
+  id: totrans-124
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 很少使用的位置：这样我们可以保留经常使用的信息（参见[LFU](https://en.wikipedia.org/wiki/Least_frequently_used)）；
 - en: 'The last used location: the motivation is that once a piece of information
     is retrieved once, it probably won’t be called again for a while (see [MRU](https://en.wikipedia.org/wiki/Cache_replacement_policies#Most_recently_used_(MRU))).'
+  id: totrans-125
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 最近使用的位置：动机是一旦检索到一条信息，它可能在一段时间内不会再次被调用（参见[MRU](https://en.wikipedia.org/wiki/Cache_replacement_policies#Most_recently_used_(MRU))）。
 - en: There are many cache replacement algorithms and each of them could potentially
     replace the design here with better performance in different use cases. Furthermore,
     it would be a good idea to learn the memory usage pattern and addressing strategies
     rather than arbitrarily set it.
+  id: totrans-126
   prefs: []
   type: TYPE_NORMAL
+  zh: 有许多缓存替换算法，每个算法都可能在不同的用例中以更好的性能替换此设计。此外，学习内存使用模式和寻址策略而不是随意设置它可能是一个好主意。
 - en: 'The preference of LRUA is carried out in a way that everything is differentiable:'
+  id: totrans-127
   prefs: []
   type: TYPE_NORMAL
+  zh: LRUA的偏好是以可微分的方式进行的：
 - en: The usage weight $\mathbf{w}^u_t$ at time t is a sum of current read and write
     vectors, in addition to the decayed last usage weight, $\gamma \mathbf{w}^u_{t-1}$,
     where $\gamma$ is a decay factor.
+  id: totrans-128
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 时间t的使用权重$\mathbf{w}^u_t$是当前读取和写入向量的总和，另外还有上次使用权重的衰减，$\gamma \mathbf{w}^u_{t-1}$，其中$\gamma$是一个衰减因子。
 - en: The write vector is an interpolation between the previous read weight (prefer
     “the last used location”) and the previous least-used weight (prefer “rarely used
     location”). The interpolation parameter is the sigmoid of a hyperparameter $\alpha$.
+  id: totrans-129
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 写入向量是前一个读取权重（更倾向于“最近使用的位置”）和前一个最少使用的权重（更倾向于“很少使用的位置”）之间的插值。插值参数是一个超参数$\alpha$的sigmoid。
 - en: The least-used weight $\mathbf{w}^{lu}$ is scaled according to usage weights
     $\mathbf{w}_t^u$, in which any dimension remains at 1 if smaller than the n-th
     smallest element in the vector and 0 otherwise.
+  id: totrans-130
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 最少使用的权重$\mathbf{w}^{lu}$根据使用权重$\mathbf{w}_t^u$进行缩放，其中如果任何维度小于向量中第n小的元素，则保持为1，否则为0。
 - en: $$ \begin{aligned} \mathbf{w}_t^u &= \gamma \mathbf{w}_{t-1}^u + \mathbf{w}_t^r
     + \mathbf{w}_t^w \\ \mathbf{w}_t^r &= \text{softmax}(\text{cosine}(\mathbf{k}_t,
     \mathbf{M}_t(i))) \\ \mathbf{w}_t^w &= \sigma(\alpha)\mathbf{w}_{t-1}^r + (1-\sigma(\alpha))\mathbf{w}^{lu}_{t-1}\\
     \mathbf{w}_t^{lu} &= \mathbf{1}_{w_t^u(i) \leq m(\mathbf{w}_t^u, n)} \text{, where
     }m(\mathbf{w}_t^u, n)\text{ is the }n\text{-th smallest element in vector }\mathbf{w}_t^u\text{.}
     \end{aligned} $$
+  id: totrans-131
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \mathbf{w}_t^u &= \gamma \mathbf{w}_{t-1}^u + \mathbf{w}_t^r
+    + \mathbf{w}_t^w \\ \mathbf{w}_t^r &= \text{softmax}(\text{cosine}(\mathbf{k}_t,
+    \mathbf{M}_t(i))) \\ \mathbf{w}_t^w &= \sigma(\alpha)\mathbf{w}_{t-1}^r + (1-\sigma(\alpha))\mathbf{w}^{lu}_{t-1}\\
+    \mathbf{w}_t^{lu} &= \mathbf{1}_{w_t^u(i) \leq m(\mathbf{w}_t^u, n)} \text{，其中
+    }m(\mathbf{w}_t^u, n)\text{ 是向量 }\mathbf{w}_t^u\text{ 中第 }n\text{ 小的元素。} \end{aligned}
+    $$
 - en: 'Finally, after the least used memory location, indicated by $\mathbf{w}_t^{lu}$,
     is set to zero, every memory row is updated:'
+  id: totrans-132
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，在由$\mathbf{w}_t^{lu}$指示的最少使用的内存位置被设置为零后，每个内存行都会被更新：
 - en: $$ \mathbf{M}_t(i) = \mathbf{M}_{t-1}(i) + w_t^w(i)\mathbf{k}_t, \forall i $$
+  id: totrans-133
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \mathbf{M}_t(i) = \mathbf{M}_{t-1}(i) + w_t^w(i)\mathbf{k}_t, \forall i $$
 - en: Meta Networks
+  id: totrans-134
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 元网络
 - en: '**Meta Networks** ([Munkhdalai & Yu, 2017](https://arxiv.org/abs/1703.00837)),
     short for **MetaNet**, is a meta-learning model with architecture and training
     process designed for *rapid* generalization across tasks.'
+  id: totrans-135
   prefs: []
   type: TYPE_NORMAL
+  zh: '**元网络**（[Munkhdalai & Yu, 2017](https://arxiv.org/abs/1703.00837)），简称**MetaNet**，是一个元学习模型，其架构和训练过程旨在*快速*泛化跨任务。'
 - en: Fast Weights
+  id: totrans-136
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 快速权重
 - en: The rapid generalization of MetaNet relies on “fast weights”. There are a handful
     of papers on this topic, but I haven’t read all of them in detail and I failed
     to find a very concrete definition, only a vague agreement on the concept. Normally
@@ -696,258 +1014,368 @@
     is to utilize one neural network to predict the parameters of another neural network
     and the generated weights are called *fast weights*. In comparison, the ordinary
     SGD-based weights are named *slow weights*.
+  id: totrans-137
   prefs: []
   type: TYPE_NORMAL
+  zh: MetaNet的快速泛化依赖于“快速权重”。关于这个主题有一些论文，但我没有详细阅读所有这些论文，也没有找到一个非常具体的定义，只是对这个概念有一个模糊的认识。通常，神经网络中的权重是通过随机梯度下降在目标函数中更新的，这个过程被认为是缓慢的。学习的一种更快速的方式是利用一个神经网络来预测另一个神经网络的参数，生成的权重被称为*快速权重*。相比之下，普通基于SGD的权重被称为*慢速权重*。
 - en: In MetaNet, loss gradients are used as *meta information* to populate models
     that learn fast weights. Slow and fast weights are combined to make predictions
     in neural networks.
+  id: totrans-138
   prefs: []
   type: TYPE_NORMAL
+  zh: 在MetaNet中，损失梯度被用作*元信息*来填充学习快速权重的模型。慢速和快速权重被结合在神经网络中进行预测。
 - en: '![](../Images/5e242ee28974ce3bcb457fc37ecc6fa5.png)'
+  id: totrans-139
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/5e242ee28974ce3bcb457fc37ecc6fa5.png)'
 - en: 'Fig. 8\. Combining slow and fast weights in a MLP. $\bigoplus$ is element-wise
     sum. (Image source: [original paper](https://arxiv.org/abs/1703.00837)).'
+  id: totrans-140
   prefs: []
   type: TYPE_NORMAL
+  zh: 图8. 在MLP中结合慢速和快速权重。$\bigoplus$是逐元素求和。（图片来源：[原始论文](https://arxiv.org/abs/1703.00837)）。
 - en: Model Components
+  id: totrans-141
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 模型组件
 - en: 'Disclaimer: Below you will find my annotations are different from those in
     the paper. imo, the paper is poorly written, but the idea is still interesting.
     So I’m presenting the idea in my own language.'
+  id: totrans-142
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 免责声明：以下是我对论文中注释的不同之处。在我看来，这篇论文写得很差，但其中的想法仍然很有趣。因此，我用自己的语言呈现这个想法。
 - en: 'Key components of MetaNet are:'
+  id: totrans-143
   prefs: []
   type: TYPE_NORMAL
+  zh: MetaNet的关键组件包括：
 - en: An embedding function $f_\theta$, parameterized by $\theta$, encodes raw inputs
     into feature vectors. Similar to [Siamese Neural Network](#convolutional-siamese-neural-network),
     these embeddings are trained to be useful for telling whether two inputs are of
     the same class (verification task).
+  id: totrans-144
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 由$\theta$参数化的嵌入函数$f_\theta$将原始输入编码为特征向量。类似于[孪生神经网络](#convolutional-siamese-neural-network)，这些嵌入被训练为对于判断两个输入是否属于同一类别（验证任务）有用。
 - en: A base learner model $g_\phi$, parameterized by weights $\phi$, completes the
     actual learning task.
+  id: totrans-145
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 由权重$\phi$参数化的基础学习模型$g_\phi$完成实际学习任务。
 - en: If we stop here, it looks just like [Relation Network](#relation-network). MetaNet,
     in addition, explicitly models the fast weights of both functions and then aggregates
     them back into the model (See Fig. 8).
+  id: totrans-146
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们到此为止，看起来就像[关系网络](#relation-network)。此外，MetaNet明确地对两个函数的快速权重进行建模，然后将它们聚合回模型中（见图8）。
 - en: Therefore we need additional two functions to output fast weights for $f$ and
     $g$ respectively.
+  id: totrans-147
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，我们需要额外的两个函数分别输出$f$和$g$的快速权重。
 - en: '$F_w$: a LSTM parameterized by $w$ for learning fast weights $\theta^+$ of
     the embedding function $f$. It takes as input gradients of $f$’s embedding loss
     for verification task.'
+  id: totrans-148
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $F_w$：由$w$参数化的LSTM，用于学习嵌入函数$f$的快速权重$\theta^+$。它以$f$的嵌入损失的梯度作为输入，用于验证任务。
 - en: '$G_v$: a neural network parameterized by $v$ learning fast weights $\phi^+$
     for the base learner $g$ from its loss gradients. In MetaNet, the learner’s loss
     gradients are viewed as the *meta information* of the task.'
+  id: totrans-149
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $G_v$：由$v$参数化的神经网络，从基学习器$g$的损失梯度中学习快速权重$\phi^+$。在MetaNet中，学习器的损失梯度被视为任务的*元信息*。
 - en: 'Ok, now let’s see how meta networks are trained. The training data contains
     multiple pairs of datasets: a support set $S=\{\mathbf{x}’_i, y’_i\}_{i=1}^K$
     and a test set $U=\{\mathbf{x}_i, y_i\}_{i=1}^L$. Recall that we have four networks
     and four sets of model parameters to learn, $(\theta, \phi, w, v)$.'
+  id: totrans-150
   prefs: []
   type: TYPE_NORMAL
+  zh: 好的，现在让我们看看元网络是如何训练的。训练数据包含多对数据集：一个支持集$S=\{\mathbf{x}’_i, y’_i\}_{i=1}^K$和一个测试集$U=\{\mathbf{x}_i,
+    y_i\}_{i=1}^L$。回想一下，我们有四个网络和四组模型参数要学习，$(\theta, \phi, w, v)$。
 - en: '![](../Images/ab3be8f69a0aa1ed9ad07e68b0fc4a22.png)'
+  id: totrans-151
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ab3be8f69a0aa1ed9ad07e68b0fc4a22.png)'
 - en: Fig.9\. The MetaNet architecture.
+  id: totrans-152
   prefs: []
   type: TYPE_NORMAL
+  zh: 图9\. MetaNet架构。
 - en: Training Process
+  id: totrans-153
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 训练过程
 - en: Sample a random pair of inputs at each time step t from the support set $S$,
     $(\mathbf{x}’_i, y’_i)$ and $(\mathbf{x}’_j, y_j)$. Let $\mathbf{x}_{(t,1)}=\mathbf{x}’_i$
     and $\mathbf{x}_{(t,2)}=\mathbf{x}’_j$.
+  id: totrans-154
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在每个时间步$t$从支持集$S$中随机选择一对输入$(\mathbf{x}’_i, y’_i)$和$(\mathbf{x}’_j, y_j)$。令$\mathbf{x}_{(t,1)}=\mathbf{x}’_i$和$\mathbf{x}_{(t,2)}=\mathbf{x}’_j$。
 - en: 'for $t = 1, \dots, K$:'
+  id: totrans-155
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 对于$t = 1, \dots, K$：
 - en: 'a. Compute a loss for representation learning; i.e., cross entropy for the
     verification task:'
+  id: totrans-156
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: a. 计算表示学习的损失；即，验证任务的交叉熵：
 - en: $\mathcal{L}^\text{emb}_t = \mathbf{1}_{y’_i=y’_j} \log P_t + (1 - \mathbf{1}_{y’_i=y’_j})\log(1
     - P_t)\text{, where }P_t = \sigma(\mathbf{W}\vert f_\theta(\mathbf{x}_{(t,1)})
     - f_\theta(\mathbf{x}_{(t,2)})\vert)$
+  id: totrans-157
   prefs:
   - PREF_IND
   - PREF_IND
   type: TYPE_NORMAL
+  zh: $\mathcal{L}^\text{emb}_t = \mathbf{1}_{y’_i=y’_j} \log P_t + (1 - \mathbf{1}_{y’_i=y’_j})\log(1
+    - P_t)\text{，其中 }P_t = \sigma(\mathbf{W}\vert f_\theta(\mathbf{x}_{(t,1)}) - f_\theta(\mathbf{x}_{(t,2)})\vert)$
 - en: 'Compute the task-level fast weights: $\theta^+ = F_w(\nabla_\theta \mathcal{L}^\text{emb}_1,
     \dots, \mathcal{L}^\text{emb}_T)$'
+  id: totrans-158
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 计算任务级快速权重：$\theta^+ = F_w(\nabla_\theta \mathcal{L}^\text{emb}_1, \dots, \mathcal{L}^\text{emb}_T)$
 - en: Next go through examples in the support set $S$ and compute the example-level
     fast weights. Meanwhile, update the memory with learned representations.
+  id: totrans-159
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 接下来，遍历支持集$S$中的示例，并计算示例级快速权重。同时，使用学习到的表示更新内存。
 - en: 'for $i=1, \dots, K$:'
+  id: totrans-160
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 对于$i=1, \dots, K$：
 - en: 'a. The base learner outputs a probability distribution: $P(\hat{y}_i \vert
     \mathbf{x}_i) = g_\phi(\mathbf{x}_i)$ and the loss can be cross-entropy or MSE:
     $\mathcal{L}^\text{task}_i = y’_i \log g_\phi(\mathbf{x}’_i) + (1- y’_i) \log
     (1 - g_\phi(\mathbf{x}’_i))$'
+  id: totrans-161
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: a. 基学习器输出概率分布：$P(\hat{y}_i \vert \mathbf{x}_i) = g_\phi(\mathbf{x}_i)$，损失可以是交叉熵或均方误差：$\mathcal{L}^\text{task}_i
+    = y’_i \log g_\phi(\mathbf{x}’_i) + (1- y’_i) \log (1 - g_\phi(\mathbf{x}’_i))$
 - en: 'b. Extract meta information (loss gradients) of the task and compute the example-level
     fast weights: $\phi_i^+ = G_v(\nabla_\phi\mathcal{L}^\text{task}_i)$'
+  id: totrans-162
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: b. 提取任务的元信息（损失梯度）并计算示例级快速权重：$\phi_i^+ = G_v(\nabla_\phi\mathcal{L}^\text{task}_i)$
 - en: Then store $\phi^+_i$ into $i$-th location of the “value” memory $\mathbf{M}$.
+  id: totrans-163
   prefs:
   - PREF_IND
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 然后将$\phi^+_i$存储到“值”内存$\mathbf{M}$的第$i$个位置。
 - en: 'd. Encode the support sample into a task-specific input representation using
     both slow and fast weights: $r’_i = f_{\theta, \theta^+}(\mathbf{x}’_i)$'
+  id: totrans-164
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: d. 使用慢权重和快速权重将支持样本编码为特定任务的输入表示：$r’_i = f_{\theta, \theta^+}(\mathbf{x}’_i)$
 - en: Then store $r’_i$ into $i$-th location of the “key” memory $\mathbf{R}$.
+  id: totrans-165
   prefs:
   - PREF_IND
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 然后将$r’_i$存储到“键”内存$\mathbf{R}$的第$i$个位置。
 - en: Finally it is the time to construct the training loss using the test set $U=\{\mathbf{x}_i,
     y_i\}_{i=1}^L$.
+  id: totrans-166
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 最后，是构建使用测试集$U=\{\mathbf{x}_i, y_i\}_{i=1}^L$的训练损失的时候了。
 - en: 'Starts with $\mathcal{L}_\text{train}=0$:'
+  id: totrans-167
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 从$\mathcal{L}_\text{train}=0$开始：
 - en: 'for $j=1, \dots, L$:'
+  id: totrans-168
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 对于$j=1, \dots, L$：
 - en: 'a. Encode the test sample into a task-specific input representation: $r_j =
     f_{\theta, \theta^+}(\mathbf{x}_j)$'
+  id: totrans-169
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: a. 将测试样本编码为特定任务的输入表示：$r_j = f_{\theta, \theta^+}(\mathbf{x}_j)$
 - en: 'b. The fast weights are computed by attending to representations of support
     set samples in memory $\mathbf{R}$. The attention function is of your choice.
     Here MetaNet uses cosine similarity:'
+  id: totrans-170
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: b. 快速权重通过关注内存中支持集样本的表示$\mathbf{R}$来计算。注意函数由您选择。这里MetaNet使用余弦相似度：
 - en: $$ \begin{aligned} a_j &= \text{cosine}(\mathbf{R}, r_j) = [\frac{r'_1\cdot
     r_j}{\|r'_1\|\cdot\|r_j\|}, \dots, \frac{r'_N\cdot r_j}{\|r'_N\|\cdot\|r_j\|}]\\
     \phi^+_j &= \text{softmax}(a_j)^\top \mathbf{M} \end{aligned} $$
+  id: totrans-171
   prefs:
   - PREF_IND
   - PREF_IND
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} a_j &= \text{cosine}(\mathbf{R}, r_j) = [\frac{r'_1\cdot
+    r_j}{\|r'_1\|\cdot\|r_j\|}, \dots, \frac{r'_N\cdot r_j}{\|r'_N\|\cdot\|r_j\|}]\\
+    \phi^+_j &= \text{softmax}(a_j)^\top \mathbf{M} \end{aligned} $$
 - en: 'c. Update the training loss: $\mathcal{L}_\text{train} \leftarrow \mathcal{L}_\text{train}
     + \mathcal{L}^\text{task}(g_{\phi, \phi^+}(\mathbf{x}_i), y_i) $'
+  id: totrans-172
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: c. 更新训练损失：$\mathcal{L}_\text{train} \leftarrow \mathcal{L}_\text{train} + \mathcal{L}^\text{task}(g_{\phi,
+    \phi^+}(\mathbf{x}_i), y_i) $
 - en: Update all the parameters $(\theta, \phi, w, v)$ using $\mathcal{L}_\text{train}$.
+  id: totrans-173
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用$\mathcal{L}_\text{train}$更新所有参数$(\theta, \phi, w, v)$。
 - en: Optimization-Based
+  id: totrans-174
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 基于优化的
 - en: Deep learning models learn through backpropagation of gradients. However, the
     gradient-based optimization is neither designed to cope with a small number of
     training samples, nor to converge within a small number of optimization steps.
     Is there a way to adjust the optimization algorithm so that the model can be good
     at learning with a few examples? This is what optimization-based approach meta-learning
     algorithms intend for.
+  id: totrans-175
   prefs: []
   type: TYPE_NORMAL
+  zh: 深度学习模型通过梯度反向传播学习。然而，基于梯度的优化既不是为了应对少量训练样本，也不是为了在少量优化步骤内收敛。有没有一种方法可以调整优化算法，使模型能够很好地学习少量示例？这就是基于优化的元学习算法的目的。
 - en: LSTM Meta-Learner
+  id: totrans-176
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: LSTM元学习者
 - en: The optimization algorithm can be explicitly modeled. [Ravi & Larochelle (2017)](https://openreview.net/pdf?id=rJY0-Kcll)
     did so and named it “meta-learner”, while the original model for handling the
     task is called “learner”. The goal of the meta-learner is to efficiently update
     the learner’s parameters using a small support set so that the learner can adapt
     to the new task quickly.
+  id: totrans-177
   prefs: []
   type: TYPE_NORMAL
+  zh: 优化算法可以被明确建模。[Ravi & Larochelle (2017)](https://openreview.net/pdf?id=rJY0-Kcll)这样做，并将其命名为“元学习者”，而处理任务的原始模型称为“学习者”。元学习者的目标是使用小支持集有效地更新学习者的参数，以便学习者可以快速适应新任务。
 - en: Let’s denote the learner model as $M_\theta$ parameterized by $\theta$, the
     meta-learner as $R_\Theta$ with parameters $\Theta$, and the loss function $\mathcal{L}$.
+  id: totrans-178
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们将学习模型表示为由$\theta$参数化的$M_\theta$，将元学习者表示为由参数$\Theta$参数化的$R_\Theta$，损失函数为$\mathcal{L}$。
 - en: Why LSTM?
+  id: totrans-179
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 为什么选择LSTM？
 - en: 'The meta-learner is modeled as a LSTM, because:'
+  id: totrans-180
   prefs: []
   type: TYPE_NORMAL
+  zh: 元学习者被建模为LSTM，因为：
 - en: There is similarity between the gradient-based update in backpropagation and
     the cell-state update in LSTM.
+  id: totrans-181
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 梯度下降更新和LSTM中细胞状态更新之间存在相似性。
 - en: Knowing a history of gradients benefits the gradient update; think about how
     [momentum](http://ruder.io/optimizing-gradient-descent/index.html#momentum) works.
+  id: totrans-182
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 知道梯度的历史有利于梯度更新；想想[动量](http://ruder.io/optimizing-gradient-descent/index.html#momentum)是如何工作的。
 - en: 'The update for the learner’s parameters at time step t with a learning rate
     $\alpha_t$ is:'
+  id: totrans-183
   prefs: []
   type: TYPE_NORMAL
+  zh: 在时间步t，学习者参数的更新与学习率$\alpha_t$为：
 - en: $$ \theta_t = \theta_{t-1} - \alpha_t \nabla_{\theta_{t-1}}\mathcal{L}_t $$
+  id: totrans-184
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \theta_t = \theta_{t-1} - \alpha_t \nabla_{\theta_{t-1}}\mathcal{L}_t $$
 - en: 'It has the same form as the cell state update in LSTM, if we set forget gate
     $f_t=1$, input gate $i_t = \alpha_t$, cell state $c_t = \theta_t$, and new cell
     state $\tilde{c}_t = -\nabla_{\theta_{t-1}}\mathcal{L}_t$:'
+  id: totrans-185
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们设置遗忘门$f_t=1$，输入门$i_t = \alpha_t$，细胞状态$c_t = \theta_t$，新细胞状态$\tilde{c}_t
+    = -\nabla_{\theta_{t-1}}\mathcal{L}_t$，它与LSTM中的细胞状态更新具有相同的形式：
 - en: $$ \begin{aligned} c_t &= f_t \odot c_{t-1} + i_t \odot \tilde{c}_t\\ &= \theta_{t-1}
     - \alpha_t\nabla_{\theta_{t-1}}\mathcal{L}_t \end{aligned} $$
+  id: totrans-186
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} c_t &= f_t \odot c_{t-1} + i_t \odot \tilde{c}_t\\ &= \theta_{t-1}
+    - \alpha_t\nabla_{\theta_{t-1}}\mathcal{L}_t \end{aligned} $$
 - en: While fixing $f_t=1$ and $i_t=\alpha_t$ might not be the optimal, both of them
     can be learnable and adaptable to different datasets.
+  id: totrans-187
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管固定$f_t=1$和$i_t=\alpha_t$可能不是最佳选择，但它们都可以是可学习的，并适应不同的数据集。
 - en: $$ \begin{aligned} f_t &= \sigma(\mathbf{W}_f \cdot [\nabla_{\theta_{t-1}}\mathcal{L}_t,
     \mathcal{L}_t, \theta_{t-1}, f_{t-1}] + \mathbf{b}_f) & \scriptstyle{\text{; how
     much to forget the old value of parameters.}}\\ i_t &= \sigma(\mathbf{W}_i \cdot
@@ -955,75 +1383,118 @@
     & \scriptstyle{\text{; corresponding to the learning rate at time step t.}}\\
     \tilde{\theta}_t &= -\nabla_{\theta_{t-1}}\mathcal{L}_t &\\ \theta_t &= f_t \odot
     \theta_{t-1} + i_t \odot \tilde{\theta}_t &\\ \end{aligned} $$
+  id: totrans-188
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} f_t &= \sigma(\mathbf{W}_f \cdot [\nabla_{\theta_{t-1}}\mathcal{L}_t,
+    \mathcal{L}_t, \theta_{t-1}, f_{t-1}] + \mathbf{b}_f) & \scriptstyle{\text{; 忘记旧参数值的程度。}}\\
+    i_t &= \sigma(\mathbf{W}_i \cdot [\nabla_{\theta_{t-1}}\mathcal{L}_t, \mathcal{L}_t,
+    \theta_{t-1}, i_{t-1}] + \mathbf{b}_i) & \scriptstyle{\text{; 对应于时间步骤 t 的学习率。}}\\
+    \tilde{\theta}_t &= -\nabla_{\theta_{t-1}}\mathcal{L}_t &\\ \theta_t &= f_t \odot
+    \theta_{t-1} + i_t \odot \tilde{\theta}_t &\\ \end{aligned} $$
 - en: Model Setup
+  id: totrans-189
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 模型设置
 - en: '![](../Images/b979b6a64905248f699e8f23dd152b33.png)'
+  id: totrans-190
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/b979b6a64905248f699e8f23dd152b33.png)'
 - en: 'Fig. 10\. How the learner $M\_\theta$ and the meta-learner $R\_\Theta$ are
     trained. (Image source: [original paper](https://openreview.net/pdf?id=rJY0-Kcll))
     with more annotations)'
+  id: totrans-191
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 10\. 学习器 $M\_\theta$ 和元学习器 $R\_\Theta$ 的训练方式。 (图片来源：[原论文](https://openreview.net/pdf?id=rJY0-Kcll))，带有更多注释。
 - en: The training process mimics what happens during test, since it has been proved
     to be beneficial in [Matching Networks](#matching-networks). During each training
     epoch, we first sample a dataset $\mathcal{D} = (\mathcal{D}_\text{train}, \mathcal{D}_\text{test})
     \in \hat{\mathcal{D}}_\text{meta-train}$ and then sample mini-batches out of $\mathcal{D}_\text{train}$
     to update $\theta$ for $T$ rounds. The final state of the learner parameter $\theta_T$
     is used to train the meta-learner on the test data $\mathcal{D}_\text{test}$.
+  id: totrans-192
   prefs: []
   type: TYPE_NORMAL
+  zh: 训练过程模拟了测试过程中发生的情况，因为已经证明在[匹配网络](#matching-networks)中是有益的。在每个训练周期中，我们首先从 $\hat{\mathcal{D}}_\text{meta-train}$
+    中抽样一个数据集 $\mathcal{D} = (\mathcal{D}_\text{train}, \mathcal{D}_\text{test})$，然后从
+    $\mathcal{D}_\text{train}$ 中抽样小批量数据来更新 $\theta$，进行 $T$ 轮。学习器参数 $\theta_T$ 的最终状态用于在测试数据
+    $\mathcal{D}_\text{test}$ 上训练元学习器。
 - en: 'Two implementation details to pay extra attention to:'
+  id: totrans-193
   prefs: []
   type: TYPE_NORMAL
+  zh: 两个需要额外注意的实现细节：
 - en: How to compress the parameter space in LSTM meta-learner? As the meta-learner
     is modeling parameters of another neural network, it would have hundreds of thousands
     of variables to learn. Following the [idea](https://arxiv.org/abs/1606.04474)
     of sharing parameters across coordinates,
+  id: totrans-194
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 如何在 LSTM 元学习器中压缩参数空间？由于元学习器正在建模另一个神经网络的参数，它将有数十万个要学习的变量。遵循[这个想法](https://arxiv.org/abs/1606.04474)跨坐标共享参数，
 - en: To simplify the training process, the meta-learner assumes that the loss $\mathcal{L}_t$
     and the gradient $\nabla_{\theta_{t-1}} \mathcal{L}_t$ are independent.
+  id: totrans-195
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 为了简化训练过程，元学习器假设损失函数 $\mathcal{L}_t$ 和梯度 $\nabla_{\theta_{t-1}} \mathcal{L}_t$
+    是独立的。
 - en: '![](../Images/58d144b7551c90c5299bc137de8dc5c1.png)'
+  id: totrans-196
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/58d144b7551c90c5299bc137de8dc5c1.png)'
 - en: MAML
+  id: totrans-197
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: MAML
 - en: '**MAML**, short for **Model-Agnostic Meta-Learning** ([Finn, et al. 2017](https://arxiv.org/abs/1703.03400))
     is a fairly general optimization algorithm, compatible with any model that learns
     through gradient descent.'
+  id: totrans-198
   prefs: []
   type: TYPE_NORMAL
+  zh: '**MAML**，即**模型无关元学习**（[Finn, et al. 2017](https://arxiv.org/abs/1703.03400)）是一种非常通用的优化算法，与通过梯度下降学习的任何模型兼容。'
 - en: 'Let’s say our model is $f_\theta$ with parameters $\theta$. Given a task $\tau_i$
     and its associated dataset $(\mathcal{D}^{(i)}_\text{train}, \mathcal{D}^{(i)}_\text{test})$,
     we can update the model parameters by one or more gradient descent steps (the
     following example only contains one step):'
+  id: totrans-199
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设我们的模型是 $f_\theta$，具有参数 $\theta$。给定一个任务 $\tau_i$ 及其相关数据集 $(\mathcal{D}^{(i)}_\text{train},
+    \mathcal{D}^{(i)}_\text{test})$，我们可以通过一个或多个梯度下降步骤更新模型参数（以下示例仅包含一步）：
 - en: $$ \theta'_i = \theta - \alpha \nabla_\theta\mathcal{L}^{(0)}_{\tau_i}(f_\theta)
     $$
+  id: totrans-200
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \theta'_i = \theta - \alpha \nabla_\theta\mathcal{L}^{(0)}_{\tau_i}(f_\theta)
+    $$
 - en: where $\mathcal{L}^{(0)}$ is the loss computed using the mini data batch with
     id (0).
+  id: totrans-201
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 $\mathcal{L}^{(0)}$ 是使用 id 为 (0) 的小数据批次计算的损失。
 - en: '![](../Images/4fbfa06e29d8312c441db1b6453a33ae.png)'
+  id: totrans-202
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/4fbfa06e29d8312c441db1b6453a33ae.png)'
 - en: 'Fig. 11\. Diagram of MAML. (Image source: [original paper](https://arxiv.org/abs/1703.03400))'
+  id: totrans-203
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 11\. MAML 的示意图。 (图片来源：[原论文](https://arxiv.org/abs/1703.03400))
 - en: Well, the above formula only optimizes for one task. To achieve a good generalization
     across a variety of tasks, we would like to find the optimal $\theta^*$ so that
     the task-specific fine-tuning is more efficient. Now, we sample a new data batch
@@ -1031,41 +1502,65 @@
     depends on the mini batch (1). The superscripts in $\mathcal{L}^{(0)}$ and $\mathcal{L}^{(1)}$
     only indicate different data batches, and they refer to the same loss objective
     for the same task.
+  id: totrans-204
   prefs: []
   type: TYPE_NORMAL
+  zh: 好吧，上面的公式只优化了一个任务。为了在各种任务中实现良好的泛化，我们希望找到最优的$\theta^*$，使得任务特定的微调更加高效。现在，我们用id为(1)的新数据批次来更新元目标。损失，表示为$\mathcal{L}^{(1)}$，取决于小批次(1)。$\mathcal{L}^{(0)}$和$\mathcal{L}^{(1)}$中的上标仅表示不同的数据批次，并且它们指的是相同任务的相同损失目标。
 - en: $$ \begin{aligned} \theta^* &= \arg\min_\theta \sum_{\tau_i \sim p(\tau)} \mathcal{L}_{\tau_i}^{(1)}
     (f_{\theta'_i}) = \arg\min_\theta \sum_{\tau_i \sim p(\tau)} \mathcal{L}_{\tau_i}^{(1)}
     (f_{\theta - \alpha\nabla_\theta \mathcal{L}_{\tau_i}^{(0)}(f_\theta)}) & \\ \theta
     &\leftarrow \theta - \beta \nabla_{\theta} \sum_{\tau_i \sim p(\tau)} \mathcal{L}_{\tau_i}^{(1)}
     (f_{\theta - \alpha\nabla_\theta \mathcal{L}_{\tau_i}^{(0)}(f_\theta)}) & \scriptstyle{\text{;
     updating rule}} \end{aligned} $$![](../Images/9965ddce74a4eb317217fb7266f72dcb.png)
+  id: totrans-205
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \theta^* &= \arg\min_\theta \sum_{\tau_i \sim p(\tau)} \mathcal{L}_{\tau_i}^{(1)}
+    (f_{\theta'_i}) = \arg\min_\theta \sum_{\tau_i \sim p(\tau)} \mathcal{L}_{\tau_i}^{(1)}
+    (f_{\theta - \alpha\nabla_\theta \mathcal{L}_{\tau_i}^{(0)}(f_\theta)}) & \\ \theta
+    &\leftarrow \theta - \beta \nabla_{\theta} \sum_{\tau_i \sim p(\tau)} \mathcal{L}_{\tau_i}^{(1)}
+    (f_{\theta - \alpha\nabla_\theta \mathcal{L}_{\tau_i}^{(0)}(f_\theta)}) & \scriptstyle{\text{;
+    更新规则}} \end{aligned} $$![](../Images/9965ddce74a4eb317217fb7266f72dcb.png)
 - en: 'Fig. 12\. The general form of MAML algorithm. (Image source: [original paper](https://arxiv.org/abs/1703.03400))'
+  id: totrans-206
   prefs: []
   type: TYPE_NORMAL
+  zh: '图12\. MAML算法的一般形式。 (图片来源: [原始论文](https://arxiv.org/abs/1703.03400))'
 - en: First-Order MAML
+  id: totrans-207
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 一阶MAML
 - en: The meta-optimization step above relies on second derivatives. To make the computation
     less expensive, a modified version of MAML omits second derivatives, resulting
     in a simplified and cheaper implementation, known as **First-Order MAML (FOMAML)**.
+  id: totrans-208
   prefs: []
   type: TYPE_NORMAL
+  zh: 上述元优化步骤依赖于二阶导数。为了使计算更加经济，修改版的MAML省略了二阶导数，导致了一个简化且更便宜的实现，被称为**一阶MAML（FOMAML）**。
 - en: 'Let’s consider the case of performing $k$ inner gradient steps, $k\geq1$. Starting
     with the initial model parameter $\theta_\text{meta}$:'
+  id: totrans-209
   prefs: []
   type: TYPE_NORMAL
+  zh: 考虑执行$k$个内部梯度步骤的情况，$k\geq1$。从初始模型参数$\theta_\text{meta}$开始：
 - en: $$ \begin{aligned} \theta_0 &= \theta_\text{meta}\\ \theta_1 &= \theta_0 - \alpha\nabla_\theta\mathcal{L}^{(0)}(\theta_0)\\
     \theta_2 &= \theta_1 - \alpha\nabla_\theta\mathcal{L}^{(0)}(\theta_1)\\ &\dots\\
     \theta_k &= \theta_{k-1} - \alpha\nabla_\theta\mathcal{L}^{(0)}(\theta_{k-1})
     \end{aligned} $$
+  id: totrans-210
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \theta_0 &= \theta_\text{meta}\\ \theta_1 &= \theta_0 - \alpha\nabla_\theta\mathcal{L}^{(0)}(\theta_0)\\
+    \theta_2 &= \theta_1 - \alpha\nabla_\theta\mathcal{L}^{(0)}(\theta_1)\\ &\dots\\
+    \theta_k &= \theta_{k-1} - \alpha\nabla_\theta\mathcal{L}^{(0)}(\theta_{k-1})
+    \end{aligned} $$
 - en: Then in the outer loop, we sample a new data batch for updating the meta-objective.
+  id: totrans-211
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后在外循环中，我们对更新元目标进行新数据批次的采样。
 - en: $$ \begin{aligned} \theta_\text{meta} &\leftarrow \theta_\text{meta} - \beta
     g_\text{MAML} & \scriptstyle{\text{; update for meta-objective}} \\[2mm] \text{where
     } g_\text{MAML} &= \nabla_{\theta} \mathcal{L}^{(1)}(\theta_k) &\\[2mm] &= \nabla_{\theta_k}
@@ -1077,195 +1572,314 @@
     & \\ &= \nabla_{\theta_k} \mathcal{L}^{(1)}(\theta_k) \cdot \prod_{i=1}^k (I -
     \alpha\nabla_{\theta_{i-1}}(\nabla_\theta\mathcal{L}^{(0)}(\theta_{i-1}))) & \end{aligned}
     $$
+  id: totrans-212
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \theta_\text{meta} &\leftarrow \theta_\text{meta} - \beta
+    g_\text{MAML} & \scriptstyle{\text{; 更新元目标}} \\[2mm] \text{其中 } g_\text{MAML}
+    &= \nabla_{\theta} \mathcal{L}^{(1)}(\theta_k) &\\[2mm] &= \nabla_{\theta_k} \mathcal{L}^{(1)}(\theta_k)
+    \cdot (\nabla_{\theta_{k-1}} \theta_k) \dots (\nabla_{\theta_0} \theta_1) \cdot
+    (\nabla_{\theta} \theta_0) & \scriptstyle{\text{; 遵循链式法则}} \\ &= \nabla_{\theta_k}
+    \mathcal{L}^{(1)}(\theta_k) \cdot \Big( \prod_{i=1}^k \nabla_{\theta_{i-1}} \theta_i
+    \Big) \cdot I & \\ &= \nabla_{\theta_k} \mathcal{L}^{(1)}(\theta_k) \cdot \prod_{i=1}^k
+    \nabla_{\theta_{i-1}} (\theta_{i-1} - \alpha\nabla_\theta\mathcal{L}^{(0)}(\theta_{i-1}))
+    & \\ &= \nabla_{\theta_k} \mathcal{L}^{(1)}(\theta_k) \cdot \prod_{i=1}^k (I -
+    \alpha\nabla_{\theta_{i-1}}(\nabla_\theta\mathcal{L}^{(0)}(\theta_{i-1}))) & \end{aligned}
+    $$
 - en: 'The MAML gradient is:'
+  id: totrans-213
   prefs: []
   type: TYPE_NORMAL
+  zh: MAML梯度为：
 - en: $$ g_\text{MAML} = \nabla_{\theta_k} \mathcal{L}^{(1)}(\theta_k) \cdot \prod_{i=1}^k
     (I - \alpha \color{red}{\nabla_{\theta_{i-1}}(\nabla_\theta\mathcal{L}^{(0)}(\theta_{i-1}))})
     $$
+  id: totrans-214
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ g_\text{MAML} = \nabla_{\theta_k} \mathcal{L}^{(1)}(\theta_k) \cdot \prod_{i=1}^k
+    (I - \alpha \color{red}{\nabla_{\theta_{i-1}}(\nabla_\theta\mathcal{L}^{(0)}(\theta_{i-1}))})
+    $$
 - en: The First-Order MAML ignores the second derivative part in red. It is simplified
     as follows, equivalent to the derivative of the last inner gradient update result.
+  id: totrans-215
   prefs: []
   type: TYPE_NORMAL
+  zh: 第一阶MAML忽略了红色部分的二阶导数。它简化如下，等同于最后一个内部梯度更新结果的导数。
 - en: $$ g_\text{FOMAML} = \nabla_{\theta_k} \mathcal{L}^{(1)}(\theta_k) $$
+  id: totrans-216
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ g_\text{FOMAML} = \nabla_{\theta_k} \mathcal{L}^{(1)}(\theta_k) $$
 - en: Reptile
+  id: totrans-217
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Reptile
 - en: '**Reptile** ([Nichol, Achiam & Schulman, 2018](https://arxiv.org/abs/1803.02999))
     is a remarkably simple meta-learning optimization algorithm. It is similar to
     MAML in many ways, given that both rely on meta-optimization through gradient
     descent and both are model-agnostic.'
+  id: totrans-218
   prefs: []
   type: TYPE_NORMAL
+  zh: '**Reptile** ([Nichol, Achiam & Schulman, 2018](https://arxiv.org/abs/1803.02999))
+    是一个非常简单的元学习优化算法。在许多方面类似于MAML，因为两者都依赖于通过梯度下降进行元优化，并且都是与模型无关的。'
 - en: 'The Reptile works by repeatedly:'
+  id: totrans-219
   prefs: []
   type: TYPE_NORMAL
+  zh: Reptile通过重复以下步骤工作：
 - en: sampling a task,
+  id: totrans-220
   prefs:
   - PREF_UL
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 采样一个任务，
 - en: training on it by multiple gradient descent steps,
+  id: totrans-221
   prefs:
   - PREF_UL
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 通过多次梯度下降步骤对其进行训练，
 - en: and then moving the model weights towards the new parameters.
+  id: totrans-222
   prefs:
   - PREF_UL
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 然后将模型权重移向新参数。
 - en: 'See the algorithm below: $\text{SGD}(\mathcal{L}_{\tau_i}, \theta, k)$ performs
     stochastic gradient update for k steps on the loss $\mathcal{L}_{\tau_i}$ starting
     with initial parameter $\theta$ and returns the final parameter vector. The batch
     version samples multiple tasks instead of one within each iteration. The reptile
     gradient is defined as $(\theta - W)/\alpha$, where $\alpha$ is the stepsize used
     by the SGD operation.'
+  id: totrans-223
   prefs: []
   type: TYPE_NORMAL
+  zh: 查看下面的算法：$\text{SGD}(\mathcal{L}_{\tau_i}, \theta, k)$ 对损失$\mathcal{L}_{\tau_i}$进行k步随机梯度更新，从初始参数$\theta$开始，并返回最终参数向量。批处理版本在每次迭代中对多个任务进行采样，而不是一个。Reptile梯度定义为$(\theta
+    - W)/\alpha$，其中$\alpha$是SGD操作使用的步长。
 - en: '![](../Images/2932d8dd268ad6dbe810d3d9f3802abe.png)'
+  id: totrans-224
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/2932d8dd268ad6dbe810d3d9f3802abe.png)'
 - en: 'Fig. 13\. The batched version of Reptile algorithm. (Image source: [original
     paper](https://arxiv.org/abs/1803.02999))'
+  id: totrans-225
   prefs: []
   type: TYPE_NORMAL
+  zh: 图13\. Reptile算法的批处理版本。 (图片来源：[原论文](https://arxiv.org/abs/1803.02999))
 - en: At a glance, the algorithm looks a lot like an ordinary SGD. However, because
     the task-specific optimization can take more than one step. it eventually makes
     $$\text{SGD}(\mathbb{E} *\tau[\mathcal{L}*{\tau}], \theta, k)$ diverge from $\mathbb{E}*\tau
     [\text{SGD}(\mathcal{L}*{\tau}, \theta, k)]$$ when k > 1.
+  id: totrans-226
   prefs: []
   type: TYPE_NORMAL
+  zh: 乍一看，该算法看起来很像普通的SGD。然而，由于任务特定的优化可能需要多于一步。当k > 1时，它最终会使$$\text{SGD}(\mathbb{E}
+    *\tau[\mathcal{L}*{\tau}], \theta, k)$$与$$\mathbb{E}*\tau [\text{SGD}(\mathcal{L}*{\tau},
+    \theta, k)]$$分离。
 - en: The Optimization Assumption
+  id: totrans-227
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 优化假设
 - en: 'Assuming that a task $\tau \sim p(\tau)$ has a manifold of optimal network
     configuration, $\mathcal{W}_{\tau}^*$. The model $f_\theta$ achieves the best
     performance for task $\tau$ when $\theta$ lays on the surface of $\mathcal{W}_{\tau}^*$.
     To find a solution that is good across tasks, we would like to find a parameter
     close to all the optimal manifolds of all tasks:'
+  id: totrans-228
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设任务$\tau \sim p(\tau)$具有最佳网络配置流形$\mathcal{W}_{\tau}^*$。当$\theta$位于$\mathcal{W}_{\tau}^*$表面时，模型$f_\theta$为任务$\tau$实现最佳性能。为了找到一个对所有任务都有效的解决方案，我们希望找到一个接近所有任务的最佳流形的参数：
 - en: $$ \theta^* = \arg\min_\theta \mathbb{E}_{\tau \sim p(\tau)} [\frac{1}{2} \text{dist}(\theta,
     \mathcal{W}_\tau^*)^2] $$![](../Images/3ba39d5201ce00e91e9c943759f7fea6.png)
+  id: totrans-229
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \theta^* = \arg\min_\theta \mathbb{E}_{\tau \sim p(\tau)} [\frac{1}{2} \text{dist}(\theta,
+    \mathcal{W}_\tau^*)^2] $$![](../Images/3ba39d5201ce00e91e9c943759f7fea6.png)
 - en: 'Fig. 14\. The Reptile algorithm updates the parameter alternatively to be closer
     to the optimal manifolds of different tasks. (Image source: [original paper](https://arxiv.org/abs/1803.02999))'
+  id: totrans-230
   prefs: []
   type: TYPE_NORMAL
+  zh: 图14\. Reptile算法交替更新参数，使其更接近不同任务的最佳流形。 (图片来源：[原论文](https://arxiv.org/abs/1803.02999))
 - en: 'Let’s use the L2 distance as $\text{dist}(.)$ and the distance between a point
     $\theta$ and a set $\mathcal{W}_\tau^*$ equals to the distance between $\theta$
     and a point $W_{\tau}^*(\theta)$ on the manifold that is closest to $\theta$:'
+  id: totrans-231
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们使用L2距离作为$\text{dist}(.)$，点$\theta$与集合$\mathcal{W}_\tau^*$之间的距离等于$\theta$与最接近$\theta$的流形上的点$W_{\tau}^*(\theta)$之间的距离：
 - en: $$ \text{dist}(\theta, \mathcal{W}_{\tau}^*) = \text{dist}(\theta, W_{\tau}^*(\theta))
     \text{, where }W_{\tau}^*(\theta) = \arg\min_{W\in\mathcal{W}_{\tau}^*} \text{dist}(\theta,
     W) $$
+  id: totrans-232
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \text{dist}(\theta, \mathcal{W}_{\tau}^*) = \text{dist}(\theta, W_{\tau}^*(\theta))
+    \text{, where }W_{\tau}^*(\theta) = \arg\min_{W\in\mathcal{W}_{\tau}^*} \text{dist}(\theta,
+    W) $$
 - en: 'The gradient of the squared euclidean distance is:'
+  id: totrans-233
   prefs: []
   type: TYPE_NORMAL
+  zh: 欧几里得距离的梯度是：
 - en: $$ \begin{aligned} \nabla_\theta[\frac{1}{2}\text{dist}(\theta, \mathcal{W}_{\tau_i}^*)^2]
     &= \nabla_\theta[\frac{1}{2}\text{dist}(\theta, W_{\tau_i}^*(\theta))^2] & \\
     &= \nabla_\theta[\frac{1}{2}(\theta - W_{\tau_i}^*(\theta))^2] & \\ &= \theta
     - W_{\tau_i}^*(\theta) & \scriptstyle{\text{; See notes.}} \end{aligned} $$
+  id: totrans-234
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \nabla_\theta[\frac{1}{2}\text{dist}(\theta, \mathcal{W}_{\tau_i}^*)^2]
+    &= \nabla_\theta[\frac{1}{2}\text{dist}(\theta, W_{\tau_i}^*(\theta))^2] & \\
+    &= \nabla_\theta[\frac{1}{2}(\theta - W_{\tau_i}^*(\theta))^2] & \\ &= \theta
+    - W_{\tau_i}^*(\theta) & \scriptstyle{\text{; 请参阅注释。}} \end{aligned} $$
 - en: 'Notes: According to the Reptile paper, “*the gradient of the squared euclidean
     distance between a point Θ and a set S is the vector 2(Θ − p), where p is the
     closest point in S to Θ*”. Technically the closest point in S is also a function
     of Θ, but I’m not sure why the gradient does not need to worry about the derivative
     of p. (Please feel free to leave me a comment or send me an email about this if
     you have ideas.)'
+  id: totrans-235
   prefs: []
   type: TYPE_NORMAL
+  zh: 注：根据Reptile论文，“*点Θ和集合S之间的平方欧几里得距离的梯度是向量2(Θ − p)，其中p是S中距离Θ最近的点*”。从技术上讲，S中最接近的点也是Θ的一个函数，但我不确定为什么梯度不需要担心p的导数。（如果您有想法，请随时给我留言或发送电子邮件。）
 - en: 'Thus the update rule for one stochastic gradient step is:'
+  id: totrans-236
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，一个随机梯度步骤的更新规则是：
 - en: $$ \theta = \theta - \alpha \nabla_\theta[\frac{1}{2} \text{dist}(\theta, \mathcal{W}_{\tau_i}^*)^2]
     = \theta - \alpha(\theta - W_{\tau_i}^*(\theta)) = (1-\alpha)\theta + \alpha W_{\tau_i}^*(\theta)
     $$
+  id: totrans-237
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \theta = \theta - \alpha \nabla_\theta[\frac{1}{2} \text{dist}(\theta, \mathcal{W}_{\tau_i}^*)^2]
+    = \theta - \alpha(\theta - W_{\tau_i}^*(\theta)) = (1-\alpha)\theta + \alpha W_{\tau_i}^*(\theta)
+    $$
 - en: The closest point on the optimal task manifold $W_{\tau_i}^*(\theta)$ cannot
     be computed exactly, but Reptile approximates it using $\text{SGD}(\mathcal{L}_\tau,
     \theta, k)$.
+  id: totrans-238
   prefs: []
   type: TYPE_NORMAL
+  zh: 最优任务流形$W_{\tau_i}^*(\theta)$上的最接近点无法精确计算，但Reptile使用$\text{SGD}(\mathcal{L}_\tau,
+    \theta, k)$来近似计算。
 - en: Reptile vs FOMAML
+  id: totrans-239
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: Reptile vs FOMAML
 - en: 'To demonstrate the deeper connection between Reptile and MAML, let’s expand
     the update formula with an example performing two gradient steps, k=2 in $\text{SGD}(.)$.
     Same as defined [above](#maml), $\mathcal{L}^{(0)}$ and $\mathcal{L}^{(1)}$ are
     losses using different mini-batches of data. For ease of reading, we adopt two
     simplified annotations: $g^{(i)}_j = \nabla_{\theta} \mathcal{L}^{(i)}(\theta_j)$
     and $H^{(i)}_j = \nabla^2_{\theta} \mathcal{L}^{(i)}(\theta_j)$.'
+  id: totrans-240
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了展示Reptile和MAML之间更深层次的联系，让我们通过一个执行两个梯度步骤的示例来扩展更新公式，其中k=2在$\text{SGD}(.)$中。与上文定义的相同，$\mathcal{L}^{(0)}$和$\mathcal{L}^{(1)}$是使用不同小批量数据的损失。为了方便阅读，我们采用两个简化的注释：$g^{(i)}_j
+    = \nabla_{\theta} \mathcal{L}^{(i)}(\theta_j)$和$H^{(i)}_j = \nabla^2_{\theta}
+    \mathcal{L}^{(i)}(\theta_j)$。
 - en: $$ \begin{aligned} \theta_0 &= \theta_\text{meta}\\ \theta_1 &= \theta_0 - \alpha\nabla_\theta\mathcal{L}^{(0)}(\theta_0)=
     \theta_0 - \alpha g^{(0)}_0 \\ \theta_2 &= \theta_1 - \alpha\nabla_\theta\mathcal{L}^{(1)}(\theta_1)
     = \theta_0 - \alpha g^{(0)}_0 - \alpha g^{(1)}_1 \end{aligned} $$
+  id: totrans-241
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \theta_0 &= \theta_\text{meta}\\ \theta_1 &= \theta_0 - \alpha\nabla_\theta\mathcal{L}^{(0)}(\theta_0)=
+    \theta_0 - \alpha g^{(0)}_0 \\ \theta_2 &= \theta_1 - \alpha\nabla_\theta\mathcal{L}^{(1)}(\theta_1)
+    = \theta_0 - \alpha g^{(0)}_0 - \alpha g^{(1)}_1 \end{aligned} $$
 - en: 'According to the [early section](#first-order-maml), the gradient of FOMAML
     is the last inner gradient update result. Therefore, when k=1:'
+  id: totrans-242
   prefs: []
   type: TYPE_NORMAL
+  zh: 根据[前面的部分](#first-order-maml)，FOMAML的梯度是最后一个内部梯度更新的结果。因此，当k=1时：
 - en: $$ \begin{aligned} g_\text{FOMAML} &= \nabla_{\theta_1} \mathcal{L}^{(1)}(\theta_1)
     = g^{(1)}_1 \\ g_\text{MAML} &= \nabla_{\theta_1} \mathcal{L}^{(1)}(\theta_1)
     \cdot (I - \alpha\nabla^2_{\theta} \mathcal{L}^{(0)}(\theta_0)) = g^{(1)}_1 -
     \alpha H^{(0)}_0 g^{(1)}_1 \end{aligned} $$
+  id: totrans-243
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} g_\text{FOMAML} &= \nabla_{\theta_1} \mathcal{L}^{(1)}(\theta_1)
+    = g^{(1)}_1 \\ g_\text{MAML} &= \nabla_{\theta_1} \mathcal{L}^{(1)}(\theta_1)
+    \cdot (I - \alpha\nabla^2_{\theta} \mathcal{L}^{(0)}(\theta_0)) = g^{(1)}_1 -
+    \alpha H^{(0)}_0 g^{(1)}_1 \end{aligned} $$
 - en: 'The Reptile gradient is defined as:'
+  id: totrans-244
   prefs: []
   type: TYPE_NORMAL
+  zh: Reptile梯度的定义为：
 - en: $$ g_\text{Reptile} = (\theta_0 - \theta_2) / \alpha = g^{(0)}_0 + g^{(1)}_1
     $$
+  id: totrans-245
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ g_\text{Reptile} = (\theta_0 - \theta_2) / \alpha = g^{(0)}_0 + g^{(1)}_1
+    $$
 - en: 'Up to now we have:'
+  id: totrans-246
   prefs: []
   type: TYPE_NORMAL
+  zh: 到目前为止我们有：
 - en: '![](../Images/707b49103f1860c0643e23fc436b1eb8.png)'
+  id: totrans-247
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/707b49103f1860c0643e23fc436b1eb8.png)'
 - en: 'Fig. 15\. Reptile versus FOMAML in one loop of meta-optimization. (Image source:
     [slides](https://www.slideshare.net/YoonhoLee4/on-firstorder-metalearning-algorithms)
     on Reptile by Yoonho Lee.)'
+  id: totrans-248
   prefs: []
   type: TYPE_NORMAL
+  zh: 图15. 在一次元优化循环中的Reptile与FOMAML的比较。（图片来源：[幻灯片](https://www.slideshare.net/YoonhoLee4/on-firstorder-metalearning-algorithms)关于Reptile的Yoonho
+    Lee。）
 - en: $$ \begin{aligned} g_\text{FOMAML} &= g^{(1)}_1 \\ g_\text{MAML} &= g^{(1)}_1
     - \alpha H^{(0)}_0 g^{(1)}_1 \\ g_\text{Reptile} &= g^{(0)}_0 + g^{(1)}_1 \end{aligned}
     $$
+  id: totrans-249
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} g_\text{FOMAML} &= g^{(1)}_1 \\ g_\text{MAML} &= g^{(1)}_1
+    - \alpha H^{(0)}_0 g^{(1)}_1 \\ g_\text{Reptile} &= g^{(0)}_0 + g^{(1)}_1 \end{aligned}
+    $$
 - en: 'Next let’s try further expand $g^{(1)}_1$ using [Taylor expansion](https://en.wikipedia.org/wiki/Taylor_series).
     Recall that Taylor expansion of a function $f(x)$ that is differentiable at a
     number $a$ is:'
+  id: totrans-250
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来让我们尝试使用[Taylor展开](https://en.wikipedia.org/wiki/Taylor_series)进一步展开$g^{(1)}_1$。回想一下，可微分函数$f(x)$在某个数$a$处的Taylor展开是：
 - en: $$ f(x) = f(a) + \frac{f'(a)}{1!}(x-a) + \frac{f''(a)}{2!}(x-a)^2 + \dots =
     \sum_{i=0}^\infty \frac{f^{(i)}(a)}{i!}(x-a)^i $$
+  id: totrans-251
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ f(x) = f(a) + \frac{f'(a)}{1!}(x-a) + \frac{f''(a)}{2!}(x-a)^2 + \dots =
+    \sum_{i=0}^\infty \frac{f^{(i)}(a)}{i!}(x-a)^i $$
 - en: 'We can consider $\nabla_{\theta}\mathcal{L}^{(1)}(.)$ as a function and $\theta_0$
     as a value point. The Taylor expansion of $g_1^{(1)}$ at the value point $\theta_0$
     is:'
+  id: totrans-252
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以将$\nabla_{\theta}\mathcal{L}^{(1)}(.)$视为一个函数，$\theta_0$视为一个值点。在值点$\theta_0$处，$g_1^{(1)}$的Taylor展开是：
 - en: $$ \begin{aligned} g_1^{(1)} &= \nabla_{\theta}\mathcal{L}^{(1)}(\theta_1) \\
     &= \nabla_{\theta}\mathcal{L}^{(1)}(\theta_0) + \nabla^2_\theta\mathcal{L}^{(1)}(\theta_0)(\theta_1
     - \theta_0) + \frac{1}{2}\nabla^3_\theta\mathcal{L}^{(1)}(\theta_0)(\theta_1 -
@@ -1273,12 +1887,21 @@
     (g_0^{(0)})^2 + \dots & \scriptstyle{\text{; because }\theta_1-\theta_0=-\alpha
     g_0^{(0)}} \\ &= g_0^{(1)} - \alpha H^{(1)}_0 g_0^{(0)} + O(\alpha^2) \end{aligned}
     $$
+  id: totrans-253
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} g_1^{(1)} &= \nabla_{\theta}\mathcal{L}^{(1)}(\theta_1) \\
+    &= \nabla_{\theta}\mathcal{L}^{(1)}(\theta_0) + \nabla^2_\theta\mathcal{L}^{(1)}(\theta_0)(\theta_1
+    - \theta_0) + \frac{1}{2}\nabla^3_\theta\mathcal{L}^{(1)}(\theta_0)(\theta_1 -
+    \theta_0)^2 + \dots & \\ &= g_0^{(1)} - \alpha H^{(1)}_0 g_0^{(0)} + \frac{\alpha^2}{2}\nabla^3_\theta\mathcal{L}^{(1)}(\theta_0)
+    (g_0^{(0)})^2 + \dots & \scriptstyle{\text{; 因为}\theta_1-\theta_0=-\alpha g_0^{(0)}}
+    \\ &= g_0^{(1)} - \alpha H^{(1)}_0 g_0^{(0)} + O(\alpha^2) \end{aligned} $$
 - en: 'Plug in the expanded form of $g_1^{(1)}$ into the MAML gradients with one step
     inner gradient update:'
+  id: totrans-254
   prefs: []
   type: TYPE_NORMAL
+  zh: 将$g_1^{(1)}$的展开形式代入具有一步内部梯度更新的MAML梯度：
 - en: $$ \begin{aligned} g_\text{FOMAML} &= g^{(1)}_1 = g_0^{(1)} - \alpha H^{(1)}_0
     g_0^{(0)} + O(\alpha^2)\\ g_\text{MAML} &= g^{(1)}_1 - \alpha H^{(0)}_0 g^{(1)}_1
     \\ &= g_0^{(1)} - \alpha H^{(1)}_0 g_0^{(0)} + O(\alpha^2) - \alpha H^{(0)}_0
@@ -1286,135 +1909,221 @@
     H^{(1)}_0 g_0^{(0)} - \alpha H^{(0)}_0 g_0^{(1)} + \alpha^2 \alpha H^{(0)}_0 H^{(1)}_0
     g_0^{(0)} + O(\alpha^2)\\ &= g_0^{(1)} - \alpha H^{(1)}_0 g_0^{(0)} - \alpha H^{(0)}_0
     g_0^{(1)} + O(\alpha^2) \end{aligned} $$
+  id: totrans-255
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} g_\text{FOMAML} &= g^{(1)}_1 = g_0^{(1)} - \alpha H^{(1)}_0
+    g_0^{(0)} + O(\alpha^2)\\ g_\text{MAML} &= g^{(1)}_1 - \alpha H^{(0)}_0 g^{(1)}_1
+    \\ &= g_0^{(1)} - \alpha H^{(1)}_0 g_0^{(0)} + O(\alpha^2) - \alpha H^{(0)}_0
+    (g_0^{(1)} - \alpha H^{(1)}_0 g_0^{(0)} + O(\alpha^2))\\ &= g_0^{(1)} - \alpha
+    H^{(1)}_0 g_0^{(0)} - \alpha H^{(0)}_0 g_0^{(1)} + \alpha^2 \alpha H^{(0)}_0 H^{(1)}_0
+    g_0^{(0)} + O(\alpha^2)\\ &= g_0^{(1)} - \alpha H^{(1)}_0 g_0^{(0)} - \alpha H^{(0)}_0
+    g_0^{(1)} + O(\alpha^2) \end{aligned} $$
 - en: 'The Reptile gradient becomes:'
+  id: totrans-256
   prefs: []
   type: TYPE_NORMAL
+  zh: Reptile梯度变为：
 - en: $$ \begin{aligned} g_\text{Reptile} &= g^{(0)}_0 + g^{(1)}_1 \\ &= g^{(0)}_0
     + g_0^{(1)} - \alpha H^{(1)}_0 g_0^{(0)} + O(\alpha^2) \end{aligned} $$
+  id: totrans-257
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} g_\text{Reptile} &= g^{(0)}_0 + g^{(1)}_1 \\ &= g^{(0)}_0
+    + g_0^{(1)} - \alpha H^{(1)}_0 g_0^{(0)} + O(\alpha^2) \end{aligned} $$
 - en: 'So far we have the formula of three types of gradients:'
+  id: totrans-258
   prefs: []
   type: TYPE_NORMAL
+  zh: 到目前为止，我们有三种梯度的公式：
 - en: $$ \begin{aligned} g_\text{FOMAML} &= g_0^{(1)} - \alpha H^{(1)}_0 g_0^{(0)}
     + O(\alpha^2)\\ g_\text{MAML} &= g_0^{(1)} - \alpha H^{(1)}_0 g_0^{(0)} - \alpha
     H^{(0)}_0 g_0^{(1)} + O(\alpha^2)\\ g_\text{Reptile} &= g^{(0)}_0 + g_0^{(1)}
     - \alpha H^{(1)}_0 g_0^{(0)} + O(\alpha^2) \end{aligned} $$
+  id: totrans-259
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} g_\text{FOMAML} &= g_0^{(1)} - \alpha H^{(1)}_0 g_0^{(0)}
+    + O(\alpha^2)\\ g_\text{MAML} &= g_0^{(1)} - \alpha H^{(1)}_0 g_0^{(0)} - \alpha
+    H^{(0)}_0 g_0^{(1)} + O(\alpha^2)\\ g_\text{Reptile} &= g^{(0)}_0 + g_0^{(1)}
+    - \alpha H^{(1)}_0 g_0^{(0)} + O(\alpha^2) \end{aligned} $$
 - en: During training, we often average over multiple data batches. In our example,
     the mini batches (0) and (1) are interchangeable since both are drawn at random.
     The expectation $\mathbb{E}_{\tau,0,1}$ is averaged over two data batches, ids
     (0) and (1), for task $\tau$.
+  id: totrans-260
   prefs: []
   type: TYPE_NORMAL
+  zh: 在训练过程中，我们经常对多个数据批次进行平均。在我们的示例中，小批次(0)和(1)是可互换的，因为两者都是随机抽取的。期望$\mathbb{E}_{\tau,0,1}$是针对任务$\tau$的两个数据批次(0)和(1)进行平均。
 - en: Let,
+  id: totrans-261
   prefs: []
   type: TYPE_NORMAL
+  zh: 让，
 - en: $A = \mathbb{E}_{\tau,0,1} [g_0^{(0)}] = \mathbb{E}_{\tau,0,1} [g_0^{(1)}]$;
     it is the average gradient of task loss. We expect to improve the model parameter
     to achieve better task performance by following this direction pointed by $A$.
+  id: totrans-262
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $A = \mathbb{E}_{\tau,0,1} [g_0^{(0)}] = \mathbb{E}_{\tau,0,1} [g_0^{(1)}]$；这是任务损失的平均梯度。我们期望通过遵循$A$指向的方向来改善模型参数，以实现更好的任务性能。
 - en: $B = \mathbb{E}_{\tau,0,1} [H^{(1)}_0 g_0^{(0)}] = \frac{1}{2}\mathbb{E}_{\tau,0,1}
     [H^{(1)}_0 g_0^{(0)} + H^{(0)}_0 g_0^{(1)}] = \frac{1}{2}\mathbb{E}_{\tau,0,1}
     [\nabla_\theta(g^{(0)}_0 g_0^{(1)})]$; it is the direction (gradient) that increases
     the inner product of gradients of two different mini batches for the same task.
     We expect to improve the model parameter to achieve better generalization over
     different data by following this direction pointed by $B$.
+  id: totrans-263
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: $B = \mathbb{E}_{\tau,0,1} [H^{(1)}_0 g_0^{(0)}] = \frac{1}{2}\mathbb{E}_{\tau,0,1}
+    [H^{(1)}_0 g_0^{(0)} + H^{(0)}_0 g_0^{(1)}] = \frac{1}{2}\mathbb{E}_{\tau,0,1}
+    [\nabla_\theta(g^{(0)}_0 g_0^{(1)})]$；这是增加相同任务的两个不同小批次梯度内积的方向（梯度）。我们期望通过遵循$B$指示的方向来改进模型参数，从而实现对不同数据的更好泛化。
 - en: To conclude, both MAML and Reptile aim to optimize for the same goal, better
     task performance (guided by A) and better generalization (guided by B), when the
     gradient update is approximated by first three leading terms.
+  id: totrans-264
   prefs: []
   type: TYPE_NORMAL
+  zh: 总之，MAML和Reptile都旨在优化相同的目标，即更好的任务性能（由A指导）和更好的泛化能力（由B指导），当梯度更新由前三个主要项近似时。
 - en: $$ \begin{aligned} \mathbb{E}_{\tau,1,2}[g_\text{FOMAML}] &= A - \alpha B +
     O(\alpha^2)\\ \mathbb{E}_{\tau,1,2}[g_\text{MAML}] &= A - 2\alpha B + O(\alpha^2)\\
     \mathbb{E}_{\tau,1,2}[g_\text{Reptile}] &= 2A - \alpha B + O(\alpha^2) \end{aligned}
     $$
+  id: totrans-265
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} \mathbb{E}_{\tau,1,2}[g_\text{FOMAML}] &= A - \alpha B +
+    O(\alpha^2)\\ \mathbb{E}_{\tau,1,2}[g_\text{MAML}] &= A - 2\alpha B + O(\alpha^2)\\
+    \mathbb{E}_{\tau,1,2}[g_\text{Reptile}] &= 2A - \alpha B + O(\alpha^2) \end{aligned}
+    $$
 - en: It is not clear to me whether the ignored term $O(\alpha^2)$ might play a big
     impact on the parameter learning. But given that FOMAML is able to obtain a similar
     performance as the full version of MAML, it might be safe to say higher-level
     derivatives would not be critical during gradient descent update.
+  id: totrans-266
   prefs: []
   type: TYPE_NORMAL
+  zh: 对我来说，不清楚被忽略的项$O(\alpha^2)$是否会对参数学习产生重大影响。但考虑到FOMAML能够获得与MAML完整版本类似的性能，可以说在梯度下降更新过程中更高阶导数可能并不关键。
 - en: '* * *'
+  id: totrans-267
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'Cited as:'
+  id: totrans-268
   prefs: []
   type: TYPE_NORMAL
+  zh: 引用为：
 - en: '[PRE0]'
+  id: totrans-269
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: Reference
+  id: totrans-270
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: '[1] Brenden M. Lake, Ruslan Salakhutdinov, and Joshua B. Tenenbaum. [“Human-level
     concept learning through probabilistic program induction.”](https://www.cs.cmu.edu/~rsalakhu/papers/LakeEtAl2015Science.pdf)
     Science 350.6266 (2015): 1332-1338.'
+  id: totrans-271
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] Brenden M. Lake，Ruslan Salakhutdinov和Joshua B. Tenenbaum。[“通过概率程序归纳进行人类级别概念学习。”](https://www.cs.cmu.edu/~rsalakhu/papers/LakeEtAl2015Science.pdf)
+    Science 350.6266（2015）：1332-1338。'
 - en: '[2] Oriol Vinyals’ talk on [“Model vs Optimization Meta Learning”](http://metalearning-symposium.ml/files/vinyals.pdf)'
+  id: totrans-272
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] Oriol Vinyals关于[“模型与优化元学习”的讲座](http://metalearning-symposium.ml/files/vinyals.pdf)'
 - en: '[3] Gregory Koch, Richard Zemel, and Ruslan Salakhutdinov. [“Siamese neural
     networks for one-shot image recognition.”](http://www.cs.toronto.edu/~rsalakhu/papers/oneshot1.pdf)
     ICML Deep Learning Workshop. 2015.'
+  id: totrans-273
   prefs: []
   type: TYPE_NORMAL
+  zh: '[3] Gregory Koch，Richard Zemel和Ruslan Salakhutdinov。[“一次图像识别的连体神经网络。”](http://www.cs.toronto.edu/~rsalakhu/papers/oneshot1.pdf)
+    ICML深度学习研讨会。2015年。'
 - en: '[4] Oriol Vinyals, et al. [“Matching networks for one shot learning.”](http://papers.nips.cc/paper/6385-matching-networks-for-one-shot-learning.pdf)
     NIPS. 2016.'
+  id: totrans-274
   prefs: []
   type: TYPE_NORMAL
+  zh: '[4] Oriol Vinyals等人。[“一次学习的匹配网络。”](http://papers.nips.cc/paper/6385-matching-networks-for-one-shot-learning.pdf)
+    NIPS. 2016。'
 - en: '[5] Flood Sung, et al. [“Learning to compare: Relation network for few-shot
     learning.”](http://openaccess.thecvf.com/content_cvpr_2018/papers_backup/Sung_Learning_to_Compare_CVPR_2018_paper.pdf)
     CVPR. 2018.'
+  id: totrans-275
   prefs: []
   type: TYPE_NORMAL
+  zh: '[5] Flood Sung等人。[“比较学习：Few-shot Learning的关系网络。”](http://openaccess.thecvf.com/content_cvpr_2018/papers_backup/Sung_Learning_to_Compare_CVPR_2018_paper.pdf)
+    CVPR. 2018。'
 - en: '[6] Jake Snell, Kevin Swersky, and Richard Zemel. [“Prototypical Networks for
     Few-shot Learning.”](http://papers.nips.cc/paper/6996-prototypical-networks-for-few-shot-learning.pdf)
     CVPR. 2018.'
+  id: totrans-276
   prefs: []
   type: TYPE_NORMAL
+  zh: '[6] Jake Snell，Kevin Swersky和Richard Zemel。[“Few-shot Learning的原型网络。”](http://papers.nips.cc/paper/6996-prototypical-networks-for-few-shot-learning.pdf)
+    CVPR. 2018。'
 - en: '[7] Adam Santoro, et al. [“Meta-learning with memory-augmented neural networks.”](http://proceedings.mlr.press/v48/santoro16.pdf)
     ICML. 2016.'
+  id: totrans-277
   prefs: []
   type: TYPE_NORMAL
+  zh: '[7] Adam Santoro等人。[“具有记忆增强神经网络的元学习。”](http://proceedings.mlr.press/v48/santoro16.pdf)
+    ICML. 2016。'
 - en: '[8] Alex Graves, Greg Wayne, and Ivo Danihelka. [“Neural turing machines.”](https://arxiv.org/abs/1410.5401)
     arXiv preprint arXiv:1410.5401 (2014).'
+  id: totrans-278
   prefs: []
   type: TYPE_NORMAL
+  zh: '[8] Alex Graves，Greg Wayne和Ivo Danihelka。[“神经图灵机。”](https://arxiv.org/abs/1410.5401)
+    arXiv预印本arXiv:1410.5401（2014）。'
 - en: '[9] Tsendsuren Munkhdalai and Hong Yu. [“Meta Networks.”](https://arxiv.org/abs/1703.00837)
     ICML. 2017.'
+  id: totrans-279
   prefs: []
   type: TYPE_NORMAL
+  zh: '[9] Tsendsuren Munkhdalai和Hong Yu。[“元网络。”](https://arxiv.org/abs/1703.00837)
+    ICML. 2017。'
 - en: '[10] Sachin Ravi and Hugo Larochelle. [“Optimization as a Model for Few-Shot
     Learning.”](https://openreview.net/pdf?id=rJY0-Kcll) ICLR. 2017.'
+  id: totrans-280
   prefs: []
   type: TYPE_NORMAL
+  zh: '[10] Sachin Ravi和Hugo Larochelle。[“Few-Shot Learning的优化模型。”](https://openreview.net/pdf?id=rJY0-Kcll)
+    ICLR. 2017。'
 - en: '[11] Chelsea Finn’s BAIR blog on [“Learning to Learn”](https://bair.berkeley.edu/blog/2017/07/18/learning-to-learn/).'
+  id: totrans-281
   prefs: []
   type: TYPE_NORMAL
+  zh: '[11] Chelsea Finn在BAIR博客上的关于[“学会学习”](https://bair.berkeley.edu/blog/2017/07/18/learning-to-learn/)。'
 - en: '[12] Chelsea Finn, Pieter Abbeel, and Sergey Levine. [“Model-agnostic meta-learning
     for fast adaptation of deep networks.”](https://arxiv.org/abs/1703.03400) ICML
     2017.'
+  id: totrans-282
   prefs: []
   type: TYPE_NORMAL
+  zh: '[12] Chelsea Finn, Pieter Abbeel, and Sergey Levine. [“模型无关的元学习，用于深度网络的快速适应。”](https://arxiv.org/abs/1703.03400)
+    ICML 2017.'
 - en: '[13] Alex Nichol, Joshua Achiam, John Schulman. [“On First-Order Meta-Learning
     Algorithms.”](https://arxiv.org/abs/1803.02999) arXiv preprint arXiv:1803.02999
     (2018).'
+  id: totrans-283
   prefs: []
   type: TYPE_NORMAL
+  zh: '[13] Alex Nichol, Joshua Achiam, John Schulman. [“关于一阶元学习算法。”](https://arxiv.org/abs/1803.02999)
+    arXiv预印本 arXiv:1803.02999 (2018).'
 - en: '[14] [Slides on Reptile](https://www.slideshare.net/YoonhoLee4/on-firstorder-metalearning-algorithms)
     by Yoonho Lee.'
+  id: totrans-284
   prefs: []
   type: TYPE_NORMAL
+  zh: '[14] Yoonho Lee的关于Reptile的[幻灯片](https://www.slideshare.net/YoonhoLee4/on-firstorder-metalearning-algorithms)。'

@@ -1,11 +1,15 @@
 - en: Domain Randomization for Sim2Real Transfer
+  id: totrans-0
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 用于Sim2Real转移的领域随机化
 - en: 原文：[https://lilianweng.github.io/posts/2019-05-05-domain-randomization/](https://lilianweng.github.io/posts/2019-05-05-domain-randomization/)
+  id: totrans-1
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 原文：[https://lilianweng.github.io/posts/2019-05-05-domain-randomization/](https://lilianweng.github.io/posts/2019-05-05-domain-randomization/)
 - en: In Robotics, one of the hardest problems is how to make your model transfer
     to the real world. Due to the sample inefficiency of deep RL algorithms and the
     cost of data collection on real robots, we often need to train models in a simulator
@@ -14,178 +18,257 @@
     with physical robots. The gap is triggered by an inconsistency between physical
     parameters (i.e. friction, kp, damping, mass, density) and, more fatally, the
     incorrect physical modeling (i.e. collision between soft surfaces).
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 在机器人领域，最困难的问题之一是如何使你的模型在现实世界中转化。由于深度强化学习算法的样本效率低和在真实机器人上收集数据的成本，我们经常需要在模拟器中训练模型，理论上提供无限量的数据。然而，模拟器和物理世界之间的现实差距经常导致在与物理机器人合作时失败。这种差距是由物理参数（即摩擦、kp、阻尼、质量、密度）之间的不一致性以及更致命的是不正确的物理建模（即软表面之间的碰撞）引起的。
 - en: 'To close the sim2real gap, we need to improve the simulator and make it closer
     to reality. A couple of approaches:'
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: 要缩小sim2real差距，我们需要改进模拟器并使其更接近现实。一些方法包括：
 - en: '**System identification**'
+  id: totrans-4
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**系统辨识**'
 - en: '*System identification* is to build a mathematical model for a physical system;
     in the context of RL, the mathematical model is the simulator. To make the simulator
     more realistic, careful calibration is necessary.'
+  id: totrans-5
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*系统辨识*是为物理系统建立数学模型；在RL的背景下，数学模型就是模拟器。为了使模拟器更加真实，需要仔细校准。'
 - en: Unfortunately, calibration is expensive. Furthermore, many physical parameters
     of the same machine might vary significantly due to temperature, humidity, positioning
     or its wear-and-tear in time.
+  id: totrans-6
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 不幸的是，校准是昂贵的。此外，由于温度、湿度、位置或时间中的磨损，同一机器的许多物理参数可能会有显著变化。
 - en: '**Domain adaptation**'
+  id: totrans-7
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**领域自适应**'
 - en: '*Domain adaptation (DA)* refers to a set of transfer learning techniques developed
     to update the data distribution in sim to match the real one through a mapping
     or regularization enforced by the task model.'
+  id: totrans-8
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*领域自适应（DA）*指的是一组转移学习技术，通过任务模型强制执行的映射或正则化来更新模拟数据分布以匹配真实数据分布。'
 - en: Many DA models, especially for image classification or end-to-end image-based
     RL task, are built on adversarial loss or [GAN](https://lilianweng.github.io/posts/2017-08-20-gan/).
+  id: totrans-9
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 许多DA模型，特别是用于图像分类或端到端基于图像的RL任务，都建立在对抗损失或[GAN](https://lilianweng.github.io/posts/2017-08-20-gan/)上。
 - en: '**Domain randomization**'
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**领域随机化**'
 - en: With *domain randomization (DR)*, we are able to create a variety of simulated
     environments with randomized properties and train a model that works across all
     of them.
+  id: totrans-11
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 通过*领域随机化（DR）*，我们能够创建具有随机属性的各种模拟环境，并训练一个可以在所有这些环境中运行的模型。
 - en: Likely this model can adapt to the real-world environment, as the real system
     is expected to be one sample in that rich distribution of training variations.
+  id: totrans-12
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 很可能这个模型可以适应真实世界环境，因为真实系统预计是在那个丰富的训练变化分布中的一个样本。
 - en: Both DA and DR are unsupervised. Compared to DA which requires a decent amount
     of real data samples to capture the distribution, DR may need *only a little or
     no* real data. DR is the focus of this post.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: DA和DR都是无监督的。与DA相比，需要相当数量的真实数据样本来捕捉分布，DR可能只需要*很少或没有*真实数据。本文重点关注DR。
 - en: '![](../Images/89dea5b4140d18c4dc20ff7be2db2995.png)'
+  id: totrans-14
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/89dea5b4140d18c4dc20ff7be2db2995.png)'
 - en: Fig. 1\. Conceptual illustrations of three approaches for sim2real transfer.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 图1. 三种sim2real转移方法的概念图示。
 - en: What is Domain Randomization?
+  id: totrans-16
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 什么是领域随机化？
 - en: To make the definition more general, let us call the environment that we have
     full access to (i.e. simulator) **source domain** and the environment that we
     would like to transfer the model to **target domain** (i.e. physical world). Training
     happens in the source domain. We can control a set of $N$ randomization parameters
     in the source domain $e_\xi$ with a configuration $\xi$, sampled from a randomization
     space, $\xi \in \Xi \subset \mathbb{R}^N$.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了使定义更加通用，让我们称我们完全访问的环境（即模拟器）为**源领域**，我们希望将模型转移到的环境为**目标领域**（即物理世界）。训练发生在源领域中。我们可以在源领域中控制一组$N$个随机化参数$e_\xi$，具有从随机化空间$\xi
+    \in \Xi \subset \mathbb{R}^N$中采样的配置$\xi$。
 - en: 'During policy training, episodes are collected from source domain with randomization
     applied. Thus the policy is exposed to a variety of environments and learns to
     generalize. The policy parameter $\theta$ is trained to maximize the expected
     reward $R(.)$ average across a distribution of configurations:'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 在策略训练期间，从应用随机化的源域收集剧集。因此，策略暴露于各种环境并学会泛化。策略参数$\theta$被训练以最大化在一系列配置中平均的预期奖励$R(.)$：
 - en: $$ \theta^* = \arg\max_\theta \mathbb{E}_{\xi \sim \Xi} [\mathbb{E}_{\pi_\theta,
     \tau \sim e_\xi} [R(\tau)]] $$
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \theta^* = \arg\max_\theta \mathbb{E}_{\xi \sim \Xi} [\mathbb{E}_{\pi_\theta,
+    \tau \sim e_\xi} [R(\tau)]] $$
 - en: where $\tau_\xi$ is a trajectory collected in source domain randomized with
     $\xi$. In a way, *“discrepancies between the source and target domains are modeled
     as variability in the source domain.”* (quote from [Peng et al. 2018](https://arxiv.org/abs/1710.06537)).
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中$\tau_\xi$是在源域中随机化的轨迹$\xi$收集的。从某种意义上说，“源域和目标域之间的差异被建模为源域中的变异性。”（引自[Peng et
+    al. 2018](https://arxiv.org/abs/1710.06537)）
 - en: Uniform Domain Randomization
+  id: totrans-21
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 均匀域随机化
 - en: In the original form of DR ([Tobin et al, 2017](https://arxiv.org/abs/1703.06907);
     [Sadeghi et al. 2016](https://arxiv.org/pdf/1611.04201.pdf)), each randomization
     parameter $\xi_i$ is bounded by an interval, $\xi_i \in [\xi_i^\text{low}, \xi_i^\text{high}],
     i=1,\dots,N$ and each parameter is uniformly sampled within the range.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 在DR的原始形式中（[Tobin et al, 2017](https://arxiv.org/abs/1703.06907); [Sadeghi et
+    al. 2016](https://arxiv.org/pdf/1611.04201.pdf)），每个随机化参数$\xi_i$都受到一个区间的限制，$\xi_i
+    \in [\xi_i^\text{low}, \xi_i^\text{high}], i=1,\dots,N$，并且每个参数在范围内均匀采样。
 - en: The randomization parameters can control appearances of the scene, including
     but not limited to the followings (see Fig. 2). A model trained on simulated and
     randomized images is able to transfer to real non-randomized images.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 随机化参数可以控制场景的外观，包括但不限于以下内容（见图2）。在模拟和随机化图像上训练的模型能够转移到真实的非随机化图像。
 - en: Position, shape, and color of objects,
+  id: totrans-24
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 物体的位置、形状和颜色，
 - en: Material texture,
+  id: totrans-25
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 材料纹理，
 - en: Lighting condition,
+  id: totrans-26
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 光照条件，
 - en: Random noise added to images,
+  id: totrans-27
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 图像中添加的随机噪声，
 - en: Position, orientation, and field of view of the camera in the simulator.
+  id: totrans-28
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 模拟器中相机的位置、方向和视场。
 - en: '![](../Images/678e6f6bfa2ae188ab3169e1d14a48e3.png)'
+  id: totrans-29
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/678e6f6bfa2ae188ab3169e1d14a48e3.png)'
 - en: 'Fig. 2\. Images captured in the training environment are randomized. (Image
     source: [Tobin et al, 2017](https://arxiv.org/abs/1703.06907))'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 图2。在训练环境中捕获的图像被随机化。（图片来源：[Tobin et al, 2017](https://arxiv.org/abs/1703.06907)）
 - en: 'Physical dynamics in the simulator can also be randomized ([Peng et al. 2018](https://arxiv.org/abs/1710.06537)).
     Studies have showed that a *recurrent* policy can adapt to different physical
     dynamics including the partially observable reality. A set of physical dynamics
     features include but are not limited to:'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 模拟器中的物理动力学也可以随机化（[Peng et al. 2018](https://arxiv.org/abs/1710.06537)）。研究表明，*循环*策略可以适应不同的物理动力学，包括部分可观察的现实。一组物理动力学特征包括但不限于：
 - en: Mass and dimensions of objects,
+  id: totrans-32
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 物体的质量和尺寸，
 - en: Mass and dimensions of robot bodies,
+  id: totrans-33
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 机器人身体的质量和尺寸，
 - en: Damping, kp, friction of the joints,
+  id: totrans-34
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 关节的阻尼、kp、摩擦力，
 - en: Gains for the PID controller (P term),
+  id: totrans-35
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: PID控制器的增益（P项），
 - en: Joint limit,
+  id: totrans-36
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 关节限制，
 - en: Action delay,
+  id: totrans-37
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 行动延迟，
 - en: Observation noise.
+  id: totrans-38
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 观测噪声。
 - en: With visual and dynamics DR, at OpenAI Robotics, we were able to learn a policy
     that works on real dexterous robot hand ([OpenAI, 2018](https://arxiv.org/abs/1808.00177)).
     Our manipulation task is to teach the robot hand to rotate an object continously
@@ -195,97 +278,139 @@
     other motions. At first, the policy could barely survive for more than 5 seconds
     without dropping the object. But with the help of DR, the policy evolved to work
     surprisingly well in reality eventually.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过视觉和动力学DR，在OpenAI Robotics，我们能够学习一个适用于真实灵巧机器人手的策略（[OpenAI, 2018](https://arxiv.org/abs/1808.00177)）。我们的操纵任务是教导机器人手连续旋转物体以实现50个连续的随机目标方向。在这个任务中，模拟到真实的差距非常大，原因是（a）机器人和物体之间同时接触的数量很高，以及（b）对物体碰撞和其他运动的模拟不完美。起初，策略几乎无法在不掉落物体的情况下生存超过5秒。但通过DR的帮助，策略最终在现实中表现出乎意料地良好。
 - en: '[https://www.youtube.com/embed/DKe8FumoD4E](https://www.youtube.com/embed/DKe8FumoD4E)'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: '[https://www.youtube.com/embed/DKe8FumoD4E](https://www.youtube.com/embed/DKe8FumoD4E)'
 - en: Why does Domain Randomization Work?
+  id: totrans-41
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 为什么域随机化有效？
 - en: Now you may ask, why does domain randomization work so well? The idea sounds
     really simple. Here are two non-exclusive explanations I found most convincing.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在你可能会问，为什么领域随机化效果这么好？这个想法听起来真的很简单。以下是我发现最具说服力的两个非排他性解释。
 - en: DR as Optimization
+  id: totrans-43
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: DR 作为优化
 - en: 'One idea ([Vuong, et al, 2019](https://arxiv.org/abs/1903.11774)) is to view
     learning randomization parameters in DR as a *bilevel optimization*. Assuming
     we have access to the real environment $e_\text{real}$ and the randomization config
     is sampled from a distribution parameterized by $\phi$, $\xi \sim P_\phi(\xi)$,
     we would like to learn a distribution on which a policy $\pi_\theta$ is trained
     on can achieve maximal performance in $e_\text{real}$:'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 一种想法（[Vuong, et al, 2019](https://arxiv.org/abs/1903.11774)）是将 DR 中的学习随机化参数视为*双层优化*。假设我们可以访问真实环境
+    $e_\text{real}$，并且随机化配置是从由 $\phi$ 参数化的分布中采样的，$\xi \sim P_\phi(\xi)$，我们希望学习一个分布，使得在
+    $e_\text{real}$ 中训练的策略 $\pi_\theta$ 可以实现最佳性能：
 - en: $$ \begin{aligned} &\phi^* = \arg\min_{\phi} \mathcal{L}(\pi_{\theta^*(\phi)};
     e_\text{real}) \\ \text{where } &\theta^*(\phi) = \arg\min_\theta \mathbb{E}_{\xi
     \sim P_\phi(\xi)}[\mathcal{L}(\pi_\theta; e_\xi)] \end{aligned} $$
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \begin{aligned} &\phi^* = \arg\min_{\phi} \mathcal{L}(\pi_{\theta^*(\phi)};
+    e_\text{real}) \\ \text{where } &\theta^*(\phi) = \arg\min_\theta \mathbb{E}_{\xi
+    \sim P_\phi(\xi)}[\mathcal{L}(\pi_\theta; e_\xi)] \end{aligned} $$
 - en: where $\mathcal{L}(\pi; e)$ is the loss function of policy $\pi$ evaluated in
     the environment $e$.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 $\mathcal{L}(\pi; e)$ 是在环境 $e$ 中评估的策略 $\pi$ 的损失函数。
 - en: Although randomization ranges are hand-picked in uniform DR, it often involves
     domain knowledge and a couple rounds of trial-and-error adjustment based on the
     transfer performance. Essentially this is a manual optimization process on tuning
     $\phi$ for the optimal $\mathcal{L}(\pi_{\theta^*(\phi)}; e_\text{real})$.
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管在均匀 DR 中手动选择随机化范围，通常涉及领域知识和几轮基于转移性能的试错调整。本质上，这是一个手动优化过程，调整 $\phi$ 以获得最佳 $\mathcal{L}(\pi_{\theta^*(\phi)};
+    e_\text{real})$。
 - en: Guided domain randomization in the next section is largely inspired by this
     view, aiming to do bilevel optimization and learn the best parameter distribution
     automatically.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 下一节中的引导领域随机化在很大程度上受到这种观点的启发，旨在进行双层优化，并自动学习最佳参数分布。
 - en: DR as Meta-Learning
+  id: totrans-49
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: DR 作为元学习
 - en: In our learning dexterity project ([OpenAI, 2018](https://arxiv.org/abs/1808.00177)),
     we trained an LSTM policy to generalize across different environmental dynamics.
     We observed that once a robot achieved the first rotation, the time it needed
     for the following successes was much shorter. Also, a FF policy without memory
     was found not able to transfer to a physical robot. Both are evidence of the policy
     dynamically learning and adapting to a new environment.
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们的学习灵巧项目中（[OpenAI, 2018](https://arxiv.org/abs/1808.00177)），我们训练了一个 LSTM 策略来泛化不同的环境动态。我们观察到一旦机器人完成第一次旋转，它需要的时间来实现后续的成功就会大大缩短。此外，我们发现没有记忆的
+    FF 策略无法转移到物理机器人。这两者都是策略动态学习和适应新环境的证据。
 - en: In some ways, domain randomization composes a collection of different tasks.
     Memory in the recurrent network empowers the policy to achieve [*meta-learning*](https://lilianweng.github.io/posts/2018-11-30-meta-learning/)
     across tasks and further work on a real-world setting.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 在某种程度上，领域随机化组成了不同任务的集合。循环网络中的记忆使得策略能够在任务之间实现[*元学习*](https://lilianweng.github.io/posts/2018-11-30-meta-learning/)，并在真实世界环境中进一步工作。
 - en: Guided Domain Randomization
+  id: totrans-52
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 引导领域随机化
 - en: The vanilla DR assumes no access to the real data, and thus the randomization
     config is sampled as broadly and uniformly as possible in sim, hoping that the
     real environment could be covered under this broad distribution. It is reasonable
     to think of a more sophisticated strategy — replacing uniform sampling with guidance
     from *task performance*, *real data*, or *simulator*.
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 原始 DR 假设没有访问真实数据，因此在模拟中尽可能广泛和均匀地采样随机化配置，希望真实环境可以在这种广泛分布下被覆盖。可以考虑更复杂的策略 — 用*任务性能*、*真实数据*或*模拟器*的指导替换均匀采样。
 - en: One motivation for guided DR is to save computation resources by avoiding training
     models in unrealistic environments. Another is to avoid infeasible solutions that
     might arise from overly wide randomization distributions and thus might hinder
     successful policy learning.
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 引导 DR 的一个动机是通过避免在不真实环境中训练模型来节省计算资源。另一个是避免由过于广泛的随机化分布引起的不可行解决方案，从而可能阻碍成功的策略学习。
 - en: Optimization for Task Performance
+  id: totrans-55
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 任务性能优化
 - en: Say we train a family of policies with different randomization parameters $\xi
     \sim P_\phi(\xi)$, where $P_\xi$ is the distribution for $\xi$ parameterized by
     $\phi$. Later we decide to try every one of them on the downstream task in the
     target domain (i.e. control a robot in reality or evaluate on a validation set)
     to collect feedback. This feedback tells us how good a configuration $\xi$ is
     and provides signals for optimizing $\phi$.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设我们训练了一系列具有不同随机化参数$\xi \sim P_\phi(\xi)$的策略，其中$P_\xi$是由$\phi$参数化的$\xi$分布。后来我们决定在目标领域的下游任务（例如在现实中控制机器人或在验证集上评估）上尝试每一个策略，以收集反馈。这个反馈告诉我们配置$\xi$有多好，并为优化$\phi$提供信号。
 - en: Inspired by [NAS](https://ai.google/research/pubs/pub45826), **AutoAugment**
     ([Cubuk, et al. 2018](https://arxiv.org/abs/1805.09501)) frames the problem of
     learning best data augmentation operations (i.e. shearing, rotation, invert, etc.)
@@ -296,8 +421,11 @@
     outputs different augmentation strategies for different datasets; for example,
     for CIFAR-10 AutoAugment mostly picks color-based transformations, while ImageNet
     prefers geometric based.
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 受[NAS](https://ai.google/research/pubs/pub45826)的启发，**AutoAugment**（[Cubuk,
+    et al. 2018](https://arxiv.org/abs/1805.09501)）将学习最佳数据增强操作（例如剪切、旋转、反转等）的问题框架化为强化学习问题，用于图像分类。请注意，AutoAugment并非提出用于从模拟到现实的转移，而是属于由任务性能引导的数据增强。个别增强配置在评估集上进行测试，性能改进被用作奖励来训练PPO策略。该策略为不同数据集输出不同的增强策略；例如，对于CIFAR-10，AutoAugment主要选择基于颜色的转换，而ImageNet更偏好基于几何的转换。
 - en: '[Ruiz (2019)](https://arxiv.org/abs/1810.02513) considered the *task feedback*
     as *reward* in RL problem and proposed a RL-based method, named “learning to simulate”,
     for adjusting $\xi$. A policy is trained to predict $\xi$ using performance metrics
@@ -305,15 +433,21 @@
     Gaussian. Overall the idea is similar to AutoAugment, applying NAS on data generation.
     According to their experiments, even if the main task model is not converged,
     it still can provide a reasonable signal to the data generation policy.'
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Ruiz (2019)](https://arxiv.org/abs/1810.02513)认为在强化学习问题中，*任务反馈*被视为*奖励*，并提出了一种基于强化学习的方法，名为“学习模拟”，用于调整$\xi$。一个策略被训练来预测$\xi$，使用主任务验证数据上的性能指标作为奖励，这被建模为一个多变量高斯分布。总体而言，这个想法类似于AutoAugment，在数据生成上应用NAS。根据他们的实验，即使主任务模型没有收敛，它仍然可以为数据生成策略提供合理的信号。'
 - en: '![](../Images/5be72bf800a48e682c73bda6c2754911.png)'
+  id: totrans-59
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/5be72bf800a48e682c73bda6c2754911.png)'
 - en: 'Fig. 3\. An overview of the "learning to simulate" approach. (Image source:
     [Ruiz (2019)](https://arxiv.org/abs/1810.02513))'
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 图3。"学习模拟"方法的概述。（图片来源：[Ruiz (2019)](https://arxiv.org/abs/1810.02513)）
 - en: Evolutionary algorithm is another way to go, where the *feedback* is treated
     as *fitness* for guiding evolution ([Yu et al, 2019](https://openreview.net/forum?id=H1g6osRcFQ)).
     In this study, they used [CMA-ES](https://en.wikipedia.org/wiki/CMA-ES) (covariance
@@ -323,8 +457,10 @@
     network. The main claim was those methods are not as stable or sample efficient
     as CMA-ES. Interestly, when modeling $P(\xi)$ as a neural network, LSTM is found
     to notably outperform FF.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 进化算法是另一种选择，其中*反馈*被视为*适应度*以指导进化（[Yu et al, 2019](https://openreview.net/forum?id=H1g6osRcFQ)）。在这项研究中，他们使用了[CMA-ES](https://en.wikipedia.org/wiki/CMA-ES)（协方差矩阵适应进化策略），而适应度是目标环境中$\xi$条件策略的性能。在附录中，他们将CMA-ES与其他建模$\xi$动态的方法进行了比较，包括贝叶斯优化或神经网络。主要观点是这些方法不如CMA-ES稳定或样本效率高。有趣的是，当将$P(\xi)$建模为神经网络时，发现LSTM明显优于FF。
 - en: 'Some believe that sim2real gap is a combination of appearance gap and content
     gap; i.e. most GAN-inspired DA models focus on appearance gap. **Meta-Sim** ([Kar,
     et al. 2019](https://arxiv.org/abs/1904.11621)) aims to close the content gap
@@ -336,68 +472,99 @@
     (**SDR**; [Prakash et al., 2018](https://arxiv.org/abs/1810.10093)) and it is
     assumed to be known beforehand. A model $G$ is trained to augment the distribution
     of scene properties $s$ by following:'
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 有人认为 sim2real 间隙是外观间隙和内容间隙的组合；即大多数受 GAN 启发的 DA 模型关注外观间隙。**Meta-Sim**（[Kar, et
+    al. 2019](https://arxiv.org/abs/1904.11621)）旨在通过生成特定任务的合成数据集来关闭内容间隙。Meta-Sim 以自动驾驶汽车训练为例，因此场景可能非常复杂。在这种情况下，合成场景由具有属性（即位置、颜色）以及对象之间关系的对象层次结构参数化。层次结构由类似于结构领域随机化（**SDR**；[Prakash
+    et al., 2018](https://arxiv.org/abs/1810.10093)）的概率场景语法指定，并假定事先已知。模型 $G$ 被训练以通过以下方式增强场景属性
+    $s$ 的分布：
 - en: 'Learn the prior first: pre-train $G$ to learn the identity function $G(s) =
     s$.'
+  id: totrans-63
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 首先学习先验：预先训练 $G$ 学习恒等函数 $G(s) = s$。
 - en: Minimize MMD loss between the real and sim data distributions. This involves
     backpropagation through non-differentiable renderer. The paper computes it numerically
     by perturbing the attributes of $G(s)$.
+  id: totrans-64
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 最小化真实和模拟数据分布之间的 MMD 损失。这涉及通过不可微分的渲染器进行反向传播。该论文通过扰动 $G(s)$ 的属性来数值计算。
 - en: Minimize REINFORCE task loss when trained on synthetic data but evaluated on
     real data. Again, very similar to AutoAugment.
+  id: totrans-65
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在合成数据上训练时最小化 REINFORCE 任务损失，但在真实数据上评估。再次，与 AutoAugment 非常相似。
 - en: Unfortunately, this family of methods are not suitable for sim2real case. Either
     an RL policy or an EA model requires a large number of real samples. And it is
     really expensive to include real-time feedback collection on a physical robot
     into the training loop. Whether you want to trade less computation resource for
     real data collection would depend on your task.
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 不幸的是，这类方法不适用于 sim2real 情况。无论是 RL 策略还是 EA 模型都需要大量的真实样本。在训练循环中包含物理机器人的实时反馈收集非常昂贵。是否愿意为真实数据收集交换更少的计算资源取决于您的任务。
 - en: Match Real Data Distribution
+  id: totrans-67
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 匹配真实数据分布
 - en: Using real data to guide domain randomization feels a lot like doing system
     identification or DA. The core idea behind DA is to improve the synthetic data
     to match the real data distribution. In the case of real-data-guided DR, we would
     like to learn the randomization parameters $\xi$ that bring the state distribution
     in simulator close to the state distribution in the real world.
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用真实数据指导领域随机化感觉很像进行系统识别或 DA。DA 的核心思想是改进合成数据以匹配真实数据分布。在真实数据引导的 DR 情况下，我们希望学习将模拟器中的状态分布与真实世界中的状态分布接近的随机化参数
+    $\xi$。
 - en: 'The **SimOpt** model ([Chebotar et al, 2019](https://arxiv.org/abs/1810.05687))
     is trained under an initial randomization distribution $P_\phi(\xi)$ first, getting
     a policy $\pi_{\theta, P_\phi}$. Then this policy is deployed on both simulator
     and physical robot to collect trajectories $\tau_\xi$ and $\tau_\text{real}$ respectively.
     The optimization objective is to minimize the discrepancy between sim and real
     trajectories:'
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: '**SimOpt** 模型（[Chebotar et al, 2019](https://arxiv.org/abs/1810.05687)）首先在初始随机分布
+    $P_\phi(\xi)$ 下进行训练，得到一个策略 $\pi_{\theta, P_\phi}$。然后这个策略被部署在模拟器和物理机器人上，分别收集轨迹
+    $\tau_\xi$ 和 $\tau_\text{real}$。优化目标是最小化模拟和真实轨迹之间的差异：'
 - en: $$ \phi^* = \arg\min_{\phi}\mathbb{E}_{\xi \sim P_\phi(\xi)} [\mathbb{E}_{\pi_{\theta,
     P_\phi}} [D(\tau_\text{sim}, \tau_\text{real})]] $$
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: $$ \phi^* = \arg\min_{\phi}\mathbb{E}_{\xi \sim P_\phi(\xi)} [\mathbb{E}_{\pi_{\theta,
+    P_\phi}} [D(\tau_\text{sim}, \tau_\text{real})]] $$
 - en: where $D(.)$ is a trajectory-based discrepancy measure. Like the “Learning to
     simulate” paper, SimOpt also has to solve the tricky problem of how to propagate
     gradient through non-differentiable simulator. It used a method called [relative
     entropy policy search](https://www.aaai.org/ocs/index.php/AAAI/AAAI10/paper/viewFile/1851/2264),
     see paper for more details.
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中 $D(.)$ 是基于轨迹的差异度量。与“学习模拟”的论文一样，SimOpt 也必须解决如何通过不可微分模拟器传播梯度的棘手问题。它使用了一种称为[相对熵策略搜索](https://www.aaai.org/ocs/index.php/AAAI/AAAI10/paper/viewFile/1851/2264)的方法，详细信息请参阅论文。
 - en: '![](../Images/4e87632c8e9d60965d271d460e0c314b.png)'
+  id: totrans-72
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/4e87632c8e9d60965d271d460e0c314b.png)'
 - en: 'Fig. 4\. An overview of the SimOpt framework. (Image source: [Chebotar et al,
     2019](https://arxiv.org/abs/1810.05687))'
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 图4. SimOpt框架概述。 (图片来源：[Chebotar等人，2019](https://arxiv.org/abs/1810.05687))
 - en: '**RCAN** ([James et al., 2019](https://arxiv.org/abs/1812.07252)), short for
     “Randomized-to-Canonical Adaptation Networks”, is a nice combination of DA and
     DR for end-to-end RL tasks. An image-conditional GAN ([cGAN](https://arxiv.org/abs/1611.07004))
@@ -407,76 +574,108 @@
     observation as what it has encountered in training. Still, the underlying assumption
     is that the distribution of domain-randomized sim images is broad enough to cover
     real-world samples.'
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: '**RCAN** ([James等人，2019](https://arxiv.org/abs/1812.07252))，简称“随机到规范适应网络”，是DA和DR的一个很好的组合，用于端到端RL任务。在模拟器中训练了一个图像条件GAN
+    ([cGAN](https://arxiv.org/abs/1611.07004))，将一个领域随机化的图像转换为非随机化版本（也称为“规范版本”）。稍后，同一模型用于将真实图像转换为相应的模拟版本，以便代理程序消耗与训练中遇到的一致的观察。然而，基本假设是领域随机化的模拟图像分布足够广泛，可以覆盖真实世界样本。'
 - en: '![](../Images/3b9cc74bf8b0b97300a30909524bf0b4.png)'
+  id: totrans-75
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/3b9cc74bf8b0b97300a30909524bf0b4.png)'
 - en: 'Fig. 5\. RCAN is an image-conditional generator that can convert a domain-randomized
     or real image into its corresponding non-randomized simulator version. (Image
     source: [James et al., 2019](https://arxiv.org/abs/1812.07252))'
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 图5. RCAN是一个图像条件生成器，可以将领域随机化或真实图像转换为其相应的非随机化模拟器版本。 (图片来源：[James等人，2019](https://arxiv.org/abs/1812.07252))
 - en: The RL model is trained end-to-end in a simulator to do vision-based robot arm
     grasping. Randomization is applied at each timestep, including the position of
     tray divider, objects to grasp, random textures, as well as the position, direction,
     and color of the lighting. The canonical version is the default simulator look.
     RCAN is trying to learn a generator
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: RL模型在模拟器中端到端地训练，以进行基于视觉的机器人臂抓取。在每个时间步骤应用随机化，包括托盘分隔器的位置、要抓取的对象、随机纹理，以及照明的位置、方向和颜色。规范版本是默认的模拟器外观。RCAN试图学习一个生成器
 - en: '$G$: randomized image $\to$ {canonical image, segmentation, depth}'
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: '$G$: 随机化图像 $\to$ {规范图像，分割，深度}'
 - en: where segmentation masks and depth images are used as auxiliary tasks. RCAN
     had a better zero-shot transfer compared to uniform DR, although both were shown
     to be worse than the model trained on only real images. Conceptually, RCAN operates
     in a reverse direction of [GraspGAN](https://arxiv.org/abs/1709.07857) which translates
     synthetic images into real ones by domain adaptation.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 分割掩模和深度图像被用作辅助任务。与均匀DR相比，RCAN具有更好的零样本转移，尽管两者都显示比仅在真实图像上训练的模型更差。从概念上讲，RCAN的操作方向与[GraspGAN](https://arxiv.org/abs/1709.07857)相反，后者通过领域适应将合成图像转换为真实图像。
 - en: Guided by Data in Simulator
+  id: totrans-80
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 在模拟器中由数据引导
 - en: Network-driven domain randomization ([Zakharov et al., 2019](https://arxiv.org/abs/1904.02750)),
     also known as **DeceptionNet**, is motivated by learning which randomizations
     are actually useful to bridge the domain gap for image classification tasks.
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 网络驱动的领域随机化 ([Zakharov等人，2019](https://arxiv.org/abs/1904.02750))，也称为**DeceptionNet**，受到了学习哪些随机化实际上对于缩小图像分类任务的领域差距有用的启发。
 - en: Randomization is applied through a set of deception modules with encoder-decoder
     architecture. The deception modules are specifically designed to transform images;
     such as change backgrounds, add distortion, change lightings, etc. The other recognition
     network handles the main task by running classification on transformed images.
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 随机化是通过一组具有编码器-解码器架构的欺骗模块应用的。这些欺骗模块专门设计用于转换图像；例如更改背景、添加扭曲、改变光照等。另一个识别网络通过对转换后的图像进行分类来处理主要任务。
 - en: 'The training involves two steps:'
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 训练包括两个步骤：
 - en: With the recognition network fixed, *maximize the difference* between the prediction
     and the labels by applying reversed gradients during backpropagation. So that
     the deception module can learn the most confusing tricks.
+  id: totrans-84
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在识别网络固定的情况下，通过在反向传播过程中应用反向梯度来*最大化*预测和标签之间的差异。这样欺骗模块就可以学习最令人困惑的技巧。
 - en: With the deception modules fixed, train the recognition network with input images
     altered.
+  id: totrans-85
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在欺骗模块固定的情况下，用改变过的输入图像训练识别网络。
 - en: '![](../Images/236430a03f0f1b85b952c4113bf39b8e.png)'
+  id: totrans-86
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/236430a03f0f1b85b952c4113bf39b8e.png)'
 - en: 'Fig. 6\. How DeceptionNet works. (Image source: [Zakharov et al., 2019](https://arxiv.org/abs/1904.02750))'
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 6\. DeceptionNet 的工作原理。 (图片来源：[Zakharov 等人，2019](https://arxiv.org/abs/1904.02750))
 - en: The feedback for training deception modules is provided by the downstream classifier.
     But rather than trying to maximize the task performance like [the section](#optimization-for-task-performance)
     above, the randomization modules aim to create harder cases. One big disadvantage
     is you need to manually design different deception modules for different datasets
     or tasks, making it not easily scalable. Given the fact that it is zero-shot,
     the results are still worse than SOTA DA methods on MNIST and LineMOD.
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: 训练欺骗模块的反馈由下游分类器提供。但与上面的[章节](#optimization-for-task-performance)不同，随机化模块的目标是创建更难的情况。一个很大的缺点是你需要为不同的数据集或任务手动设计不同的欺骗模块，这使得它不容易扩展。考虑到它是零样本，结果仍然比
+    MNIST 和 LineMOD 上的 SOTA DA 方法差。
 - en: Similarly, Active domain randomization (**ADR**; [Mehta et al., 2019](https://arxiv.org/abs/1904.04762))
     also relies on sim data to create harder training samples. ADR searches for the
     *most informative* environment variations within the given randomization ranges,
@@ -486,130 +685,204 @@
     measures the discrepancy between sim and real rollouts, while ADR measures between
     randomized and non-randomized sim, avoiding the expensive real data collection
     part.
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 同样，主动领域随机化（**ADR**；[Mehta 等人，2019](https://arxiv.org/abs/1904.04762)）也依赖于模拟数据来创建更难的训练样本。ADR
+    寻找在给定随机化范围内最具信息量的环境变化，其中“信息量”被定义为随机化和参考（原始，非随机化）环境实例中策略轨迹的差异。听起来有点像[SimOpt](#match-real-data-distribution)？请注意，SimOpt
+    测量模拟和真实轨迹之间的差异，而ADR 测量随机化和非随机化模拟之间的差异，避免了昂贵的真实数据收集部分。
 - en: '![](../Images/ce053cab2c91067d012ac73da540b03a.png)'
+  id: totrans-90
   prefs: []
   type: TYPE_IMG
+  zh: '![](../Images/ce053cab2c91067d012ac73da540b03a.png)'
 - en: 'Fig. 7\. How active domain randomization (ADR) works. (Image source: [Mehta
     et al., 2019](https://arxiv.org/abs/1904.04762))'
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 图 7\. 主动领域随机化（ADR）的工作原理。 (图片来源：[Mehta 等人，2019](https://arxiv.org/abs/1904.04762))
 - en: 'Precisely the training happens as follows:'
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 训练过程如下：
 - en: Given a policy, run it on both reference and randomized envs and collect two
     sets of trajectories respectively.
+  id: totrans-93
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 给定一个策略，在参考环境和随机化环境上运行，并分别收集两组轨迹。
 - en: Train a discriminator model to tell whether a rollout trajectory is randomized
     apart from reference run. The predicted $\log p$ (probability of being randomized)
     is used as reward. The more different randomized and reference rollouts, the easier
     the prediction, the higher the reward.
+  id: totrans-94
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 训练一个鉴别器模型，告诉一个轨迹是否是随机化的，除了参考运行。预测的 $\log p$（被随机化的概率）被用作奖励。随机化和参考轨迹越不同，预测越容易，奖励越高。
 - en: The intuition is that if an environment is easy, the same policy agent can produce
     similar trajectories as in the reference one. Then the model should reward and
     explore hard environments by encouraging different behaviors.
+  id: totrans-95
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 直觉是，如果一个环境很容易，同样的策略代理可以产生与参考环境中相似的轨迹。然后模型应该通过鼓励不同的行为来奖励和探索困难的环境。
 - en: The reward by discriminator is fed into *Stein Variational Policy Gradient*
     ([SVPG](https://arxiv.org/abs/1704.02399)) particles, outputting a diverse set
     of randomization configurations.
+  id: totrans-96
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 鉴别器的奖励被馈送到*Stein 变分策略梯度*（[SVPG](https://arxiv.org/abs/1704.02399)）粒子中，输出一组多样化的随机化配置。
 - en: The idea of ADR is very appealing with two small concerns. The similarity between
     trajectories might not be a good way to measure the env difficulty when running
     a stochastic policy. The sim2real results look unfortunately not as exciting,
     but the paper pointed out the win being ADR explores a smaller range of randomization
     parameters.
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: ADR 的想法非常吸引人，但有两个小问题。当运行随机策略时，轨迹之间的相似性可能不是衡量环境难度的好方法。虽然 sim2real 的结果看起来不那么令人兴奋，但论文指出
+    ADR 的优势在于探索了更小范围的随机化参数。
 - en: '* * *'
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'Cited as:'
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 被引用为：
 - en: '[PRE0]'
+  id: totrans-100
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: Overall, after reading this post, I hope you like domain randomization as much
     as I do :).
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 总的来说，阅读完这篇文章后，我希望你和我一样喜欢领域随机化 :).
 - en: References
+  id: totrans-102
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 参考文献
 - en: '[1] Josh Tobin, et al. [“Domain randomization for transferring deep neural
     networks from simulation to the real world.”](https://arxiv.org/pdf/1703.06907.pdf)
     IROS, 2017.'
+  id: totrans-103
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] Josh Tobin 等人。[“领域随机化：将深度神经网络从模拟迁移到现实世界。”](https://arxiv.org/pdf/1703.06907.pdf)
+    IROS，2017。'
 - en: '[2] Fereshteh Sadeghi and Sergey Levine. [“CAD2RL: Real single-image flight
     without a single real image.”](https://arxiv.org/abs/1611.04201) arXiv:1611.04201
     (2016).'
+  id: totrans-104
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] Fereshteh Sadeghi和Sergey Levine。[“CAD2RL：没有真实图像的真实单图像飞行。”](https://arxiv.org/abs/1611.04201)
+    arXiv:1611.04201 (2016).'
 - en: '[3] Xue Bin Peng, et al. [“Sim-to-real transfer of robotic control with dynamics
     randomization.”](https://arxiv.org/abs/1710.06537) ICRA, 2018.'
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: '[3] Xue Bin Peng等人。[“通过动力学随机化实现机器人控制的模拟到真实转移。”](https://arxiv.org/abs/1710.06537)
+    ICRA，2018。'
 - en: '[4] Nataniel Ruiz, et al. [“Learning to Simulate.”](https://openreview.net/forum?id=HJgkx2Aqt7)
     ICLR 2019'
+  id: totrans-106
   prefs: []
   type: TYPE_NORMAL
+  zh: '[4] Nataniel Ruiz等人。[“学习模拟。”](https://openreview.net/forum?id=HJgkx2Aqt7) ICLR
+    2019'
 - en: '[5] OpenAI. [“Learning Dexterous In-Hand Manipulation.”](https://arxiv.org/abs/1808.00177)
     arXiv:1808.00177 (2018).'
+  id: totrans-107
   prefs: []
   type: TYPE_NORMAL
+  zh: '[5] OpenAI。[“学习灵巧的手内操作。”](https://arxiv.org/abs/1808.00177) arXiv:1808.00177
+    (2018).'
 - en: '[6] OpenAI Blog. [“Learning dexterity”](https://openai.com/blog/learning-dexterity/)
     July 30, 2018.'
+  id: totrans-108
   prefs: []
   type: TYPE_NORMAL
+  zh: '[6] OpenAI博客。[“学习灵巧”](https://openai.com/blog/learning-dexterity/) 2018年7月30日。'
 - en: '[7] Quan Vuong, et al. [“How to pick the domain randomization parameters for
     sim-to-real transfer of reinforcement learning policies?.”](https://arxiv.org/abs/1903.11774)
     arXiv:1903.11774 (2019).'
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: '[7] Quan Vuong等人。[“如何选择模拟到真实强化学习策略的域随机化参数？”](https://arxiv.org/abs/1903.11774)
+    arXiv:1903.11774 (2019).'
 - en: '[8] Ekin D. Cubuk, et al. [“AutoAugment: Learning augmentation policies from
     data.”](https://arxiv.org/abs/1805.09501) arXiv:1805.09501 (2018).'
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: '[8] Ekin D. Cubuk等人。[“AutoAugment：从数据中学习增强策略。”](https://arxiv.org/abs/1805.09501)
+    arXiv:1805.09501 (2018).'
 - en: '[9] Wenhao Yu et al. [“Policy Transfer with Strategy Optimization.”](https://openreview.net/forum?id=H1g6osRcFQ)
     ICLR 2019'
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: '[9] Wenhao Yu等人。[“策略优化的策略转移。”](https://openreview.net/forum?id=H1g6osRcFQ)
+    ICLR 2019'
 - en: '[10] Yevgen Chebotar et al. [“Closing the Sim-to-Real Loop: Adapting Simulation
     Randomization with Real World Experience.”](https://arxiv.org/abs/1810.05687)
     Arxiv: 1810.05687 (2019).'
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: '[10] Yevgen Chebotar等人。[“关闭模拟到真实的循环：通过真实世界经验调整模拟随机化。”](https://arxiv.org/abs/1810.05687)
+    Arxiv: 1810.05687 (2019).'
 - en: '[11] Stephen James et al. [“Sim-to-real via sim-to-sim: Data-efficient robotic
     grasping via randomized-to-canonical adaptation networks”](https://arxiv.org/abs/1812.07252)
     CVPR 2019.'
+  id: totrans-113
   prefs: []
   type: TYPE_NORMAL
+  zh: '[11] Stephen James等人。[“通过模拟到模拟实现模拟到真实：通过随机到规范适应网络实现数据高效机器人抓取”](https://arxiv.org/abs/1812.07252)
+    CVPR 2019。'
 - en: '[12] Bhairav Mehta et al. [“Active Domain Randomization”](https://arxiv.org/abs/1904.04762)
     arXiv:1904.04762'
+  id: totrans-114
   prefs: []
   type: TYPE_NORMAL
+  zh: '[12] Bhairav Mehta等人。[“主动域随机化”](https://arxiv.org/abs/1904.04762) arXiv:1904.04762'
 - en: '[13] Sergey Zakharov,et al. [“DeceptionNet: Network-Driven Domain Randomization.”](https://arxiv.org/abs/1904.02750)
     arXiv:1904.02750 (2019).'
+  id: totrans-115
   prefs: []
   type: TYPE_NORMAL
+  zh: '[13] Sergey Zakharov等人。[“DeceptionNet：网络驱动的域随机化。”](https://arxiv.org/abs/1904.02750)
+    arXiv:1904.02750 (2019).'
 - en: '[14] Amlan Kar, et al. [“Meta-Sim: Learning to Generate Synthetic Datasets.”](https://arxiv.org/abs/1904.11621)
     arXiv:1904.11621 (2019).'
+  id: totrans-116
   prefs: []
   type: TYPE_NORMAL
+  zh: '[14] Amlan Kar等人。[“Meta-Sim：学习生成合成数据集。”](https://arxiv.org/abs/1904.11621)
+    arXiv:1904.11621 (2019).'
 - en: '[15] Aayush Prakash, et al. [“Structured Domain Randomization: Bridging the
     Reality Gap by Context-Aware Synthetic Data.”](https://arxiv.org/abs/1810.10093)
     arXiv:1810.10093 (2018).'
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: '[15] Aayush Prakash等人。[“结构化域随机化：通过上下文感知合成数据弥合现实差距。”](https://arxiv.org/abs/1810.10093)
+    arXiv:1810.10093 (2018).'
