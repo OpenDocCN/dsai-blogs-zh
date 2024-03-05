@@ -1,3 +1,4 @@
 +   [DLology 博客中文翻译](docs/dlology/README.md)
 +   [LiLianWeng 博客中文翻译](docs/lilianweng/README.md)
 +   [NeptuneAI 博客中文翻译](docs/neptuneai/README.md)
++   [PyImgSearch 博客中文翻译](docs/pyimagesearch/README.md)
