@@ -1,0 +1,1024 @@
+- en: What are Diffusion Models?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://lilianweng.github.io/posts/2021-07-11-diffusion-models/](https://lilianweng.github.io/posts/2021-07-11-diffusion-models/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[Updated on 2021-09-19: Highly recommend this blog post on [score-based generative
+    modeling](https://yang-song.github.io/blog/2021/score/) by Yang Song (author of
+    several key papers in the references)].'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Updated on 2022-08-27: Added [classifier-free guidance](#classifier-free-guidance),
+    [GLIDE](#glide), [unCLIP](#unclip) and [Imagen](#imagen).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Updated on 2022-08-31: Added [latent diffusion model](#ldm).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: So far, I’ve written about three types of generative models, [GAN](https://lilianweng.github.io/posts/2017-08-20-gan/),
+    [VAE](https://lilianweng.github.io/posts/2018-08-12-vae/), and [Flow-based](https://lilianweng.github.io/posts/2018-10-13-flow-models/)
+    models. They have shown great success in generating high-quality samples, but
+    each has some limitations of its own. GAN models are known for potentially unstable
+    training and less diversity in generation due to their adversarial training nature.
+    VAE relies on a surrogate loss. Flow models have to use specialized architectures
+    to construct reversible transform.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Diffusion models are inspired by non-equilibrium thermodynamics. They define
+    a Markov chain of diffusion steps to slowly add random noise to data and then
+    learn to reverse the diffusion process to construct desired data samples from
+    the noise. Unlike VAE or flow models, diffusion models are learned with a fixed
+    procedure and the latent variable has high dimensionality (same as the original
+    data).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/cff17dc578cf27df682ef24460f2f11c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Fig. 1\. Overview of different types of generative models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What are Diffusion Models?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Several diffusion-based generative models have been proposed with similar ideas
+    underneath, including *diffusion probabilistic models* ([Sohl-Dickstein et al.,
+    2015](https://arxiv.org/abs/1503.03585)), *noise-conditioned score network* (**NCSN**;
+    [Yang & Ermon, 2019](https://arxiv.org/abs/1907.05600)), and *denoising diffusion
+    probabilistic models* (**DDPM**; [Ho et al. 2020](https://arxiv.org/abs/2006.11239)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Forward diffusion process
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Given a data point sampled from a real data distribution $\mathbf{x}_0 \sim
+    q(\mathbf{x})$, let us define a *forward diffusion process* in which we add small
+    amount of Gaussian noise to the sample in $T$ steps, producing a sequence of noisy
+    samples $\mathbf{x}_1, \dots, \mathbf{x}_T$. The step sizes are controlled by
+    a variance schedule $\{\beta_t \in (0, 1)\}_{t=1}^T$.
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ q(\mathbf{x}_t \vert \mathbf{x}_{t-1}) = \mathcal{N}(\mathbf{x}_t; \sqrt{1
+    - \beta_t} \mathbf{x}_{t-1}, \beta_t\mathbf{I}) \quad q(\mathbf{x}_{1:T} \vert
+    \mathbf{x}_0) = \prod^T_{t=1} q(\mathbf{x}_t \vert \mathbf{x}_{t-1}) $$
+  prefs: []
+  type: TYPE_NORMAL
+- en: The data sample $\mathbf{x}_0$ gradually loses its distinguishable features
+    as the step $t$ becomes larger. Eventually when $T \to \infty$, $\mathbf{x}_T$
+    is equivalent to an isotropic Gaussian distribution.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/61926ddc26afcb0e6c787892ff0bd54f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig. 2\. The Markov chain of forward (reverse) diffusion process of generating
+    a sample by slowly adding (removing) noise. (Image source: [Ho et al. 2020](https://arxiv.org/abs/2006.11239)
+    with a few additional annotations)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A nice property of the above process is that we can sample $\mathbf{x}_t$ at
+    any arbitrary time step $t$ in a closed form using [reparameterization trick](https://lilianweng.github.io/posts/2018-08-12-vae/#reparameterization-trick).
+    Let $\alpha_t = 1 - \beta_t$ and $\bar{\alpha}_t = \prod_{i=1}^t \alpha_i$:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ \begin{aligned} \mathbf{x}_t &= \sqrt{\alpha_t}\mathbf{x}_{t-1} + \sqrt{1
+    - \alpha_t}\boldsymbol{\epsilon}_{t-1} & \text{ ;where } \boldsymbol{\epsilon}_{t-1},
+    \boldsymbol{\epsilon}_{t-2}, \dots \sim \mathcal{N}(\mathbf{0}, \mathbf{I}) \\
+    &= \sqrt{\alpha_t \alpha_{t-1}} \mathbf{x}_{t-2} + \sqrt{1 - \alpha_t \alpha_{t-1}}
+    \bar{\boldsymbol{\epsilon}}_{t-2} & \text{ ;where } \bar{\boldsymbol{\epsilon}}_{t-2}
+    \text{ merges two Gaussians (*).} \\ &= \dots \\ &= \sqrt{\bar{\alpha}_t}\mathbf{x}_0
+    + \sqrt{1 - \bar{\alpha}_t}\boldsymbol{\epsilon} \\ q(\mathbf{x}_t \vert \mathbf{x}_0)
+    &= \mathcal{N}(\mathbf{x}_t; \sqrt{\bar{\alpha}_t} \mathbf{x}_0, (1 - \bar{\alpha}_t)\mathbf{I})
+    \end{aligned} $$
+  prefs: []
+  type: TYPE_NORMAL
+- en: (*) Recall that when we merge two Gaussians with different variance, $\mathcal{N}(\mathbf{0},
+    \sigma_1^2\mathbf{I})$ and $\mathcal{N}(\mathbf{0}, \sigma_2^2\mathbf{I})$, the
+    new distribution is $\mathcal{N}(\mathbf{0}, (\sigma_1^2 + \sigma_2^2)\mathbf{I})$.
+    Here the merged standard deviation is $\sqrt{(1 - \alpha_t) + \alpha_t (1-\alpha_{t-1})}
+    = \sqrt{1 - \alpha_t\alpha_{t-1}}$.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Usually, we can afford a larger update step when the sample gets noisier, so
+    $\beta_1 < \beta_2 < \dots < \beta_T$ and therefore $\bar{\alpha}_1 > \dots >
+    \bar{\alpha}_T$.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Connection with stochastic gradient Langevin dynamics
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Langevin dynamics is a concept from physics, developed for statistically modeling
+    molecular systems. Combined with stochastic gradient descent, *stochastic gradient
+    Langevin dynamics* ([Welling & Teh 2011](https://www.stats.ox.ac.uk/~teh/research/compstats/WelTeh2011a.pdf))
+    can produce samples from a probability density $p(\mathbf{x})$ using only the
+    gradients $\nabla_\mathbf{x} \log p(\mathbf{x})$ in a Markov chain of updates:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ \mathbf{x}_t = \mathbf{x}_{t-1} + \frac{\delta}{2} \nabla_\mathbf{x} \log
+    p(\mathbf{x}_{t-1}) + \sqrt{\delta} \boldsymbol{\epsilon}_t ,\quad\text{where
+    } \boldsymbol{\epsilon}_t \sim \mathcal{N}(\mathbf{0}, \mathbf{I}) $$
+  prefs: []
+  type: TYPE_NORMAL
+- en: where $\delta$ is the step size. When $T \to \infty, \epsilon \to 0$, $\mathbf{x}_T$
+    equals to the true probability density $p(\mathbf{x})$.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Compared to standard SGD, stochastic gradient Langevin dynamics injects Gaussian
+    noise into the parameter updates to avoid collapses into local minima.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reverse diffusion process
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If we can reverse the above process and sample from $q(\mathbf{x}_{t-1} \vert
+    \mathbf{x}_t)$, we will be able to recreate the true sample from a Gaussian noise
+    input, $\mathbf{x}_T \sim \mathcal{N}(\mathbf{0}, \mathbf{I})$. Note that if $\beta_t$
+    is small enough, $q(\mathbf{x}_{t-1} \vert \mathbf{x}_t)$ will also be Gaussian.
+    Unfortunately, we cannot easily estimate $q(\mathbf{x}_{t-1} \vert \mathbf{x}_t)$
+    because it needs to use the entire dataset and therefore we need to learn a model
+    $p_\theta$ to approximate these conditional probabilities in order to run the
+    *reverse diffusion process*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ p_\theta(\mathbf{x}_{0:T}) = p(\mathbf{x}_T) \prod^T_{t=1} p_\theta(\mathbf{x}_{t-1}
+    \vert \mathbf{x}_t) \quad p_\theta(\mathbf{x}_{t-1} \vert \mathbf{x}_t) = \mathcal{N}(\mathbf{x}_{t-1};
+    \boldsymbol{\mu}_\theta(\mathbf{x}_t, t), \boldsymbol{\Sigma}_\theta(\mathbf{x}_t,
+    t)) $$![](../Images/ec159c0c3b1f345fcac8da0493ec53e0.png)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Fig. 3\. An example of training a diffusion model for modeling a 2D swiss roll
+    data. (Image source: [Sohl-Dickstein et al., 2015](https://arxiv.org/abs/1503.03585))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It is noteworthy that the reverse conditional probability is tractable when
+    conditioned on $\mathbf{x}_0$:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ q(\mathbf{x}_{t-1} \vert \mathbf{x}_t, \mathbf{x}_0) = \mathcal{N}(\mathbf{x}_{t-1};
+    \color{blue}{\tilde{\boldsymbol{\mu}}}(\mathbf{x}_t, \mathbf{x}_0), \color{red}{\tilde{\beta}_t}
+    \mathbf{I}) $$
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Using Bayes’ rule, we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ \begin{aligned} q(\mathbf{x}_{t-1} \vert \mathbf{x}_t, \mathbf{x}_0) &= q(\mathbf{x}_t
+    \vert \mathbf{x}_{t-1}, \mathbf{x}_0) \frac{ q(\mathbf{x}_{t-1} \vert \mathbf{x}_0)
+    }{ q(\mathbf{x}_t \vert \mathbf{x}_0) } \\ &\propto \exp \Big(-\frac{1}{2} \big(\frac{(\mathbf{x}_t
+    - \sqrt{\alpha_t} \mathbf{x}_{t-1})^2}{\beta_t} + \frac{(\mathbf{x}_{t-1} - \sqrt{\bar{\alpha}_{t-1}}
+    \mathbf{x}_0)^2}{1-\bar{\alpha}_{t-1}} - \frac{(\mathbf{x}_t - \sqrt{\bar{\alpha}_t}
+    \mathbf{x}_0)^2}{1-\bar{\alpha}_t} \big) \Big) \\ &= \exp \Big(-\frac{1}{2} \big(\frac{\mathbf{x}_t^2
+    - 2\sqrt{\alpha_t} \mathbf{x}_t \color{blue}{\mathbf{x}_{t-1}} \color{black}{+
+    \alpha_t} \color{red}{\mathbf{x}_{t-1}^2} }{\beta_t} + \frac{ \color{red}{\mathbf{x}_{t-1}^2}
+    \color{black}{- 2 \sqrt{\bar{\alpha}_{t-1}} \mathbf{x}_0} \color{blue}{\mathbf{x}_{t-1}}
+    \color{black}{+ \bar{\alpha}_{t-1} \mathbf{x}_0^2} }{1-\bar{\alpha}_{t-1}} - \frac{(\mathbf{x}_t
+    - \sqrt{\bar{\alpha}_t} \mathbf{x}_0)^2}{1-\bar{\alpha}_t} \big) \Big) \\ &= \exp\Big(
+    -\frac{1}{2} \big( \color{red}{(\frac{\alpha_t}{\beta_t} + \frac{1}{1 - \bar{\alpha}_{t-1}})}
+    \mathbf{x}_{t-1}^2 - \color{blue}{(\frac{2\sqrt{\alpha_t}}{\beta_t} \mathbf{x}_t
+    + \frac{2\sqrt{\bar{\alpha}_{t-1}}}{1 - \bar{\alpha}_{t-1}} \mathbf{x}_0)} \mathbf{x}_{t-1}
+    \color{black}{ + C(\mathbf{x}_t, \mathbf{x}_0) \big) \Big)} \end{aligned} $$
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'where $C(\mathbf{x}_t, \mathbf{x}_0)$ is some function not involving $\mathbf{x}_{t-1}$
+    and details are omitted. Following the standard Gaussian density function, the
+    mean and variance can be parameterized as follows (recall that $\alpha_t = 1 -
+    \beta_t$ and $\bar{\alpha}_t = \prod_{i=1}^T \alpha_i$):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ \begin{aligned} \tilde{\beta}_t &= 1/(\frac{\alpha_t}{\beta_t} + \frac{1}{1
+    - \bar{\alpha}_{t-1}}) = 1/(\frac{\alpha_t - \bar{\alpha}_t + \beta_t}{\beta_t(1
+    - \bar{\alpha}_{t-1})}) = \color{green}{\frac{1 - \bar{\alpha}_{t-1}}{1 - \bar{\alpha}_t}
+    \cdot \beta_t} \\ \tilde{\boldsymbol{\mu}}_t (\mathbf{x}_t, \mathbf{x}_0) &= (\frac{\sqrt{\alpha_t}}{\beta_t}
+    \mathbf{x}_t + \frac{\sqrt{\bar{\alpha}_{t-1} }}{1 - \bar{\alpha}_{t-1}} \mathbf{x}_0)/(\frac{\alpha_t}{\beta_t}
+    + \frac{1}{1 - \bar{\alpha}_{t-1}}) \\ &= (\frac{\sqrt{\alpha_t}}{\beta_t} \mathbf{x}_t
+    + \frac{\sqrt{\bar{\alpha}_{t-1} }}{1 - \bar{\alpha}_{t-1}} \mathbf{x}_0) \color{green}{\frac{1
+    - \bar{\alpha}_{t-1}}{1 - \bar{\alpha}_t} \cdot \beta_t} \\ &= \frac{\sqrt{\alpha_t}(1
+    - \bar{\alpha}_{t-1})}{1 - \bar{\alpha}_t} \mathbf{x}_t + \frac{\sqrt{\bar{\alpha}_{t-1}}\beta_t}{1
+    - \bar{\alpha}_t} \mathbf{x}_0\\ \end{aligned} $$
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Thanks to the [nice property](#nice), we can represent $\mathbf{x}_0 = \frac{1}{\sqrt{\bar{\alpha}_t}}(\mathbf{x}_t
+    - \sqrt{1 - \bar{\alpha}_t}\boldsymbol{\epsilon}_t)$ and plug it into the above
+    equation and obtain:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ \begin{aligned} \tilde{\boldsymbol{\mu}}_t &= \frac{\sqrt{\alpha_t}(1 - \bar{\alpha}_{t-1})}{1
+    - \bar{\alpha}_t} \mathbf{x}_t + \frac{\sqrt{\bar{\alpha}_{t-1}}\beta_t}{1 - \bar{\alpha}_t}
+    \frac{1}{\sqrt{\bar{\alpha}_t}}(\mathbf{x}_t - \sqrt{1 - \bar{\alpha}_t}\boldsymbol{\epsilon}_t)
+    \\ &= \color{cyan}{\frac{1}{\sqrt{\alpha_t}} \Big( \mathbf{x}_t - \frac{1 - \alpha_t}{\sqrt{1
+    - \bar{\alpha}_t}} \boldsymbol{\epsilon}_t \Big)} \end{aligned} $$
+  prefs: []
+  type: TYPE_NORMAL
+- en: As demonstrated in Fig. 2., such a setup is very similar to [VAE](https://lilianweng.github.io/posts/2018-08-12-vae/)
+    and thus we can use the variational lower bound to optimize the negative log-likelihood.
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ \begin{aligned} - \log p_\theta(\mathbf{x}_0) &\leq - \log p_\theta(\mathbf{x}_0)
+    + D_\text{KL}(q(\mathbf{x}_{1:T}\vert\mathbf{x}_0) \| p_\theta(\mathbf{x}_{1:T}\vert\mathbf{x}_0)
+    ) \\ &= -\log p_\theta(\mathbf{x}_0) + \mathbb{E}_{\mathbf{x}_{1:T}\sim q(\mathbf{x}_{1:T}
+    \vert \mathbf{x}_0)} \Big[ \log\frac{q(\mathbf{x}_{1:T}\vert\mathbf{x}_0)}{p_\theta(\mathbf{x}_{0:T})
+    / p_\theta(\mathbf{x}_0)} \Big] \\ &= -\log p_\theta(\mathbf{x}_0) + \mathbb{E}_q
+    \Big[ \log\frac{q(\mathbf{x}_{1:T}\vert\mathbf{x}_0)}{p_\theta(\mathbf{x}_{0:T})}
+    + \log p_\theta(\mathbf{x}_0) \Big] \\ &= \mathbb{E}_q \Big[ \log \frac{q(\mathbf{x}_{1:T}\vert\mathbf{x}_0)}{p_\theta(\mathbf{x}_{0:T})}
+    \Big] \\ \text{Let }L_\text{VLB} &= \mathbb{E}_{q(\mathbf{x}_{0:T})} \Big[ \log
+    \frac{q(\mathbf{x}_{1:T}\vert\mathbf{x}_0)}{p_\theta(\mathbf{x}_{0:T})} \Big]
+    \geq - \mathbb{E}_{q(\mathbf{x}_0)} \log p_\theta(\mathbf{x}_0) \end{aligned}
+    $$
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is also straightforward to get the same result using Jensen’s inequality.
+    Say we want to minimize the cross entropy as the learning objective,
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ \begin{aligned} L_\text{CE} &= - \mathbb{E}_{q(\mathbf{x}_0)} \log p_\theta(\mathbf{x}_0)
+    \\ &= - \mathbb{E}_{q(\mathbf{x}_0)} \log \Big( \int p_\theta(\mathbf{x}_{0:T})
+    d\mathbf{x}_{1:T} \Big) \\ &= - \mathbb{E}_{q(\mathbf{x}_0)} \log \Big( \int q(\mathbf{x}_{1:T}
+    \vert \mathbf{x}_0) \frac{p_\theta(\mathbf{x}_{0:T})}{q(\mathbf{x}_{1:T} \vert
+    \mathbf{x}_{0})} d\mathbf{x}_{1:T} \Big) \\ &= - \mathbb{E}_{q(\mathbf{x}_0)}
+    \log \Big( \mathbb{E}_{q(\mathbf{x}_{1:T} \vert \mathbf{x}_0)} \frac{p_\theta(\mathbf{x}_{0:T})}{q(\mathbf{x}_{1:T}
+    \vert \mathbf{x}_{0})} \Big) \\ &\leq - \mathbb{E}_{q(\mathbf{x}_{0:T})} \log
+    \frac{p_\theta(\mathbf{x}_{0:T})}{q(\mathbf{x}_{1:T} \vert \mathbf{x}_{0})} \\
+    &= \mathbb{E}_{q(\mathbf{x}_{0:T})}\Big[\log \frac{q(\mathbf{x}_{1:T} \vert \mathbf{x}_{0})}{p_\theta(\mathbf{x}_{0:T})}
+    \Big] = L_\text{VLB} \end{aligned} $$
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To convert each term in the equation to be analytically computable, the objective
+    can be further rewritten to be a combination of several KL-divergence and entropy
+    terms (See the detailed step-by-step process in Appendix B in [Sohl-Dickstein
+    et al., 2015](https://arxiv.org/abs/1503.03585)):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ \begin{aligned} L_\text{VLB} &= \mathbb{E}_{q(\mathbf{x}_{0:T})} \Big[ \log\frac{q(\mathbf{x}_{1:T}\vert\mathbf{x}_0)}{p_\theta(\mathbf{x}_{0:T})}
+    \Big] \\ &= \mathbb{E}_q \Big[ \log\frac{\prod_{t=1}^T q(\mathbf{x}_t\vert\mathbf{x}_{t-1})}{
+    p_\theta(\mathbf{x}_T) \prod_{t=1}^T p_\theta(\mathbf{x}_{t-1} \vert\mathbf{x}_t)
+    } \Big] \\ &= \mathbb{E}_q \Big[ -\log p_\theta(\mathbf{x}_T) + \sum_{t=1}^T \log
+    \frac{q(\mathbf{x}_t\vert\mathbf{x}_{t-1})}{p_\theta(\mathbf{x}_{t-1} \vert\mathbf{x}_t)}
+    \Big] \\ &= \mathbb{E}_q \Big[ -\log p_\theta(\mathbf{x}_T) + \sum_{t=2}^T \log
+    \frac{q(\mathbf{x}_t\vert\mathbf{x}_{t-1})}{p_\theta(\mathbf{x}_{t-1} \vert\mathbf{x}_t)}
+    + \log\frac{q(\mathbf{x}_1 \vert \mathbf{x}_0)}{p_\theta(\mathbf{x}_0 \vert \mathbf{x}_1)}
+    \Big] \\ &= \mathbb{E}_q \Big[ -\log p_\theta(\mathbf{x}_T) + \sum_{t=2}^T \log
+    \Big( \frac{q(\mathbf{x}_{t-1} \vert \mathbf{x}_t, \mathbf{x}_0)}{p_\theta(\mathbf{x}_{t-1}
+    \vert\mathbf{x}_t)}\cdot \frac{q(\mathbf{x}_t \vert \mathbf{x}_0)}{q(\mathbf{x}_{t-1}\vert\mathbf{x}_0)}
+    \Big) + \log \frac{q(\mathbf{x}_1 \vert \mathbf{x}_0)}{p_\theta(\mathbf{x}_0 \vert
+    \mathbf{x}_1)} \Big] \\ &= \mathbb{E}_q \Big[ -\log p_\theta(\mathbf{x}_T) + \sum_{t=2}^T
+    \log \frac{q(\mathbf{x}_{t-1} \vert \mathbf{x}_t, \mathbf{x}_0)}{p_\theta(\mathbf{x}_{t-1}
+    \vert\mathbf{x}_t)} + \sum_{t=2}^T \log \frac{q(\mathbf{x}_t \vert \mathbf{x}_0)}{q(\mathbf{x}_{t-1}
+    \vert \mathbf{x}_0)} + \log\frac{q(\mathbf{x}_1 \vert \mathbf{x}_0)}{p_\theta(\mathbf{x}_0
+    \vert \mathbf{x}_1)} \Big] \\ &= \mathbb{E}_q \Big[ -\log p_\theta(\mathbf{x}_T)
+    + \sum_{t=2}^T \log \frac{q(\mathbf{x}_{t-1} \vert \mathbf{x}_t, \mathbf{x}_0)}{p_\theta(\mathbf{x}_{t-1}
+    \vert\mathbf{x}_t)} + \log\frac{q(\mathbf{x}_T \vert \mathbf{x}_0)}{q(\mathbf{x}_1
+    \vert \mathbf{x}_0)} + \log \frac{q(\mathbf{x}_1 \vert \mathbf{x}_0)}{p_\theta(\mathbf{x}_0
+    \vert \mathbf{x}_1)} \Big]\\ &= \mathbb{E}_q \Big[ \log\frac{q(\mathbf{x}_T \vert
+    \mathbf{x}_0)}{p_\theta(\mathbf{x}_T)} + \sum_{t=2}^T \log \frac{q(\mathbf{x}_{t-1}
+    \vert \mathbf{x}_t, \mathbf{x}_0)}{p_\theta(\mathbf{x}_{t-1} \vert\mathbf{x}_t)}
+    - \log p_\theta(\mathbf{x}_0 \vert \mathbf{x}_1) \Big] \\ &= \mathbb{E}_q [\underbrace{D_\text{KL}(q(\mathbf{x}_T
+    \vert \mathbf{x}_0) \parallel p_\theta(\mathbf{x}_T))}_{L_T} + \sum_{t=2}^T \underbrace{D_\text{KL}(q(\mathbf{x}_{t-1}
+    \vert \mathbf{x}_t, \mathbf{x}_0) \parallel p_\theta(\mathbf{x}_{t-1} \vert\mathbf{x}_t))}_{L_{t-1}}
+    \underbrace{- \log p_\theta(\mathbf{x}_0 \vert \mathbf{x}_1)}_{L_0} ] \end{aligned}
+    $$
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s label each component in the variational lower bound loss separately:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ \begin{aligned} L_\text{VLB} &= L_T + L_{T-1} + \dots + L_0 \\ \text{where
+    } L_T &= D_\text{KL}(q(\mathbf{x}_T \vert \mathbf{x}_0) \parallel p_\theta(\mathbf{x}_T))
+    \\ L_t &= D_\text{KL}(q(\mathbf{x}_t \vert \mathbf{x}_{t+1}, \mathbf{x}_0) \parallel
+    p_\theta(\mathbf{x}_t \vert\mathbf{x}_{t+1})) \text{ for }1 \leq t \leq T-1 \\
+    L_0 &= - \log p_\theta(\mathbf{x}_0 \vert \mathbf{x}_1) \end{aligned} $$
+  prefs: []
+  type: TYPE_NORMAL
+- en: Every KL term in $L_\text{VLB}$ (except for $L_0$) compares two Gaussian distributions
+    and therefore they can be computed in [closed form](https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence#Multivariate_normal_distributions).
+    $L_T$ is constant and can be ignored during training because $q$ has no learnable
+    parameters and $\mathbf{x}_T$ is a Gaussian noise. [Ho et al. 2020](https://arxiv.org/abs/2006.11239)
+    models $L_0$ using a separate discrete decoder derived from $\mathcal{N}(\mathbf{x}_0;
+    \boldsymbol{\mu}_\theta(\mathbf{x}_1, 1), \boldsymbol{\Sigma}_\theta(\mathbf{x}_1,
+    1))$.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Parameterization of $L_t$ for Training Loss
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Recall that we need to learn a neural network to approximate the conditioned
+    probability distributions in the reverse diffusion process, $p_\theta(\mathbf{x}_{t-1}
+    \vert \mathbf{x}_t) = \mathcal{N}(\mathbf{x}_{t-1}; \boldsymbol{\mu}_\theta(\mathbf{x}_t,
+    t), \boldsymbol{\Sigma}_\theta(\mathbf{x}_t, t))$. We would like to train $\boldsymbol{\mu}_\theta$
+    to predict $\tilde{\boldsymbol{\mu}}_t = \frac{1}{\sqrt{\alpha_t}} \Big( \mathbf{x}_t
+    - \frac{1 - \alpha_t}{\sqrt{1 - \bar{\alpha}_t}} \boldsymbol{\epsilon}_t \Big)$.
+    Because $\mathbf{x}_t$ is available as input at training time, we can reparameterize
+    the Gaussian noise term instead to make it predict $\boldsymbol{\epsilon}_t$ from
+    the input $\mathbf{x}_t$ at time step $t$:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ \begin{aligned} \boldsymbol{\mu}_\theta(\mathbf{x}_t, t) &= \color{cyan}{\frac{1}{\sqrt{\alpha_t}}
+    \Big( \mathbf{x}_t - \frac{1 - \alpha_t}{\sqrt{1 - \bar{\alpha}_t}} \boldsymbol{\epsilon}_\theta(\mathbf{x}_t,
+    t) \Big)} \\ \text{Thus }\mathbf{x}_{t-1} &= \mathcal{N}(\mathbf{x}_{t-1}; \frac{1}{\sqrt{\alpha_t}}
+    \Big( \mathbf{x}_t - \frac{1 - \alpha_t}{\sqrt{1 - \bar{\alpha}_t}} \boldsymbol{\epsilon}_\theta(\mathbf{x}_t,
+    t) \Big), \boldsymbol{\Sigma}_\theta(\mathbf{x}_t, t)) \end{aligned} $$
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The loss term $L_t$ is parameterized to minimize the difference from $\tilde{\boldsymbol{\mu}}$
+    :'
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ \begin{aligned} L_t &= \mathbb{E}_{\mathbf{x}_0, \boldsymbol{\epsilon}} \Big[\frac{1}{2
+    \| \boldsymbol{\Sigma}_\theta(\mathbf{x}_t, t) \|^2_2} \| \color{blue}{\tilde{\boldsymbol{\mu}}_t(\mathbf{x}_t,
+    \mathbf{x}_0)} - \color{green}{\boldsymbol{\mu}_\theta(\mathbf{x}_t, t)} \|^2
+    \Big] \\ &= \mathbb{E}_{\mathbf{x}_0, \boldsymbol{\epsilon}} \Big[\frac{1}{2 \|\boldsymbol{\Sigma}_\theta
+    \|^2_2} \| \color{blue}{\frac{1}{\sqrt{\alpha_t}} \Big( \mathbf{x}_t - \frac{1
+    - \alpha_t}{\sqrt{1 - \bar{\alpha}_t}} \boldsymbol{\epsilon}_t \Big)} - \color{green}{\frac{1}{\sqrt{\alpha_t}}
+    \Big( \mathbf{x}_t - \frac{1 - \alpha_t}{\sqrt{1 - \bar{\alpha}_t}} \boldsymbol{\boldsymbol{\epsilon}}_\theta(\mathbf{x}_t,
+    t) \Big)} \|^2 \Big] \\ &= \mathbb{E}_{\mathbf{x}_0, \boldsymbol{\epsilon}} \Big[\frac{
+    (1 - \alpha_t)^2 }{2 \alpha_t (1 - \bar{\alpha}_t) \| \boldsymbol{\Sigma}_\theta
+    \|^2_2} \|\boldsymbol{\epsilon}_t - \boldsymbol{\epsilon}_\theta(\mathbf{x}_t,
+    t)\|^2 \Big] \\ &= \mathbb{E}_{\mathbf{x}_0, \boldsymbol{\epsilon}} \Big[\frac{
+    (1 - \alpha_t)^2 }{2 \alpha_t (1 - \bar{\alpha}_t) \| \boldsymbol{\Sigma}_\theta
+    \|^2_2} \|\boldsymbol{\epsilon}_t - \boldsymbol{\epsilon}_\theta(\sqrt{\bar{\alpha}_t}\mathbf{x}_0
+    + \sqrt{1 - \bar{\alpha}_t}\boldsymbol{\epsilon}_t, t)\|^2 \Big] \end{aligned}
+    $$
+  prefs: []
+  type: TYPE_NORMAL
+- en: Simplification
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Empirically, [Ho et al. (2020)](https://arxiv.org/abs/2006.11239) found that
+    training the diffusion model works better with a simplified objective that ignores
+    the weighting term:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ \begin{aligned} L_t^\text{simple} &= \mathbb{E}_{t \sim [1, T], \mathbf{x}_0,
+    \boldsymbol{\epsilon}_t} \Big[\|\boldsymbol{\epsilon}_t - \boldsymbol{\epsilon}_\theta(\mathbf{x}_t,
+    t)\|^2 \Big] \\ &= \mathbb{E}_{t \sim [1, T], \mathbf{x}_0, \boldsymbol{\epsilon}_t}
+    \Big[\|\boldsymbol{\epsilon}_t - \boldsymbol{\epsilon}_\theta(\sqrt{\bar{\alpha}_t}\mathbf{x}_0
+    + \sqrt{1 - \bar{\alpha}_t}\boldsymbol{\epsilon}_t, t)\|^2 \Big] \end{aligned}
+    $$
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The final simple objective is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ L_\text{simple} = L_t^\text{simple} + C $$
+  prefs: []
+  type: TYPE_NORMAL
+- en: where $C$ is a constant not depending on $\theta$.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/61fa9540b9f4cca1c9d3a0857e0111e8.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig. 4\. The training and sampling algorithms in DDPM (Image source: [Ho et
+    al. 2020](https://arxiv.org/abs/2006.11239))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Connection with noise-conditioned score networks (NCSN)
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '[Song & Ermon (2019)](https://arxiv.org/abs/1907.05600) proposed a score-based
+    generative modeling method where samples are produced via [Langevin dynamics](#connection-with-stochastic-gradient-langevin-dynamics)
+    using gradients of the data distribution estimated with score matching. The score
+    of each sample $\mathbf{x}$’s density probability is defined as its gradient $\nabla_{\mathbf{x}}
+    \log q(\mathbf{x})$. A score network $\mathbf{s}_\theta: \mathbb{R}^D \to \mathbb{R}^D$
+    is trained to estimate it, $\mathbf{s}_\theta(\mathbf{x}) \approx \nabla_{\mathbf{x}}
+    \log q(\mathbf{x})$.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To make it scalable with high-dimensional data in the deep learning setting,
+    they proposed to use either *denoising score matching* ([Vincent, 2011](http://www.iro.umontreal.ca/~vincentp/Publications/smdae_techreport.pdf))
+    or *sliced score matching* (use random projections; [Song et al., 2019](https://arxiv.org/abs/1905.07088)).
+    Denosing score matching adds a pre-specified small noise to the data $q(\tilde{\mathbf{x}}
+    \vert \mathbf{x})$ and estimates $q(\tilde{\mathbf{x}})$ with score matching.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Recall that Langevin dynamics can sample data points from a probability density
+    distribution using only the score $\nabla_{\mathbf{x}} \log q(\mathbf{x})$ in
+    an iterative process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, according to the manifold hypothesis, most of the data is expected
+    to concentrate in a low dimensional manifold, even though the observed data might
+    look only arbitrarily high-dimensional. It brings a negative effect on score estimation
+    since the data points cannot cover the whole space. In regions where data density
+    is low, the score estimation is less reliable. After adding a small Gaussian noise
+    to make the perturbed data distribution cover the full space $\mathbb{R}^D$, the
+    training of the score estimator network becomes more stable. [Song & Ermon (2019)](https://arxiv.org/abs/1907.05600)
+    improved it by perturbing the data with the noise of *different levels* and train
+    a noise-conditioned score network to *jointly* estimate the scores of all the
+    perturbed data at different noise levels.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The schedule of increasing noise levels resembles the forward diffusion process.
+    If we use the diffusion process annotation, the score approximates $\mathbf{s}_\theta(\mathbf{x}_t,
+    t) \approx \nabla_{\mathbf{x}_t} \log q(\mathbf{x}_t)$. Given a Gaussian distribution
+    $\mathbf{x} \sim \mathcal{N}(\mathbf{\mu}, \sigma^2 \mathbf{I})$, we can write
+    the derivative of the logarithm of its density function as $\nabla_{\mathbf{x}}\log
+    p(\mathbf{x}) = \nabla_{\mathbf{x}} \Big(-\frac{1}{2\sigma^2}(\mathbf{x} - \boldsymbol{\mu})^2
+    \Big) = - \frac{\mathbf{x} - \boldsymbol{\mu}}{\sigma^2} = - \frac{\boldsymbol{\epsilon}}{\sigma}$
+    where $\boldsymbol{\epsilon} \sim \mathcal{N}(\boldsymbol{0}, \mathbf{I})$. [Recall](#nice)
+    that $q(\mathbf{x}_t \vert \mathbf{x}_0) \sim \mathcal{N}(\sqrt{\bar{\alpha}_t}
+    \mathbf{x}_0, (1 - \bar{\alpha}_t)\mathbf{I})$ and therefore,
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ \mathbf{s}_\theta(\mathbf{x}_t, t) \approx \nabla_{\mathbf{x}_t} \log q(\mathbf{x}_t)
+    = \mathbb{E}_{q(\mathbf{x}_0)} [\nabla_{\mathbf{x}_t} q(\mathbf{x}_t \vert \mathbf{x}_0)]
+    = \mathbb{E}_{q(\mathbf{x}_0)} \Big[ - \frac{\boldsymbol{\epsilon}_\theta(\mathbf{x}_t,
+    t)}{\sqrt{1 - \bar{\alpha}_t}} \Big] = - \frac{\boldsymbol{\epsilon}_\theta(\mathbf{x}_t,
+    t)}{\sqrt{1 - \bar{\alpha}_t}} $$
+  prefs: []
+  type: TYPE_NORMAL
+- en: Parameterization of $\beta_t$
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The forward variances are set to be a sequence of linearly increasing constants
+    in [Ho et al. (2020)](https://arxiv.org/abs/2006.11239), from $\beta_1=10^{-4}$
+    to $\beta_T=0.02$. They are relatively small compared to the normalized image
+    pixel values between $[-1, 1]$. Diffusion models in their experiments showed high-quality
+    samples but still could not achieve competitive model log-likelihood as other
+    generative models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Nichol & Dhariwal (2021)](https://arxiv.org/abs/2102.09672) proposed several
+    improvement techniques to help diffusion models to obtain lower NLL. One of the
+    improvements is to use a cosine-based variance schedule. The choice of the scheduling
+    function can be arbitrary, as long as it provides a near-linear drop in the middle
+    of the training process and subtle changes around $t=0$ and $t=T$.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ \beta_t = \text{clip}(1-\frac{\bar{\alpha}_t}{\bar{\alpha}_{t-1}}, 0.999)
+    \quad\bar{\alpha}_t = \frac{f(t)}{f(0)}\quad\text{where }f(t)=\cos\Big(\frac{t/T+s}{1+s}\cdot\frac{\pi}{2}\Big)^2
+    $$
+  prefs: []
+  type: TYPE_NORMAL
+- en: where the small offset $s$ is to prevent $\beta_t$ from being too small when
+    close to $t=0$.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d21b9c8cb66229d84465a132933a605c.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig. 5\. Comparison of linear and cosine-based scheduling of $\beta\_t$ during
+    training. (Image source: [Nichol & Dhariwal, 2021](https://arxiv.org/abs/2102.09672))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Parameterization of reverse process variance $\boldsymbol{\Sigma}_\theta$
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[Ho et al. (2020)](https://arxiv.org/abs/2006.11239) chose to fix $\beta_t$
+    as constants instead of making them learnable and set $\boldsymbol{\Sigma}_\theta(\mathbf{x}_t,
+    t) = \sigma^2_t \mathbf{I}$ , where $\sigma_t$ is not learned but set to $\beta_t$
+    or $\tilde{\beta}_t = \frac{1 - \bar{\alpha}_{t-1}}{1 - \bar{\alpha}_t} \cdot
+    \beta_t$. Because they found that learning a diagonal variance $\boldsymbol{\Sigma}_\theta$
+    leads to unstable training and poorer sample quality.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Nichol & Dhariwal (2021)](https://arxiv.org/abs/2102.09672) proposed to learn
+    $\boldsymbol{\Sigma}_\theta(\mathbf{x}_t, t)$ as an interpolation between $\beta_t$
+    and $\tilde{\beta}_t$ by model predicting a mixing vector $\mathbf{v}$ :'
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ \boldsymbol{\Sigma}_\theta(\mathbf{x}_t, t) = \exp(\mathbf{v} \log \beta_t
+    + (1-\mathbf{v}) \log \tilde{\beta}_t) $$
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, the simple objective $L_\text{simple}$ does not depend on $\boldsymbol{\Sigma}_\theta$
+    . To add the dependency, they constructed a hybrid objective $L_\text{hybrid}
+    = L_\text{simple} + \lambda L_\text{VLB}$ where $\lambda=0.001$ is small and stop
+    gradient on $\boldsymbol{\mu}_\theta$ in the $L_\text{VLB}$ term such that $L_\text{VLB}$
+    only guides the learning of $\boldsymbol{\Sigma}_\theta$. Empirically they observed
+    that $L_\text{VLB}$ is pretty challenging to optimize likely due to noisy gradients,
+    so they proposed to use a time-averaging smoothed version of $L_\text{VLB}$ with
+    importance sampling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/883d1e7e803f161911cbbd7c52c4bda9.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig. 6\. Comparison of negative log-likelihood of improved DDPM with other
+    likelihood-based generative models. NLL is reported in the unit of bits/dim. (Image
+    source: [Nichol & Dhariwal, 2021](https://arxiv.org/abs/2102.09672))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Speed up Diffusion Model Sampling
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'It is very slow to generate a sample from DDPM by following the Markov chain
+    of the reverse diffusion process, as $T$ can be up to one or a few thousand steps.
+    One data point from [Song et al. 2020](https://arxiv.org/abs/2010.02502): “For
+    example, it takes around 20 hours to sample 50k images of size 32 × 32 from a
+    DDPM, but less than a minute to do so from a GAN on an Nvidia 2080 Ti GPU.”'
+  prefs: []
+  type: TYPE_NORMAL
+- en: One simple way is to run a strided sampling schedule ([Nichol & Dhariwal, 2021](https://arxiv.org/abs/2102.09672))
+    by taking the sampling update every $\lceil T/S \rceil$ steps to reduce the process
+    from $T$ to $S$ steps. The new sampling schedule for generation is $\{\tau_1,
+    \dots, \tau_S\}$ where $\tau_1 < \tau_2 < \dots <\tau_S \in [1, T]$ and $S < T$.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For another approach, let’s rewrite $q_\sigma(\mathbf{x}_{t-1} \vert \mathbf{x}_t,
+    \mathbf{x}_0)$ to be parameterized by a desired standard deviation $\sigma_t$
+    according to the [nice property](#nice):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ \begin{aligned} \mathbf{x}_{t-1} &= \sqrt{\bar{\alpha}_{t-1}}\mathbf{x}_0
+    + \sqrt{1 - \bar{\alpha}_{t-1}}\boldsymbol{\epsilon}_{t-1} \\ &= \sqrt{\bar{\alpha}_{t-1}}\mathbf{x}_0
+    + \sqrt{1 - \bar{\alpha}_{t-1} - \sigma_t^2} \boldsymbol{\epsilon}_t + \sigma_t\boldsymbol{\epsilon}
+    \\ &= \sqrt{\bar{\alpha}_{t-1}}\mathbf{x}_0 + \sqrt{1 - \bar{\alpha}_{t-1} - \sigma_t^2}
+    \frac{\mathbf{x}_t - \sqrt{\bar{\alpha}_t}\mathbf{x}_0}{\sqrt{1 - \bar{\alpha}_t}}
+    + \sigma_t\boldsymbol{\epsilon} \\ q_\sigma(\mathbf{x}_{t-1} \vert \mathbf{x}_t,
+    \mathbf{x}_0) &= \mathcal{N}(\mathbf{x}_{t-1}; \sqrt{\bar{\alpha}_{t-1}}\mathbf{x}_0
+    + \sqrt{1 - \bar{\alpha}_{t-1} - \sigma_t^2} \frac{\mathbf{x}_t - \sqrt{\bar{\alpha}_t}\mathbf{x}_0}{\sqrt{1
+    - \bar{\alpha}_t}}, \sigma_t^2 \mathbf{I}) \end{aligned} $$
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Recall that in $q(\mathbf{x}_{t-1} \vert \mathbf{x}_t, \mathbf{x}_0) = \mathcal{N}(\mathbf{x}_{t-1};
+    \tilde{\boldsymbol{\mu}}(\mathbf{x}_t, \mathbf{x}_0), \tilde{\beta}_t \mathbf{I})$,
+    therefore we have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ \tilde{\beta}_t = \sigma_t^2 = \frac{1 - \bar{\alpha}_{t-1}}{1 - \bar{\alpha}_t}
+    \cdot \beta_t $$
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let $\sigma_t^2 = \eta \cdot \tilde{\beta}_t$ such that we can adjust $\eta
+    \in \mathbb{R}^+$ as a hyperparameter to control the sampling stochasticity. The
+    special case of $\eta = 0$ makes the sampling process *deterministic*. Such a
+    model is named the *denoising diffusion implicit model* (**DDIM**; [Song et al.,
+    2020](https://arxiv.org/abs/2010.02502)). DDIM has the same marginal noise distribution
+    but deterministically maps noise back to the original data samples.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'During generation, we only sample a subset of $S$ diffusion steps $\{\tau_1,
+    \dots, \tau_S\}$ and the inference process becomes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ q_{\sigma, \tau}(\mathbf{x}_{\tau_{i-1}} \vert \mathbf{x}_{\tau_t}, \mathbf{x}_0)
+    = \mathcal{N}(\mathbf{x}_{\tau_{i-1}}; \sqrt{\bar{\alpha}_{t-1}}\mathbf{x}_0 +
+    \sqrt{1 - \bar{\alpha}_{t-1} - \sigma_t^2} \frac{\mathbf{x}_{\tau_i} - \sqrt{\bar{\alpha}_t}\mathbf{x}_0}{\sqrt{1
+    - \bar{\alpha}_t}}, \sigma_t^2 \mathbf{I}) $$
+  prefs: []
+  type: TYPE_NORMAL
+- en: While all the models are trained with $T=1000$ diffusion steps in the experiments,
+    they observed that DDIM ($\eta=0$) can produce the best quality samples when $S$
+    is small, while DDPM ($\eta=1$) performs much worse on small $S$. DDPM does perform
+    better when we can afford to run the full reverse Markov diffusion steps ($S=T=1000$).
+    With DDIM, it is possible to train the diffusion model up to any arbitrary number
+    of forward steps but only sample from a subset of steps in the generative process.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/946c7b57c35f8426e30d313e68517aca.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig. 7\. FID scores on CIFAR10 and CelebA datasets by diffusion models of different
+    settings, including $\color{cyan}{\text{DDIM}}$ ($\eta=0$) and $\color{orange}{\text{DDPM}}$
+    ($\hat{\sigma}$). (Image source: [Song et al., 2020](https://arxiv.org/abs/2010.02502))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Compared to DDPM, DDIM is able to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Generate higher-quality samples using a much fewer number of steps.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Have “consistency” property since the generative process is deterministic, meaning
+    that multiple samples conditioned on the same latent variable should have similar
+    high-level features.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Because of the consistency, DDIM can do semantically meaningful interpolation
+    in the latent variable.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Latent diffusion model* (**LDM**; [Rombach & Blattmann, et al. 2022](https://arxiv.org/abs/2112.10752))
+    runs the diffusion process in the latent space instead of pixel space, making
+    training cost lower and inference speed faster. It is motivated by the observation
+    that most bits of an image contribute to perceptual details and the semantic and
+    conceptual composition still remains after aggressive compression. LDM loosely
+    decomposes the perceptual compression and semantic compression with generative
+    modeling learning by first trimming off pixel-level redundancy with autoencoder
+    and then manipulate/generate semantic concepts with diffusion process on learned
+    latent.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/51d67731ac66d23a98614b888d179141.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig. 8\. The plot for tradeoff between compression rate and distortion, illustrating
+    two-stage compressions - perceptural and semantic comparession. (Image source:
+    [Rombach & Blattmann, et al. 2022](https://arxiv.org/abs/2112.10752))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The perceptual compression process relies on an autoencoder model. An encoder
+    $\mathcal{E}$ is used to compress the input image $\mathbf{x} \in \mathbb{R}^{H
+    \times W \times 3}$ to a smaller 2D latent vector $\mathbf{z} = \mathcal{E}(\mathbf{x})
+    \in \mathbb{R}^{h \times w \times c}$ , where the downsampling rate $f=H/h=W/w=2^m,
+    m \in \mathbb{N}$. Then an decoder $\mathcal{D}$ reconstructs the images from
+    the latent vector, $\tilde{\mathbf{x}} = \mathcal{D}(\mathbf{z})$. The paper explored
+    two types of regularization in autoencoder training to avoid arbitrarily high-variance
+    in the latent spaces.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'KL-reg: A small KL penalty towards a standard normal distribution over the
+    learned latent, similar to [VAE](https://lilianweng.github.io/posts/2018-08-12-vae/).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'VQ-reg: Uses a vector quantization layer within the decoder, like [VQVAE](https://lilianweng.github.io/posts/2018-08-12-vae/#vq-vae-and-vq-vae-2)
+    but the quantization layer is absorbed by the decoder.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The diffusion and denoising processes happen on the latent vector $\mathbf{z}$.
+    The denoising model is a time-conditioned U-Net, augmented with the cross-attention
+    mechanism to handle flexible conditioning information for image generation (e.g.
+    class labels, semantic maps, blurred variants of an image). The design is equivalent
+    to fuse representation of different modality into the model with cross-attention
+    mechanism. Each type of conditioning information is paired with a domain-specific
+    encoder $\tau_\theta$ to project the conditioning input $y$ to an intermediate
+    representation that can be mapped into cross-attention component, $\tau_\theta(y)
+    \in \mathbb{R}^{M \times d_\tau}$:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ \begin{aligned} &\text{Attention}(\mathbf{Q}, \mathbf{K}, \mathbf{V}) = \text{softmax}\Big(\frac{\mathbf{Q}\mathbf{K}^\top}{\sqrt{d}}\Big)
+    \cdot \mathbf{V} \\ &\text{where }\mathbf{Q} = \mathbf{W}^{(i)}_Q \cdot \varphi_i(\mathbf{z}_i),\;
+    \mathbf{K} = \mathbf{W}^{(i)}_K \cdot \tau_\theta(y),\; \mathbf{V} = \mathbf{W}^{(i)}_V
+    \cdot \tau_\theta(y) \\ &\text{and } \mathbf{W}^{(i)}_Q \in \mathbb{R}^{d \times
+    d^i_\epsilon},\; \mathbf{W}^{(i)}_K, \mathbf{W}^{(i)}_V \in \mathbb{R}^{d \times
+    d_\tau},\; \varphi_i(\mathbf{z}_i) \in \mathbb{R}^{N \times d^i_\epsilon},\; \tau_\theta(y)
+    \in \mathbb{R}^{M \times d_\tau} \end{aligned} $$![](../Images/d4232479c14bbcadb3c082aee81f0750.png)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Fig. 9\. The architecture of latent diffusion model. (Image source: [Rombach
+    & Blattmann, et al. 2022](https://arxiv.org/abs/2112.1075))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Conditioned Generation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: While training generative models on images with conditioning information such
+    as ImageNet dataset, it is common to generate samples conditioned on class labels
+    or a piece of descriptive text.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Classifier Guided Diffusion
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: To explicit incorporate class information into the diffusion process, [Dhariwal
+    & Nichol (2021)](https://arxiv.org/abs/2105.05233) trained a classifier $f_\phi(y
+    \vert \mathbf{x}_t, t)$ on noisy image $\mathbf{x}_t$ and use gradients $\nabla_\mathbf{x}
+    \log f_\phi(y \vert \mathbf{x}_t)$ to guide the diffusion sampling process toward
+    the conditioning information $y$ (e.g. a target class label) by altering the noise
+    prediction. [Recall](#score) that $\nabla_{\mathbf{x}_t} \log q(\mathbf{x}_t)
+    = - \frac{1}{\sqrt{1 - \bar{\alpha}_t}} \boldsymbol{\epsilon}_\theta(\mathbf{x}_t,
+    t)$ and we can write the score function for the joint distribution $q(\mathbf{x}_t,
+    y)$ as following,
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ \begin{aligned} \nabla_{\mathbf{x}_t} \log q(\mathbf{x}_t, y) &= \nabla_{\mathbf{x}_t}
+    \log q(\mathbf{x}_t) + \nabla_{\mathbf{x}_t} \log q(y \vert \mathbf{x}_t) \\ &\approx
+    - \frac{1}{\sqrt{1 - \bar{\alpha}_t}} \boldsymbol{\epsilon}_\theta(\mathbf{x}_t,
+    t) + \nabla_{\mathbf{x}_t} \log f_\phi(y \vert \mathbf{x}_t) \\ &= - \frac{1}{\sqrt{1
+    - \bar{\alpha}_t}} (\boldsymbol{\epsilon}_\theta(\mathbf{x}_t, t) - \sqrt{1 -
+    \bar{\alpha}_t} \nabla_{\mathbf{x}_t} \log f_\phi(y \vert \mathbf{x}_t)) \end{aligned}
+    $$
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thus, a new classifier-guided predictor $\bar{\boldsymbol{\epsilon}}_\theta$
+    would take the form as following,
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ \bar{\boldsymbol{\epsilon}}_\theta(\mathbf{x}_t, t) = \boldsymbol{\epsilon}_\theta(x_t,
+    t) - \sqrt{1 - \bar{\alpha}_t} \nabla_{\mathbf{x}_t} \log f_\phi(y \vert \mathbf{x}_t)
+    $$
+  prefs: []
+  type: TYPE_NORMAL
+- en: To control the strength of the classifier guidance, we can add a weight $w$
+    to the delta part,
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ \bar{\boldsymbol{\epsilon}}_\theta(\mathbf{x}_t, t) = \boldsymbol{\epsilon}_\theta(x_t,
+    t) - \sqrt{1 - \bar{\alpha}_t} \; w \nabla_{\mathbf{x}_t} \log f_\phi(y \vert
+    \mathbf{x}_t) $$
+  prefs: []
+  type: TYPE_NORMAL
+- en: The resulting *ablated diffusion model* (**ADM**) and the one with additional
+    classifier guidance (**ADM-G**) are able to achieve better results than SOTA generative
+    models (e.g. BigGAN).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c4a32512ab75aa38db5fb16e61d456f1.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig. 10\. The algorithms use guidance from a classifier to run conditioned
+    generation with DDPM and DDIM. (Image source: [Dhariwal & Nichol, 2021](https://arxiv.org/abs/2105.05233)])'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Additionally with some modifications on the U-Net architecture, [Dhariwal &
+    Nichol (2021)](https://arxiv.org/abs/2105.05233) showed performance better than
+    GAN with diffusion models. The architecture modifications include larger model
+    depth/width, more attention heads, multi-resolution attention, BigGAN residual
+    blocks for up/downsampling, residual connection rescale by $1/\sqrt{2}$ and adaptive
+    group normalization (AdaGN).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Classifier-Free Guidance
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Without an independent classifier $f_\phi$, it is still possible to run conditional
+    diffusion steps by incorporating the scores from a conditional and an unconditional
+    diffusion model ([Ho & Salimans, 2021](https://openreview.net/forum?id=qw8AKxfYbI)).
+    Let unconditional denoising diffusion model $p_\theta(\mathbf{x})$ parameterized
+    through a score estimator $\boldsymbol{\epsilon}_\theta(\mathbf{x}_t, t)$ and
+    the conditional model $p_\theta(\mathbf{x} \vert y)$ parameterized through $\boldsymbol{\epsilon}_\theta(\mathbf{x}_t,
+    t, y)$. These two models can be learned via a single neural network. Precisely,
+    a conditional diffusion model $p_\theta(\mathbf{x} \vert y)$ is trained on paired
+    data $(\mathbf{x}, y)$, where the conditioning information $y$ gets discarded
+    periodically at random such that the model knows how to generate images unconditionally
+    as well, i.e. $\boldsymbol{\epsilon}_\theta(\mathbf{x}_t, t) = \boldsymbol{\epsilon}_\theta(\mathbf{x}_t,
+    t, y=\varnothing)$.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The gradient of an implicit classifier can be represented with conditional and
+    unconditional score estimators. Once plugged into the classifier-guided modified
+    score, the score contains no dependency on a separate classifier.
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ \begin{aligned} \nabla_{\mathbf{x}_t} \log p(y \vert \mathbf{x}_t) &= \nabla_{\mathbf{x}_t}
+    \log p(\mathbf{x}_t \vert y) - \nabla_{\mathbf{x}_t} \log p(\mathbf{x}_t) \\ &=
+    - \frac{1}{\sqrt{1 - \bar{\alpha}_t}}\Big( \boldsymbol{\epsilon}_\theta(\mathbf{x}_t,
+    t, y) - \boldsymbol{\epsilon}_\theta(\mathbf{x}_t, t) \Big) \\ \bar{\boldsymbol{\epsilon}}_\theta(\mathbf{x}_t,
+    t, y) &= \boldsymbol{\epsilon}_\theta(\mathbf{x}_t, t, y) - \sqrt{1 - \bar{\alpha}_t}
+    \; w \nabla_{\mathbf{x}_t} \log p(y \vert \mathbf{x}_t) \\ &= \boldsymbol{\epsilon}_\theta(\mathbf{x}_t,
+    t, y) + w \big(\boldsymbol{\epsilon}_\theta(\mathbf{x}_t, t, y) - \boldsymbol{\epsilon}_\theta(\mathbf{x}_t,
+    t) \big) \\ &= (w+1) \boldsymbol{\epsilon}_\theta(\mathbf{x}_t, t, y) - w \boldsymbol{\epsilon}_\theta(\mathbf{x}_t,
+    t) \end{aligned} $$
+  prefs: []
+  type: TYPE_NORMAL
+- en: Their experiments showed that classifier-free guidance can achieve a good balance
+    between FID (distinguish between synthetic and generated images) and IS (quality
+    and diversity).
+  prefs: []
+  type: TYPE_NORMAL
+- en: The guided diffusion model, GLIDE ([Nichol, Dhariwal & Ramesh, et al. 2022](https://arxiv.org/abs/2112.10741)),
+    explored both guiding strategies, CLIP guidance and classifier-free guidance,
+    and found that the latter is more preferred. They hypothesized that it is because
+    CLIP guidance exploits the model with adversarial examples towards the CLIP model,
+    rather than optimize the better matched images generation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Scale up Generation Resolution and Quality
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: To generate high-quality images at high resolution, [Ho et al. (2021)](https://arxiv.org/abs/2106.15282)
+    proposed to use a pipeline of multiple diffusion models at increasing resolutions.
+    *Noise conditioning augmentation* between pipeline models is crucial to the final
+    image quality, which is to apply strong data augmentation to the conditioning
+    input $\mathbf{z}$ of each super-resolution model $p_\theta(\mathbf{x} \vert \mathbf{z})$.
+    The conditioning noise helps reduce compounding error in the pipeline setup. *U-net*
+    is a common choice of model architecture in diffusion modeling for high-resolution
+    image generation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8224993ec38b4afdeab6a4a1ef73f183.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig. 11\. A cascaded pipeline of multiple diffusion models at increasing resolutions.
+    (Image source: [Ho et al. 2021](https://arxiv.org/abs/2106.15282)])'
+  prefs: []
+  type: TYPE_NORMAL
+- en: They found the most effective noise is to apply Gaussian noise at low resolution
+    and Gaussian blur at high resolution. In addition, they also explored two forms
+    of conditioning augmentation that require small modification to the training process.
+    Note that conditioning noise is only applied to training but not at inference.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Truncated conditioning augmentation stops the diffusion process early at step
+    $t > 0$ for low resolution.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Non-truncated conditioning augmentation runs the full low resolution reverse
+    process until step 0 but then corrupt it by $\mathbf{z}_t \sim q(\mathbf{x}_t
+    \vert \mathbf{x}_0)$ and then feeds the corrupted $\mathbf{z}_t$ s into the super-resolution
+    model.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The two-stage diffusion model **unCLIP** ([Ramesh et al. 2022](https://arxiv.org/abs/2204.06125))
+    heavily utilizes the CLIP text encoder to produce text-guided images at high quality.
+    Given a pretrained CLIP model $\mathbf{c}$ and paired training data for the diffusion
+    model, $(\mathbf{x}, y)$, where $x$ is an image and $y$ is the corresponding caption,
+    we can compute the CLIP text and image embedding, $\mathbf{c}^t(y)$ and $\mathbf{c}^i(\mathbf{x})$,
+    respectively. The unCLIP learns two models in parallel:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A prior model $P(\mathbf{c}^i \vert y)$: outputs CLIP image embedding $\mathbf{c}^i$
+    given the text $y$.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'A decoder $P(\mathbf{x} \vert \mathbf{c}^i, [y])$: generates the image $\mathbf{x}$
+    given CLIP image embedding $\mathbf{c}^i$ and optionally the original text $y$.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: These two models enable conditional generation, because
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ \underbrace{P(\mathbf{x} \vert y) = P(\mathbf{x}, \mathbf{c}^i \vert y)}_{\mathbf{c}^i\text{
+    is deterministic given }\mathbf{x}} = P(\mathbf{x} \vert \mathbf{c}^i, y)P(\mathbf{c}^i
+    \vert y) $$![](../Images/9f2e07b4e45528381d57a507f05211f8.png)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Fig. 12\. The architecture of unCLIP. (Image source: [Ramesh et al. 2022](https://arxiv.org/abs/2204.06125)])'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'unCLIP follows a two-stage image generation process:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Given a text $y$, a CLIP model is first used to generate a text embedding $\mathbf{c}^t(y)$.
+    Using CLIP latent space enables zero-shot image manipulation via text.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: A diffusion or autoregressive prior $P(\mathbf{c}^i \vert y)$ processes this
+    CLIP text embedding to construct an image prior and then a diffusion decoder $P(\mathbf{x}
+    \vert \mathbf{c}^i, [y])$ generates an image, conditioned on the prior. This decoder
+    can also generate image variations conditioned on an image input, preserving its
+    style and semantics.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Instead of CLIP model, **Imagen** ([Saharia et al. 2022](https://arxiv.org/abs/2205.11487))
+    uses a pre-trained large LM (i.e. a frozen T5-XXL text encoder) to encode text
+    for image generation. There is a general trend that larger model size can lead
+    to better image quality and text-image alignment. They found that T5-XXL and CLIP
+    text encoder achieve similar performance on MS-COCO, but human evaluation prefers
+    T5-XXL on DrawBench (a collection of prompts covering 11 categories).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When applying classifier-free guidance, increasing $w$ may lead to better image-text
+    alignment but worse image fidelity. They found that it is due to train-test mismatch,
+    that is saying, because training data $\mathbf{x}$ stays within the range $[-1,
+    1]$, the test data should be so too. Two thresholding strategies are introduced:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Static thresholding: clip $\mathbf{x}$ prediction to $[-1, 1]$'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Dynamic thresholding: at each sampling step, compute $s$ as a certain percentile
+    absolute pixel value; if $s > 1$, clip the prediction to $[-s, s]$ and divide
+    by $s$.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Imagen modifies several designs in U-net to make it *efficient U-Net*.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Shift model parameters from high resolution blocks to low resolution by adding
+    more residual locks for the lower resolutions;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Scale the skip connections by $1/\sqrt{2}$
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Reverse the order of downsampling (move it before convolutions) and upsampling
+    operations (move it after convolution) in order to improve the speed of forward
+    pass.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: They found that noise conditioning augmentation, dynamic thresholding and efficient
+    U-Net are critical for image quality, but scaling text encoder size is more important
+    than U-Net size.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Quick Summary
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '**Pros**: Tractability and flexibility are two conflicting objectives in generative
+    modeling. Tractable models can be analytically evaluated and cheaply fit data
+    (e.g. via a Gaussian or Laplace), but they cannot easily describe the structure
+    in rich datasets. Flexible models can fit arbitrary structures in data, but evaluating,
+    training, or sampling from these models is usually expensive. Diffusion models
+    are both analytically tractable and flexible'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Cons**: Diffusion models rely on a long Markov chain of diffusion steps to
+    generate samples, so it can be quite expensive in terms of time and compute. New
+    methods have been proposed to make the process much faster, but the sampling is
+    still slower than GAN.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Citation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Cited as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Weng, Lilian. (Jul 2021). What are diffusion models? Lil’Log. https://lilianweng.github.io/posts/2021-07-11-diffusion-models/.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Or
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: References
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] Jascha Sohl-Dickstein et al. [“Deep Unsupervised Learning using Nonequilibrium
+    Thermodynamics.”](https://arxiv.org/abs/1503.03585) ICML 2015.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Max Welling & Yee Whye Teh. [“Bayesian learning via stochastic gradient
+    langevin dynamics.”](https://www.stats.ox.ac.uk/~teh/research/compstats/WelTeh2011a.pdf)
+    ICML 2011.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Yang Song & Stefano Ermon. [“Generative modeling by estimating gradients
+    of the data distribution.”](https://arxiv.org/abs/1907.05600) NeurIPS 2019.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] Yang Song & Stefano Ermon. [“Improved techniques for training score-based
+    generative models.”](https://arxiv.org/abs/2006.09011) NeuriPS 2020.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] Jonathan Ho et al. [“Denoising diffusion probabilistic models.”](https://arxiv.org/abs/2006.11239)
+    arxiv Preprint arxiv:2006.11239 (2020). [[code](https://github.com/hojonathanho/diffusion)]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] Jiaming Song et al. [“Denoising diffusion implicit models.”](https://arxiv.org/abs/2010.02502)
+    arxiv Preprint arxiv:2010.02502 (2020). [[code](https://github.com/ermongroup/ddim)]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[7] Alex Nichol & Prafulla Dhariwal. [“Improved denoising diffusion probabilistic
+    models”](https://arxiv.org/abs/2102.09672) arxiv Preprint arxiv:2102.09672 (2021).
+    [[code](https://github.com/openai/improved-diffusion)]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[8] Prafula Dhariwal & Alex Nichol. [“Diffusion Models Beat GANs on Image Synthesis.”](https://arxiv.org/abs/2105.05233)
+    arxiv Preprint arxiv:2105.05233 (2021). [[code](https://github.com/openai/guided-diffusion)]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[9] Jonathan Ho & Tim Salimans. [“Classifier-Free Diffusion Guidance.”](https://arxiv.org/abs/2207.12598)
+    NeurIPS 2021 Workshop on Deep Generative Models and Downstream Applications.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[10] Yang Song, et al. [“Score-Based Generative Modeling through Stochastic
+    Differential Equations.”](https://openreview.net/forum?id=PxTIG12RRHS) ICLR 2021.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[11] Alex Nichol, Prafulla Dhariwal & Aditya Ramesh, et al. [“GLIDE: Towards
+    Photorealistic Image Generation and Editing with Text-Guided Diffusion Models.”](https://arxiv.org/abs/2112.10741)
+    ICML 2022.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[12] Jonathan Ho, et al. [“Cascaded diffusion models for high fidelity image
+    generation.”](https://arxiv.org/abs/2106.15282) J. Mach. Learn. Res. 23 (2022):
+    47-1.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[13] Aditya Ramesh et al. [“Hierarchical Text-Conditional Image Generation
+    with CLIP Latents.”](https://arxiv.org/abs/2204.06125) arxiv Preprint arxiv:2204.06125
+    (2022).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[14] Chitwan Saharia & William Chan, et al. [“Photorealistic Text-to-Image
+    Diffusion Models with Deep Language Understanding.”](https://arxiv.org/abs/2205.11487)
+    arxiv Preprint arxiv:2205.11487 (2022).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[15] Rombach & Blattmann, et al. [“High-Resolution Image Synthesis with Latent
+    Diffusion Models.”](https://arxiv.org/abs/2112.10752) CVPR 2022.[code](https://github.com/CompVis/latent-diffusion)'
+  prefs: []
+  type: TYPE_NORMAL

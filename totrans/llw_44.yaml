@@ -1,0 +1,356 @@
+- en: 'Predict Stock Prices Using RNN: Part 2'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://lilianweng.github.io/posts/2017-07-22-stock-rnn-part-2/](https://lilianweng.github.io/posts/2017-07-22-stock-rnn-part-2/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In the Part 2 tutorial, I would like to continue the topic on stock price prediction
+    and to endow the recurrent neural network that I have built in [Part 1](https://lilianweng.github.io/posts/2017-07-08-stock-rnn-part-1/)
+    with the capability of responding to multiple stocks. In order to distinguish
+    the patterns associated with different price sequences, I use the stock symbol
+    embedding vectors as part of the input.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dataset
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: During the search, I found [this library](https://github.com/lukaszbanasiak/yahoo-finance)
+    for querying Yahoo! Finance API. It would be very useful if Yahoo hasn’t shut
+    down the historical data fetch API. You may find it useful for querying other
+    information though. Here I pick the Google Finance link, among [a couple of free
+    data sources](https://www.quantshare.com/sa-43-10-ways-to-download-historical-stock-quotes-data-for-free)
+    for downloading historical stock prices.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The data fetch code can be written as simple as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: When fetching the content, remember to add try-catch wrapper in case the link
+    fails or the provided stock symbol is not valid.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: The full working data fetcher code is available [here](https://github.com/lilianweng/stock-rnn/blob/master/data_fetcher.py).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Model Construction
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'The model is expected to learn the price sequences of different stocks in time.
+    Due to the different underlying patterns, I would like to tell the model which
+    stock it is dealing with explicitly. [Embedding](https://en.wikipedia.org/wiki/Embedding)
+    is more favored than one-hot encoding, because:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Given that the train set includes $N$ stocks, the one-hot encoding would introduce
+    $N$ (or $N-1$) additional sparse feature dimensions. Once each stock symbol is
+    mapped onto a much smaller embedding vector of length $k$, $k \ll N$, we end up
+    with a much more compressed representation and smaller dataset to take care of.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Since embedding vectors are variables to learn. Similar stocks could be associated
+    with similar embeddings and help the prediction of each others, such as “GOOG”
+    and “GOOGL” which you will see in Fig. 5\. later.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: In the recurrent neural network, at one time step $t$, the input vector contains
+    `input_size` (labelled as $w$) daily price values of $i$-th stock, $(p_{i, tw},
+    p_{i, tw+1}, \dots, p_{i, (t+1)w-1})$. The stock symbol is uniquely mapped to
+    a vector of length `embedding_size` (labelled as $k$), $(e_{i,0}, e_{i,1}, \dots,
+    e_{i,k})$. As illustrated in Fig. 1., the price vector is concatenated with the
+    embedding vector and then fed into the LSTM cell.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another alternative is to concatenate the embedding vectors with the last state
+    of the LSTM cell and learn new weights $W$ and bias $b$ in the output layer. However,
+    in this way, the LSTM cell cannot tell apart prices of one stock from another
+    and its power would be largely restrained. Thus I decided to go with the former
+    approach.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/6d1de64e5e6a99d70d65371a51754388.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Fig. 1\. The architecture of the stock price prediction RNN model with stock
+    symbol embeddings.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Two new configuration settings are added into `RNNConfig`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`embedding_size` controls the size of each embedding vector;'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`stock_count` refers to the number of unique stocks in the dataset.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Together they define the size of the embedding matrix, for which the model has
+    to learn `embedding_size` $\times$ `stock_count` additional variables compared
+    to the model in [Part 1](https://lilianweng.github.io/posts/2017-07-08-stock-rnn-part-1/).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Define the Graph
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '**— Let’s start going through some code —**'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '(1) As demonstrated in tutorial [Part 1: Define the Graph](https://lilianweng.github.io/posts/2017-07-08-stock-rnn-part-1/#define-graph),
+    let us define a `tf.Graph()` named `lstm_graph` and a set of tensors to hold input
+    data, `inputs`, `targets`, and `learning_rate` in the same way. One more placeholder
+    to define is a list of stock symbols associated with the input prices. Stock symbols
+    have been mapped to unique integers beforehand with [label encoding](http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.LabelEncoder.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: (2) Then we need to set up an embedding matrix to play as a lookup table, containing
+    the embedding vectors of all the stocks. The matrix is initialized with random
+    numbers in the interval [-1, 1] and gets updated during training.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: (3) Repeat the stock labels `num_steps` times to match the unfolded version
+    of RNN and the shape of `inputs` tensor during training. The transformation operation
+    [tf.tile](https://www.tensorflow.org/api_docs/python/tf/tile) receives a base
+    tensor and creates a new tensor by replicating its certain dimensions multiples
+    times; precisely the $i$-th dimension of the input tensor gets multiplied by `multiples[i]`
+    times. For example, if the `stock_labels` is `[[0], [0], [2], [1]]` tiling it
+    by `[1, 5]` produces `[[0 0 0 0 0], [0 0 0 0 0], [2 2 2 2 2], [1 1 1 1 1]]`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: (4) Then we map the symbols to embedding vectors according to the lookup table
+    `embedding_matrix`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: (5) Finally, combine the price values with the embedding vectors. The operation
+    [tf.concat](https://www.tensorflow.org/api_docs/python/tf/concat) concatenates
+    a list of tensors along the dimension `axis`. In our case, we want to keep the
+    batch size and the number of steps unchanged, but only extend the input vector
+    of length `input_size` to include embedding features.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The rest of code runs the dynamic RNN, extracts the last state of the LSTM
+    cell, and handles weights and bias in the output layer. See [Part 1: Define the
+    Graph](https://lilianweng.github.io/posts/2017-07-08-stock-rnn-part-1/#define-graph)
+    for the details.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training Session
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Please read [Part 1: Start Training Session](https://lilianweng.github.io/posts/2017-07-08-stock-rnn-part-1/#start-training-session)
+    if you haven’t for how to run a training session in Tensorflow.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Before feeding the data into the graph, the stock symbols should be transformed
+    to unique integers with [label encoding](http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.LabelEncoder.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: The train/test split ratio remains same, 90% for training and 10% for testing,
+    for every individual stock.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Visualize the Graph
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: After the graph is defined in code, let us check the visualization in Tensorboard
+    to make sure that components are constructed correctly. Essentially it looks very
+    much like our architecture illustration in Fig. 1.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/a46457f2b58949545bc8c01707cf924e.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Fig. 2\. Tensorboard visualization of the graph defined above. Two modules,
+    "train" and "save", have been removed from the main graph.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Other than presenting the graph structure or tracking the variables in time,
+    Tensorboard also supports [**embeddings visualization**](https://www.tensorflow.org/get_started/embedding_viz).
+    In order to communicate the embedding values to Tensorboard, we need to add proper
+    tracking in the training logs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: (0) In my embedding visualization, I want to color each stock with its industry
+    sector. This metadata should stored in a csv file. The file has two columns, the
+    stock symbol and the industry sector. It does not matter whether the csv file
+    has header, but the order of the listed stocks must be consistent with `label_encoder.classes_`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: (1) Set up the summary writer first within the training `tf.Session`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: (2) Add the tensor `embedding_matrix` defined in our graph `lstm_graph` into
+    the projector config variable and attach the metadata csv file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: (3) This line creates a file `projector_config.pbtxt` in the folder `your_log_file_folder`.
+    TensorBoard will read this file during startup.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Results
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The model is trained with top 50 stocks with largest market values in the S&P
+    500 index.
+  prefs: []
+  type: TYPE_NORMAL
+- en: (Run the following command within [github.com/lilianweng/stock-rnn](https://github.com/lilianweng/stock-rnn))
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And the following configuration is used:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: Price Prediction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: As a brief overview of the prediction quality, Fig. 3 plots the predictions
+    for test data of “KO”, “AAPL”, “GOOG” and “NFLX”. The overall trends matched up
+    between the true values and the predictions. Considering how the prediction task
+    is designed, the model relies on all the historical data points to predict only
+    next 5 (`input_size`) days. With a small `input_size`, the model does not need
+    to worry about the long-term growth curve. Once we increase `input_size`, the
+    prediction would be much harder.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/62e8a35ab732e4a0d51a23244d964aa8.png) ![](../Images/9834d8cc805ccbf42becaa308d4724e8.png)
+    ![](../Images/414df6d22c0e32bd3ec0d400f1087abb.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig. 3\. True and predicted stock prices of AAPL, MSFT and GOOG in the test
+    set. The prices are normalized across consecutive prediction sliding windows (See
+    [Part 1: Normalization](https://lilianweng.github.io/posts/2017-07-08-stock-rnn-part-1/#normalization).
+    The y-axis values get multiplied by 5 for a better comparison between true and
+    predicted trends.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Embedding Visualization
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: One common technique to visualize the clusters in embedding space is [t-SNE](https://en.wikipedia.org/wiki/T-distributed_stochastic_neighbor_embedding)
+    ([Maaten and Hinton, 2008](http://www.jmlr.org/papers/volume9/vandermaaten08a/vandermaaten08a.pdf)),
+    which is well supported in Tensorboard. t-SNE, short for “t-Distributed Stochastic
+    Neighbor Embedding, is a variation of Stochastic Neighbor Embedding ([Hinton and
+    Roweis, 2002](http://www.cs.toronto.edu/~fritz/absps/sne.pdf)), but with a modified
+    cost function that is easier to optimize.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Similar to SNE, t-SNE first converts the high-dimensional Euclidean distances
+    between data points into conditional probabilities that represent similarities.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: t-SNE defines a similar probability distribution over the data points in the
+    low-dimensional space, and it minimizes the [Kullback–Leibler divergence](https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence)
+    between the two distributions with respect to the locations of the points on the
+    map.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Check [this post](http://distill.pub/2016/misread-tsne/) for how to adjust the
+    parameters, Perplexity and learning rate (epsilon), in t-SNE visualization.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f298f014ca41e996197be3e90d4a830d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Fig. 4\. Visualization of the stock embeddings using t-SNE. Each label is colored
+    based on the stock industry sector. We have 5 clusters. Interstingly, GOOG, GOOGL
+    and FB belong to the same cluster, while AMZN and AAPL stay in another.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In the embedding space, we can measure the similarity between two stocks by
+    examining the similarity between their embedding vectors. For example, GOOG is
+    mostly similar to GOOGL in the learned embeddings (See Fig. 5).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/f127e90bca6123cf8ce90291c38559ba.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: Fig. 5\. "GOOG" is clicked in the embedding visualization graph and top 20 similar
+    neighbors are highlighted with colors from dark to light as the similarity decreases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Known Problems
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: The prediction values get diminished and flatten quite a lot as the training
+    goes. That’s why I multiplied the absolute values by a constant to make the trend
+    is more visible in Fig. 3., as I’m more curious about whether the prediction on
+    the up-or-down direction right. However, there must be a reason for the diminishing
+    prediction value problem. Potentially rather than using simple MSE as the loss,
+    we can adopt another form of loss function to penalize more when the direction
+    is predicted wrong.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The loss function decreases fast at the beginning, but it suffers from occasional
+    value explosion (a sudden peak happens and then goes back immediately). I suspect
+    it is related to the form of loss function too. A updated and smarter loss function
+    might be able to resolve the issue.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The full code in this tutorial is available in [github.com/lilianweng/stock-rnn](https://github.com/lilianweng/stock-rnn).
+  prefs: []
+  type: TYPE_NORMAL

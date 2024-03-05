@@ -1,0 +1,1206 @@
+- en: 'Learning with not Enough Data Part 3: Data Generation'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 原文：[https://lilianweng.github.io/posts/2022-04-15-data-gen/](https://lilianweng.github.io/posts/2022-04-15-data-gen/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Here comes the Part 3 on learning with not enough data (Previous: [Part 1](https://lilianweng.github.io/posts/2021-12-05-semi-supervised/)
+    and [Part 2](https://lilianweng.github.io/posts/2022-02-20-active-learning/)).
+    Let’s consider two approaches for generating synthetic data for training.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Augmented data**. Given a set of existing training samples, we can apply
+    a variety of augmentation, distortion and transformation to derive new data points
+    without losing the key attributes. We have covered a bunch of augmentation methods
+    on text and images in a [previous post](https://lilianweng.github.io/posts/2021-05-31-contrastive/)
+    on contrastive learning. For the sake of post completeness, I *duplicate* the
+    section on data augmentation here with some edits.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**New data**. Given few or even no data points, we can rely on powerful pretrained
+    models to generate a number of *new* data points. This is especially true in recent
+    years given the fast progress in large pretrained [language models (LM)](https://lilianweng.github.io/posts/2019-01-31-lm/).
+    Few shot prompting is shown to be effective for LM to learn within context without
+    extra training.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Data Augmentation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: The goal of data augmentation is to modify the input format (e.g. text wording,
+    visual appearance) while the semantic meaning stays unchanged.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Image Augmentation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Basic Image Processing Operations
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: There are several ways to modify an image while retaining its semantic information.
+    We can use any one of the following augmentation or a composition of multiple
+    operations.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Random cropping and then resize back to the original size.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Random color distortions
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Random Gaussian blur
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Random color jittering
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Random horizontal flip
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Random grayscale conversion
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: And many more. Check [PIL.ImageOps](https://pillow.readthedocs.io/en/stable/reference/ImageOps.html)
+    for inspiration.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Task-Specific Augmentation Strategies
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: If the downstream task is known, it is possible to learn the optimal augmentation
+    strategies (i.e. what processing operations to use and how to combine them in
+    sequence) to maximize the downstream task performance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[*AutoAugment*](https://lilianweng.github.io/posts/2019-05-05-domain-randomization/#AutoAugment)
+    ([Cubuk, et al. 2018](https://arxiv.org/abs/1805.09501)) is inspired by [neural
+    architecture search](https://lilianweng.github.io/posts/2020-08-06-nas/), AutoAugment
+    frames the problem of learning best data augmentation operations (i.e. shearing,
+    rotation, invert, etc.) for image classification as an RL problem and looks for
+    the combination that leads to the highest accuracy on the evaluation set. AutoAugment
+    can be executed in adversarial fashion ([Zhang, et al 2019](https://arxiv.org/abs/1912.11188)).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*RandAugment* ([Cubuk et al., 2019](https://arxiv.org/abs/1909.13719)) greatly
+    reduces the search space of AutoAugment by controlling the magnitudes of different
+    transformation operations with a single magnitude parameter.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Population based augmentation* (PBA; [Ho et al., 2019](https://arxiv.org/abs/1905.05393))
+    combines PBT (“population based training”; [Jaderberg et al, 2017](https://arxiv.org/abs/1711.09846))
+    with AutoAugment, using the evolutionary algorithm to train a population of children
+    models in parallel to evolve the best augmentation strategies.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Unsupervised Data Augmentation* (UDA; [Xie et al., 2019](https://arxiv.org/abs/1904.12848)),
+    among a set of possible augmentation strategies, selects a subset to minimize
+    the KL divergence between the predicted distribution over an unlabelled example
+    and its unlabelled augmented version.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Image Mixture
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Image mixture methods can construct new training examples from existing data
+    points.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Mixup* ([Zhang et al., 2018](https://arxiv.org/abs/1710.09412)) runs global-level
+    mixture by creating a weighted pixel-wise combination of two existing images $I_1$
+    and $I_2$: $I_\text{mixup} \gets \alpha I_1 + (1-\alpha) I_2$ and $\alpha \in
+    [0, 1]$.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Cutmix* ([Yun et al., 2019](https://arxiv.org/abs/1905.04899)) does region-level
+    mixture by generating a new example by combining a local region of one image with
+    the rest of the other image. $I_\text{cutmix} \gets \mathbf{M}_b \odot I_1 + (1-\mathbf{M}_b)
+    \odot I_2$, where $\mathbf{M}_b \in \{0, 1\}^I$ is a binary mask and $\odot$ is
+    element-wise multiplication. It is equivalent to filling the *cutout* ([DeVries
+    & Taylor 2017](https://arxiv.org/abs/1708.04552)) region with the same region
+    from another image.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Given a query $\mathbf{q}$, *MoCHi* (“mixing of contrastive hard negatives”;
+    [Kalantidis et al. 2020](https://arxiv.org/abs/2010.01028)) maintains a queue
+    of $K$ negative features $Q={\mathbf{n}_1, \dots, \mathbf{n}_K }$ and sorts these
+    negative features by similarity to the query, $\mathbf{q}^\top \mathbf{n}$, in
+    descending order. The first $N$ items in the queue are considered as the hardest
+    negatives, $Q^N$. Then synthetic hard examples can be generated by $\mathbf{h}
+    = \tilde{\mathbf{h}} / |\tilde{\mathbf{h}}|_2$ where $\tilde{\mathbf{h}} = \alpha\mathbf{n}_i
+    + (1-\alpha) \mathbf{n}_j$ and $\alpha \in (0, 1)$. Even harder examples can be
+    created by mixing with the query feature, $\mathbf{h}’ = \tilde{\mathbf{h}’} /
+    |\tilde{\mathbf{h}’}|_2$ where $\tilde{\mathbf{h}’} = \beta\mathbf{q} + (1-\beta)
+    \mathbf{n}_j$ and $\beta \in (0, 0.5)$.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Text Augmentation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Lexical Edits
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '*Easy Data Augmentation* (EDA; [Wei & Zou 2019](https://arxiv.org/abs/1901.11196))
+    defines a set of simple but powerful operations for text augmentation. Given a
+    sentence, EDA randomly chooses and applies one of four simple operations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Synonym replacement (SR): Replace $n$ random non-stop words with their synonyms.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Random insertion (RI): Place a random synonym of a randomly selected non-stop
+    word in the sentence at a random position.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Random swap (RS): Randomly swap two words and repeat $n$ times.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Random deletion (RD): Randomly delete each word in the sentence with probability
+    $p$.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: where $p=\alpha$ and $n=\alpha \times \text{sentence_length}$, with the intuition
+    that longer sentences can absorb more noise while maintaining the original label.
+    The hyperparameter $\alpha$ roughly indicates the percent of words in one sentence
+    that may be changed by one augmentation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: EDA is shown to improve the classification accuracy on several classification
+    benchmark datasets compared to baseline without EDA. The performance lift is more
+    significant on a *smaller* training set. All the four operations in EDA help improve
+    the classification accuracy, but get to optimal at different $\alpha$’s.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/677041226462de35459d7cb233084359.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig. 1\. EDA leads to performance improvement on several classification benchmarks.
+    (Image source: [Wei & Zou 2019](https://arxiv.org/abs/1901.11196))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Contextual* Augmentation ([Kobayashi, 2018](https://arxiv.org/abs/1805.06201))
+    replaces word $w_i$ at position $i$ by sampling from a probability distribution
+    learned by a bidirectional LM such as BERT, $p(.\mid S\setminus{w_i})$. In this
+    way, the words are substituted by synonyms, or similar words suitable for the
+    context. To guarantee such operations do not alter the labels, the LM is fit to
+    be label-conditioned bidirectional LM. Conditional BERT (CBERT; [Xing Wu et al.
+    2018](https://arxiv.org/abs/1812.06705)) extends BERT to predict masked tokens
+    conditioned on the class label and can be used for contextual augmentation prediction.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Back-translation
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '*Back-translation* produces augmented data by translating text samples to another
+    language and then translating them back. The translation happens in two ways and
+    both directions should have decent enough performance to avoid significant loss
+    of semantic meaning.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Mix-up
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: It is also possible to apply [*Mixup*](#image-mixture) to text ([Guo et al.
+    2019](https://arxiv.org/abs/1905.08941)) but on the embedding space to obtain
+    some performance gain. The proposed method relies on a specially designed model
+    architecture to operate the prediction on the word or sentence embedding. Adding
+    adversarial noise in the embedding space as a way of data augmentation is shown
+    to improve the generalization of model training ([Zhu et al. 2019](https://arxiv.org/abs/1909.11764)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Audio Augmentation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Here is a list of several commonly used audio data augmentation methods, operated
+    on raw audio or spectrograms, summarized by [Wang & van den Oord (2021)](https://arxiv.org/abs/2103.06508).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Audio mixup.** Given two audio clips $\mathbf{x}_1$ and $\mathbf{x}_2$, the
+    mixed-up version $\hat{\mathbf{x}} = \alpha \mathbf{x}_1 + (1-\alpha)\mathbf{x}_2$
+    should be associated with the label of the more dominant input. The audio mixup
+    augments the data with more realistic noise.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Time masking.** A small consecutive chunk of the audio can be masked without
+    losing semantic information.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Frequency masking.** A small amount of frequency components on the spectrogram
+    can be dropped off and it should not change the associated label.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Frequency shift.** The spectrogram can be shifted by an integer between $[-F,
+    F]$, where $F$ is the maximum shift size. It is a cheap augmentation to change
+    the pitch of the audio.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Architectural Augmentation
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Models with **dropout** layers can create augmented samples by applying different
+    dropout masks on the same input sample. For example, in the contrastive learning
+    model [*SimCSE*](https://lilianweng.github.io/posts/2021-05-31-contrastive/#simcse)
+    ([Guo et al. 2021](https://arxiv.org/abs/2104.08821)), a sample is simply fed
+    into the encoder twice with different dropout masks and these two versions are
+    the positive pair where the other in-batch samples are considered as negative
+    pairs.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Dropout augments data by adding noise onto the internal representation of the
+    model. It can be applied in a more structured way, such as in **cutoff** ([Shen
+    et al. (2020)](https://arxiv.org/abs/2009.13818)), where random chunks of the
+    token embedding matrix are removed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Data Synthesis
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Given that generating high-quality, photorealistic images is a lot more difficult
+    than generating human-like natural language text and recent success with large
+    pretrained language models, this section only focuses on text generation. To read
+    more on how to synthesize realistic images, check posts on [GAN](https://lilianweng.github.io/posts/2017-08-20-gan/),
+    [VAE](https://lilianweng.github.io/posts/2018-08-12-vae/), [flow](https://lilianweng.github.io/posts/2018-10-13-flow-models/)
+    and [diffusion](https://lilianweng.github.io/posts/2021-07-11-diffusion-models/)
+    models.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Language Model as Noisy Annotator
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '[Wang et al. (2021)](https://arxiv.org/abs/2108.13487) explored ways to leverage
+    GPT-3 as a weak annotator via few-shot prompting, achieving 10x cheaper than human
+    labeling. The paper argues that by using data labeled by GPT-3, it essentially
+    performs [*self-training*](https://lilianweng.github.io/posts/2021-12-05-semi-supervised/#self-training):
+    The predictions on unlabeled samples apply entropy regularization on the model
+    to avoid high class overlaps so as to help improve the model performance.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/96e873dbc9952edfdb0786e1a7fe9bb6.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig. 2\. Illustration of how to use GPT-3 to generate more training data with
+    the human-in-the-loop active learning pipeline to improve the data quality. (Image
+    source: [Wang et al. 2021](https://arxiv.org/abs/2108.13487))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: GPT-3-labeled samples selected by [active learning](https://lilianweng.github.io/posts/2022-02-20-active-learning/)
+    with highest uncertainty are sent to human labelers to be re-annotated. The few-shot
+    prompt contains a small number of human labeled examples and thus the labeling
+    cost is restricted. Synthetic samples are ranked by predicted logits of label
+    $y$ and those with the lowest scores go through relabeling.
+  prefs: []
+  type: TYPE_NORMAL
+- en: GPT-3 labeling achieves better results in the low-cost regime, but has a gap
+    with human labeling when enough money is spent on data collection. This implies
+    the following inequation, although to what extent “a lot” or “noisy” means depends
+    on the task details.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**A lot of high-quality data > A lot of noisy data > A little high quality
+    data**.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '![](../Images/073600eee09014ec9917207f9ba31140.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig. 3\. GPT-3 labeling technique improves the classification performance in
+    the low-cost regime. (Image source: [Wang et al. 2021](https://arxiv.org/abs/2108.13487))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Language Model as Data Generator
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: If enough training dataset for text classification tasks are available, we can
+    fine-tune language models to synthesize more training samples conditioned on labels
+    ([Anaby-Tavor et al. 2019](https://arxiv.org/abs/1911.03118), [Kumar et al. 2021](https://arxiv.org/abs/2003.02245)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Language-model-based data augmentation* (**LAMBADA**; [Anaby-Tavor et al.
+    2019](https://arxiv.org/abs/1911.03118)) takes such an idea, where the process
+    involves fine-tuning both a classifier and a sample generation model.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Train a baseline classifier using the existing training dataset: $h = \mathcal{A}(\mathcal{D}_\text{train})$.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Independently of step 1, a LM $\mathcal{M}$ is fine-tuned on $\mathcal{D}_{\text{train}}$
+    to obtain $\mathcal{M}_{\text{tuned}}$.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Synthesize a labeled dataset $\mathcal{D}^*$ by generating the continuation
+    of the sequence `y[SEP]` until `EOS` using $\mathcal{M}_\text{tuned}$.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Filter synthesized dataset by,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: (1) Verifying that the predicted label is correct $h(x)=y$;
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: (2) Selecting the top ranked samples when they are ranked by the classifier
+    probability. $\mathcal{D}_\text{syn} \subset \mathcal{D}^*$. They generate 10x
+    more samples needed for augmentation and only the top 10% synthesized samples
+    with highest confidence scores remain.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The final classifier is trained on $\mathcal{D}_\text{syn} \cup \mathcal{D}_\text{train}$
+    . The process can be repeated multiple times, but it is unclear whether the benefit
+    would quickly diminish or the repetitive process would bring in self-bias.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c0f2a471163a458c37c42a5aa17cbbd2.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig. 4\. Accuracy of LAMBADA vs. other generative approaches over all datasets
+    and classifiers. (Image source: [Anaby-Tavor et al. 2019](https://arxiv.org/abs/1911.03118))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To simplify LAMBADA, we can actually remove the dependency of a fine-tuned generation
+    model and an existing training dataset of a decent size ([Step 2](#step2) above).
+    *Unsupervised data generation* (**UDG**; [Wang et al. 2021](https://arxiv.org/abs/2109.09193))
+    relies on few-shot prompting on a large pretrained language model to generate
+    high-quality synthetic data for training. Opposite to the above approach where
+    LM is asked to predict $y$ given $\mathbf{x}$, UDG instead synthetizes the inputs
+    $\mathbf{x}$ given labels $y$. Then a task-specific model is trained on this synthetic
+    dataset.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Schick & Schutze (2021)](https://arxiv.org/abs/2104.07540) proposed a similar
+    idea but on the NLI task instead of classification, asking PLM to write sentence
+    pairs that are similar or different while the model is prompted with task-specific
+    instructions.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/07fd109c117efd7a696a8a97d6839426.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig. 5\. Illustration of the unsupervised data generation (UDG) framework.
+    (Image source: [Wang et al., 2021](https://arxiv.org/abs/2109.09193))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The few-shot prompts of UDG contain a small number of unlabeled examples, as
+    well as a task-specific natural language description of the desired label. Because
+    some generated examples are noisy, they implemented **noisy label annealing**
+    (**NLA**) techniques to filter potentially misaligned samples out during the training
+    processes. NLA gradually removes noisy training signals in time during training
+    when the model starts to disagree with its pseudo label with high confidence.
+    At each training step $t$, a given example $(\mathbf{x}_i, \hat{y}_i)$ is considered
+    noisy and should be removed if:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The model predicted probability is higher than a threshold $p(\bar{y}_i \vert
+    \mathbf{x}_i) > \mu_t$ where $\bar{y}_i = \arg\max_y p(y \vert \mathbf{x}_i)$;
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: And the predicted label is different from the synthetic label, $\bar{y}_i \neq
+    \hat{y}_i$.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Note that the threshold $\mu_t$ is time-dependent, initialized as 0.9 and then
+    gradually annealed to $1/\text{num_of_classes}$ in time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: As shown in their experiments, the improvement of UDG over few-shot inference
+    is quit significant, where NLA brings in some extra boost. The results are even
+    comparable with supervised fine-tuning on several cases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/e9e0ba69219d0b80045d5e5d2cdf31ca.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig. 6\. Comparison of accuracy of UDG and other methods on different classification
+    datasets. (Image source: [Wang et al., 2021](https://arxiv.org/abs/2109.09193))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Han et al (2021)](https://arxiv.org/abs/2110.05448) achieved SOTA results
+    on translation tasks using few-shot data generation, distillation and back-translation.
+    The proposed method contains the following steps, assuming no access to paired
+    translation data:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Zero-shot Generation.* First use the zero-shot translation ability of a pre-trained
+    LM to generate translations for a small set of unlabeled sentences.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Few-shot Generation.* Then amplify these zero-shot translations by using them
+    as few-shot demonstrations to gather an even larger synthetic dataset.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Distillation.* Fine-tune the model on this dataset. The translation task is
+    formulated as a language modeling task `[L1] <seq1> [[TRANSLATE]] [L2] <seq2>.`
+    given a pair of two sequences `<seq1, seq2>` in two different languages. At test-time,
+    the LM is prompted with `[L1] <seq> [[TRANSLATE]] [L2]` and a candidate translation
+    `<sampledSeq>` is parsed from the sampled completion.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Back-translation.* Continue fine-tuning on the back-translation dataset where
+    the order of samples is reversed, `<sampledSeq, seq>`.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Step 1-4 can be repeated.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '![](../Images/719c463b079c7af6d86b5c0f5de91f9d.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig. 7\. Algorithm of using distillation and back-translation to train a language
+    model on translation tasks. (Image source: [Han et al. 2021](https://arxiv.org/abs/2110.05448))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The success of the above method depends on a good pretrained LM to kick off
+    the initial translation dataset. Iterative few-shot generation and distillation
+    with back-translation is an effective way to extract and refine the translation
+    capability out of a pretrained LM and further to distill that into a new model.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/c75eb6fcc4760f13bce61679b1dfa15f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig. 8\. Comparison of BLEU scores of the translation models of different training
+    runs using: only distillation, back-translation, both and with more monolingual
+    training data. (Image source: [Han et al. 2021](https://arxiv.org/abs/2110.05448))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: How to Quantify Generated Data Quality?
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: Given all the generated data, either by data augmentation or data synthesis,
+    how can we quantify data quality in terms of how they improve model generalization?
+    [Gontijo-Lopes et al. (2020)](https://arxiv.org/abs/2002.08973) introduced two
+    dimensions to track, affinity and diversity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Affinity** is a model-sensitive metric for *distribution shift*, quantifying
+    how much an augmentation shifts the training data distribution from what a model
+    learned.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Definition: The performance difference between the model tested on clean data
+    vs augmented data, while the model is trained on clean data.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: As a comparison, KL can also measure distribution shift but does not consider
+    the model performance.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '**Diversity** is a measure of *augmentation complexity*, measuring the complexity
+    of the augmented data with respect to the model and learning procedure.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Definition: The final training loss of a model trained with a given augmentation.'
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Another potential diversity measure is the entropy of the transformed data.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: A third potential diversity measure is the training time needed for a model
+    to reach a given training accuracy threshold.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: All three metrics above are correlated.
+  prefs:
+  - PREF_IND
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The final model performance is dependent on both metrics to be high enough.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/5f8139e632a71965509381fbbd2f0b69.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig. 9\. (a) Left: A scatter plot of affinity vs diversity metric, where each
+    point represents a different augmentation method and its color indicates the final
+    test accuracy. (b) Right: The conceptual illustration of the relationship between
+    clean and augmented data in different regions of affinity and diversity metrics.
+    (Image source: [Gontijo-Lopes et al. 2020](https://arxiv.org/abs/2002.08973))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are many quantitative metrics on relevancy and diversity, in different
+    formations depending on whether a reference is available, such as perplexity,
+    BLEU for text and inception score for images. I’m skipping the list of concrete
+    quantitative metrics on quality here, given it could be very long.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Training with Noisy Data
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: It is convenient to collect a large amount of noisy data via model generation
+    or data augmentation, but it is hard to guarantee that augmented and generated
+    data can be 100% accurate. Knowing that deep neural networks can easily overfit
+    noisy labels and “memotize” corrupted labels, we can apply the techniques for
+    training on noisy labels (*noise-robust training*) when using generated data to
+    stabilize and optimize the performance. Please check this [survey paper (Song
+    et al. 2021)](https://arxiv.org/abs/2007.08199) on learning from noisy labels
+    for a more thorough coverage of related work.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Regularization and Robust Architecture
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Generally speaking, mechanisms designed for avoiding overfitting should help
+    improve training robustness when working with moderately noisy data, such as weight
+    decay, dropout, batch normalization. In fact, good data augmentation (i.e. only
+    non-essential attributes are modified) can be considered as a way of regularization
+    as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: A different approach is to enhance the network with a dedicated **noisy adaptation
+    layer** to approximate the unknown projection of label corruption ([Sukhbaatar
+    et al. 2015](https://arxiv.org/abs/1406.2080), [Goldberger & Ben-Reuven, 2017](https://openreview.net/forum?id=H12GRgcxg)).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Sukhbaatar et al. (2015)](https://arxiv.org/abs/1406.2080) introduced an extra
+    linear layer $Q$ into the network architecture to adapt the predictions to match
+    the noisy label distribution. The noise matrix $Q$ is initially *fixed* to the
+    identity function while only the base model parameters is updated. After some
+    time, $Q$ starts to be updated and expected to capture the noise in the data.
+    The noise matrix is trained with regularization to encourage it to match the noise
+    distribution while keeping the base model prediction accurate for true labels.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/2e2a7a8955843fabaa626723d8801672.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig. 10\. (a) Left: A noise matrix $Q$ is added between softmax and the final
+    output for the loss. (b) Right: The noise matrix $Q$ is fixed at the identity
+    function initially and only gets updated with regularization after some training.
+    (Image source: [Sukhbaatar et al. 2015](https://arxiv.org/abs/1406.2080))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: However, it is hard to guarantee such a noise matrix layer would only capture
+    the noise transition distribution and it is actually non-trivial to learn. [Goldberger
+    & Ben-Reuven (2017)](https://openreview.net/forum?id=H12GRgcxg)) proposed to add
+    an additional softmax layer end-to-end with the base model and apply the [EM algorithm](https://en.wikipedia.org/wiki/Expectation%E2%80%93maximization_algorithm)
+    by treating the correct labels as latent random variable and the noise processes
+    as a communication channel with unknown parameters.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Robust Learning Objective
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Besides the most commonly used cross entropy loss, some other choices of learning
+    objectives are shown to be more robust to noisy labels.
+  prefs: []
+  type: TYPE_NORMAL
+- en: For example, **MAE** (mean absolute error) is more robust to noisy labels than
+    CCE (categorical cross entropy), as it treats every sample equally ([Ghosh et
+    al. 2017](https://arxiv.org/abs/1712.09482)). Lack of different weighting among
+    training samples of MAE lead to significantly longer training time. Motivated
+    by the tradeoff between MAE and CCE, [Zhang & Sabuncu (2018)](https://arxiv.org/abs/1805.07836)
+    proposed *generalized cross entropy* (**GCE**), a generalization of CCE loss to
+    be robust to noisy data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To exploit the benefits of both the noise-robustness provided by MAE and the
+    implicit weighting scheme of CCE, GCE adopts the the negative Box-Cox transformation
+    as a loss function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ \mathcal{L}_q(f(\mathbf{x}_i, y_i = j)) = \frac{1 - f^{(j)}(\mathbf{x}_i)^q}{q}
+    $$
+  prefs: []
+  type: TYPE_NORMAL
+- en: where $f^{(j)}$ denotes the $j$-th element of $f(.)$ and $q \in (0, 1]$. $\mathcal{L}_q$
+    is equivalent to CCE when $q \to 0$ and becomes MAE when $q=1$. Empirical experiments
+    show that there exists a threshold of $q$ with which overfitting never emerges
+    and the noisier the data the higher such a threshold should be.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Given true and predicted labels, $y_i, \hat{y}_i \in \{0, 1\}$ and let $u_i=y_i
+    \cdot \hat{y}_i$, the **zero-one loss**, $\mathcal{L}_{01}(\mathbf{u}) = \sum_{i=1}^n
+    \mathbb{1}[u_i < 0]$, is another learning subjective shown to be robust to noisy
+    data. Minimizing the empirical risk with the zero-one loss is shown to be equivalent
+    to minimizing the empirical adversarial (worse-case) risk ([Hu et al 2018](https://arxiv.org/abs/1611.02041)).
+    Because the worst-case risk is the upper bound of the classification risk of the
+    clean data distribution, minimizing the worst-case risk can lead to decreased
+    true risk, which makes the zero-one loss especially robust. However, the zero-one
+    loss is non-differentiable and cannot be optimized directly. One solution is to
+    approximate an *upper bound* of the zero-one loss and to minimize the upper bound
+    loss instead.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The [hinge loss](https://en.wikipedia.org/wiki/Hinge_loss), $\mathcal{L}_\text{hinge}(\mathbf{u})
+    = \sum_{i=1}^n \max(0, 1 - u_i)$, defines a rough upper bound of the zero-one
+    loss. [Lyu & Tsang (2020)](https://arxiv.org/abs/1905.10045) proposed a *curriculum
+    loss* (**CL**), which is a tighter upper bound compared to a conventional surrogate
+    loss like the hinge loss, $\mathcal{L}_\text{01}(\mathbf{u}) \leq \mathcal{L}_\text{CL}(\mathbf{u})
+    \leq \mathcal{L}_\text{hinge}(\mathbf{u})$.
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ \mathcal{L}_\text{CL}(\mathbf{u}) = \min_{\mathbf{w}\in\{0,1\}^n}\max(\sum_{i=1}^n
+    w_i \ell(u_i), n - \sum_{i=1}^n w_i + \sum_{i=1}^n\mathbb{1}[u_i < 0]) $$
+  prefs: []
+  type: TYPE_NORMAL
+- en: where $\ell(u_i)$ is a base surrogate loss for the zero-one loss (e.g. hinge
+    loss) and the optimal weighting variable $\mathbf{w}$ is to be learned.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Given a label corruption rate $\rho$, the *noise pruned curriculum loss* (**NPCL**)
+    is constructed based on the intuition that an ideal model should correctly classify
+    $n(1-\rho)$ samples with clean labels but misclassify $n\rho$ corrupted labels.
+    If $\rho$ is a known prior, we would know how many samples (with largest losses)
+    to be pruned. Assuming $\ell(u_1) \leq \dots \leq \ell(u_n)$, then $u_{n(1-\rho)+1}
+    = \dots = u_n =0$ and the following NPCL is the basic CL for only $n(1-\rho)$
+    samples:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ \text{NPCL}(\mathbf{u}) = \min_{\mathbf{w}\in\{0,1\}^{n(1-\rho)}} \max(\sum_{i=1}^{n(1-\rho)}
+    w_i \ell(u_i), n(1-\rho) - \sum_{i=1}^{n(1-\rho)} w_i) $$
+  prefs: []
+  type: TYPE_NORMAL
+- en: When experimenting on CIFAR-10, NPCL is comparable with GCE and performs better
+    when the noise rate increases.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Label Correction
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Since it is known some labels are incorrect, noise-robust training can explicitly
+    take the label correction into consideration.
+  prefs: []
+  type: TYPE_NORMAL
+- en: One approach is to rely on the estimation of a noise transition matrix and use
+    that to correct the forward or backward loss, named **F-correction** ([Patrini
+    et al. 2017](https://arxiv.org/abs/1609.03683)). Let’s first assume that there
+    are $k$ classes and the noise transition matrix $C \in [0, 1]^{k\times k}$ is
+    observable and the label flipping probability does not depend on the sample input
+    but only the label (i.e. known as random classification noise, RCN). Let $\tilde{y}$
+    denote a corrupted label. Each entry of $C$ represents the probability of one
+    label flipping to another^([1](#fn:1)),
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ C_{ij} = p(\tilde{y}= j \vert y =i, \mathbf{x}) \approx p(\tilde{y}= j \vert
+    y =i) $$
+  prefs: []
+  type: TYPE_NORMAL
+- en: Then we can proceed a forward label correction procedure to incorporate the
+    prior knowledge of noisy transition matrix into the prediction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ \begin{aligned} \mathcal{L}(\hat{p}(\tilde{y}\vert\mathbf{x}), y) &= - \log
+    \hat{p}(\tilde{y}=i\vert\mathbf{x}) \\ &= - \log \sum_{j=1}^k p(\tilde{y}=i\vert
+    y=j) \hat{p}(y=j\vert\mathbf{x}) \\ &= - \log \sum_{j=1}^k C_{ji} \hat{p}(y=j\vert\mathbf{x})
+    \end{aligned} $$
+  prefs: []
+  type: TYPE_NORMAL
+- en: In matrix form, we have $\mathcal{L}(\hat{p}(y \vert \mathbf{x})) = - \log C^\top
+    \hat{p}(y \vert \mathbf{x})$. However, such a noise transition matrix is usually
+    *unknown*. If we have access to a clean dataset, the noise matrix $C$ can be estimated
+    ([Hendrycks et al. 2018](https://arxiv.org/abs/1802.05300)) by calculating confusion
+    matrix on the clean data. Let’s denote a clean trusted dataset as $\mathcal{D}_c$
+    and a noisy dataset as $\mathcal{D}_n$ going forward.
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ \hat{C}_{ij} = \frac{1}{\vert \mathcal{A}_i\vert} \sum_{\mathbf{x} \in \mathcal{A}_i}
+    \hat{p}(\tilde{y}=j \vert y=i, \mathbf{x}) \approx p(\tilde{y}=j \vert y=i) $$
+  prefs: []
+  type: TYPE_NORMAL
+- en: where $\mathcal{A}_i$ is a subset of data points from $\mathcal{D}_c$ with label
+    $i$.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Let $f(x) = \hat{p}(\tilde{y} \vert \mathbf{x}; \theta)$ and this model should
+    be trained with $\mathcal{L}(f(\mathbf{x}), y)$ on clean data $\mathcal{D}_c$
+    and with $\mathcal{L}(\hat{C}^\top f(\mathbf{x}), \hat{y})$ on noisy data $\mathcal{D}_n$.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/279ebce48a0db388d915532c3ab1746b.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig. 11\. Algorithm of gold loss correction (GLC), estimating the noise transition
+    matrix with a trusted dataset. (Image source: [Hendrycks et al. 2018](https://arxiv.org/abs/1802.05300))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If the trusted training dataset $\mathcal{D}_c$ gets large, we can train a neural
+    network only on clean data and *distill* its knowledge into the primary model
+    (i.e. the final model to make predictions at test time) using corrected **pseudo
+    labels** ([Li et al. 2017](https://arxiv.org/abs/1703.02391)). The primary model
+    is trained on the entire dataset, $\mathcal{D} = \mathcal{D}_c \cup \mathcal{D}_n$.
+    Optionally the “side” information of label relations in the knowledge graph, if
+    available, can be incorporated into distillation to help the robustness of the
+    predictions of the network that is trained on limited data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The label correction distillation works as following:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: First train an auxiliary model $f_c$ from the small clean dataset $\mathcal{D}_c$
+    to provide a soft label for each sample $x_i$, $s_i = \delta(f_c(\mathbf{x}_i)/T)$
+    is the sigmoid activation with temperature $T$.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Because the clean dataset is not large, $f_c$ is likely to overfit, [Li et al.
+    (2017)](https://arxiv.org/abs/1703.02391) turn to a knowledge graph $\mathcal{G}$
+    that defines the relations in the label space and *propagate* the prediction among
+    labels accordingly. The new soft label is donated as $\hat{s}_i = \mathcal{G}(s_i)$.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The primary model $f$ is trained with predictions from $f_c$ to imitate,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: $$ \mathcal{L}(y_i, f(\mathbf{x}_i)) = \text{CE}(\underbrace{\lambda y_i + (1
+    - \lambda) \hat{s}_i}_\text{pseudo label}, f(\mathbf{x}_i)) $$
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sample Reweighting and Selection
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Some samples may be more likely to have inaccurate labels than others. Such
+    estimation gives us intuition on which samples should be weighted less or more
+    in the loss function. However, considering two types of biases in training data,
+    class imbalance and noisy labels, there is actually a contradictory preference
+    — We would prefer samples with larger loss to balance the label distribution but
+    those with smaller loss for mitigating the potential noise. Some work ([Ren et
+    al. 2018](https://arxiv.org/abs/1803.09050)) thus argue that in order to learn
+    general forms of training data biases, it is *necessary* to have *a small unbiased
+    validation* to guide training. The sample reweighting methods presented in this
+    section all assume access to a small trusted set of clean data.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Considering a binary classification task with random classification noise,
+    $y, \hat{y} \in \{-1, +1\}$, the label flipping probabilities, $\rho_{-1}, \rho_{+1}
+    \in [0, 0.5)$, are defined as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ \rho_{-1} = P(\tilde{y} = +1 \vert y=-1)\quad\rho_{+1} = P(\tilde{y}=-1 \vert
+    y =+1) $$
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Liu & Tao (2015)](https://arxiv.org/abs/1411.7718) applies **importance reweighting**
+    to adjust the weighted distribution of observed $\hat{y}$ to match the distribution
+    of unobservable $y$. Let $\mathcal{D}$ be the true data distribution and $\mathcal{D}_\rho$
+    be the corrupted version.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ \begin{aligned} \mathcal{L}_{\ell,\mathcal{D}}(f) &= \mathbb{E}_{(\mathbf{x},y)\sim
+    \mathcal{D}}[\ell(f(\mathbf{x}), y)] \\ &= \mathbb{E}_{(\mathbf{x},\tilde{y})\sim
+    \mathcal{D}_\rho} \Big[ \frac{P_\mathcal{D}(\mathbf{x}, y=\tilde{y})}{P_{\mathcal{D}_\rho}(\mathbf{x},
+    \tilde{y})} \ell(f(\mathbf{x}), \tilde{y}) \Big] \\ &= \mathbb{E}_{(\mathbf{x},\tilde{y})\sim
+    \mathcal{D}_\rho} \Big[ \frac{P_\mathcal{D}(y=\tilde{y} \vert \mathbf{x})}{P_{\mathcal{D}_\rho}(\tilde{y}
+    \vert \mathbf{x})} \ell(f(\mathbf{x}), \tilde{y}) \Big] & \text{; because }P_\mathcal{D}(\mathbf{x})=P_{\mathcal{D}_\rho}(\mathbf{x})
+    \\ &= \mathbb{E}_{(\mathbf{x},\tilde{y})\sim \mathcal{D}_\rho} [ w(\mathbf{x},
+    \hat{y})\ell(f(\mathbf{x}), \tilde{y}) ] = \mathcal{L}_{w\ell,\mathcal{D}}(f)
+    \end{aligned} $$
+  prefs: []
+  type: TYPE_NORMAL
+- en: Because,
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ \begin{aligned} P_{\mathcal{D}_\rho}(\tilde{y} \vert \mathbf{x}) &= P_\mathcal{D}(y
+    = \tilde{y} \vert \mathbf{x}) P_{\mathcal{D}_\rho}(\tilde{y} \vert y=\tilde{y})
+    + P_\mathcal{D}(y = - \tilde{y} \vert \mathbf{x}) P_{\mathcal{D}_\rho}(\tilde{y}
+    \vert y = - \tilde{y}) \\ &= P_\mathcal{D}(y = \tilde{y} \vert \mathbf{x}) (1
+    - P_{\mathcal{D}_\rho}(- \tilde{y} \vert y=\tilde{y})) + (1 - P_\mathcal{D}(y
+    = \tilde{y} \vert \mathbf{x})) P_{\mathcal{D}_\rho}(\tilde{y} \vert y = - \tilde{y})
+    \\ &= P_\mathcal{D}(y = \tilde{y} \vert \mathbf{x}) (1 - \rho_{\tilde{y}}) + (1
+    - P_\mathcal{D}(y = \tilde{y} \vert \mathbf{x})) \rho_{-\tilde{y}} \\ &= P_\mathcal{D}(y
+    = \tilde{y} \vert \mathbf{x})(1 - \rho_{\tilde{y}} - \rho_{-\tilde{y}}) + \rho_{-\tilde{y}}
+    \end{aligned} $$
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thus the weight assigned to a noisy sample is,
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ w(x, \tilde{y}) = \frac{P_\mathcal{D}(y=\tilde{y} \vert \mathbf{x})}{P_{\mathcal{D}_\rho}(\tilde{y}
+    \vert \mathbf{x})} = \frac{P_{\mathcal{D}_\rho}(\tilde{y} \vert \mathbf{x}) -
+    \rho_{-\tilde{y}}}{(1-\rho_0-\rho_1) P_{\mathcal{D}_\rho}(\tilde{y} \vert \mathbf{x})}
+    $$
+  prefs: []
+  type: TYPE_NORMAL
+- en: where $P_{\mathcal{D}_\rho}(\tilde{y} \vert \mathbf{x})$ can be estimated using
+    a simple logistic regression, but estimating the note rates is more challenging.
+    Naive cross-validation can work out but is costly as the quality depends on the
+    amount of trusted labels available. The paper approximates the upper bounds for
+    noise rates first, $\rho_\tilde{y} \leq P_{\mathcal{D}_\rho}(- \tilde{y} \vert
+    \mathbf{x})$ and then use a mild assumption to efficiently estimate them, $\hat{\rho}_{\tilde{y}}
+    = \min_{\mathbf{x} \in {\mathbf{x}_1, \dots, \mathbf{x}_n}} \hat{P}_{\mathcal{D}_\rho}(-
+    \tilde{y} \vert \mathbf{x})$. In their experiments, the advantage of importance
+    reweighting only varies across datasets and is more beneficial when the noise
+    rates are high in general.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sample reweighting schemes can be learned by a separate network. *Learning to
+    reweight* (**L2R**; [Ren et al. 2018](https://arxiv.org/abs/1803.09050)) is a
+    meta-learning approach to directly optimize the weights in pursuit of best validation
+    performance on a known set of clean data. Each example gets assigned with the
+    weight based on its gradient direction. The weighted loss to minimize $\theta^*(\mathbf{w})$
+    involves a set of training weights $\{w_i\}_{i=1}^n$ as unknown hyperparameters.
+    These sample training weights $w_i$ are learned to minimize the loss on this unbiased
+    validate set, $\mathcal{D}_c = \{x^\text{valid}_j\}_{j=1}^m$.
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ \begin{aligned} \theta^{*}(\mathbf{w}) &= \arg\min_\theta \sum_{i=1}^n w_i
+    f(x_i; \theta) \\ \text{where optimal }\mathbf{w}^{*} &= \arg\min_{\mathbf{w},
+    \mathbf{w} \geq \mathbf{0}} \frac{1}{m} \sum_{j=1}^m f(\mathbf{x}^\text{valid}_j;
+    \theta^{*}(\mathbf{w})) \end{aligned} $$
+  prefs: []
+  type: TYPE_NORMAL
+- en: The learning process involves two nested loops of optimization, so pretty expensive,
+    3x training time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/8ab31462fed4d475231e45637a0777c4.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig. 12\. Illustration of updates implemented by second order [automatic differentiation](https://en.wikipedia.org/wiki/Automatic_differentiation).
+    (Image source: [Ren et al. 2018](https://arxiv.org/abs/1803.09050))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: They ran experiments on (1) two-class MNIST to test the robustness of L2R when
+    the class distribution is imbalanced and (2) CIFAR-10 with noisy labels. L2R is
+    shown to be better than other baseline methods at the time on both tasks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/66275b6b04309719cb019b9077d4b7ea.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig. 13\. Left: Imbalanced classes on MNIST (class 4 and 9); Right: Effect
+    of the number of clean samples. Task is on CIFAR-10 with 40% of data flipped to
+    label 3\. (Image source: [Ren et al. 2018](https://arxiv.org/abs/1803.09050))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**MentorNet** ([Jiang et al. 2018](https://arxiv.org/abs/1712.05055)) uses
+    teach-student curriculum learning to weight data. It incorporates two different
+    networks, a mentor and a student. The mentor network provides a data-driven curriculum
+    (i.e. sample training weighting scheme) for the student to focus on learning likely
+    correct labels.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let $g_\psi$ be the MentorNet parameterized by $\psi$ , $f_\theta$ be the StudentNet
+    parametrized by $\theta$ and $G$ be a predefined curriculum parameterized by $\lambda$.
+    Given the training data $\mathcal{D} = \{(\mathbf{x}_i, y_i)\}_{i=1}^n$ for a
+    $k$-class classification task, the MentorNet needs to predict a time-varying latent
+    weight variable $\mathbf{w} \in [0, 1]^{n \times k}$ to guide the learning of
+    StudentNet, taking an intermediate feature processed by StudentNet $f$ , $\mathbf{z}_i
+    = \phi_{f_\theta}(\mathbf{x}_i, y_i)$:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ g_{\psi^{*}}(\mathbf{z}_i) = \arg\min_{w_i \in [0,1]} \mathcal{L}(\theta,
+    \mathbf{w}), \forall i \in [1, n] $$
+  prefs: []
+  type: TYPE_NORMAL
+- en: StudentNet learns to minimize the following learning objective,
+  prefs: []
+  type: TYPE_NORMAL
+- en: $$ \begin{aligned} \mathcal{L}(\theta, \mathbf{w}) &= \frac{1}{n}\sum_{i=1}^n
+    \mathbf{w}_i^\top \ell(y_i, f_\theta(\mathbf{x}_i)) + G_\lambda(\mathbf{w}) +
+    \alpha |\theta|^2_2 \\ &= \frac{1}{n}\sum_{i=1}^n g_\psi(\mathbf{z}_i)^\top \ell_i
+    + G_\lambda(\mathbf{w}) + \alpha |\theta|^2_2 & \text{; Let }\ell_i = \ell(y_i,
+    f_\theta(\mathbf{x}_i)) \\ \end{aligned} $$
+  prefs: []
+  type: TYPE_NORMAL
+- en: The mentor network $g_\psi$ is trained with cross entropy on the input $(\phi_{f_\theta}(\mathbf{x}_i,
+    y_i), w^{*}_i)$ , where $v^*_i=1$ if $y_i$ is known to be a correct label, otherwise
+    0\. The architecture of MentorNet does not have to be very complicated. In the
+    paper, they adopted a LSTM layer to capture the prediction variance in time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/acca016bcbecd43a5b5cbc29d1f6ff68.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig. 14\. Model architecture of MentorNet and StudentNet which are trained
+    simultaneously, where MentorNet predicts the sample weights for StudentNet to
+    train on. (Image source: [Jiang et al. 2018](https://arxiv.org/abs/1712.05055))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Different from MentorNet where one network explicitly learns weighting scheme
+    and curriculum for the other network, **Co-teaching** ([Han et al. 2018](https://arxiv.org/abs/1804.06872))
+    trains two neural networks, $f_1$ and $f_2$, simultaneously and lets them teach
+    each other by feeding data to each other selectively. Co-teaching consists of
+    three steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: First, each network feeds forward the current mini-batch and selects samples
+    with potentially clean labels;
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Then two networks exchange information on which samples in the batch should
+    be used for training. Small-loss instances are selected as they are more likely
+    to be associated with correct labels. The percentage of the batch to select is
+    determined by a time-dependent function $R(T)$. The value of $R(T)$ decreases
+    in time because the network is more likely to overfit and memorize noisy labels
+    as training progresses and thus we use a smaller sampling percentage to keep the
+    selected data quality high.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Finally, each network runs back-propagation updates with the data selected by
+    its peer.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: According to their experiments, co-teaching performs better than [F-correction](#fcorrection)
+    where the noise rates are high or the corruption transition matrix is not symmetric.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '![](../Images/d2f5954362b9c73d8032b85a039da12f.png)'
+  prefs: []
+  type: TYPE_IMG
+- en: 'Fig. 15\. Algorithm of co-teaching in which two networks are trained separately
+    in parallel and each selects samples for the other to train on. (Image source:
+    [Han et al. 2018](https://arxiv.org/abs/1804.06872))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Citation
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 'Cited as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Weng, Lilian. (Apr 2022). Learning with not enough data part 3: data generation.
+    Lil’Log. https://lilianweng.github.io/posts/2022-04-15-data-gen/.'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Or
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Reference
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: '[1] Zhang et al. [“Adversarial AutoAgument”](https://arxiv.org/abs/1912.11188)
+    ICLR 2020.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] Kumar et al. [“Data Augmentation using Pre-trained Transformer Models.”](https://arxiv.org/abs/2003.02245)
+    AACL 2020 Workshop.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Anaby-Tavor et al. [“Not enough data? Deep learning to rescue!”](https://arxiv.org/abs/1911.03118)
+    AAAI 2020.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[4] Wang et al. [“Want To Reduce Labeling Cost? GPT-3 Can Help.”](https://arxiv.org/abs/2108.13487)
+    EMNLP 2021.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[5] Wang et al. [“Towards Zero-Label Language Learning.”](https://arxiv.org/abs/2109.09193)
+    arXiv preprint arXiv:2109.09193 (2021).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[6] Schick & Schutze. [Generating Datasets with Pretrained Language Models."](https://arxiv.org/abs/2104.07540)
+    EMNLP 2021.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[7] Han et al. [“Unsupervised Neural Machine Translation with Generative Language
+    Models Only.”](https://arxiv.org/abs/2110.05448) arXiv preprint arXiv:2110.05448
+    (2021).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[8] Guo et al. [“Augmenting data with mixup for sentence classification: An
+    empirical study.”](https://arxiv.org/abs/1905.08941) arXiv preprint arXiv:1905.08941
+    (2019).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[9] Ekin D. Cubuk et al. [“AutoAugment: Learning augmentation policies from
+    data.”](https://arxiv.org/abs/1805.09501) arXiv preprint arXiv:1805.09501 (2018).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[10] Daniel Ho et al. [“Population Based Augmentation: Efficient Learning of
+    Augmentation Policy Schedules.”](https://arxiv.org/abs/1905.05393) ICML 2019.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[11] Cubuk & Zoph et al. [“RandAugment: Practical automated data augmentation
+    with a reduced search space.”](https://arxiv.org/abs/1909.13719) arXiv preprint
+    arXiv:1909.13719 (2019).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[12] Zhang et al. [“mixup: Beyond Empirical Risk Minimization.”](https://arxiv.org/abs/1710.09412)
+    ICLR 2017.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[13] Yun et al. [“CutMix: Regularization Strategy to Train Strong Classifiers
+    with Localizable Features.”](https://arxiv.org/abs/1905.04899) ICCV 2019.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[14] Kalantidis et al. [“Mixing of Contrastive Hard Negatives”](https://arxiv.org/abs/2010.01028)
+    NeuriPS 2020.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[15] Wei & Zou. [“EDA: Easy data augmentation techniques for boosting performance
+    on text classification tasks.”](https://arxiv.org/abs/1901.11196) EMNLP-IJCNLP
+    2019.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[16] Kobayashi. [“Contextual Augmentation: Data Augmentation by Words with
+    Paradigmatic Relations.”](https://arxiv.org/abs/1805.06201) NAACL 2018'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[17] Fang et al. [“CERT: Contrastive self-supervised learning for language
+    understanding.”](https://arxiv.org/abs/2005.12766) arXiv preprint arXiv:2005.12766
+    (2020).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[18] Gao et al. [“SimCSE: Simple Contrastive Learning of Sentence Embeddings.”](https://arxiv.org/abs/2104.08821)
+    arXiv preprint arXiv:2104.08821 (2020). [[code](https://github.com/princeton-nlp/SimCSE)]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[19] Shen et al. [“A Simple but Tough-to-Beat Data Augmentation Approach for
+    Natural Language Understanding and Generation.”](https://arxiv.org/abs/2009.13818)
+    arXiv preprint arXiv:2009.13818 (2020) [[code](https://github.com/dinghanshen/cutoff)]'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[20] Wang & van den Oord. [“Multi-Format Contrastive Learning of Audio Representations.”](https://arxiv.org/abs/2103.06508)
+    NeuriPS Workshop 2020.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[21] Wu et al. [“Conditional BERT Contextual Augmentation”](https://arxiv.org/abs/1812.06705)
+    arXiv preprint arXiv:1812.06705 (2018).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[22 Zhu et al. [“FreeLB: Enhanced Adversarial Training for Natural Language
+    Understanding.”](https://arxiv.org/abs/1909.11764) ICLR 2020.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[23] Affinity and Diversity: Quantifying Mechanisms of Data Augmentation Gontijo-Lopes
+    et al. 2020 ([https://arxiv.org/abs/2002.08973](https://arxiv.org/abs/2002.08973))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[24] Song et al. [“Learning from Noisy Labels with Deep Neural Networks: A
+    Survey.”](https://arxiv.org/abs/2007.08199) TNNLS 2020.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[25] Zhang & Sabuncu. [“Generalized cross entropy loss for training deep neural
+    networks with noisy labels.”](https://arxiv.org/abs/1805.07836) NeuriPS 2018.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[26] Goldberger & Ben-Reuven. [“Training deep neural-networks using a noise
+    adaptation layer.”](https://openreview.net/forum?id=H12GRgcxg) ICLR 2017.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[27] Sukhbaatar et al. [“Training convolutional networks with noisy labels.”](https://arxiv.org/abs/1406.2080)
+    ICLR Workshop 2015.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[28] Patrini et al. [“Making Deep Neural Networks Robust to Label Noise: a
+    Loss Correction Approach”](https://arxiv.org/abs/1609.03683) CVPR 2017.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[29] Hendrycks et al. [“Using trusted data to train deep networks on labels
+    corrupted by severe noise.”](https://arxiv.org/abs/1802.05300) NeuriPS 2018.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[30] Zhang & Sabuncu. [“Generalized cross entropy loss for training deep neural
+    networks with noisy labels.”](https://arxiv.org/abs/1805.07836) NeuriPS 2018.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[31] Lyu & Tsang. [“Curriculum loss: Robust learning and generalization against
+    label corruption.”](https://arxiv.org/abs/1905.10045) ICLR 2020.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[32] Han et al. [“Co-teaching: Robust training of deep neural networks with
+    extremely noisy labels.”](https://arxiv.org/abs/1804.06872) NeuriPS 2018\. ([code](https://github.com/bhanML/Co-teaching))'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[33] Ren et al. [“Learning to reweight examples for robust deep learning.”](https://arxiv.org/abs/1803.09050)
+    ICML 2018.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[34] Jiang et al. [“MentorNet: Learning data-driven curriculum for very deep
+    neural networks on corrupted labels.”](https://arxiv.org/abs/1712.05055) ICML
+    2018.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[35] Li et al. [“Learning from noisy labels with distillation.”](https://arxiv.org/abs/1703.02391)
+    ICCV 2017.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[36] Liu & Tao. [“Classification with noisy labels by importance reweighting.”](https://arxiv.org/abs/1411.7718)
+    TPAMI 2015.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[37] Ghosh, et al. [“Robust loss functions under label noise for deep neural
+    networks.”](https://arxiv.org/abs/1712.09482) AAAI 2017.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[38] Hu et al. [“Does Distributionally Robust Supervised Learning Give Robust
+    Classifiers? “](https://arxiv.org/abs/1611.02041) ICML 2018.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: $y=i$ is not a technically correct way to annotate a label being a certain value,
+    since we usually use one-hot encoding (i.e. $\mathbf{y} = \mathbf{e}_i$). We use
+    this form for simplicity. [↩︎](#fnref:1)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
