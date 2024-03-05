@@ -1,3 +1,4 @@
++   [AssemblyAI 博客中文翻译](docs/assemblyai/README.md)
 +   [DataCamp 博客中文翻译](docs/datacamp/README.md)
 +   [DLology 博客中文翻译](docs/dlology/README.md)
 +   [LiLianWeng 博客中文翻译](docs/lilianweng/README.md)
