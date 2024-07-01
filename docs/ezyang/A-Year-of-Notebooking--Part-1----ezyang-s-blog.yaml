@@ -206,11 +206,13 @@
   id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 给定一个正则表达式和一个不匹配的字符串，需要多少次编辑才能使字符串匹配？可能会有多个答案，算法应允许对不同的修改进行加权。
 - en: 'Frank Tip: Test Generation and Fault Localization for Web Applications'
   id: totrans-22
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: Frank Tip：为Web应用生成测试和故障定位
 - en: 'Apollo takes a hybrid approach to testing web applications, combining concrete
     and symbolic execution. The idea is that most web applications have diffuse, early
     conditionalization, with no complex state transformations or loops. So, we generate
@@ -226,22 +228,26 @@
   id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: Apollo采用了测试Web应用程序的混合方法，结合了具体执行和符号执行。其理念是，大多数Web应用程序具有模糊的、早期的条件化，没有复杂的状态转换或循环。因此，我们在控制器上生成路径约束并解决它们，然后生成输入，使我们能够执行所有控制路径。数据即代码：我们想描述数据。我可能没有很仔细地听演讲，因为我写下了各种其他事情：“堆栈不是STG的正确调试机制”（嗯，是的，因为我们想知道我们*来自*哪里。不幸的是，知道我们*要去*哪里也不是很有用）和“我们可以使用执行跟踪自动生成QuickCheck缩减实现吗？”（一种自动化的测试用例最小化）以及最后的思考，“Haskell不是一个适合运行时检查或故障定位的好语言。”
 - en: 'Benjamin Pierce: Types and Programming Languages'
   id: totrans-24
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: Benjamin Pierce：类型与编程语言
 - en: It would be very cool if someone made an interactive visualization of how type
     systems grow and are extended as you add new features to them, a sort of visual
     diff for typing rules and operational semantics.
   id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果有人制作出一个交互式可视化，展示在向类型系统添加新功能时类型系统如何生长和扩展，一种类型规则和操作语义的视觉差异，那将非常酷。
 - en: Smoothed trending
   id: totrans-26
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 平滑趋势
 - en: As a blogger, my page view counts tend to be very spiky, corresponding to when
     my post hits a popular news site and gets picked up (to date, my Bitcoin post
     has had 22k views. Not bad!) But this doesn’t help me figure out long term trends
@@ -250,11 +256,13 @@
   id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 作为一名博客作者，我的页面浏览量往往会非常波动，当我的文章被流行新闻网站推广时，访问量就会飙升（迄今为止，我的比特币文章已经有22k次浏览。不错！）但这并不能帮助我了解网站的长期趋势。有没有办法使这些波动趋势平滑，使得高峰仅仅成为更长期趋势上的“热门点”？
 - en: User interfaces
   id: totrans-28
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 用户界面
 - en: I want a bible of minimal technical effort best practice user interfaces, patterns
     that are easy to implement and won’t confuse users too much. UI design is a bit
     too tweaky for my tastes. In the case of intelligent interfaces, how do we not
@@ -263,22 +271,27 @@
   id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 我想要一个最小技术工作量最佳实践用户界面的圣经，实现起来简单且不会让用户太困惑的模式。对我来说，UI设计有点太琐碎了。在智能界面的情况下，我们如何不让用户生气（例如Google
+    Instant）？我们有一个用户期望，即计算机不会猜测我想要什么。那太奇怪了。
 - en: Page 32
   id: totrans-30
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 第32页
 - en: 'In big letters I have: “Prove locality theorems. No action at a distance.”
     Almost precisely these same words Norman Ramsey would tell me while I was working
     with Hoopl. I think this is a pretty powerful idea.'
   id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 我用大字写着：“证明局部定理。没有远程作用。”诺曼·拉姆齐在我和Hoopl一起工作时，几乎用了同样的话告诉我。我认为这是一个非常有力的想法。
 - en: Separation Logic and Graphical Models
   id: totrans-32
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 分离逻辑与图形模型
 - en: 'I have some mathematical definitions written down, but they’re incomplete.
     I don’t think I wrote anything particularly insightful. This says something about
     the note-taking enterprise: you should record things that you would not be able
@@ -287,11 +300,13 @@
   id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 我记录了一些数学定义，但它们并不完整。我不认为我写了什么特别有洞察力的东西。这反映了笔记的目的：你应该记录那些以后可能无法获取的东西，但你也应该确保跟进所有你说过会查找的完整信息。
 - en: Jane Street
   id: totrans-34
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: Jane Street
 - en: I have two pages of scribblings from solving problems over a telephone interview.
     I quite enjoyed them. One was a dynamic programming question (I moffed the recurrence
     at first but eventually got it), the second was implementing a functional programming
