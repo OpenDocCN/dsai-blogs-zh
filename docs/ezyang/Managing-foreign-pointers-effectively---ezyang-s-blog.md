@@ -1,0 +1,21 @@
+<!--yml
+category: 未分类
+date: 2024-07-01 18:18:13
+-->
+
+# Managing foreign pointers effectively : ezyang’s blog
+
+> 来源：[http://blog.ezyang.com/2010/07/managing-foreign-pointers-effectively/](http://blog.ezyang.com/2010/07/managing-foreign-pointers-effectively/)
+
+## Managing foreign pointers effectively
+
+[Foreign.ForeignPtr](http://haskell.org/ghc/docs/6.12.2/html/libraries/base-4.2.0.1/Foreign-ForeignPtr.html) is a magic wand you can wave at C libraries to make them suddenly garbage collected. It’s not quite that simple, but it is *pretty darn simple*. Here are a few quick tips from the trenches for using foreign pointers effectively with the Haskell FFI:
+
+*   Use them as early as possible. As soon as a pointer which you are expected to free is passed to you from a foreign imported function, you should wrap it up in a ForeignPtr before doing anything else: this responsibility lies soundly in the low-level binding. Find the functions that you have to import as `FunPtr`. If you’re using c2hs, declare your pointers `foreign`.
+*   As an exception to the above point, you may need to tread carefully if the C library offers more than one way to free pointers that it passes you; an example would be a function that takes a pointer and destroys it (likely not freeing the memory, but reusing it), and returns a new pointer. If you wrapped it in a ForeignPtr, when it gets garbage collected you will have a double-free on your hands. If this is the primary mode of operation, consider a `ForeignPtr (Ptr a)` and a customized free that pokes the outside foreign pointer and then frees the inner pointer. If there is no logical continuity with respect to the pointers it frees, you can use a `StablePtr` to keep your `ForeignPtr` from ever being garbage collected, but this is effectively a memory leak. Once a foreign pointer, always a foreign pointer, so if you can’t commit until garbage do us part, don’t use them.
+*   You may pass foreign pointers to user code as opaque references, which can result in the preponderance of newtypes. It is quite useful to define `withOpaqueType` so you don’t have to pattern-match and then use `withForeignPtr` every time your own code peeks inside the black box.
+*   Be careful to use the library’s `free` equivalent. While on systems unified by libc, you can probably get away with using `free` on the `int*` array you got (because most libraries use `malloc` under the hood), this code is not portable and will [almost assuredly crash if you try compiling on Windows](http://blogs.msdn.com/b/oldnewthing/archive/2006/09/15/755966.aspx). And, of course, complicated structs may require more complicated deallocation strategies. (This was in fact the only bug that hit me when I tested my own library on Windows, and it was quite frustrating until I remembered Raymond’s blog post.)
+*   If you have pointers to data that is being memory managed by another pointer which is inside a ForeignPtr, extreme care must be taken to prevent freeing the ForeignPtr while you have those pointers lying around. There are several approaches:
+    *   Capture the sub-pointers in a Monad with rank-2 types (see the `ST` monad for an example), and require that the monad be run within a `withForeignPtr` to guarantee that the master pointer stays alive while the sub-pointers are around, and guarantee that the sub-pointer can’t leak out of the context.
+    *   Do funny things with `Foreign.ForeignPtr.Concurrent`, which allows you to use Haskell code as finalizers: reference counting and dependency tracking (only so long as your finalizer is content with being run after the master finalizer) are possible. I find this very unsatisfying, and the guarantees you can get are not always very good.
+*   If you don’t need to release a pointer into the wild, don’t! [Simon Marlow](http://article.gmane.org/gmane.comp.lang.haskell.glasgow.user/7107) acknowledges that finalizers can lead to all sorts of pain, and if you can get away with giving users only a bracketing function, you should consider it. Your memory usage and object lifetime will be far more predictable.
