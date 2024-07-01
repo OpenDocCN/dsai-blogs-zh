@@ -194,6 +194,7 @@
   id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们要考虑实数上的函数。我们如何知道某物是可计算的？我们可能会尝试说它是从数字串到数字串的关系，其中`F(p)`的任何有限前缀可以从`p`的足够长度的有限前缀统一计算得出。但对于像0.3333这样的情况，这显然是不够的，因为我们需要读取无限多的数字来判断这是否真的是三分之一。（我要注意，无穷大有点像图灵机领域的预言机。）
 - en: Instead, we say that a sequence of rationals `q_i` (with `i` ranging over naturals)
     represents a real number `x` if `|x - q_i| < 2^-i` for all `i`. (the base doesn’t
     really matter). Let `p(q) = x`, then `f` is computable if there exists an `F`
@@ -203,6 +204,8 @@
   id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 相反地，我们说一个有理数序列`q_i`（其中`i`是自然数）代表了一个实数`x`，如果对于所有`i`，`|x - q_i| < 2^-i`。（基数并不重要）。让`p(q)
+    = x`，那么如果存在`F`使得`p(F(prefix)) = f(p(prefix)`，则`f`是可计算的。根据这个定义，加法、乘法、除法、三角函数、指数函数和对数函数都是可计算的。
 - en: 'An interesting restriction of function is that of continuity, familiar from
     any treatment in a Calculus textbook: a function `f : R -> R` is continuous if
     for all `x` in the domain of `f`, and for all `ε > 0`, there exists a `δ > 0`
@@ -215,6 +218,8 @@
   id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: '一个有趣的函数限制是连续性，从任何微积分教科书中都很熟悉：如果对于`f: R -> R`的所有`x`，对于所有`ε > 0`，存在一个`δ > 0`，使得对于`f`的所有定义域中的`y`，当`|x
+    - y| < δ`时，`|f(x) - f(y)| < ε`。有人提出每个可计算函数都是连续的：因此，可计算性源于我们能够逼近事物，这对于不连续的函数来说是做不到的（我们处于不连续处的哪一边？）我们可以进一步限制函数到`C(R,R)`，这是连续函数集合，也可以通过无限序列来逼近（例如多项式）。'
 - en: 'Consider the monotone intermediate value thoerem, which states that if `f`
     is monotone, [PRE0], there exists some x such that `f(x) = 0`. Can we compute
     this number? Bisection doesn’t work, since determining if a number is less than
@@ -225,26 +230,31 @@
   id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 考虑单调中间值定理，该定理指出如果`f`是单调的，[PRE0]，那么存在某个x使得`f(x) = 0`。我们能计算出这个数吗？二分法不起作用，因为确定一个数是否大于或小于另一个数通常是不可计算的。（一般的中间值定理也不可计算，因为我们可以无限接近原点线。）我们可以使用三分法。同时计算`f(0.3)`和`f(0.7)`，并执行以下比较：
 - en: If `f(0.3) < 0`, the new range is `[0.3, 1]`
   id: totrans-28
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 如果`f(0.3) < 0`，新的区间是`[0.3, 1]`
 - en: If `f(0.3) > 0`, the new range is `[0, 0.3]`
   id: totrans-29
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 如果`f(0.3) > 0`，新的区间是`[0, 0.3]`
 - en: If `f(0.7) < 0`, the new range is `[0.7, 1]`
   id: totrans-30
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 如果`f(0.7) < 0`，新的区间是`[0.7, 1]`
 - en: If `f(0.7) > 0`, the new range is `[0, 0.7]`
   id: totrans-31
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 如果`f(0.7) > 0`，新的区间是`[0, 0.7]`
 - en: 'You’ll have to do a little work to get a formal proof of correctness, but it’s
     easy to see why this intuitively might work: comparisons take infinite time only
     if the number is close to the point of comparison, but then our other comparison
@@ -253,6 +263,7 @@
   id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 你需要做一些工作来得到一个正确性的正式证明，但很容易看出为什么这在直观上可能有效：比较只有在数接近比较点时才会花费无限的时间，但那么我们的另一个比较就一定会成功，因为它与比较点有非无限小的距离。（我有一个小边注：我们可以用这个来做密码学吗？）
 - en: 'It turns out there are various schools on the computability of real numbers.
     The perspective I have just described is the Polish School. However, the Russian
     School says that uncomputable points don’t exist: the code fragment is the real
@@ -545,6 +556,7 @@
   id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 美国人不知情，他们的金融系统仍然停留在磁条阅读器上，而欧洲的银行卡已经迁移到EMV，其中在芯片中嵌入了一个微处理器，可以进行真正的挑战-响应认证。本讲座探讨了我们如何通过现有的EMV硬件引导一个绕过银行的P2P交易系统。
 - en: 'How might we do this? We can use a device called the CAP, which has a small
     display that when given a pin gives an authentication code (two factor.) We associate
     transactions with CAP code, so the merchant has agreed to receive money. But you
@@ -556,6 +568,8 @@
   id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们该如何做到这一点？我们可以使用称为CAP的设备，它有一个小显示屏，当给定一个PIN时会生成认证码（双因素认证）。我们将交易与CAP码关联起来，这样商家同意接收款项。但是你仍然需要从银行那里获得合作。（这是SDA方法。）所以我们完全摆脱了银行，使用Diffie-Hellman（DDA）。卡只是简单便利的现有基础设施，用于获取名称认证。由于我们一次只能签署32位，通常需要更多。
+    （边注：“威胁模型是隐私倡导者。”）
 - en: 'The talk was short, so afterwards we had a discussion why this scheme wouldn’t
     actually work. My objection was that it banks would simply make it illegal to
     use their bank cards in this way. There was a discussion whether or not they could
@@ -569,11 +583,13 @@
   id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 讲话很短，所以之后我们讨论了为什么这个方案实际上不会起作用。我的反对意见是银行可能会简单地禁止以这种方式使用他们的银行卡。讨论是他们是否技术上能够强制执行这一点：马库斯·库恩用护照作为例子，如果您没有互联网访问权限，您就无法读取护照，因为护照本身有一个嵌入的单调时钟，如果扫描仪软件不是最新版本，则会拒绝向扫描仪提供信息。护照如何知道最新版本是什么？它的时钟在看到新扫描仪时得到更新。）护照安全技术非常有趣！他们为此发明了一个字母表上的块密码。
 - en: Verifying the validity of QBF
   id: totrans-70
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 验证QBF的有效性。
 - en: 'SAT is exponential, and when you add quantifiers to the mix, you get “another”
     exponential, but this time in the certificate. How do you verify that a universally
     quantified formula is in fact true? The certificate in this case is extension
@@ -584,12 +600,14 @@
   id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: SAT是指数级的，当你将量化器加入其中时，得到的是“另一个”指数级，但这次是在证书中。如何验证一个全称量化公式实际上是真的？在这种情况下，证书是扩展变量和见证：我们为所有存在量化的变量提供具体实现，然后可以替换成一个传统的SAT问题。因此，一旦我们有了证书，一个PSPACE问题现在“只是”一个NP问题。
 - en: '(Technical note: We want to eliminate hypotheses in topological order (using
     Refl, Gen and Exists). Get the quantifiers in the right order, witnesses depend
     on existential variables, extension variables depend on it.)'
   id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: （技术注释：我们希望按拓扑顺序消除假设（使用Refl、Gen和Exists）。正确排列量化器，见证取决于存在变量，扩展变量取决于此。）
 - en: The talk described how he hooked into the internals of Squolem to get actually
     get these certificates. It turned out that de Bruijn was faster than name carrying
     (which is different from typical QBF invalidity checking.) He even found a bug
@@ -597,12 +615,15 @@
   id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 讲话描述了他如何钩入Squolem的内部，以实际获得这些证书。结果表明，德布鲁因比携带名称更快（这与典型的QBF无效性检查不同）。他甚至发现了非LCF样式验证器中的一个bug（由于缺乏循环检查）。
 - en: 'Applications: model checking (bounded and unbounded), PSPACE problems. (Margin
     note: "comparison of BDD and QBF?")'
   id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 应用：模型检验（有界和无界），PSPACE问题。（边注：“比较BDD和QBF？”）
 - en: This concludes notebook two.
   id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 这篇笔记本二到此结束。
