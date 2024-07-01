@@ -1,37 +1,55 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:22'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:22'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'A classical logic fairy tale : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 一个古典逻辑童话故事：ezyang's 博客
 - en: 来源：[http://blog.ezyang.com/2013/04/a-classical-logic-fairy-tale/](http://blog.ezyang.com/2013/04/a-classical-logic-fairy-tale/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2013/04/a-classical-logic-fairy-tale/](http://blog.ezyang.com/2013/04/a-classical-logic-fairy-tale/)
 - en: A classical logic fairy tale
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 一个古典逻辑童话故事
 - en: '(Selinger) Here is a fairy tale: The evil king calls the poor shepherd and
     gives him these orders. “You must bring me the philosophers stone, or you have
     to find a way to turn the philosopher’s stone to gold. If you don’t, your head
     will be taken off tomorrow!” What can the poor shepherd do to save his life?'
+  id: totrans-7
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: (Selinger) 这是一个童话故事：邪恶的国王召见可怜的牧羊人，并下令他：“你必须给我带来哲学石，或者找到将哲学石变成黄金的方法。如果你做不到，你明天就要被砍头！”可怜的牧羊人该怎么办才能挽救自己的生命？
 - en: Hat tip to [Chris](http://www.cs.cmu.edu/~cmartens/) for originally telling
     me a different variant of this story. Unfortunately, this quote from *Lectures
     on the Curry-Howard Isomorphism* was the only reference I could find. What should
     the shepherd do? Is there something a little odd about this story?
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 致谢[克里斯](http://www.cs.cmu.edu/~cmartens/)，最初告诉我这个故事的不同版本。不幸的是，这段引用来自*柯瑞-霍华德同构的讲座*，这是我能找到的唯一参考资料。牧羊人应该怎么做？这个故事有点奇怪吗？

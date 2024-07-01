@@ -1,27 +1,41 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:45'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:45'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'A Taxonomy of Socialization on the Internet : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 互联网社交分类法：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2011/06/taxonomy-of-socialization-on-the-internet/](http://blog.ezyang.com/2011/06/taxonomy-of-socialization-on-the-internet/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/06/taxonomy-of-socialization-on-the-internet/](http://blog.ezyang.com/2011/06/taxonomy-of-socialization-on-the-internet/)
 - en: A Taxonomy of Socialization on the Internet
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 互联网社交分类法
 - en: There’s *networking*, and then there’s *socialization.* Networking is establishing
     the link, knowing how to find and talk to the person if the need arises. Socialization
     is communication for the sake of communication; it strengthens networks and keeps
@@ -32,120 +46,163 @@
     fundamental characteristic of the newest social patterns (facilitated by Facebook
     and Twitter), and describe some of the challenges in designing methods for consuming
     and aggregating this information.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 有*网络*，也有*社交*。网络是建立联系，知道如何找到并与人交流的过程。社交是为了交流而交流；它加强网络并保持人们联系。在很多方面，这是社交网络网站提供的效用。问题是，如今在互联网上有很多不同的交流方式。在这篇博文中，我尝试解释互联网社交的基本差异。我认为所谓的*一对多社交*是最新社交模式的基本特征（由
+    Facebook 和 Twitter 提供支持），并描述了设计消费和聚合这些信息方法中的一些挑战。
 - en: 'There are a few obvious ways to slice up communication methods. Here are a
     few:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 有几种明显的方式来切分通信方法。以下是一些：
 - en: '*Media.* Most current applications are primarily text-based, but people have
     also tried audio, picture and video based modes with varying degrees of success.'
+  id: totrans-9
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*媒体.* 大多数当前应用主要是基于文本的，但人们也尝试过基于音频、图片和视频的模式，成功的程度不一。'
 - en: '*Length.* How long is the average message in this medium?'
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*长度.* 在这个媒介中，平均消息有多长？'
 - en: '*Persistence.* If I ignore all activity older than an hour, how much do I miss?
     Are messages expected to be ephemeral or persistent? Is it even possible to send
     messages at all times?'
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*持久性.* 如果我忽略所有一小时之前的活动，我会错过多少？消息是否预期是短暂的还是持久的？是否总是可以随时发送消息？'
 - en: '*Distribution.* Is it one-to-one, one-to-many or many-to-many communication?
     (For the purposes of this discussion, we’ll define on-to-many when there is an
     asymmetric flow of information: so a “comment” system does not turn a conversation
     into many-to-many... unless it manages to capture a conversation of its own.)
     When there are many listeners, how do we select who is listening?'
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*分发.* 是一对一、一对多还是多对多的通讯方式？（在本讨论中，我们将在信息流不对称时定义为一对多：因此“评论”系统不会将对话转化为多对多……除非它设法捕捉到自己的对话。）当有许多听众时，我们如何选择谁在听？'
 - en: '*Consumption.* How do we receive updates about communication?'
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*消费.* 我们如何接收关于通信的更新？'
 - en: 'We can look at a few existing networks and see how they answer these questions:'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以看一些现有的网络，并看看它们如何回答这些问题：
 - en: '*Instant messaging* (IM). Text, short length, persistent but not always available,
     one-to-one, consumed via a chat client. Note that with the existence of multi-protocol
     chat clients, it’s not too difficult to navigate the multitude or protocols employed
     by people all over the world.'
+  id: totrans-15
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*即时消息*（IM）。文本，长度短，持久但不总是可用，一对一，通过聊天客户端消费。请注意，随着多协议聊天客户端的存在，导航世界各地人们采用的多种协议并不是件太困难的事。'
 - en: '*Internet Relay Chat* (IRC) and *Jabber*. Text, short length, ephemeral, many-to-many,
     consumed via an IRC/Jabber client. There is some degree of integration between
     these protocols and instant messengers. Anyone can participate, but people can
     be kicked or banned from channels.'
+  id: totrans-16
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*Internet Relay Chat* (IRC) 和 *Jabber*。文本，长度短，短暂，多对多，通过 IRC/Jabber 客户端使用。这些协议与即时通讯工具有一定的整合。任何人都可以参与，但也可能会被踢出或禁止在频道内。'
 - en: '*Personal email.* Text, medium length, persistent, one-to-one, consumed via
     a webmail interface or a mail client.'
+  id: totrans-17
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*个人电子邮件.* 文本，中等长度，持久，一对一，通过网络邮件界面或邮件客户端消费。'
 - en: '*Mailing lists.* Text, medium length, persistent, many-to-many, consumed via
     webmail, mail client, or newsreader. For public mailing lists, anyone can participate.'
+  id: totrans-18
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*邮件列表.* 文本，中等长度，持久，多对多，通过网络邮件、邮件客户端或新闻阅读器消费。对于公共邮件列表，任何人都可以参与。'
 - en: '*Forum.* Text, medium length, persistent, many-to-many, consumed via web browser.'
+  id: totrans-19
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*论坛.* 中等长度的文本，持久，多对多，通过网络浏览器消费。'
 - en: '*Blog.* HTML, medium to long length, persistent, one-to-many, consumed via
     web browser, possibly with an RSS reader. Anyone can subscribe to a public blog
     they are interested to.'
+  id: totrans-20
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*博客.* HTML，中到长篇幅，持久，一对多，通过网络浏览器消费，可能使用RSS阅读器。任何人都可以订阅他们感兴趣的公共博客。'
 - en: '*Twitter.* Text, short length, ephemeral or persistent, one-to-many (though
     one-to-one communication is possible with at-replies, and in even more rare cases,
     many-to-many with multiple at-recipients), consumed via web browser or a Twitter
     client. Anyone can follow a public Twitter user.'
+  id: totrans-21
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*Twitter.* 短文本，短暂或持久，一对多（尽管可以通过回复 "@" 实现一对一通信，在更稀有的情况下也可以进行多对多通信），通过网络浏览器或Twitter客户端消费。任何人都可以关注公共Twitter用户。'
 - en: '*Facebook Wall.* Text and images, short to medium length, ephemeral or persistent,
     one-to-many (but many-to-many with comments), consumed via web browser. Only friends
     can receive updates.'
+  id: totrans-22
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*Facebook动态.* 文本和图像，短到中等长度，短暂或持久，一对多（但通过评论可以进行多对多），通过网络浏览器消费。只有朋友可以接收更新。'
 - en: '*Zephyr.* (Sorry, had to sneak in an MIT example, since I use this protocol
     *a lot*.) Text, short to medium length, ephemeral or persistent, many-to-many
     (but with personal classes, which let people initiate conversations in a one-to-many
     fashion), consumed via zephyr client. Effectively limited to members of a university
     only.'
+  id: totrans-23
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*Zephyr.*（抱歉，不得不插入MIT的例子，因为我经常使用这个协议。）短到中等长度的文本，短暂或持久，多对多（但通过个人类别，可以让人们以一对多的方式发起对话），通过Zephyr客户端消费。实际上仅限于大学成员。'
 - en: '*Social question websites.* (e.g. Ask Reddit, Ask Hacker News, Stack Overflow.)
     Text, medium to long length, persistent, one-to-many (discussion itself can range
     from one-to-one to many-to-many), consumed via web browser. Updates are seen by
     subscribers of a given topic.'
+  id: totrans-24
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*社交问答网站.*（例如Ask Reddit，Ask Hacker News，Stack Overflow。）中长文本，持久，一对多（讨论本身可以从一对一到多对多），通过网络浏览器消费。更新由特定主题的订阅者看到。'
 - en: '*Skype Voice/Video.* Audio/video, short length, ephemeral, one-to-one, done
     via the Skype client.'
+  id: totrans-25
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*Skype 语音/视频.* 音频/视频，短暂，一对一，通过Skype客户端进行。'
 - en: There are a few interesting features about this current landscape that I can
     observe, once we have distilled these protocols down to these levels.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我们将这些协议简化到这些层次后，我可以观察到当前景观的一些有趣特征。
 - en: Upstart companies attempting to create the next big social networks will frequently
     be innovating specifically in a few of these dimensions. Google Wave tried to
     innovate on medium, by introducing an extremely rich method of communication.
     Color is trying to innovate on medium and distribution.
+  id: totrans-27
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 新兴公司试图在几个维度上创造下一个大型社交网络。Google Wave尝试通过引入非常丰富的通信方式在媒介上进行创新。Color试图在媒介和分发上进行创新。
 - en: 'Communication protocols that lie within the same taxonomy (for example, IM
     clients) have seen a proliferation of clients that can interoperate before all
     of them. This has not, however, generally been the case for cross-taxonomy jumps:
@@ -153,9 +210,11 @@
     Facebook and instant messaging? And if you have, did it work well at all? The
     method of consumption for one type of social information does not necessarily
     work well for other types.'
+  id: totrans-28
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 属于相同分类法的通信协议（例如即时消息客户端）已经看到了能够在所有这些客户端之间进行互操作的大量客户端的激增。然而，跨分类法跃迁的情况通常并非如此：你见过一个可以将论坛、电子邮件、Facebook和即时消息参与集成在一起的单一客户端吗？如果有，它是否运作良好？一种社交信息类型的消费方法未必适用于其他类型。
 - en: Similarly, it is not too difficult to bootstrap persistent communication protocols
     on other communication protocols. For example, a reply to a forum post is relatively
     persistent and not too much is lost if you send an email update whenever a new
@@ -163,9 +222,11 @@
     for updates, this can be critical. However, sending instant messages to your email
     account makes no sense! There is something important here, which is that it does
     not make sense to mix ephemeral and persistent means of communication.
+  id: totrans-29
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 同样，对其他通信协议进行持久通信的引导并不太困难。例如，对论坛帖子的回复相对持久，如果你发现新回复时发送电子邮件更新，且不能依赖用户定期检查网站更新，这可能至关重要。然而，将即时消息发送到电子邮件帐户毫无意义！这里有一些重要的事情，即混合短暂和持久通信方式是没有意义的。
 - en: Early social networking tools focused on one-to-one and many-to-many interactions,
     since these closely model how we socialize in real life. However, the advent of
     Twitter and Facebook has demonstrated that normal people can use a one-to-many
@@ -175,9 +236,11 @@
     The new social Internet involves exploring between the lines of publishing and
     private communication. Understanding what this variation is, is in many ways the
     key to understanding how to use the new social medium correctly.
+  id: totrans-30
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 早期的社交网络工具专注于一对一和多对多的互动，因为这些方式与我们在现实生活中社交的方式非常相似。然而，Twitter和Facebook的出现表明，普通人不仅可以用一对多的媒介来发布信息（就像博客的情况），而且可以用来社交。人们不是在布告栏上张贴流言纸片，而是通过一对一的对话来传播。但这正是新互联网所关注的。新的社交互联网涉及在出版和私人通信之间探索。理解这种变化，在很多方面是正确使用新社交媒体的关键。
 - en: As an end-user, I’m interested in mechanisms of unifying all social interaction
     methods which have *the same consumption patterns*—mostly because I don’t have
     a long enough attention span to deal with so many different website I have to
@@ -191,13 +254,17 @@
     this was the key feature that moved Facebook from being a social networking site
     to a social communication site.) The situation becomes much more complex when
     multiple, subtly incompatible modes of communication are thrown into the mix.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 作为终端用户，我对统一所有具有*相同消费模式*的社交互动方法的机制很感兴趣——主要是因为我没有足够长的注意力来处理那么多我必须检查的不同网站。并且，这*并不*意味着只提供一个选项卡界面，让你可以在不同的网络之间切换。对于持久方法，电子邮件和RSS对我来说效果还不错，但是当涉及新的一对多的瞬时（但持久）通信方式时，我总觉得有一个很大的空白。部分原因是，即使只涉及一个通信协议，我们仍在努力找出最佳的解决方法。（请记住，Facebook的新闻订阅在最初发布时曾广受诟病——但这正是将Facebook从社交网络网站转变为社交通信网站的关键功能。）当多种微妙不兼容的通信模式混合在一起时，情况变得更加复杂。
 - en: '[Kyle Cordes](http://kylecordes.com/2010/better-social-media-client) writes
     about this topic from the perspective of a power user. I agree with him that it’s
     unclear whether or not there would actually be a market for such a unified social
     media client outside of power users. But it’s unclear to me if the open source
     community will step up to the bat and create such a client. I hope to be proven
     wrong.'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Kyle Cordes](http://kylecordes.com/2010/better-social-media-client) 从权力用户的角度写道这个主题。我同意他的观点，即在权力用户之外是否实际存在这样一个统一的社交媒体客户端的市场尚不清楚。但我不确定开源社区是否会迈出这一步并创建这样的客户端。我希望自己是错的。'

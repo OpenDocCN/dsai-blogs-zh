@@ -1,23 +1,35 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:45'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:45'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'A pattern for increasing sharing : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 增加共享的模式：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2011/06/a-pattern-for-increasing-sharing/](http://blog.ezyang.com/2011/06/a-pattern-for-increasing-sharing/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/06/a-pattern-for-increasing-sharing/](http://blog.ezyang.com/2011/06/a-pattern-for-increasing-sharing/)
 - en: 'I recently encountered the following pattern while writing some Haskell code,
     and was surprised to find there was not really any support for it in the standard
     libraries. I don’t know what it’s called (neither did Simon Peyton-Jones, when
@@ -29,58 +41,89 @@
     reuse old pieces of the map if there were no changes to it. (Regular readers of
     my blog may recognize this situation from [this post.](http://blog.ezyang.com/2011/06/pinpointing-space-leaks-in-big-programs/))
     So what is such an alternative map `(a -> Maybe a) -> f a -> Maybe (f a)` called?'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 我最近在编写一些Haskell代码时遇到了以下模式，并惊讶地发现标准库中实际上没有为其提供支持。我不知道它叫什么（当我向Simon Peyton-Jones提到它时，他也不知道），所以如果有人知道，请告诉我。这个模式是这样的：很多时候，一个自同态映射（`map`函数是`a
+    -> a`）对底层数据结构不会做出太多改变。如果我们直接实现`map`，我们将不得不重建递归数据结构的整个脊柱。然而，如果我们使用`a -> Maybe a`的函数，如果没有更改，我们可以重用旧的映射部分。（我博客的常读者可能会从[this
+    post.](http://blog.ezyang.com/2011/06/pinpointing-space-leaks-in-big-programs/)中认出这种情况。）那么这样的替代`map`函数`(a
+    -> Maybe a) -> f a -> Maybe (f a)`叫什么？
 - en: 'One guess it might be the `traverse` function in [Data.Traversable](http://hackage.haskell.org/packages/archive/base/latest/doc/html/Data-Traversable.html#v:traverse):
     it certainly has a very similar type signature: `Applicative f => (a -> f b) ->
     t a -> f (t b)`. However, the semantics are subtly different, as you can see from
     this example:'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 有一个猜测它可能是`Data.Traversable`中的`traverse`函数：它的类型签名确实非常相似：`Applicative f => (a
+    -> f b) -> t a -> f (t b)`。然而，语义上有微妙的不同，你可以从这个例子中看出来：
 - en: '[PRE0]'
+  id: totrans-8
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'Recall that our function only returns `Nothing` in the event of no change.
     Thus, we *should* have gotten the result `Just [1,3,3]`: the first and third elements
     of the list unchanged, and the second element of the list with its new value.'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 请记住，我们的函数只在没有变化时返回`Nothing`。因此，我们*应该*得到结果`Just [1,3,3]`：列表的第一和第三个元素不变，而列表的第二个元素有新值。
 - en: 'How would we implement such a function for lists? Here’s a simple implementation:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们如何为列表实现这样的函数？这里是一个简单的实现：
 - en: '[PRE1]'
+  id: totrans-11
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'But we can do better than this. Consider a situation where all elements of
     the list except the head stay the same:'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 但是我们可以做得更好。考虑一种情况，列表中除头部外所有元素保持不变：
 - en: 'We would like to share the tail of the list between the old and new versions.
     With a little head-scratching, and the realization that `tails` shares, we can
     write this version:'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们希望在旧版本和新版本之间共享列表的尾部。稍加思索后，意识到`tails`可以实现共享，我们可以写出这个版本：
 - en: '[PRE2]'
+  id: totrans-14
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'Open questions: what is this pattern called? Why doesn’t it follow the usual
     applicative structure? Does it fulfill some higher order pattern? Also, this scheme
     isn’t fully compositional: if I pass you a `Nothing`, you have no access to the
     original version in case there was a change elsewhere in the structure: `(Bool,
     a)` might be a little more compositional. Does this mean this is an example of
     the state monad? What about sharing?'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 未解决的问题：这种模式叫什么？为什么它不遵循通常的应用结构？它是否满足某种高阶模式？此外，这种方案并非完全组合：如果我传递给你一个`Nothing`，你就无法访问原始版本，以防数据结构的其他地方发生变化：`(Bool,
+    a)`可能更具有组合性。这是否意味着这是状态单子的一个示例？分享又如何呢？
 - en: '*Update.* Anders Kaseorg writes in with a much more straight-forward, directly
     recursive version of the function:'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: '*更新.* Anders Kaseorg提供了一个更直接递归版本的函数：'
 - en: '[PRE3]'
+  id: totrans-17
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: I haven't checked, but one hope of expressing the function in terms of `foldr`
     and `zip3` is that one may be able to get it to fuse. Of course, for actual recursive
     spine-strict data types, you usually won't be able to fuse, and so a more straightforward
     presentation is more normal.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 我还没有检查过，但是用`foldr`和`zip3`来表达这个函数的一个希望是能够进行融合。当然，对于实际的递归脊柱严格的数据类型，通常无法融合，因此更直接的展示方式更为正常。

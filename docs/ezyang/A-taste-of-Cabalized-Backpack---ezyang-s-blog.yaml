@@ -1,26 +1,40 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:14'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:14'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'A taste of Cabalized Backpack : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 一个 Cabal 化 Backpack 的体验：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2014/08/a-taste-of-cabalized-backpack/](http://blog.ezyang.com/2014/08/a-taste-of-cabalized-backpack/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2014/08/a-taste-of-cabalized-backpack/](http://blog.ezyang.com/2014/08/a-taste-of-cabalized-backpack/)
 - en: '**Update.** Want to know more about Backpack? Read the [specification](https://github.com/ezyang/ghc-proposals/blob/backpack/proposals/0000-backpack.rst)'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: '**更新。** 想了解更多关于 Backpack 的信息？阅读[规范](https://github.com/ezyang/ghc-proposals/blob/backpack/proposals/0000-backpack.rst)'
 - en: So perhaps you've [bought into modules and modularity](http://blog.ezyang.com/2014/08/whats-a-module-system-good-for-anyway/)
     and want to get to using Backpack straightaway. How can you do it? In this blog
     post, I want to give a tutorial-style taste of how to program Cabal in the Backpack
@@ -29,136 +43,197 @@
     to build them. Comments and suggestions would be much appreciated; while the design
     here is theoretically well-founded, for obvious reasons, we don't have much on-the-ground
     programmer feedback yet.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以也许你已经[接受了模块和模块化](http://blog.ezyang.com/2014/08/whats-a-module-system-good-for-anyway/)，并希望立即开始使用
+    Backpack。你如何做到？在这篇博文中，我想给出一个教程风格的 Cabal 编程示例。这些示例是可执行的，但你需要构建自定义版本的[GHC](https://github.com/ezyang/ghc/tree/ghc-backpack)和[Cabal](https://github.com/ezyang/cabal/tree/backpack)来构建它们。非常感谢您的评论和建议；尽管这里的设计在理论上是基础良好的，但由于显而易见的原因，我们还没有太多实际的程序员反馈。
 - en: '* * *'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: A simple package in today's Cabal
+  id: totrans-9
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 在今天的 Cabal 中，有一个简单的包
 - en: To start, let's briefly review how Haskell modules and Cabal packages work today.
     Our running example will be the `bytestring` package, although I'll inline, simplify
     and omit definitions to enhance clarity.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，让我们简要回顾一下 Haskell 模块和 Cabal 包如何工作。我们的运行示例将是`bytestring`包，尽管我会内联、简化和省略定义以增强清晰度。
 - en: 'Let''s suppose that you are writing a library, and you want to use efficient,
     packed strings for some binary processing you are doing. Fortunately for you,
     the venerable Don Stewart has already written a `bytestring` package which implements
     this functionality for you. This package consists of a few modules: an implementation
     of strict `ByteStrings`...'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设你正在编写一个库，你想为一些二进制处理使用高效的紧凑字符串。幸运的是，著名的 Don Stewart 已经为你编写了一个`bytestring`包，为你实现了这个功能。这个包包含几个模块：一个严格`ByteStrings`的实现...
 - en: '[PRE0]'
+  id: totrans-12
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: '...and an implementation of lazy `ByteStrings`:'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: '...和一个惰性`ByteStrings`的实现：'
 - en: '[PRE1]'
+  id: totrans-14
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'These modules are packaged up into a package which is specified using a Cabal
     file:'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些模块被打包成一个包，并使用 Cabal 文件指定：
 - en: '[PRE2]'
+  id: totrans-16
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'We can then make a simple module and package which depends on the `bytestring`
     package:'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 接着我们可以创建一个简单的模块和依赖于`bytestring`包的包：
 - en: '[PRE3]'
+  id: totrans-18
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: '[PRE4]'
+  id: totrans-19
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: 'It''s worth noting a few things about this completely standard module setup:'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 关于这个完全标准的模块设置，值得注意的几点：
 - en: It's not possible to switch `Utils` from using lazy `ByteStrings` to strict
     `ByteStrings` without literally editing the `Utils` module. And even if you do
     that, you can't have `Utils` depending on strict `ByteString`, and `Utils` depending
     on lazy `ByteString`, in the same program, without copying the entire module text.
     (This is not too surprising, since the code *really is* different.)
+  id: totrans-21
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 不能简单地将`Utils`从使用惰性`ByteStrings`切换到严格`ByteStrings`，除非直接编辑`Utils`模块。即使如此，也不能使`Utils`依赖于严格`ByteString`和惰性`ByteString`的同一程序，而不复制整个模块文本。（这并不令人太惊讶，因为代码*确实*不同。）
 - en: 'Nevertheless, there is some amount of indirection here: while `Utils` includes
     a specific `ByteString` module, it is unspecified *which* version of `ByteString`
     it will be. If (hypothetically) the `bytestring` library released a new version
     where lazy byte-strings were actually strict, the functionality of `Utils` would
     change accordingly when the user re-ran dependency resolution.'
+  id: totrans-22
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 尽管在这里有一些间接性：虽然`Utils`包括一个特定的`ByteString`模块，但未指定会使用*哪个*版本的`ByteString`。假如（假设性地），`bytestring`库发布了一个新版本，其中惰性字节字符串实际上是严格的，那么当用户重新运行依赖解析时，`Utils`的功能将相应改变。
 - en: 'I used a qualified import to refer to identifiers in `Data.ByteString.Lazy`.
     This is a pretty common pattern when developing Haskell code: we think of `B`
     as an *alias* to the actual model. Textually, this is also helpful, because it
     means I only have to edit the import statement to change which `ByteString` I
     refer to.'
+  id: totrans-23
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 我使用了限定导入来引用`Data.ByteString.Lazy`中的标识符。这在开发Haskell代码时是一种相当常见的模式：我们将`B`视为实际模型的*别名*。从文本上讲，这也是有帮助的，因为它意味着我只需要编辑导入语句即可更改我引用的`ByteString`。
 - en: '* * *'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: Generalizing Utils with a signature
+  id: totrans-25
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 通过签名泛化Utils
 - en: 'To generalize `Utils` with some Backpack magic, we need to create a *signature*
     for `ByteString`, which specifies what the interface of the module providing `ByteStrings`
     is. Here one such signature, which is placed in the file `Data/ByteString.hsig`
     inside the *utilities* package:'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 要通过一些Backpack魔法泛化`Utils`，我们需要为`ByteString`创建一个*签名*，指定提供`ByteStrings`模块的接口。这里是一个这样的签名，它放置在`utilities`包内的文件`Data/ByteString.hsig`中：
 - en: '[PRE5]'
+  id: totrans-27
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 'The format of a signature is essentially the same of that of an `hs-boot` file:
     we have normal Haskell declarations, but omitting the actual implementations of
     values.'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 签名的格式本质上与`hs-boot`文件相同：我们有普通的Haskell声明，但省略了值的实际实现。
 - en: 'The `utilities` package now needs a new field to record signatures:'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: '`utilities`包现在需要一个新字段来记录签名：'
 - en: '[PRE6]'
+  id: totrans-30
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'Notice that there have been three changes: (1) We''ve removed the direct dependency
     on the `bytestring` package, and (2) we have a new field **signatures** which
     simply lists the names of the signature files (also known as **holes**) that we
     need filled in.'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意，这里发生了三个变化：(1) 我们移除了对`bytestring`包的直接依赖，和 (2) 我们新增了一个名为**签名**的字段，其中简单列出了我们需要填充的签名文件（也称为**空洞**）的名称。
 - en: 'How do we actually use the utilities package, then? Let''s suppose our goal
     is to produce a new module, `Utils.Strict`, which is `Utils` but using strict
     `ByteStrings` (which is exported by the bytestring package under the module name
     `Data.ByteString`). To do this, we''ll need to create a new package:'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 那么我们实际上如何使用utilities包呢？假设我们的目标是生成一个新模块`Utils.Strict`，它是`Utils`，但使用严格的`ByteStrings`（这是由bytestring包在模块名`Data.ByteString`下导出的）。为此，我们需要创建一个新的包：
 - en: '[PRE7]'
+  id: totrans-33
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: 'That''s it! `strict-utilities` exports a single module `Utils.Strict` which
     is `utilities` using `Data.ByteString` from `bytestring` (which is the strict
     implementation). This is called a *mix-in*: in the same dependency list, we simply
     mix together:'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 就是这样！`strict-utilities`导出了一个单一模块`Utils.Strict`，它使用了来自`bytestring`的`Data.ByteString`（这是其严格实现）。这被称为*混合*：在相同的依赖列表中，我们简单地混合在一起：
 - en: '`utilities`, which *requires* a module named `Data.ByteString`, and'
+  id: totrans-35
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`utilities`，它*要求*一个名为`Data.ByteString`的模块，并且'
 - en: '`bytestring`, which *supplies* a module named `Data.ByteString`.'
+  id: totrans-36
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`bytestring`提供了一个名为`Data.ByteString`的模块。'
 - en: Cabal automatically figures out that how to instantiate the utilities package
     by matching together *module names*. Specifically, the two packages above are
     connected through the module name `Data.ByteString`. This makes for a very convenient
@@ -168,55 +243,77 @@
     that are exported by the package are the exposed-modules and the reexported-modules.
     The reason we distinguish them is to make clear which modules have source code
     in the package (exposed-modules).
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: Cabal会自动找出如何通过匹配*模块名称*来实例化utilities包。具体而言，上述两个包通过模块名`Data.ByteString`连接在一起。这使得包实例化变得非常方便（事实证明，也很表达）。顺便说一句，**reexported-modules**是一个新的（正交的）特性，它允许我们重新导出一个模块，从当前包或依赖关系到外部世界，使用不同的名称。导出的模块和重新导出的模块区分开来是为了明确哪些模块在包中有源代码（exposed-modules）。
 - en: Unusually, `strict-utilities` is a package that contains no code! Its sole purpose
     is to mix existing packages.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 不寻常的是，`strict-utilities`是一个不包含任何代码的包！它的唯一目的是混合现有的包。
 - en: 'Now, you might be wondering: how do we instantiate utilities with the lazy
     `ByteString` implementation? That implementation was put in `Data.ByteString.Lazy`,
     so the names don''t match up. In this case, we can use another new feature, module
     thinning and renaming:'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，你可能会想：我们如何使用懒惰的`ByteString`实现来实例化utilities呢？该实现放在了`Data.ByteString.Lazy`中，因此名称不匹配。在这种情况下，我们可以使用另一个新特性，即模块瘦身和重命名：
 - en: '[PRE8]'
+  id: totrans-40
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: The new `backpack-includes` field says that only the `Data.ByteString.Lazy`
     module should brought into scope, under the name `Data.ByteString`. This is sufficient
     to mix in link `utilities` with the lazy implementation of `ByteString`.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 新的`backpack-includes`字段表示只应该将`Data.ByteString.Lazy`模块引入到范围内，使用名称`Data.ByteString`。这足以将`utilities`与`ByteString`的延迟实现混合链接。
 - en: 'An interesting duality is that you can do the renaming the other way:'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 有趣的二元性在于，你可以以另一种方式进行重命名：
 - en: '[PRE9]'
+  id: totrans-43
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: 'Instead of renaming the implementation, I renamed the hole! It''s equivalent:
     the thing that matters it that the signature and implementation need to be mixed
     under the *same* name in order for linking (the instantiation of the signature
     with the implementation) to occur.'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 我没有重命名实现，而是重命名了洞！这是等效的：重要的是，签名和实现需要在*同一*名称下混合，以便进行链接（签名与实现的实例化）。
 - en: 'There are a few things to note about signature usage:'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 有几点关于签名的使用需要注意：
 - en: 'If you are using a signature, there''s not much point in also specifying an
     explicit import list when you import it: you are guaranteed to *only* see types
     and definitions that are in the signature (modulo type classes... a topic for
     another day). Signature files act like a type-safe import list which you can share
     across modules.'
+  id: totrans-46
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 如果你正在使用一个签名，那么在导入它时指定显式导入列表没有太大意义：你保证*只能*看到签名中的类型和定义（除了类型类... 这是另一个话题）。签名文件就像一个类型安全的导入列表，你可以跨模块共享它。
 - en: A signature can, and indeed often must, import other modules. In the type signature
     for `singleton` in `Data/ByteString.hsig`, we needed to refer to a type `Word8`,
     so we must bring it into scope by importing `Data.Word`.
+  id: totrans-47
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 一个签名可以（而且通常必须）导入其他模块。在`Data/ByteString.hsig`中`singleton`的类型签名中，我们需要引用`Word8`类型，因此必须通过导入`Data.Word`来将其引入范围内。
 - en: 'Now, when we compile the signature in the `utilities` package, we need to know
     where `Data.Word` came from. It could have come from another signature, but in
     this case, it''s provided by the *definite* package base: it''s a proper concrete
@@ -225,9 +322,11 @@
     of the `singleton` function and any representation of the `ByteString` type is
     acceptable, but regarding `Word8` you must use the *specific* type from `Data.Word`
     in `prelude`.'
+  id: totrans-48
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 现在，当我们编译`utilities`包中的签名时，我们需要知道`Data.Word`来自哪里。它可能来自另一个签名，但在这种情况下，它由*明确*的包基础提供：它是一个具有实现的适当的具体模块！签名可以依赖于实现：由于我们只能引用那些模块中的类型，实际上我们在说：`singleton`函数的任何实现和`ByteString`类型的任何表示都是可以接受的，但是关于`Word8`，你必须使用`prelude`中来自`Data.Word`的*特定*类型。
 - en: 'What happens if, independently of my packages `strict-utilities`, someone else
     also instantiatiates `utilities` with `Data.ByteString`? Backpack is clever enough
     to reuse the instantiation of `utilities`: this property is called **applicativity**
@@ -236,108 +335,159 @@
     and if they are instantiated with precisely the same modules, the instantiated
     packages are considered type equal. So there is no need to actually create `strict-utilities`
     or `lazy-utilities`: you can just instantiate `utilities` on the fly.'
+  id: totrans-49
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 如果，独立于我的`strict-utilities`包，其他人也用`Data.ByteString`实例化了`utilities`，会发生什么？背包足够聪明，可以重复使用`utilities`的实例化：这个属性称为模块系统的**适用性**。我们用来决定实例化是否相同的具体规则是看所有*包*所需的所有洞是如何实例化的，如果它们用完全相同的模块实例化，那么实例化的包被认为是类型相等的。因此，实际上不需要创建`strict-utilities`或`lazy-utilities`：你可以随时在现场实例化`utilities`。
 - en: '**Mini-quiz:** What does this package do?'
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: '**迷你测验：** 这个软件包做什么？'
 - en: '[PRE10]'
+  id: totrans-51
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: '* * *'
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: Sharing signatures
+  id: totrans-53
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 共享签名
 - en: It's all very nice to be able to explicitly write a signature for `Data.ByteString`
     in my package, but this could get old if I have to do this for every single package
     I depend on. It would be much nicer if I could just put all my signatures in a
     package and include that when I want to share it. I want all of the Hackage mechanisms
     to apply to my signatures as well as my normal packages (e.g. versioning). Well,
     you can!
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 能够为`Data.ByteString`显式编写签名非常好，但是如果我必须为每个我依赖的软件包都这样做，那会很烦人。如果我能够将所有签名放在一个包中，并在需要时包含它，那会更好。我希望所有Hackage机制都适用于我的签名以及我的普通软件包（例如版本控制）。好吧，你可以！
 - en: 'The author of `bytestring` can write a `bytestring-sig` package which contains
     only signatures:'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: '`bytestring` 的作者可以编写一个 `bytestring-sig` 包，其中只包含签名：'
 - en: '[PRE11]'
+  id: totrans-56
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: 'Now, `utilities` can include this package to indicate its dependence on the
     signature:'
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，`utilities` 可以包含这个包来指示它对签名的依赖：
 - en: '[PRE12]'
+  id: totrans-58
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: 'Unlike normal dependencies, signature dependencies should be *exact*: after
     all, while you might want an upgraded implementation, you don''t want the signature
     to change on you!'
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 与普通依赖不同，签名依赖应该是*精确的*：毕竟，虽然你可能想要一个升级的实现，但你不希望签名随意更改！
 - en: 'We can summarize all of the fields as follows:'
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以总结所有字段如下：
 - en: '**exposed-modules** says that there is a public module defined *in this package*'
+  id: totrans-61
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**exposed-modules** 表示在本包中定义了一个公共模块。'
 - en: 'System Message: WARNING/2 (`<stdin>`, line 189)'
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 系统消息：警告/2 (`<stdin>`, 第189行)
 - en: Enumerated list ends without a blank line; unexpected unindent.
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 枚举列表在没有空行的情况下结束；意外的缩进错误。
 - en: 2\. **other-modules** says that there is a private module defined in this package
     4\. **signatures** says that there is a public signature defined in this package
     (there are no private signatures; they are always public, because a signature
     *always* must be implemented) 5\. **reexported-modules** says that there is a
     public module or signature defined in a dependency.
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 2\. **other-modules** 表示在本包中定义了一个私有模块 4\. **signatures** 表示在本包中定义了一个公共签名（没有私有签名；它们总是公共的，因为签名*总是*必须被实现）
+    5\. **reexported-modules** 表示在依赖中定义了一个公共模块或签名。
 - en: 'In this list, public means that it is available to clients. Notice the first
     four fields list all of the source code in this package. Here is a simple example
     of a client:'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这个列表中，公共意味着它对客户端是可用的。注意前四个字段列出了本包中的所有源代码。以下是客户端的一个简单示例：
 - en: '[PRE13]'
+  id: totrans-66
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: '* * *'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: Summary
+  id: totrans-68
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 总结
 - en: 'We''ve covered a lot of ground, but when it comes down to it, Backpack really
     comes together because of set of orthogonal features which interact in a good
     way:'
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们已经涵盖了很多内容，但归根结底，Backpack 真正出色是因为一组正交特性的良好互动：
 - en: '**Module signatures**: the *heart* of a module system, giving us the ability
     to write *indefinite packages* and mix together implementations,'
+  id: totrans-70
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**模块签名**：模块系统的核心，使我们能够编写不定的包并混合实现，'
 - en: '**Module reexports**: the ability to take locally available modules and reexport
     them under a different name, and'
+  id: totrans-71
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**模块重新导出**：能够将本地可用的模块重新导出为不同的名称，并'
 - en: '**Module thinning and renaming** : the ability to selectively make available
     modules from a dependency.'
+  id: totrans-72
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**模块精简和重命名**：有选择地从依赖中公开模块的能力。'
 - en: To compile a Backpack package, we first run the traditional version dependency
     solving, getting exact versions for all packages involved, and then we calculate
     how to link the packages together. That's it! In a future blog post, I plan to
     more comprehensively describe the semantics of these new features, especially
     module signatures, which can be subtle at times.
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 要编译一个 Backpack 包，我们首先运行传统的版本依赖解决，获取所有涉及包的精确版本，然后计算如何将这些包链接在一起。就是这样！在未来的博客文章中，我计划更全面地描述这些新特性的语义，特别是有时可能会有微妙的模块签名。

@@ -1,119 +1,173 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:16:57'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:16:57
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'A year into Backpack : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 一年后的Backpack：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2018/07/a-year-into-backpack/](http://blog.ezyang.com/2018/07/a-year-into-backpack/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2018/07/a-year-into-backpack/](http://blog.ezyang.com/2018/07/a-year-into-backpack/)
 - en: A year into Backpack
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 一年后的Backpack
 - en: It's been a year since I got my hood and gown and joined Facebook (where I've
     been working on PyTorch), but while I've been at Facebook Backpack hasn't been
     sleeping; in fact, there's been plenty of activity, more than I could have ever
     hoped for. I wanted to summarize some of the goings on in this blog post.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 距我获得我的斗篷和长袍并加入Facebook（我一直在那里工作PyTorch）已经一年了，但是在Facebook，Backpack并没有停滞不前；事实上，活动比我希望的要多得多。我希望在这篇博文中总结一些近况。
 - en: Libraries using Backpack
+  id: totrans-8
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 使用Backpack的库
 - en: 'There''s been some really interesting work going on in the libraries using
     Backpack space. Here are the two biggest ones I''ve seen from the last few months:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 在使用Backpack空间的库中，一直在进行一些非常有趣的工作。以下是我在过去几个月中看到的两个最大的项目：
 - en: '**unpacked-containers.** The prolific Edward Kmett wrote the [unpacked-containers](https://github.com/ekmett/unpacked-containers)
     package, which uses the fact that you can unpack through Backpack signatures to
     give you generic container implementations with hypercharged performance (15-45%)
     way better than you could get with a usually, boxed representation. A lot of discussion
     happened in [this Reddit thread](https://www.reddit.com/r/haskell/comments/8a5w1n/new_package_unpackedcontainers/).'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: '**unpacked-containers.** 多产的Edward Kmett编写了[unpacked-containers](https://github.com/ekmett/unpacked-containers)包，利用了通过Backpack签名进行展开的事实，为你提供了比通常的装箱表示性能提高（15-45%）的通用容器实现。在[这篇Reddit主题](https://www.reddit.com/r/haskell/comments/8a5w1n/new_package_unpackedcontainers/)中进行了大量讨论。'
 - en: '**hasktorch.** hasktorch, by Austin Huang and Sam Stites, is a tensor and neural
     network library for Haskell. It binds to the TH library (which also powers PyTorch),
     but it uses Backpack, giving the post [Backpack for deep learning](http://blog.ezyang.com/2017/08/backpack-for-deep-learning/)
     from Kaixi Ruan new legs. This is quite possibly one of the biggest instances
     of Backpack that I''ve seen thus far.'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: '**hasktorch.** hasktorch，由Austin Huang和Sam Stites开发，是Haskell的张量和神经网络库。它绑定到TH库（也支持PyTorch），但使用了Backpack，使得Kaixi
+    Ruan的文章[深度学习的Backpack](http://blog.ezyang.com/2017/08/backpack-for-deep-learning/)焕然一新。这可能是我迄今为止见过的最大的Backpack实例之一。'
 - en: Backpack in the Ecosystem
+  id: totrans-12
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 生态系统中的Backpack
 - en: '**Eta supports Backpack.** Eta, a JVM fork of GHC, backported Backpack support
     into their fork, which means that you can use Backpack in your Eta projects now.
     It was announced in [this Twitter post](https://twitter.com/rahulmutt/status/1015956353028747271)
     and there was some more discussion about it at [this post](https://twitter.com/rahulmutt/status/1017658825799753728).'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: '**Eta支持Backpack。** Eta是GHC的JVM分支，将Backpack支持移植到他们的分支中，这意味着你现在可以在你的Eta项目中使用Backpack。它在[这篇Twitter帖子](https://twitter.com/rahulmutt/status/1015956353028747271)中宣布，并且在[这篇帖子](https://twitter.com/rahulmutt/status/1017658825799753728)中有更多讨论。'
 - en: '**GSOC on multiple public libraries.** Francesco Gazzetta, as part of Google
     Summer of Code, is working on adding support for [multiple public libraries](https://github.com/haskell/cabal/issues/4206)
     in Cabal. Multiple public libraries will make many use-cases of Backpack much
     easier to write, since you will no longer have to split your Backpack units into
     separate packages, writing distinct Cabal files for each of them.'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: '**GSOC关于多个公共库。** 作为Google Summer of Code的一部分，Francesco Gazzetta正在添加对Cabal中[多个公共库](https://github.com/haskell/cabal/issues/4206)的支持。多个公共库将使许多Backpack用例更容易编写，因为您不再需要将Backpack单元拆分为单独的包，为每个包编写不同的Cabal文件。'
 - en: Backpack in GHC and Cabal
+  id: totrans-15
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: GHC和Cabal中的Backpack
 - en: 'By in large, we haven''t changed any of the user facing syntax or semantics
     of Backpack since its initial release. However, there have been some prominent
     bugfixes (perhaps less than one might expect), both merged and coming down the
     pipe:'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 总体而言，自初始发布以来，我们没有改变Backpack的用户界面语法或语义。然而，已经有一些显著的错误修复（也许比预期的少），这些错误修复已经合并并即将到来：
 - en: '[#13955](https://ghc.haskell.org/trac/ghc/ticket/13955): Backpack now supports
     non-* kinds, so you can do levity polymorphism with Backpack.'
+  id: totrans-17
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[#13955](https://ghc.haskell.org/trac/ghc/ticket/13955)：Backpack现在支持非*种类，因此您可以使用Backpack进行活力多态。'
 - en: '[#14525](https://ghc.haskell.org/trac/ghc/ticket/14525): Backpack now works
     with the CPP extension'
+  id: totrans-18
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[#14525](https://ghc.haskell.org/trac/ghc/ticket/14525)：Backpack现在支持CPP扩展'
 - en: '[#15138](https://ghc.haskell.org/trac/ghc/ticket/15138): Backpack will soon
     support data T : Nat signatures, which can be instantiated with type T = 5. Thank
     you Piyush Kurur for diagnosing the bug and writing a patch to fix this.'
+  id: totrans-19
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[#15138](https://ghc.haskell.org/trac/ghc/ticket/15138)：Backpack 将很快支持数据 T
+    : Nat 签名，可以用类型 T = 5 来实例化。感谢 Piyush Kurur 发现问题并编写补丁来修复此问题。'
 - en: 'A fix for Cabal issue [#4754](https://github.com/haskell/cabal/issue/4753):
     Backpack now works with profiling'
+  id: totrans-20
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 修复了 Cabal 问题 [#4754](https://github.com/haskell/cabal/issue/4753)：现在 Backpack
+    与性能分析兼容。
 - en: Things that could use help
+  id: totrans-21
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 需要帮助的事情
 - en: '**Stack support for Backpack.** In [Stack issue #2540](https://github.com/commercialhaskell/stack/issues/2540)
     I volunteered to implement Backpack support for Stack. However, over the past
     year, it has become abundantly clear that I don''t actually have enough spare
     time to implement this myself. Looking for brave souls to delve into this; and
     I am happy to advise about the Backpack aspects.'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: '**Stack 对 Backpack 的支持。** 在 [Stack issue #2540](https://github.com/commercialhaskell/stack/issues/2540)
+    中，我自愿为 Stack 实现 Backpack 的支持。然而，在过去的一年中，显而易见的是我实际上没有足够的空闲时间来亲自实现这个功能。现在正在寻找勇敢的人来深入研究这个问题；我很乐意就
+    Backpack 方面提供咨询。'
 - en: '**Pattern synonym support for Backpack.** You should be able to fill a signature
     data T = MkT Int with an appropriate bidirectional type synonym, and vice versa!
     This is GHC issue [#14478](https://ghc.haskell.org/trac/ghc/ticket/14478) We don''t
     think it should be too difficult; we have to get the matchers induced by constructors
     and check they match, but it requires some time to work out exactly how to do
     it.'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: '**为 Backpack 添加模式同义词支持。** 你应该能够用一个合适的双向类型同义词填充签名数据 T = MkT Int，反之亦然！这是 GHC
+    问题 [#14478](https://ghc.haskell.org/trac/ghc/ticket/14478)。我们认为这并不应该太难；我们必须获取由构造函数诱导的匹配项，并检查它们是否匹配，但确切地如何做还需要一些时间。'

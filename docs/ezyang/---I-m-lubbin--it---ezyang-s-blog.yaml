@@ -1,223 +1,346 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:18:01'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:18:01
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'ω: I’m lubbin’ it : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: ω：I’m lubbin’ it：ezyang's blog
 - en: 来源：[http://blog.ezyang.com/2010/12/omega-i-m-lubbin-it/](http://blog.ezyang.com/2010/12/omega-i-m-lubbin-it/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/12/omega-i-m-lubbin-it/](http://blog.ezyang.com/2010/12/omega-i-m-lubbin-it/)
 - en: New to this series? Start at [the beginning!.](http://blog.ezyang.com/2010/12/hussling-haskell-types-into-hasse-diagrams/)
+  id: totrans-6
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 新来这个系列？从[开始吧！](http://blog.ezyang.com/2010/12/hussling-haskell-types-into-hasse-diagrams/)
 - en: Today we’re going to take a closer look at a somewhat unusual data type, Omega.
     In the process, we’ll discuss how the [lub](http://hackage.haskell.org/package/lub)
     library works and how you might go about using it. This is of practical interest
     to lazy programmers, because lub is a great way to *modularize* laziness, in Conal’s
     words.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 今天我们将更详细地了解一种有些不寻常的数据类型，Omega。在此过程中，我们将讨论[lub](http://hackage.haskell.org/package/lub)库的工作原理以及如何使用它。这对于懒惰的程序员很有实际意义，因为在Conal的话中，lub是*模块化*懒惰的一个好方法。
 - en: Omega is a lot like the natural numbers, but instead of an explicit `Z` (zero)
     constructor, we use bottom instead. Unsurprisingly, this makes the theory easier,
     but the practice harder (but not too much harder, thanks to Conal’s lub library).
     We’ll show how to implement addition, multiplication and factorial on this data
     type, and also show how to prove that subtraction and equality (even to vertical
     booleans) are uncomputable.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: Omega很像自然数，但是没有显式的`Z`（零）构造器，而是使用bottom代替。毫不奇怪，这使得理论更容易，但实践更困难（但多亏了Conal的lub库，并没有太多困难）。我们将展示如何在这种数据类型上实现加法、乘法和阶乘，还将展示如何证明减法和等式（甚至对垂直布尔值）是不可计算的。
 - en: 'This is a literate Haskell post. Since not all methods of the type classes
     we want to implement are computable, we turn off missing method warnings:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是一个文学化的Haskell文章。因为我们要实现的类型类的并非所有方法都是可计算的，我们关闭了丢失方法警告：
 - en: '[PRE0]'
+  id: totrans-10
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'Some preliminaries:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 一些初步工作：
 - en: '[PRE1]'
+  id: totrans-12
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: Here is, once again, the definition of Omega, as well as two distinguished elements
     of it, zero and omega (infinity.) Zero is bottom; we could have also written `undefined`
     or `fix id`. Omega is the least upper bound of Omega and is an infinite stack
     of Ws.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里再次是Omega的定义，以及它的两个显著元素，zero和omega（无穷）。Zero是bottom；我们也可以写作`undefined`或`fix
+    id`。Omega是Omega的最小上界，是一个无穷的W的堆栈。
 - en: '[PRE2]'
+  id: totrans-14
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'Here are two alternate definitions of `w`:'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里有两个`w`的备选定义：
 - en: '[PRE3]'
+  id: totrans-16
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: The first alternate definition writes the recursion with an explicit fixpoint,
     as we’ve seen in the diagram. The second alternate definition directly calculates
     ω as the least upper bound of the chain `[⊥, W ⊥, W (W ⊥) ...] = iterate W ⊥`.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 第一个备选定义使用显式的固定点递归，正如我们在图表中看到的那样。第二个备选定义直接计算ω作为链的最小上界`[⊥, W ⊥, W (W ⊥) ...] =
+    iterate W ⊥`。
 - en: 'What does the lub operator in `Data.Lub` do? Up until now, we’ve only seen
     the lub operator used in the context of defining the least upper bound of a chain:
     can we usefully talk about the lub of two values? Yes: the least upper bound is
     simply the value that is “on top” of both the values.'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: '`Data.Lub`中的lub运算符做什么？到目前为止，我们只看到lub运算符用于定义链的最小上界：我们能有用地谈论两个值的lub吗？是的：最小上界简单地是两个值都“在顶部”的值。'
 - en: If there is no value on top, the lub is undefined, and the `lub` operator may
     give bogus results.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果顶部没有值，则lub是未定义的，lub运算符可能会给出虚假的结果。
 - en: If one value is strictly more defined than another, it may simply be the result
     of the lub.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果一个值比另一个值更严格定义，它可能只是lub的结果。
 - en: An intuitive way of thinking of the lub operator is that it combines the information
     content of two expressions. So `(1, ⊥)` knows about the first element of the pair,
     and `(⊥, 2)` knows about the second element, so the lub combines this info to
     give `(1, 2)`.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 一种直观的理解lub运算符的方式是它结合了两个表达式的信息内容。因此，`(1, ⊥)`知道对偶的第一个元素，`(⊥, 2)`知道第二个元素，所以lub将这些信息结合起来得到`(1,
+    2)`。
 - en: How might we calculate the least upper bound? One thing to realize is that in
     the case of Omega, the least upper bound is in fact the max of the two numbers,
     since this domain totally ordered.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们如何计算最小上界？要意识到的一件事是，在Omega的情况下，最小上界实际上是两个数字的最大值，因为该域是完全有序的。
 - en: '[PRE4]'
+  id: totrans-23
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: 'Correspondingly, the minimum of two numbers is the greatest lower bound: a
     value that has less information content than both values.'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 相应地，两个数字的最小值是最大下界：一个比两个值的信息内容少的值。
 - en: 'If we think of a conversation that implements `case lub x y of W a -> case
     a of W _ -> True`, it might go something like this:'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们考虑实现`case lub x y of W a -> case a of W _ -> True`的对话，它可能会像这样进行：
 - en: Me
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: Me
 - en: Lub, please give me your value.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: Lub，请给我你的值。
 - en: Lub
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: Lub
 - en: Just a moment. X and Y, please give me your values.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 稍等片刻。X和Y，请给我你们的值。
 - en: X
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: X
 - en: My value is W and another value.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 我的值是W和另一个值。
 - en: Lub
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: Lub
 - en: Ok Edward, my value is W and another value.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 好的Edward，我的值是W和另一个值。
 - en: Me
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: Me
 - en: Thanks! Lub, what’s your next value?
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 谢谢！Lub，你的下一个值是什么？
 - en: Lub
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: Lub
 - en: Just a moment. X, please give me your next value.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 稍等片刻。X，请给我你的下一个值。
 - en: Y
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: Y
 - en: (A little while later.) My value is W and another value.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: （过了一会儿。）我的值是W和另一个值。
 - en: Lub
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: Lub
 - en: Ok. Y, please give me your next value.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 好的。Y，请给我你的下一个值。
 - en: Y
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: Y
 - en: My next value is W and another value.
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 我的下一个值是W和另一个值。
 - en: Lub
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: Lub
 - en: Ok Edward, my value is W and another value.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 好的Edward，我的值是W和另一个值。
 - en: Me
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: Me
 - en: Thanks!
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 谢谢！
 - en: X
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: X
 - en: My value is W and another value.
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 我的值是W和另一个值。
 - en: Lub
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: Lub
 - en: Ok.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 好的。
 - en: 'Here is a timeline of this conversation:'
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是这次对话的时间线：
 - en: 'There are a few interesting features of this conversation. The first is that
     lub itself is lazy: it will start returning answers without knowing what the full
     answer is. The second is that X and Y “race” to return a particular W, and lub
     will not act on the result that comes second. However, the ordering doesn’t matter,
     because the result will always be the same in the end (this will *not* be the
     case when the least upper bound is not defined!)'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个对话有几个有趣的特点。第一个是lub本身是惰性的：它将开始返回答案而不知道完整的答案。第二个是X和Y“竞赛”返回特定的W，而lub不会对第二个返回结果进行操作。然而，顺序并不重要，因为最终结果总是相同的（当最小上界未定义时，情况将*不*相同！）
 - en: The `unamb` library that powers `lub` handles all of this messy, concurrency
     business for us, exposing it with the `flatLub` operator, which calculates the
     least upper bound for a flat data type. We need to give it a little help to calculate
     it for a non-flat data type (although one wonders if this could not be automatically
     derivable.)
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 驱动`lub`的`unamb`库为我们处理了所有这些混乱的并发业务，通过`flatLub`操作符将其公开，用于计算平面数据类型的最小上界。我们需要为非平面数据类型稍加帮助来计算它（尽管人们不禁想知道这是否可以自动推导出来）。
 - en: '[PRE5]'
+  id: totrans-55
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 'An equivalent, more verbose but more obviously correct definition is:'
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 等价的、更冗长但更明显正确的定义是：
 - en: '[PRE6]'
+  id: totrans-57
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'It may also be useful to compare this definition to a normal max of natural
     numbers:'
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 将此定义与自然数的普通最大值进行比较可能也很有用：
 - en: '[PRE7]'
+  id: totrans-59
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: 'We can split the definition of `lub` into two sections: the zero-zero case,
     and the otherwise case. In `maxNat`, we pattern match against the two arguments
     and then return Z. We can’t directly pattern match against bottom, but if we promise
@@ -225,8 +348,10 @@
     here), we can use `seq` to do the pattern match. We use `flatLub` and `lub` to
     do multiple pattern matches: if either value is not bottom, then the result of
     the lub is non-bottom, and we proceed to the right side of `seq`.'
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以将`lub`的定义分为两部分：零-零情况和否则情况。在`maxNat`中，我们对两个参数进行模式匹配，然后返回Z。我们不能直接对底部进行模式匹配，但如果承诺在模式匹配成功时返回底部（这里就是这种情况），我们可以使用`seq`来进行模式匹配。我们使用`flatLub`和`lub`来进行多个模式匹配：如果任一值不是底部，则lub的结果为非底部，并继续执行`seq`的右侧。
 - en: 'In the alternate definition, we flatten `Omega` into `Bool`, and then use a
     previously defined lub instance on it (we could have also used `flatLub`, since
     `Bool` is a flat domain.) Why are we allowed to use flatLub on Omega, which is
@@ -237,166 +362,250 @@
     (so that it can make an *unambiguous* choice between either one), there is no
     way to witness the inequality of Omega: both equality and inequality are uncomputable
     for Omega.'
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 在备选定义中，我们将`Omega`展平为`Bool`，然后在其上使用先前定义的`lub`实例（我们也可以使用`flatLub`，因为`Bool`是一个平坦的域）。为什么我们可以在`Omega`上使用`flatLub`，而`Omega`并不是一个平坦的域？原因有两个：第一个是`seq`只关心其第一个参数是否为底或非底：它隐式地将所有域展平为“底或非底”。第二个原因是`flatLub
+    = unamb`，虽然`unamb`要求其两边的值相等（以便它可以在两者之间做一个*无歧义*的选择），但是对于`Omega`来说，无法证明其不等性：`Omega`的等号和不等号都是不可计算的。
 - en: '[PRE8]'
+  id: totrans-62
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: The glb instance rather easy, and we will not dwell on it further. The reader
     is encouraged to draw the conversation diagram for this instance.
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: '`glb`实例相当简单，我们将不再深入讨论。建议读者为此实例绘制对话图。'
 - en: '[PRE9]'
+  id: totrans-64
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: 'This is a good point to stop and think about why addition, multiplication and
     factorial are computable on Omega, but subtraction and equality are not. If you
     take the game semantics route, you could probably convince yourself pretty well
     that there’s no plausible conversation that would get the job done for any of
     the latter cases. Let’s do something a bit more convincing: draw some pictures.
     We’ll uncurry the binary operators to help the diagrams.'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在是思考的好时机，为什么加法、乘法和阶乘在Omega上是可计算的，而减法和等式则不是。如果你选择使用游戏语义的方法，你可能会相当自信地认为对于后者的任何情况都没有合理的对话可以完成工作。我们来做一些更有说服力的事情：画一些图片。我们将拆分二元运算符以帮助绘制图表。
 - en: 'Here is a diagram for addition:'
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里是加法的图示：
 - en: The pairs of Omega form a matrix (as usual, up and right are higher on the partial
     order), and the blue lines separate sets of inputs into their outputs. Multiplication
     is similar, albeit a little less pretty (there are a lot more slices).
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: Omega的成对形成一个矩阵（通常，向上和向右在偏序上更高），而蓝线将输入集分隔为它们的输出。乘法类似，虽然稍微不那么漂亮（有更多的切片）。
 - en: 'We can see that this function is monotonic: once we follow the partial order
     into the next “step” across a blue line, we can never go back.'
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以看到这个函数是单调的：一旦我们跟随偏序进入下一个“步骤”，通过蓝线，我们就再也不能回去了。
 - en: 'Consider subtraction now:'
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在考虑减法：
 - en: 'Here, the function is not monotonic: if I move right on the partial order and
     enter the next step, I can go “backwards” by moving up (the red lines.) Thus,
     it must not be computable.'
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里，函数不是单调的：如果我在偏序上向右移动并进入下一个步骤，我可以通过向上移动“后退”（红线）。因此，它必须是不可计算的。
 - en: 'Here is the picture for equality. We immediately notice that mapping (⊥, ⊥)
     to True will mean that every value will have to map to True, so we can’t use normal
     booleans. However, we can’t use vertical booleans (with ⊥ for False and () for
     True) either:'
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是等式的图片。我们立即注意到，将（⊥，⊥）映射到True将意味着每个值都必须映射到True，所以我们不能使用普通的布尔值。但是，我们也不能使用垂直布尔值（其中⊥表示False，()表示True）：
 - en: Once again, you can clearly see that this function is not monotonic.
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 再次可以清楚地看到这个函数不是单调的。
 - en: 'It is now time to actually implement addition and multiplication:'
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在是实际实现加法和乘法的时候了：
 - en: '[PRE10]'
+  id: totrans-74
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: 'These functions look remarkably similar to addition and multiplication defined
     on Peano natural numbers:'
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些函数看起来与定义在Peano自然数上的加法和乘法非常相似：
 - en: '[PRE11]'
+  id: totrans-76
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: 'There is the pattern matching on the first zero as before. But `natPlus` is
     a bit vexing: we pattern match against zero, but return `y`: our `seq` trick won’t
     work here! However, we can use the observation that `add` will be bottom if its
     first argument is bottom to see that if x is zero, then the return value will
     be y. What if x is not zero? We know that `add x y` must be greater than or equal
     to `y`, so that works as expected as well.'
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里是以前对第一个零进行模式匹配的模式。但是`natPlus`有点令人烦恼：我们模式匹配到零，但返回`y`：我们的`seq`技巧在这里不起作用！然而，我们可以观察到，如果第一个参数是底部，`add`将会是底部，因此如果x为零，返回值将为y。如果x不是零怎么办？我们知道`add
+    x y`必须大于或等于`y`，所以这也符合预期。
 - en: We don’t need this technique for multiplication because zero times any number
     is zero, and a pattern match will do that automatically for us.
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于乘法，我们不需要这种技巧，因为零乘以任何数都是零，模式匹配将自动执行此操作。
 - en: 'And finally, the tour de force, *factorial*:'
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，壮举——*阶乘*：
 - en: '[PRE12]'
+  id: totrans-80
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: We use the same trick that was used for addition, noting that 0! = 1\. For factorial
     1, both sides of the lub are in fact equal, and for anything bigger, the right
     side dominates.
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们使用了与加法相同的技巧，注意到0! = 1。对于阶乘1，lub的两边实际上是相等的，而对于任何更大的值，右侧占优势。
 - en: '* * *'
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'To sum up the rules for converting pattern matches against zero into lubs (assuming
     that the function is computable):'
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 总结一下将模式匹配对零的规则转换为lub（假设函数是可计算的）：
 - en: '[PRE13]'
+  id: totrans-84
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: 'becomes:'
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 变成：
 - en: '[PRE14]'
+  id: totrans-86
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE14]'
 - en: '(As you may have noticed, this is just the usual strict computation). The more
     interesting case:'
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: （正如你可能已经注意到的，这只是通常的严格计算）。更有趣的情况：
 - en: '[PRE15]'
+  id: totrans-88
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE15]'
 - en: 'becomes:'
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: 变成：
 - en: '[PRE16]'
+  id: totrans-90
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE16]'
 - en: assuming that the original function `g` was computable (in particular, monotonic.)
     The case where x is ⊥ is trivial; and since ⊥ is at the bottom of the partial
     order, any possible value for g x where x is not bottom must be greater than or
     equal to bottom, fulfilling the second case.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设原始函数`g`是可计算的（特别是单调的）。当x为⊥时，情况显而易见；而由于⊥处于偏序的底部，对于任何x不为底部的情况，g x的任何可能值必须大于或等于底部，从而满足第二种情况。
 - en: '* * *'
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*A piece of frivolity.* Quantum bogosort is a sorting algorithm that involves
     creating universes with all possible permutations of the list, and then destroying
     all universes for which the list is not sorted.'
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: '*一个轻松的片段。* 量子bogosort是一种排序算法，涉及创建列表所有可能的排列的宇宙，然后摧毁所有列表未排序的宇宙。'
 - en: 'As it turns out, with `lub` it’s quite easy to accidentally implement the equivalent
     of quantum bogosort in your algorithm. I’ll use an early version of my addition
     algorithm to demonstrate:'
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 事实证明，使用`lub`时，很容易在你的算法中意外地实现量子bogosort的等效物。我将使用我的加法算法的早期版本来演示：
 - en: '[PRE17]'
+  id: totrans-95
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE17]'
 - en: 'Alternatively, `(+) = parCommute add` where:'
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 或者，`(+) = parCommute add`，其中：
 - en: '[PRE18]'
+  id: totrans-97
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE18]'
 - en: 'This definition gets the right answer, but needs exponentially many threads
     to figure it out. Here is a diagram of what is going on:'
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个定义可以得到正确答案，但需要指数级的线程才能弄清楚。以下是正在发生的情况的示意图：
 - en: The trick is that we are repeatedly commuting the arguments to addition upon
     every recursion, and one of the nondeterministic paths leads to the result where
     both x and y are zero. Any other branch in the tree that terminates “early” will
     be less than the true result, and thus `lub` won’t pick it. Exploring all of these
     branches is, as you might guess, inefficient.
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 关键在于我们在每次递归时重复交换加法的参数，并且非确定性路径之一导致了x和y都为零的结果。树中的任何其他“早期”终止的分支都会小于真实结果，因此`lub`不会选择它。正如你可能猜到的那样，探索所有这些分支是低效的。
 - en: '* * *'
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '[Next time](http://blog.ezyang.com/2010/12/no-one-expects-the-scott-induction/),
     we will look at Scott induction as a method of reasoning about fixpoints like
     this one, relating it to induction on natural numbers and generalized induction.
     If I manage to understand coinduction by the next post, there might be a little
     on that too.'
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: '[下一次](http://blog.ezyang.com/2010/12/no-one-expects-the-scott-induction/)，我们将探讨Scott归纳作为一种关于像这样的不动点的推理方法，将其与自然数的归纳和广义归纳联系起来。如果我在下一篇文章中设法理解共归纳，可能也会有一点内容。'
