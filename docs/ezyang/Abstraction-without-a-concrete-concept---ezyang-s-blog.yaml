@@ -1,23 +1,35 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:06'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:06'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Abstraction without a concrete concept : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 'Abstraction without a concrete concept : ezyang’s blog'
 - en: 来源：[http://blog.ezyang.com/2010/10/beyond-generalizatio/](http://blog.ezyang.com/2010/10/beyond-generalizatio/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/10/beyond-generalizatio/](http://blog.ezyang.com/2010/10/beyond-generalizatio/)
 - en: '[Hoare logic](http://en.wikipedia.org/wiki/Hoare_logic), despite its mathematical
     sounding name, is actually a quite practical way of reasoning about programs that
     most software engineers subconsciously employ in the form of preconditions and
@@ -29,8 +41,10 @@
     informally applying Hoare logic when you are trying to review code that uses preconditions
     and postconditions. Hoare logic is an abstraction that lets us rigorously talk
     about any imperative language with the same set of rules.'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: '[霍尔逻辑](http://en.wikipedia.org/wiki/Hoare_logic)，尽管听起来很数学，实际上是程序员推理的一种非常实用的方式，大多数软件工程师在使用前置条件和后置条件的形式时会下意识地应用它。它明确地公理化了对程序员来说是常识的事情：例如，NOP不应改变任何条件，或者如果一行代码具有另一行代码作为其前置条件的后置条件，那么这些代码行可以依次执行，而内部的前置条件-后置条件对可以被忽略。即使你从未真正写出推导链，当你试图审查使用前置条件和后置条件的代码时，你也在非正式地应用霍尔逻辑。霍尔逻辑是一种抽象，让我们可以严谨地讨论任何带有相同规则的命令式语言。'
 - en: 'At my very first Semantics lunch, I was treated to a talk by Tony Hoare entitled
     [Abstract Separation Algebra](http://talks.cam.ac.uk/talk/index/25927). Unhappy
     with the fact that the [separation logic](http://en.wikipedia.org/wiki/Separation_logic)
@@ -47,8 +61,10 @@
     figure out which ones are necessary to make axiom X logically true. This is mind
     twisting in several ways, not the least of which is that you end up with a set
     of primitives for which you may not even have a concrete model for!'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我的第一个语义午餐上，我有幸听了**托尼·霍尔**的一场名为[抽象分离代数](http://talks.cam.ac.uk/talk/index/25927)的演讲。托尼·霍尔并不满意于需要同时讨论三个方面——前置条件、实际代码和后置条件——这一事实，于是他将此方案重新编码为普通的[抽象代数结构](http://en.wikipedia.org/wiki/Algebraic_structure)。尽管他的幻灯片看起来都很合理，但我的抽象代数知识不足以验证他所有的结果，因为这些结果仅在瞬息之间闪过。因此，我不打算过多讨论实际的重新编码（等我有空时再自行研究吧，哈！）。然而，我捕捉到了驱动这种重新编码的基础思维过程的一丝气息，我觉得这是一种迷人的思维方式：从你想要成立的抽象的公理X出发，使用更基本的公理池（在这种情况下，是抽象代数的通常公理）来找出使公理X在逻辑上成立的必要公理。这在多个方面都是一种令人费解的思维，尤其是你最终得到了一组原语，而你甚至可能连一个具体的模型都没有！
 - en: I will admit, I am a little afraid that the mathematicians in the audience will
     think, “Well, of course that’s how you pick your set of axioms! And pff, concrete
     models are for the weak.” (After all, it was said in the talk, “This is abstract
@@ -57,9 +73,11 @@
     intuitively does ★ mean?” (for which there was no answer) I think I am justified
     in claiming that for some of us mortals, this is a rather strange way of thinking
     about things.
+  id: totrans-8
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 我承认，我有点害怕听众中的数学家会认为，“当然这就是你选择公理集合的方式！对于强壮的人来说，具体的模型就是多余的。”（毕竟，在演讲中曾说，“这是抽象代数，所以你应该愿意接受这些公理，而不需要任何具体模型。”）但考虑到演讲中提出的问题，其中包括“那么直觉上★代表什么？”（对此并没有答案），我觉得我有理由声称，对于我们这些凡人来说，这确实是一种相当奇怪的思考方式。
 - en: 'For example, consider the first example that Hoare gave: let (C, ;, ⊑) be a
     ordered semigroup (that is, a carrier set C equipped an associative binary operation
     ; that is monotonic with respect to a partial ordering relation ⊑.) Then, we can
@@ -69,16 +87,19 @@
     distinguish these two types of code) and what does the relation ⊑ represent? But
     these are rather unimportant questions, since if we shake this algebra-tree, the
     fruit of sequential composition drops down by monotonicity:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
 - en: 'Alas, the humble ordered group isn’t enough to encode all of the things we
     need, so Hoare ends up bringing monoidal lattices and special operators that obey
     the [abides law](http://blog.ezyang.com/2010/05/bananas-lenses-envelopes-and-barbed-wire-a-translation-guide/)
     in order to get the “Separation Algebra”:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
 - en: A separation algebra is the tuple (C, ⊑, ;, ★, ε, ⊔) where (C, ⊑, ;, ε, ⊔) forms
     a monoidal lattice and the law (p ★ q) ; (p' ★ q') ⊑ (p ; p') ★ (q ; q') is fulfilled.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
 - en: 'As he admits, he is cheating slightly: he is bringing in precisely the algebraic
@@ -87,6 +108,7 @@
     of vanilla abstract algebra. Consequently, when we manipulate our newly encoded
     Hoare triples, we can rely on the good old techniques of abstract algebra (which,
     for those of us who never took abstract algebra, may not be “good” or “old.”)'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
 - en: 'So what do ⊑, ★, ε and ⊔ mean? Because of how we’ve constructed our algebraic
@@ -94,6 +116,7 @@
     is out there just waiting to be discovered. Maybe it’s been discovered already.)
     Perhaps this is all just an illustration of the category theory mantra: “The self
     is unimportant: only its relation to others.” A bit zen, if you ask me.'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
 - en: '*Postscript.* There was a nice comment about how the duality between the implementation
@@ -101,5 +124,6 @@
     points determine a line, but a line determines an infinite number of points. I
     went and searched for the term but couldn’t find any literature about this, so
     perhaps some pointers would be appreciated.'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
