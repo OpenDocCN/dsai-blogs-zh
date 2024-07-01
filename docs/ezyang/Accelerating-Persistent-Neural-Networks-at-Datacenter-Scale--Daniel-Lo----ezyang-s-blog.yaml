@@ -1,48 +1,68 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:16:59'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:16:59
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Accelerating Persistent Neural Networks at Datacenter Scale (Daniel Lo) : ezyang’s
     blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 加速持久性神经网络（Daniel Lo）：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2017/12/accelerating-persistent-neural-networks-at-datacenter-scale-daniel-lo/](http://blog.ezyang.com/2017/12/accelerating-persistent-neural-networks-at-datacenter-scale-daniel-lo/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2017/12/accelerating-persistent-neural-networks-at-datacenter-scale-daniel-lo/](http://blog.ezyang.com/2017/12/accelerating-persistent-neural-networks-at-datacenter-scale-daniel-lo/)
 - en: The below is a transcript of a talk by [Daniel Lo](https://www.microsoft.com/en-us/research/people/dlo/)
     on [BrainWave](https://www.microsoft.com/en-us/research/blog/microsoft-unveils-project-brainwave/),
     at the [ML Systems Workshop](https://nips.cc/Conferences/2017/Schedule?showEvent=8774)
     at NIPS'17.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面是[Daniel Lo](https://www.microsoft.com/en-us/research/people/dlo/)在[NIPS'17](https://nips.cc/Conferences/2017/Schedule?showEvent=8774)的[ML系统研讨会](https://www.microsoft.com/en-us/research/blog/microsoft-unveils-project-brainwave/)的讲话记录。
 - en: '* * *'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: Deploy and serve accelerated DNNs at cloud scale. As we've seen, DNNs have enabled
     amazing applications. Architectures achieve SoTA on computer vision, language
     translation and speech recognition. But this is challenging to serve in large-scale
     interactive because there are latency, cost and power constraints. Also, DNNs
     are growing larger in size and complexity.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 部署和提供云规模的加速深度神经网络（DNN）。正如我们所见，DNN已经实现了惊人的应用。架构在计算机视觉、语言翻译和语音识别方面实现了最先进技术。但是在大规模交互服务中存在延迟、成本和功耗限制，这是一个挑战。此外，DNN的大小和复杂性正在增加。
 - en: 'We''ve seen a Cambrian explosion in startups to solve this problem. Research
     groups have produced DNN processing units, DPUs, custom hardware solutions to
     prove high throughput efficient serving of DNNs. We categorize them into two categories:
     fast DPUs, where the algorithms and applications have to be fixed in at design
     time, because they''re fabbing an ASIC, or a soft DPU, FPGA. But for soft DPUs,
     we haven''t seen them deployed at scale.'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们看到了解决这一问题的初创企业的堆积如山。研究团队开发了DNN处理单元（DPUs），定制硬件解决方案来实现高吞吐量的有效服务DNN。我们将它们分类为两类：快速DPUs，其中算法和应用程序必须在设计时固定，因为它们在制造ASIC，或者软DPUs，FPGA。但是对于软DPUs，我们尚未看到它们大规模部署。
 - en: To address this, we've been working on Project BrainWave. Solution to deploy
     large scale DNNs with FPGA-acceleration. We've designed it to be fast, flexible
     and friendly. High throughput, low latency acceleration using FPGAs. Flexibility
@@ -51,35 +71,46 @@
     CNTK/Caffe/TF and compile them down. This is deployed on our configurable cloud,
     an outer layer of CPUs, a data center that puts everything together, and a layer
     of reconfigurable FPGAs.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了解决这个问题，我们一直在进行Project BrainWave的工作。这是一个解决大规模DNN部署的解决方案，利用FPGA加速。我们设计它以实现快速、灵活和友好。使用FPGA的高吞吐量、低延迟加速。使用可适应的数值精度，更新最新的AI算法与可重配置的FPGA。而且它用户友好，因为我们有一个全栈解决方案，编译CNTK/Caffe/TF并将其编译下来。这部署在我们可配置的云端，一个外层的CPU层，一个将所有东西整合在一起的数据中心，以及一个可重构的FPGA层。
 - en: We've been deployed DNN models. LSTM model that takes tens to hundreds of milliseconds
     CPU. What we see is the 99th percentile for latency; even at 99 we are able to
     achieve sub-millisecond latencies. When you get to these levels of acceleration,
     it's negligible in the E2E pipeline.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们已经部署了DNN模型。LSTM模型在CPU上需要几十到几百毫秒的时间。我们看到的是99th百分位数的延迟；即使在99th百分位数，我们也能达到亚毫秒级别的延迟。当你达到这种加速水平时，在端到端流程中是可以忽略不计的。
 - en: Next I'll dive into details. It's a full stack solution. starting with a compiler
     and runtime that takes model sin high level frameworks and compiles them down
     to our architecture. A flexible ISA for serving DNNs. We have a throughput, low
     latency serving. We do this all with persistency at scale, to keep models pinned
     in FPGA memories. Deployed on our wide deployment of Intel FPGAs using hardware
     microservices.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来我将深入细节。这是一个全栈解决方案。从编译器和运行时开始，将高级框架中的模型编译到我们的体系结构中。一个灵活的ISA用于服务DNN。我们有一个高吞吐量、低延迟的服务。我们在大规模持久性的情况下做到这一点，以保持模型固定在FPGA内存中。部署在我们广泛部署的Intel
+    FPGA上，使用硬件微服务。
 - en: To begin with, let's talk about hardware microservices. This is something we
     presented at Micro. The architecture of reconfigurable cloud is FPGAs sit between
     CPU and network. CPU can use FPGA locally for acceleration, but because FPGAs
     are connected over network, they can distribute between them. We have a proprietary
     network protocol for low latency compute.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，让我们谈谈硬件微服务。这是我们在Micro上展示的内容。可重配置云的架构是，FPGAs位于CPU和网络之间。CPU可以在本地使用FPGA进行加速，但由于FPGAs通过网络连接，它们可以在它们之间进行分布。我们有专有的网络协议用于低延迟计算。
 - en: We'vec disaggregated FPGA compute plane from CPU. So we can aggregate FPGAs
     together to form larger accelerators, and you don't have to match the rate of
     FPGAs to CPUs. You can serve a large number of CPUs with a small cluster of FPGAs,
     or vice versa.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们已将FPGA计算平面与CPU分开。因此，我们可以将多个FPGAs聚合在一起形成更大的加速器，而不必将FPGAs与CPUs的速率匹配。您可以使用少量的FPGA集群为大量的CPU提供服务，反之亦然。
 - en: Next I'll talk about the compiler and runtime. Goal is to make it very easy
     for ML specialists to do this. The typical ML specialist doesn't know how to program
     this. Models developed in high level frameworks, compile them down to our architecture.
@@ -87,14 +118,18 @@
     We split them into portions split on FPGAs, and portions on CPU. When we execute,
     we also have runtime that handles orchestration and scheduling that handles it
     between parts.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来我将谈论编译器和运行时环境。目标是使ML专家能够轻松处理这些问题。典型的ML专家不知道如何编程这些东西。在高级框架中开发的模型，将它们编译成我们的架构。如果您首先将它们编译成中间图形表示。我们将它们分割成在FPGA上部分，和在CPU上的部分。当我们执行时，我们还有运行时环境来处理编排和调度。
 - en: There are two main categories of DNNs we have to optimize for. DNNs that have
     very high compute to data ratio, convnets, these are well studied. I'm going to
     focus on the other class of DNNs, those with less compute to data ratio, e.g.
     dense layers and RNNs.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们需要为两种主要类型的DNN进行优化。具有非常高计算数据比的DNNs，如卷积神经网络，这些已经研究得很好。我将重点放在另一类DNN上，即计算数据比较低的DNN，例如密集层和循环神经网络。
 - en: The conventional approach to accelerating DNNs on FPGAs, you keep all model
     parameters in DRAM. When a request comes in, you're going to stream the model
     parameters of DRAM, and return a request. The issue with this is when you have
@@ -104,54 +139,72 @@
     and use the model parameters for all requests. WHile you may achieve good throughput,
     latency will increase. For realtime services, this violates your SLA. What we
     want to do is provide high performance at low or no batching.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 在FPGAs上加速DNNs的常规方法是，将所有模型参数存储在DRAM中。当有请求进来时，你会从DRAM中流式传输模型参数，并返回请求。这种方法的问题在于，当你有内存带宽受限的DNN层时，你受限于内存带宽的速度；你无法充分发挥FPGA的计算能力。通常解决这个问题的方法是使用批处理；你发送一些请求，并对所有请求使用相同的模型参数。虽然你可能会获得良好的吞吐量，但延迟会增加。对于实时服务来说，这违反了你的SLA。我们想要做的是在低或无批处理的情况下提供高性能。
 - en: 'The way we do this is with persisted Dnets. FPGAs have lots of memory on chip:
     10MB memory. Since they''re on chip, it''s high bandwidth. So we''re going to
     keep the model parameters on the chip, so that when we get one request in, we
     distribute it across the entire FPGA chip.'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们解决这个问题的方法是使用持久化的Dnets。FPGAs在芯片上有大量的内存：10MB内存。由于它们在芯片上，具有高带宽。因此，我们将保持模型参数在芯片上，这样当我们收到一个请求时，我们可以将其分布到整个FPGA芯片上。
 - en: The obvious question is, what happens if your model doesn't fit on chip? We
     take advantage of the hardware microcenter. We'll distribute a single model over
     multiple FPGAs in the datacenter.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 显而易见的问题是，如果您的模型不能放在芯片上会发生什么？我们利用硬件微中心。我们将单个模型分布在数据中心的多个FPGAs上。
 - en: Let's look at the architecture and microarchitecture of the processing unit
     we developed. The BrainWave DPU is a software programmable processor, programmed
     in single-threaded C, but we've added a number of instructions for serving DNNs,
     e.g., matrix multiply, convolution, nonlinear activations, embeddings. The processor
     is designed to use narrow precision format (float16) and easily flexible for extending
     to newer algorithms.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们看看我们开发的处理单元的架构和微架构。BrainWave DPU是一种软件可编程处理器，用单线程C编程，但我们增加了一些用于服务DNNs的指令，例如矩阵乘法，卷积，非线性激活，嵌入。该处理器设计用于使用窄精度格式（float16），并且易于扩展到新的算法。
 - en: The microarchitecture of the processor, main portion is dedicated to matrix
     vector unit; matrix vector multiply, consisting of a number kernels on a tile
     of a larger matrix. Tiling gives us flexibility while maintaining performance.
     Other compute units are multifunction units; vector-vector operations, such as
     element-wise multiply, add and activation functions. Tying it all together is
     an on-chip network that lets us keep all the compute together at time.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 处理器的微架构，主要部分专用于矩阵向量单元；矩阵向量乘法，由大矩阵上的若干个核心组成。瓦片化使我们在保持性能的同时具备了灵活性。其他计算单元是多功能单元；向量-向量操作，如逐元素乘法、加法和激活函数。将所有这些元素连接在一起的是芯片上的网络，让我们能够同时保持所有计算的进行。
 - en: Most of the chip is dedicated to matrix vector unit. It's composed of hundreds
     of multilane dot product units. Each of these dot product units is consists of
     tens of adds and muls. To keep them fed with data, each dot product unit is fed
     by a set of dedicated block rams.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 大多数芯片专用于矩阵向量单元。它由数百个多车道点积单元组成。每个点积单元由数十个加法和乘法单元组成。为了确保它们能够及时处理数据，每个点积单元都由一组专用的块RAM提供数据。
 - en: Next, I'd like to show performance results for this architecture. Two years
     ago, we had a deployment of Stratix V FPGAs. It shows the effective teraflops
     of this format. 16 bit integer.. we've been playing with our own format Microsoft
     Floating Point. 4.5Tflops at MSFP5.8\. These Stratix are pretty old.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，我想展示这种架构的性能结果。两年前，我们部署了Stratix V FPGA。它展示了这种格式的有效Tflops。16位整数……我们一直在使用我们自己的Microsoft浮点格式。在MSFP5.8上的4.5Tflops。这些Stratix已经相当老了。
 - en: (Demo for latest generation of FPGAs)
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: （展示最新一代FPGA的演示）
 - en: Looking at throughput oriented DPU, the latency is 65.81ms. With brainwave,
     latency is 0.98ms. Under 1 millisecond.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 查看面向吞吐量的DPU，延迟为65.81毫秒。使用Brainwave，延迟为0.98毫秒。低于1毫秒。
 - en: This was done on initial engineering silicon. For production silicon, we're
     expecting to get 12TOps at 16-bit integer. 90TOps for MSFP8\. One question is
     how does numeric output affects output. Here is the normalized accuracy for three
@@ -159,44 +212,64 @@
     you go to MSFP9, but we've developed a way to fine tune networks for this precision,
     and you see we recover our accuracy. We're working with MSFP8 and see similar
     results.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是在初始工程硅上完成的。对于生产硅，我们预计以16位整数获得12TOps。对于MSFP8，则为90TOps。一个问题是数值输出如何影响输出。这里是三个内部文本模型的归一化精度，使用GRU和LSTM。橙色条显示了当您转向MSFP9时会发生什么，但我们已经开发出了一种调整网络以适应此精度的方法，您可以看到我们恢复了准确性。我们正在使用MSFP8并且看到类似的结果。
 - en: Project BrainWave is our project for accelerating DNNs at cloud scale. We hope
     it will be fast, friendly and cloud-scale, and expand capabilities of AI in the
     cloud, providing a way to run higher dimensional RNN networks for NLP and other
     great applications. We're planning to release to third parties, stay tuned.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: Project BrainWave是我们用于在云端扩展DNN（深度神经网络）的项目。我们希望它能够快速、友好并且具备云规模，扩展AI在云中的能力，为运行高维度RNN网络用于NLP和其他应用提供一种方式。我们计划向第三方发布，敬请关注。
 - en: 'Q: When you decrease batch size, what hardware are you evaluating? Hardware
     utilization as we decrease?'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Q: 当您减少批处理大小时，您正在评估哪种硬件？随着减少，硬件利用率如何？'
 - en: 'A: We stay highly utilized even as we decrease batch size; even at high batch
     size, we''re still sending requests one by one. (Only one step will be processed?)
     Right.'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 'A: 即使在减少批处理大小时，我们仍然保持高度利用；即使在高批处理大小时，我们仍然一次发送一个请求。（只有一个步骤会被处理？）对。'
 - en: 'Q: Regarding the FP9 and FP8, nine and eight being the number of bits used?
     (Yes) Is it in any way related to Flexpoint at Intel?'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Q: 关于FP9和FP8，九和八是否是使用的位数？（是的）它在某种程度上与Intel的Flexpoint有关吗？'
 - en: 'A: We developed this independently of flexpoint, and I''m not able to talk
     about our numeric format.'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 'A: 我们独立于flexpoint开发了这个项目，我无法谈论我们的数值格式。'
 - en: 'Q: In MS, do you really write Verilog for your FPGA, or do you use high level
     synthesis tool?'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Q: 在微软，您是否真的为您的FPGA编写Verilog，还是使用高级综合工具？'
 - en: 'A: For this, we are writing System Verilog'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 'A: 对于这个项目，我们正在编写System Verilog。'
 - en: 'Q: Batchnorm layers, which require batch computation; how do you put that onto
     the FPGA?'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Q: 需要批处理计算的批处理归一化层如何放入FPGA中？'
 - en: 'A: Part of the work of the compiler is to do splitting between CPU and FPGA.
     So things that are not amenable to FPGA, including batchnorm, we''re still running
     them on CPU.'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 'A: 编译器的工作之一是在CPU和FPGA之间进行分割。因此，那些不适合在FPGA上运行的内容，包括批处理归一化，我们仍然在CPU上运行它们。'

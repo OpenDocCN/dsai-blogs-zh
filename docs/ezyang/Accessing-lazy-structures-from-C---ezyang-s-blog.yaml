@@ -1,51 +1,83 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 分类：未分类
 - en: 'date: 2024-07-01 18:17:39'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:17:39
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Accessing lazy structures from C : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 从 C 中访问惰性结构：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2011/12/accessing-lazy-structures-from/](http://blog.ezyang.com/2011/12/accessing-lazy-structures-from/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/12/accessing-lazy-structures-from/](http://blog.ezyang.com/2011/12/accessing-lazy-structures-from/)
 - en: Accessing lazy structures from C
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 从 C 中访问惰性结构
 - en: Someone [recently asked on haskell-beginners](http://comments.gmane.org/gmane.comp.lang.haskell.beginners/9109)
     how to access an lazy (and potentially infinite) data structure in C. I failed
     to find some example code on how to do this, so I wrote some myself. May this
     help you in your C calling Haskell endeavours!
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '[最近有人在 haskell-beginners 上询问](http://comments.gmane.org/gmane.comp.lang.haskell.beginners/9109)，如何在
+    C 中访问一个惰性（可能是无限的）数据结构。我未能找到一些关于如何做到这一点的示例代码，因此我自己写了一些。希望这能帮助你在你的 C 调用 Haskell
+    的努力中！'
 - en: 'The main file `Main.hs`:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 主文件 `Main.hs`：
 - en: '[PRE0]'
+  id: totrans-9
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'The C file `export.c`:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: C 文件 `export.c`：
 - en: '[PRE1]'
+  id: totrans-11
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'And a simple Cabal file to build it all:'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 以及一个简单的 Cabal 文件来构建它全部：
 - en: '[PRE2]'
+  id: totrans-13
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: Happy hacking!
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 祝愉快编程！

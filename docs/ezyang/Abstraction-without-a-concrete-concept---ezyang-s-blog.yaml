@@ -90,6 +90,9 @@
   id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，考虑霍尔给出的第一个例子：让 (C, ;, ⊑) 是一个有序半群（即，一个带有关于部分序关系 ⊑ 单调的载体集合 C 和一个关联的可交换二元操作
+    ;）。那么，我们可以定义霍尔三元组 `{p} q {r}` 作为关系 p ; q ⊑ r。我立即想知道：C 代表什么（它似乎包含后置条件、代码行和前置条件：正如Simon
+    Peyton Jones指出的那样，它似乎没有区分这两种代码类型），以及 ⊑ 关系代表什么？但这些都是不太重要的问题，因为如果我们通过单调性摇动这棵代数树，顺序组合的果实会掉下来：
 - en: 'Alas, the humble ordered group isn’t enough to encode all of the things we
     need, so Hoare ends up bringing monoidal lattices and special operators that obey
     the [abides law](http://blog.ezyang.com/2010/05/bananas-lenses-envelopes-and-barbed-wire-a-translation-guide/)
@@ -97,11 +100,15 @@
   id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 遗憾的是，谦卑的有序群组并不足以编码我们需要的所有东西，所以霍尔最终带来了幺半格和遵守 [abides law](http://blog.ezyang.com/2010/05/bananas-lenses-envelopes-and-barbed-wire-a-translation-guide/)
+    的特殊运算符，以获得“分离代数”：
 - en: A separation algebra is the tuple (C, ⊑, ;, ★, ε, ⊔) where (C, ⊑, ;, ε, ⊔) forms
     a monoidal lattice and the law (p ★ q) ; (p' ★ q') ⊑ (p ; p') ★ (q ; q') is fulfilled.
   id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 分离代数是元组 (C, ⊑, ;, ★, ε, ⊔)，其中 (C, ⊑, ;, ε, ⊔) 形成一个幺半格，并且满足律 (p ★ q) ; (p' ★
+    q') ⊑ (p ; p') ★ (q ; q')。
 - en: 'As he admits, he is cheating slightly: he is bringing in precisely the algebraic
     properties he needs in order to get the properties he wants. But what makes the
     result notable is the fact that *all he needed* were the well-studied structures
@@ -111,6 +118,7 @@
   id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如他承认的那样，他稍微作弊了：他正是引入了他所需的代数性质，以便得到他想要的性质。但是，使结果显著的是*他所需的*只是常见的抽象代数结构。因此，当我们操作我们新编码的霍尔三元组时，我们可以依赖于传统的抽象代数技术（对于我们这些从未学过抽象代数的人来说，这可能并不是“好”的或“老”的技术。）
 - en: 'So what do ⊑, ★, ε and ⊔ mean? Because of how we’ve constructed our algebraic
     structure, we don’t necessarily know! (Although, I’m sure some concrete model
     is out there just waiting to be discovered. Maybe it’s been discovered already.)
@@ -119,6 +127,7 @@
   id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 那么 ⊑, ★, ε 和 ⊔ 是什么意思呢？由于我们构造了我们的代数结构的方式，我们并不一定知道！（尽管我相信某个具体的模型已经在那里等待被发现了。也许它已经被发现了。）也许这只是范畴论的一个例证：“自我无关紧要：只有它与他人的关系才重要。”如果你问我的话，这有点禅意。
 - en: '*Postscript.* There was a nice comment about how the duality between the implementation
     and specification algebras resembled the Stern dualities: very roughly, that two
     points determine a line, but a line determines an infinite number of points. I
@@ -127,3 +136,4 @@
   id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: '*后记。* 有一个关于实现和规范代数之间的对偶性类似于Stern对偶性的好评论：粗略地说，两点确定一条线，但一条线确定无穷多点。我去搜索了这个术语，但找不到任何相关文献，所以也许会有一些指引将不胜感激。'
