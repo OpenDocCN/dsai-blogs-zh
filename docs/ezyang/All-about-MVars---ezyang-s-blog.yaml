@@ -1,20 +1,26 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
 - en: 'date: 2024-07-01 18:18:00'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
 - en: 'All about MVars : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
 - en: 来源：[http://blog.ezyang.com/2011/02/all-about-mvars/](http://blog.ezyang.com/2011/02/all-about-mvars/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
@@ -23,33 +29,42 @@
     "synchronising variables"; though to the credit of the original writers the inline
     documentation for the data type and its fundamental operations is fairly fleshed
     out.) I've reproduced my new introduction here.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
 - en: While researching this documentation, I discovered something new about how MVars
     worked, which is encapsulated in this program. What does it do?
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
 - en: '[PRE0]'
+  id: totrans-8
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: '* * *'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
 - en: 'An `MVar t` is mutable location that is either empty or contains a value of
     type `t`. It has two fundamental operations: `putMVar` which fills an MVar if
     it is empty and blocks otherwise, and `takeMVar` which empties an MVar if it is
     full and blocks otherwise. They can be used in multiple different ways:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
 - en: As synchronized mutable variables,
+  id: totrans-11
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: As channels, with `takeMVar` and `putMVar` as receive and send, and
+  id: totrans-12
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
 - en: As a binary semaphore `MVar ()`, with `takeMVar` and `putMVar` as wait and signal.
+  id: totrans-13
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
@@ -57,9 +72,11 @@
     Andrew Gordon and Sigbjorn Finne, though some details of their implementation
     have since then changed (in particular, a put on a full MVar used to error, but
     now merely blocks.)
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
 - en: Applicability
+  id: totrans-15
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
@@ -69,6 +86,7 @@
     conditions, deadlocks or uncaught exceptions. Do not use them if you need perform
     larger atomic operations such as reading from multiple variables: use ''STM''
     instead.'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
 - en: In particular, the "bigger" functions in this module (`readMVar`, `swapMVar`,
@@ -76,9 +94,11 @@
     followed by a `putMVar` with exception safety. These only have atomicity guarantees
     if all other threads perform a `takeMVar` before a `putMVar` as well; otherwise,
     they may block.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
 - en: Fairness
+  id: totrans-18
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
@@ -86,9 +106,11 @@
     MVar unless another thread holds that MVar indefinitely. This implementation upholds
     this fairness property by serving threads blocked on an MVar in a first-in-first-out
     fashion.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
 - en: Gotchas
+  id: totrans-20
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
@@ -97,30 +119,41 @@
     by the thread that consumes it, not the thread that produced it. Be sure to `evaluate`
     values to be placed in an MVar to the appropriate normal form, or utilize a strict
     MVar provided by the [strict-concurrency package](http://hackage.haskell.org/package/strict-concurrency).
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
 - en: Example
+  id: totrans-22
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 示例
 - en: Consider the following concurrent data structure, a skip channel. This is a
     channel for an intermittent source of high bandwidth information (for example,
     mouse movement events.) Writing to the channel never blocks, and reading from
     the channel only returns the most recent value, or blocks if there are no new
     values. Multiple readers are supported with a `dupSkipChan` operation.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 考虑以下并发数据结构，跳过通道。这是用于间歇性高带宽信息源（例如，鼠标移动事件）的通道。写入通道永远不会阻塞，从通道读取仅返回最新值，或者如果没有新值则阻塞。支持多个读取器，有一个`dupSkipChan`操作。
 - en: 'A skip channel is a pair of MVars: the second MVar is a semaphore for this
     particular reader: it is full if there is a value in the channel that this reader
     has not read yet, and empty otherwise.'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 跳过通道是一对MVars：第二个MVar是特定读取器的信号量：如果通道中有该读取器尚未读取的值，则为满，否则为空。
 - en: '[PRE1]'
+  id: totrans-25
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: This example was adapted from the original Concurrent Haskell paper. For more
     examples of MVars being used to build higher-level synchronization primitives,
     see [Control.Concurrent.Chan](http://www.haskell.org/ghc/docs/latest/html/libraries/base/Control-Concurrent-Chan.html)
     and [Control.Concurrent.QSem](http://www.haskell.org/ghc/docs/latest/html/libraries/base/Control-Concurrent-QSem.html).
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 该示例改编自原始的Concurrent Haskell论文。有关使用MVars构建更高级同步原语的更多示例，请参见[Control.Concurrent.Chan](http://www.haskell.org/ghc/docs/latest/html/libraries/base/Control-Concurrent-Chan.html)和[Control.Concurrent.QSem](http://www.haskell.org/ghc/docs/latest/html/libraries/base/Control-Concurrent-QSem.html)。

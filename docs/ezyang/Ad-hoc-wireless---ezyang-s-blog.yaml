@@ -1,63 +1,91 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:18:24'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:18:24
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Ad hoc wireless : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 即时无线网络：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2010/03/ad-hoc-wireless/](http://blog.ezyang.com/2010/03/ad-hoc-wireless/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/03/ad-hoc-wireless/](http://blog.ezyang.com/2010/03/ad-hoc-wireless/)
 - en: Ad hoc wireless
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 即时无线网络
 - en: Hello from Montreal! I'm writing this from a wireless connection up on the thirty-ninth
     floor of La Cité. Unfortunately, when we reading the lease, the only thing we
     checked was that it had "Internet"... not "Wireless." So what's a troop of MIT
     students with an arsenal of laptops and no wireless router to do? Set up wireless
     ad hoc networking.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 从蒙特利尔问候！我现在是在La Cité的三十九楼通过无线连接写下这篇文章。不幸的是，当我们读租约时，唯一检查的是是否有“互联网”……而没有“无线网络”。那么，一群MIT的学生，带着一堆笔记本电脑和没有无线路由器的情况下要做什么呢？搭建无线即时网络。
 - en: 'Except it doesn''t actually work. Mostly. It took us a bit of fiddling and
     attempts on multiple laptops to finally find a configuration that worked. First,
     the ones that didn''t work:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 但事实上并没有奏效。大部分情况下是这样。我们在多台笔记本上进行了一些调试和尝试，最终找到了可行的配置。首先是那些不起作用的配置：
 - en: '*Windows,* as Daniel Gray tells me, has two standard methods for creating ad
     hoc networks: bridging two networks or .... We tried both of them, and with ...
     we were able to connect other Windows laptops and Mac OS X laptops... but no luck
     with the Linux laptops. As three of us are Linux users, we were quite unhappy
     with this state of affairs.'
+  id: totrans-9
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*Windows,* 如Daniel Gray所说，有两种标准方法用于创建即时网络：桥接两个网络或者……我们尝试了两种方法，其中一个……我们能够连接其他Windows笔记本和Mac
+    OS X笔记本……但对于Linux笔记本却毫无进展。由于我们三个都是Linux用户，这种状态让我们感到非常不满。'
 - en: '*Linux* theoretically has support for ad hoc networks using dnsmasq; however,
     we tried two separate laptops and neither of them were able to set up an ad hoc
     network that any of the other laptops were able to use. We did discover some hilarious
     uninitialized field bugs for ESSIDs.'
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*Linux* 理论上支持使用dnsmasq创建即时网络；然而，我们尝试了两台不同的笔记本，都未能建立任何其他笔记本能够使用的即时网络。我们发现了一些关于ESSID未初始化字段的滑稽错误。'
 - en: '*Mac OS X.* At this point, we were seriously considering going out, finding
     a wireless hardware store, and buying a router for the apartment. However, someone
     realized that there was one operating system we hadn''t tried yet. A few minutes
     of fiddling... and yes! Ad hoc network that worked on all three operating systems!'
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*Mac OS X.* 此时，我们正在认真考虑出门，找到一个无线硬件商店，为公寓购买路由器。然而，有人意识到我们还有一个操作系统没有尝试过。经过几分钟的调试……
+    是的！即时网络在所有三个操作系统上都能正常工作！'
 - en: 'Ending score: Apple +1, Microsoft 0, Linux -1\. Although, it''s hard to be
     surprised that no one actually is paying the attention necessary to the wireless
     drivers.'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 结果：苹果+1，微软0，Linux -1。尽管如此，毫不奇怪没有人真正关注到无线驱动程序所需的细节。
