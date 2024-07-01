@@ -1,27 +1,41 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:00'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:18:00
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'A year of blogging : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 一年的博客：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2010/12/a-year-of-blogging/](http://blog.ezyang.com/2010/12/a-year-of-blogging/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/12/a-year-of-blogging/](http://blog.ezyang.com/2010/12/a-year-of-blogging/)
 - en: A year of blogging
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 博客的一年
 - en: Here is to celebrate a year of blogging. Thank you all for reading. It was only
     [a year ago](http://blog.ezyang.com/2009/12/iron-blogger/) that I first opened
     up shop under the wings of Iron Blogger. Iron Blogger has mostly disintegrated
@@ -29,53 +43,78 @@
     a week, every week (excepting that one time I missed a post and made it up with
     a bonus post later that month), a bet that I made with myself and am happy to
     have won.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里庆祝一年的博客。感谢大家的阅读。仅仅是[一年前](http://blog.ezyang.com/2009/12/iron-blogger/)，我第一次在Iron
+    Blogger的翅膀下开设了这个博客。Iron Blogger 在此时大部分已经解散，但我很自豪地说这个博客没有停止发布，每周三次（除了那次我错过了一篇文章，后来进行了补偿性的额外发布），这是我与自己打赌并且很高兴赢得的赌注。
 - en: 'Where has this blog gone over the year? According to Google Analytics, here
     were the top ten most viewed posts:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个博客在过去的一年里走过了哪些地方？根据Google Analytics的数据，这里是十篇最受欢迎的文章：
 - en: '[Graphs not grids: How caches are corrupting young algorithms designers and
     how to fix it](http://blog.ezyang.com/2010/07/graphs-not-grids/)'
+  id: totrans-9
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[图而非网格：缓存如何腐蚀年轻算法设计师并修复方法](http://blog.ezyang.com/2010/07/graphs-not-grids/)'
 - en: '[You could have invented zippers](http://blog.ezyang.com/2010/04/you-could-have-invented-zippers/)'
+  id: totrans-10
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[你本可以发明拉链（zippers）](http://blog.ezyang.com/2010/04/you-could-have-invented-zippers/)'
 - en: '[Medieval medicine and computers](http://blog.ezyang.com/2010/11/medieval-medicine-and-computers/)'
+  id: totrans-11
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[中世纪医学与计算机](http://blog.ezyang.com/2010/11/medieval-medicine-and-computers/)'
 - en: '[Databases are categories](http://blog.ezyang.com/2010/06/databases-are-categories/)'
+  id: totrans-12
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[数据库即分类](http://blog.ezyang.com/2010/06/databases-are-categories/)'
 - en: '[Design Patterns in Haskell](http://blog.ezyang.com/2010/05/design-patterns-in-haskel/)'
+  id: totrans-13
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[Haskell中的设计模式](http://blog.ezyang.com/2010/05/design-patterns-in-haskel/)'
 - en: '[Static Analysis for everday (not-PhD) man](http://blog.ezyang.com/2010/06/static-analysis-mozilla/)'
+  id: totrans-14
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[每日静态分析（非博士）人士](http://blog.ezyang.com/2010/06/static-analysis-mozilla/)'
 - en: '[MVC and purity](http://blog.ezyang.com/2010/07/mvc-and-purity/)'
+  id: totrans-15
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[MVC与纯度](http://blog.ezyang.com/2010/07/mvc-and-purity/)'
 - en: '[Day in the life of a Galois intern](http://blog.ezyang.com/2010/08/day-in-the-life-of-a-galois-intern/)'
+  id: totrans-16
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[Galois实习生一天的生活](http://blog.ezyang.com/2010/08/day-in-the-life-of-a-galois-intern/)'
 - en: '[Replacing small C programs with Haskell](http://blog.ezyang.com/2010/03/replacing-small-c-programs-with-haskell/)'
+  id: totrans-17
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[用Haskell替换小型C程序](http://blog.ezyang.com/2010/03/replacing-small-c-programs-with-haskell/)'
 - en: '[How to use Vim’s textwidth like a pro](http://blog.ezyang.com/2010/03/vim-textwidth/)'
+  id: totrans-18
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[如何像专家一样使用Vim的textwidth](http://blog.ezyang.com/2010/03/vim-textwidth/)'
 - en: 'There are probably a few obscure ones that are my personal favorites, but I’ve
     written so many at this point it’s a little hard to count: including this post,
     I will have published 159 posts, totaling somewhere around 120,000 words. (This
@@ -83,22 +122,32 @@
     cow, I’ve written a book and a half worth of content. I don’t really feel like
     a better writer though—this may be because I’ve skimped on the “revising” bit
     of the process.)'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 可能还有一些我个人最喜欢的不那么显眼的文章，但到这个点我写了这么多，有点难以数清：包括这篇文章，我将已发布159篇文章，总字数约为120,000字。 （此数据包含标记，但用于比较，一本书大约有80,000字。哇哦，我写了一本半的内容。不过我不觉得自己是个更好的作家——这可能是因为我在“修订”这部分的过程中偷懒了。）
 - en: This blog will go on a brief hiatus for the month of January. Not because I
     wouldn’t be able to produce posts over the holidays (given the chance, I probably
     would... in fact, this was a kind of hard decision to make) but because I should
     spend a month concentrating the bulk of my free time on stuff other than blogging.
     Have a happy New Years, and see you in February!
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个博客将在一月份进行短暂的休息。不是因为我在假期期间不能发布文章（如果有机会，我可能会... 实际上，这是一个有点难做出的决定），而是因为我应该花一个月的大部分空闲时间集中在除了博客之外的事情上。祝大家新年快乐，我们二月见！
 - en: '*Postscript.* Here is the SQL query I used to count:'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: '*附言.* 这是我用来计数的SQL查询：'
 - en: '[PRE0]'
+  id: totrans-22
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: There's probably a more accurate way of doing it, but I was too lazy to write
     out the script.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 或许有更精确的方法，但我懒得写脚本。
