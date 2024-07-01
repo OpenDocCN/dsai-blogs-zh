@@ -1,0 +1,112 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:17:25'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'ACM XRDS: Jeff Dean profile : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2012/10/acm-xrds-jeff-dean-profile/](http://blog.ezyang.com/2012/10/acm-xrds-jeff-dean-profile/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: I was wandering through the Gates building when the latest issue of the ACM
+    XRDS, a student written magazine, caught my eye.
+  prefs: []
+  type: TYPE_NORMAL
+- en: “Oh, didn’t I write an article for this issue?” Yes, I had!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The online version [is here](http://xrds.acm.org/article.cfm?aid=2331062),
+    though I hear it’s behind a paywall, so I’ve copypasted a draft version of the
+    article below. Fun fact: The first version of this article had a Jeff Dean fact,
+    but we got rid of it because we weren’t sure if everyone knew what [Jeff Dean
+    facts](http://www.quora.com/What-are-all-the-Jeff-Dean-facts) were...'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'True fact: as a high school student, Jeff Dean wrote a statistics package that,
+    on certain functions, was twenty-six times faster than equivalent commercial packages.
+    These days, Jeff Dean works at Google, helping architect and optimize some of
+    the biggest data-crunching systems Google employs on a day-to-day basis. These
+    include the well known MapReduce (a programming model for parallelizing large
+    computations) and BigTable (a system which stores almost all of Google''s data).
+    Jeff''s current project is infrastructure for deep learning via neural networks,
+    a system with applications for speech/image recognition and natural language processing.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'While Jeff has become a public face attached to much of Google''s internal
+    infrastructure projects, Jeff stresses the fact that these projects require a
+    mix of areas of expertise from people. Any given project might have people with
+    backgrounds in networking, machine learning and distributed systems. Collectively,
+    a project can achieve more than any person individually. The downsides? With all
+    of the different backgrounds, you really need to know when to say: “Hold on, I
+    don''t understand this machine learning term.” Jeff adds, however, that working
+    on these teams is lots of fun: you get to learn about a sub-domain you might not
+    have known very much about.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Along with a different style of solving problems, Google also has different
+    research goals than academia. Jeff gave a particular example of this: when an
+    academic is working on a system, they don''t have to worry about what happens
+    if some really rare hardware failure occurs: they simply have to demo the idea.
+    But Google has to worry about these corner cases; it is just what happens when
+    one of your priorities is building a production system. There is also a tension
+    with releasing results to the general public. Before the publication of the MapReduce
+    paper, there was an internal discussion about whether or not to publish. Some
+    were concerned that the paper could benefit Google''s competitors. In the end,
+    though, Google decided to release the paper, and you can now get any number of
+    open source implementations of MapReduce.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'While Jeff has been at Google for over a decade, the start of his career looked
+    rather different. He recounts how he ended up getting his first job. “I moved
+    around a lot as a kid: I went to eleven schools in twelve years in lots of different
+    places in the world... We moved to Atlanta after my sophomore year in high school,
+    and in this school, I had to do an internship before we could graduate... I knew
+    I was interested in developing software. So the guidance counselor of the school
+    said, ''Oh, great, I''ll set up something'', and she set up this boring sounding
+    internship. I went to meet with them before I was going to start, and they essentially
+    wanted me to load tapes into tape drives at this insurance company. I thought,
+    ''That doesn''t sound much like developing software to me.'' So, I scrambled around
+    a bit, and ended up getting an internship at the Center for Disease Control instead.”'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This “scrambled” together internship marked the beginning of many years of
+    work for the CDC and the World Health Organization. First working at Atlanta,
+    and then at Geneva, Jeff spent a lot of time working on what progressively grew
+    into a larger and larger system for tracking the spread of infectious disease.
+    These experiences, including a year working full-time between his graduation from
+    undergraduate and his arrival at graduate school, helped fuel is eventual choice
+    of a thesis topic: when Jeff took an optimizing compilers course, he wondered
+    if he could teach compilers to do the optimizations he had done at the WHO. He
+    ended up working with Craig Chambers, a new faculty member who had started the
+    same year he started as a grad student. “It was great, a small research group
+    of three or four students and him. We wrote this optimizing compiler from scratch,
+    and had fun and interesting optimization work.” When he finished his PhD thesis,
+    he went to work at Digital Equipment Corporation and worked on low-level profiling
+    tools for applications.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Jeff likes doing something different every few years. After working on something
+    for a while, he''ll pick an adjacent field and then learn about that next. But
+    Jeff was careful to emphasize the fact that while this strategy worked for him,
+    he also thought it was important to have different types of researchers, to have
+    people who were willing to work on the same problem for decades, or the entire
+    career—these people have a lot of in depth knowledge in this area. “There''s room
+    in the world for both kinds of people.” But, as he has moved from topic to topic,
+    it turns out that Jeff has come back around again: his current project at Google
+    on parallel training of neural networks was the topic of Jeff''s undergraduate
+    senior thesis. “Ironic,” says Jeff.'
+  prefs: []
+  type: TYPE_NORMAL

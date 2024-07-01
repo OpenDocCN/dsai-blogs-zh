@@ -1,0 +1,409 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:16:54'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'HIW’18: Let’s Go Mainstream with Eta! : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2018/09/hiw18-lets-go-mainstream-with-eta/](http://blog.ezyang.com/2018/09/hiw18-lets-go-mainstream-with-eta/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'HIW’18: Let’s Go Mainstream with Eta!'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: My name is Rahul Muttineni, CTO of TypeLead, working on building services around
+    a language named Eta. To get started, I'll give an overview of how the project
+    started, and where it is now.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It started as a HSOC project. It was called GHCVM; back then we had plans of
+    making it both on JVM and CLR... we don't think about CLR anymore. I was mentored
+    by Edward Kmett. We got pretty good response on this, so Jo and I decided to take
+    the risk and work on this full time.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Big thanks to the GHC team, really good work. We've worked with the codebase
+    for two years, and the more and more we work with it, we see how much awesome
+    stuff there is. I've learned a lot by working with the code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'What is Eta? Eta is a fork of GHC. During the GSOC project, it started off
+    as a Haskell program that used the GHC API. Midway in the program, I found that
+    there were certain things that I wanted to do that I couldn''t do, and I spent
+    3-4 days setting up a fork. I''ll talk about what those limitations are. Like
+    Haskell, it''s a ... language, but the key difference is that it runs on the JVM.
+    That is its own set of challenges, primarily with respect to tail calls. The nice
+    thing about Eta is that it runs on the JVM, and it can run a good chunk of projects
+    just like that. lens... recently, in the last month, we got Yesod working... it''s
+    in good shape. The next really great type of Eta is the strongly typed FFI. That
+    works really well with the subtyping in JVM. A good chunk of the talk is about
+    how we got that working. One of the main focuses of Eta is to be focused on industrial
+    use. GHC is focused on industrial use, and research, both. There''s a tension
+    between the two... the nice thing we have for Eta is we don''t have to face that
+    tension; it''s easy to make decisions on how to add new features, because will
+    it help companies? If it is yes, otherwise we don''t. (SPJ: That can be a hard
+    question to answer!)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Haskell: Avoid success at all costs. We''re not going to sacrifice core principles
+    of language for benefit. Pursue success, at minimum cost. We want to make it successful
+    as much as possible, but we want to make as little sacrifice as possible. That
+    will be a little tricky...'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'What is Eta? What language features does it support? It started off as a fork
+    of GHC 7.10.3\. All extensions that work there, work with Eta as well. The only
+    thing was TemplateHaskell and QuasiQuotes didn''t work for a long time. We got
+    it working 3-4 months ago. Biggest change is JavaFFI. GHC 7.10.3 is MINUS C FFI.
+    We could have supported it: Java has JNI, but we tried to avoid it because we
+    didn''t want to make platform specific bindings to all the libbraries.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Joe backported a bunch of GHC 8 features: StrictData, ApplicativeDo, OverloadedLabels.
+    Backpack was got recently. There''s a very particular reason we had to do it:
+    it has to do with the fact that we don''t have green threads by default, and we
+    wanted to give the user a choice of threaded runtime versus blocking runtime.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The compiler? It''s a fork of GHC, so all the compiler passes are the same.
+    We just chopped off everything after STG; e.g., C-- is gone. We generate bytecode
+    from STG. We don''t do any optimizations right now, and won''t need to for some
+    fine. We don''t have to because in JVM, it''s JIT compiled, so we don''t have
+    to optimize as much since JVM will remove a lot of the code that''s not used anyway.
+    And the driver: GHC generates object files... we decided to use JAR files. They''re
+    just zip files that package up a bunch of class files that store Java bytecodes.
+    We also added one more mode for Uberjars. These are JAR files that are packaged
+    up into one giant package.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I''ll talk a little bit about how we implemented the REPL; template haskell.
+    It works through the external-interpreter architecture. In GHC that''s called
+    iserv: the process, what it does, is handles running the code. So the compiler
+    will still do the typechecking and everything, but once it''s done with all that
+    stuff, GHC will generate, a specific bytecode set, for interpreting Haskell efficiently.
+    Because we already generated JVM bytecodes. We didn''t need that custom bytecode
+    set; we just compile with optimizations off; that gives us JVM bytecodes, then
+    we send it to the external process, load it up, and execute them. Implementing
+    the REPL is pretty easy how to get all this working together. JVM has a mechanism
+    called classloading, which is very flexible. You can download bytecodes from the
+    network, get code an runtime. Once you load the class, it''s statically compiled
+    code, it''s optimized the same, etc.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The build tool we use is Etlas. We didn't want to move too far off of GHC, we
+    stuck with Cabal. At the point we started using it, we forked off of Cabal 2.0\.
+    Main difference is that it lets you manage Eta versions. Etlas is almost like
+    Stack, but it's much much closer to Cabal. We took the nice features of Stack
+    and added them to Cabal. The other thing is that it does patch management. What
+    we've been finding as we add more features and backport, Eta is not exactly GHC
+    7.10, nor is it GHC 8.0, it's a weird intermediate state, so certain packages
+    that won't exactly compile without small changes, so we needed some system to
+    apply those changes before we actually run the build. So we setup a GitHub repository
+    that stores all the patch files. What etlas will do, it will get you the most
+    recent set of patches. Then if you install a package, lens or something, it will
+    download lens, apply the patch, and then it will build. Just recently, we were
+    using base 4.8, and recently we upgraded to base 4.11\. But we couldn't update
+    to the new Generics infrastructure, because it slowed down compile times. So there
+    were a bunch of packages that would check if they were GHC 8... and then use new
+    generics. So we had to do a bunch of patching for that. But that's the kind of
+    stuff we have to deal with.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The title of this talk is lets go mainstream with eta. I want to take a moment
+    and say, what does that mean? "The ideas, attitudes, or activities that are shared
+    by most people and regarded as normal or conventional." So at what point does
+    a programming language become consdiered normal or conventional? It has to be
+    used a big company, solve a big real world problem, and people have to believe
+    it works. That''s a very complicated question, multifaceted, one part of that
+    answer is, it should make it easier to solve real world problems easier than the
+    status quo. Take for example PHP. PHP came out when there was nothing better to
+    program dynamic web applications. It had just the minimum features required to
+    make it useful to build these. Now everyone here is asking the question: Haskell
+    clearly solves a lot of problems better than the status quo. So why isn''t it
+    moving forward? That''s a big question, I''m going to talk about how we''re approaching
+    it.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The strategy we're using internally, is we put on a "Big Company Hat"; we pretend
+    we're a big company with a lot of employees, millions or billions of lines, and
+    try to figure out what problems they'll face. Some problems are crazy long build
+    times, when trying to build huge software; dynamic where you have to make sure
+    junior developers get up to speed... etc. That's couple to get this conversation
+    started.
+  prefs: []
+  type: TYPE_NORMAL
+- en: After thinking about this a long time, we boiled it down to three basic principles,
+    how we will develop Eta.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 1\. User Experience
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. Performance
+  prefs: []
+  type: TYPE_NORMAL
+- en: 3\. Safety
+  prefs: []
+  type: TYPE_NORMAL
+- en: User Experience is mainly, an emotional thing, how you feel when you use Eta
+    technology, how you interact with it, what you feel when you get an error, psychologically.
+    When something has good UX, we feel good. That's a very subjective thing, it can
+    vary between different people, we have to figure out a way to standardize / make
+    it universal. Something we forget as software and tool developers, the person
+    developing the software is human. If they get errors persistently over time, they'll
+    get frustrated. Machines will do what you tell them over and over again.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So what have we done in Eta to concern? We''ve done something very recently;
+    it''s not in master yet. Jo and I spent a week refactoring the codebase to refactor
+    the error reporting part of the typechecker. It stores a list of strings; internally
+    in GHC, there''s a pretty printed data type, a list of those. The problem is we
+    can''t do postprocessing on that. So, what Jo did was made a giant data type with
+    three hundred data constructors, one for every error message in GHC. That refactor
+    to a week (SPJ: only a week?!) How it is now, it''s decoupled, now you have, instead
+    of storing in the typechecking monad, storing strings, you store a data type that
+    stores the relevant data to print out that error message. And then at the final
+    point, you can traverse the data type; based on the presence of other errors,
+    you can decide what to do. Now it''s pattern matching on certain error patterns
+    and reporting them nicely. This is one example. We talked about simple errors:
+    refactoring, adding an argument, changing the type, that''s one of the most common
+    errors you''ll get working with Haskell. So we focused on those first. This shows
+    an example of a type error... ''checker'', it''s an IO action.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'GHC would tell you, couldn''t match Int -> IO () with IO (). The problem is,
+    for people who don''t know how the typechecker works, they won''t be able to understand
+    what the typechecker is doing: going argument by argument. Because of the refactor
+    we''ve done, it was easy to pattern match on this particular case, and say, hey,
+    if the user forgot to put an argument, you can print out an error message of this
+    form. You print an argument is missing, you highlight. (SM: You might have been
+    missing the first argument, in this case!) That''s true. It''s tricky; sometimes
+    the suggestion you give, might not. We don''t tell people what they did exactly
+    wrong, because we don''t know. This is not a perfect thing, but we try to give
+    the best suggestion that we can. And an important feature of this, most of how
+    we decdied this layout, we studied languages like Elm and Purescript, which have
+    done good work in this error. PureScript and Elm both, what they do, for a certain
+    type of error, and you''re not sure what to do... e.g., our info is not complete,
+    they can go to a particular link and see other things that could have happened.
+    So we don''t have to flood the user with every suggestion, we just have to show
+    the user what probably is the cause for it. And if it''s a tricky case, not what
+    we posted, in the link, we''ll have the case as well.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '(BG: There''s other information that might be relevant; expanding type synonyms,
+    etc. Do you have this info?) We''re still thinking about that. Probably we''ll
+    have extra flags and stuff. Eventually, we''ll have a mode that prints out JSON
+    for IDEs, then it''s easier to parse on the IDE side. (BG: Incidentally, there''s
+    a ticket, a student working with Richard, trying to figure out smoething similar).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Another aspect of UX is we added the REPL. Tried to simplify the entry point,
+    try to make it easy. You want types, kinds, and where to find out more information.
+    This is a statically typed language: you always hhave to be thinking about types.
+    So we :set +t: always print out the types when you print things. One more thing,
+    one of the former Scala engineers, has been learning Haskell, and he made a critique
+    of one aspect of the REPL experience. f is a function of two argumets. In a second
+    statement of the REPL, I applied 1\. Find instance, show instance, for a goes
+    to a. He said that... no show instance found, just say that this is a function,
+    and you can''t print it. That''s a change we did. This was very easy for us to
+    do.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Performance: it can mean many things. We''re talking about fast developer feedback
+    loop. Compile time and develop time, reducing that feedback loop. Some work we''ve
+    done in this direction is reproducible builds. As of now, we have bit-for-bit
+    reproducibility in Eta. That amounted to... nikita already did lots of work on
+    reproducibility, he made HAskell interface reproducible; but the last mile of
+    bit for bit is hard, there''s many places. For our code generator, it was a lot
+    simpler, we didn''t have to do as much. It was 20 lines of code to make it deterministic.
+    The main source of nondeterminism in GHC is the Unique data type, that changes
+    between different runs depending on environment. What we did, was we added a counter.
+    We used to print the uniques in the Java class name; that will make it nondeterministic.
+    So we made a counter: the order in which the bindings make it to STG is the same.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: GHCi is known to take up lots of memory, esp. with IDE. Simon Marlow has a bunch
+    of fixes to that; we also backported those.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Another aspect of performance is the actual runtime performance. We're on the
+    JVM, that puts us at a huge disadvantage. We don't have control over many things.
+    The runtime system... this is Java. It's OO, so the runtime system is implemented
+    in Java. We setup a hierarchy for values, that are defined in Eta. We have Closure,
+    it's a class, parent class of all values, thunks, WNF. The Closure class has two
+    methods. evaluate, evaluate to WHNF, and enter will actually enter... it's similar
+    to GHC runtime system. The initial version was modeled exactly after GHC, except
+    for tail calls. The terminology is similar. It's primarily used when you do the
+    body of function. The main subclasses of Closure are Thunk and Value. Value will
+    be the parent class, of things like functions, partiallly applied functions, and
+    data constructors. Thunk will be the superclass of things like CAFs, single entry
+    thunks, and updatable thunks. CAFs don't have free variables, so there's a special
+    case for that, and you create a blackholing entry every time, to avoid two threads
+    evaluating the same thunk. UpdatableThunk pushes an update frame, when it's finished
+    evaluating, it will update the thunk to point to the newly computed value. And
+    SingleEntryThunk, they're evaluated only once, so you can just evaluate it directly
+    without pushing an update frame. This terminology is borrowed from GHC as well.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'VAlues: DataCon, Function and PAPs. In the early days, and even now, every
+    function call that was a tail call, is just a method call. This is the only way
+    to make it remotely efficient. (More on stack soon). For static tail recursive
+    calls: singly recursive or mutually recursive, they get compiled to loops. In
+    most cases, they get a nice tight loop. In the mutual case, what will happen is,
+    we collect all of the SCC, and we make one giant method that goes into a loop.
+    Let''s say you''re in the even/odd example, what will happen is, when even calls
+    odd, there''s a variable called target, an integer. Even will be assigned 0, odd
+    is assigned 1, so then you set 1 and restart. (BG: Do you always have unfoldings
+    available for functions you compiled?) This is mutually recursive functions defined
+    in the same module. (SPJ: They might have very different type arguments.) We cat
+    all the arguments into one. The main problem with this argument, is parsers generated
+    with Happy and Alex, we hit limits. (BG: Crash?) Not stack blowup. JVM has method
+    size limit, so you can only have 65000 bytecodes. That''s Eta compiled with itself.
+    That''s the only thing that''s preventing us from using Eta with Eta. But all
+    you need to do is split method into smaller chunks.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So how do we handle tail calls? When we know it , tail recursive, let''s say
+    you don''t. Let''s say you''re using CPS. It''s so common in Haskell, any fast
+    parser uses CPS. In early days, Aeson would just blow the stack, it was pretty
+    bad. So, we explored trampolining by default, and it was just awful, it was slow,
+    super slow. What we did is turn it off, and let stack blow up. We found a better
+    solution. The JVM has... the only way to unwind the stack is throwing an exception,
+    or returning, and keep on returning until you return all the way down. It turns
+    out, with exceptions, you can turn off the feature that captures the stack trace:
+    that''s the most expensive part of an exception. So we have a general exception.
+    So this trampoline mechanism is optional. So, what we do, we have a function ''trampoline
+    :: a -> a'', runtime primitive, what it does is activates a boolean in the context
+    which says, I''m going to trampoline now, and it activates a codepath that turns
+    a counter, and once you reach a certain number, which is configurable, it will
+    unwind the stack, and then continue where it needed to go. Our limit is 400, and
+    then we unwind. It used to be in 1000s, but with Happy and Alex, we needed a smaller
+    number. (BG: Inside that context, how much does it cost? But observably, it''s
+    faster. A couple months ago, we got PureScript to work in Eta, and it wasn''t
+    bad by default?) (SPJ: So you could turn it on by default: all you''re doing is
+    counting.) The counting is how we know how big the stack is. In your main function,
+    you could call trampolineIO, and trampoline your whole program. (SPJ: Maybe it''s
+    low overhead, and you can do it all the time.) If it''s low, we will do it. (How
+    do you resume? Once you raise the exception, what do you store?) The counter happens
+    at the entry point, and it''s guarded bby the boolean. So, that, if the limit
+    is exceeded, it will call another function that takes the context. So we store
+    all the arguments in a context variable that gets passed to every eta function.
+    We stash all the arguments into a function that has the state, then wjhen it unwinds,
+    marked by this function, it will call that, with that function and those arguments.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As I mentioned, it's guarded by a boolean. JVM has an optimization, where it
+    observes the boolean is true for a lot of times, it won't even compile that branch
+    in the native code. So if you don't use trampolining, it doesn't affect you at
+    all; the code for the counter will just not be there.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One nice thing I like about Eta is that you actually get stack traces for exceptions.
+    This is because, to get good perf for Eta, you have to implement most primitives
+    on JVM stack. This is a sample stack. You have a schedule loop, and you hare evaluting
+    some IO acttion. applyV/applyN, these are partial applications. Execute an IO
+    action. And another nice part, we''ve tried to encode it close to the original
+    name. So you can tell this fucntion call happened in statistics.Regression, rnfAll.
+    If you see, you notice there are line numbers. This is not perfect, and we can
+    definitely make it better later... GHC gives you a lot of debugging info at STG
+    time, but because the JVM doesn''t have much flexibility, we can only attach one
+    line number to code, so we have to discard all that info. This will get better;
+    we''ll stash that debug information in the classfile itself, and then access it
+    and render a better stack trace. (BG: This is Source Notes?) Yeah.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Concurrency: One nice part is, it''s nice or not. If you''re evaluating a long
+    chain of thunks, you''re going to blow the stack. This happily coincides with
+    GHC also having a space leak. Neil Mitchell wrote a blog post about how to detect
+    space leaks: restrict stack size and then figure out which thunk was being evaluated.
+    If you see a stack trace like this, and you see a huge chain of evaluates, in
+    a long chain, you probably have a space leak.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'How do I do interop? The way we did interop was, made a thing called the Java
+    monad. IT''s supposed to give you the experience of programming JAva. The basic
+    implementation is inspired from IO monad. Object# c is "this", the object that
+    is being threaded through. Because of this encoding, you get the Java experience:
+    you can call dot on the Java object. It''s almost like working with Java inside.
+    The argument is called... that''s the type constructor that forced us to fork,
+    instead of use the API. You can''t declare primitive types in the API. And we
+    had to introduce a new low level representation. Declare wrapper types, wrapping
+    the iterable interface in Java. We''ve stolen better syntax, which were type applications...
+    resolve it somehow. I''m declaring an Eta type that wraps a JAva type, @java.lang.Iterable.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You use the java function to run the Java monad. All of these have to be imported.
+    newArrayList, newInteger, but we brought some combinators, that let you call methods.
+    It owrked out with the monad. This is sample code that does the same thing as
+    Java code. it just uses standard monadic combinators. If it's a fixed c, it's
+    an instance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: You can use Eta as a better JAva, with referential transparency! Unlike Kotlin
+    or Scala.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'How do we handle subtyping? We define uilt in type families. We have a typeclass
+    named extends. Any time you declare a function that takes a given class and any
+    subtype of that class, you can, instead of actually subtyping, we do it with constraints.
+    Extends'' takes the info from Inherits and figures it out. You can use the dot
+    operator on anything that is a subclass of Iterator. We had to extend the typechecker
+    just a little bit: a lot of times the type gets stuck in the form Extends'' (List
+    JSTring) (List a) where a is unconstrained.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Imports are tiresome, so we''re setting up direct Java Interop; actually use
+    JAva reflection to get info class files, and generate imports. "import java java.lang.Math"
+    works, but doesn''t scale. Biggest priority for the rest of the year is Java interop,
+    really good IDE support, documentation, language extensions: UnboxedSums, TypeApplications,
+    DerivingVia, QuantifiedConstraints. We have some new language extensions in mind,
+    AnonymousRecords, RowTypePolymorphism... We''ll see how that goes.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I was thinking about ways... we work on the same codebase, how to collaborate?
+    We''re interested in compile performance, support for unbboxed sums. Worker wrapper
+    has some glitch, and no one got around to fixing it. At some point, maybe not
+    any time soon, that and mutable fields. Pretty important for us. (BG: Do unboxed
+    sums get a lot of usage? Why unboxed sums? Does Eta code make a lot of use?) No.
+    But a lot of people on JVM are annoyed that Maybe is boxed all the time. But if
+    you have unboxed sums, you can represent it as null. (SPJ: Or you can say, just
+    box it, and you won''t notice it. If it''s fast enough all the time, focus on
+    what''s going to make a difference.)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Q: Did you consider using Graal (it''s a new virtual machine that supports
+    partial evaluation and partial escape analysis, good for functional languages)?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A: We have looked into it, it''s not completely there yet to use, and we''re
+    not sure if it''s something we can invest time with. We''re keeping up with it.
+    (BG: But you lose the JVM!) That''s what''s preventing us from going there. Maybe
+    if it gets integrated into a mainline VN we might look at it. (Mainline Java is
+    planning to integrate Graal)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Q: (SM) Are you keeping the fork up to date with master GHC?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A: One thing that is out of bounds for us, and for a long time, is all the
+    dependent Haskell work. Everything else, we keep up. If there''s any nice bugfixes...
+    (SM: So you''re selectively backporting).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Q: (BG) Have you considered unforking.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A: Not yet, no.'
+  prefs: []
+  type: TYPE_NORMAL

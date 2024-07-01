@@ -1,0 +1,222 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:17:06'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Hindley-Milner with top-level existentials : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2016/04/hindley-milner-with-top-level-existentials/](http://blog.ezyang.com/2016/04/hindley-milner-with-top-level-existentials/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*Content advisory: This is a half-baked research post.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Abstract.** Top-level unpacking of existentials are easy to integrate into
+    Hindley-Milner type inference. Haskell should support them. It''s possible this
+    idea can work for internal bindings of existentials as well (ala F-ing modules)
+    but I have not worked out how to do it.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Update.** And UHC did it first!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Update 2.** And rank-2 type inference is decidable (and rank-1 existentials
+    are an even weaker system), although the algorithm for rank-2 inference requires
+    semiunification.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Background
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**The difference between Hindley-Milner and System F.** Although in informal
+    discussion, Hindley-Milner is commonly described as a “type inference algorithm”,
+    it should properly be described as a type system which is more restrictive than
+    System F. Both type systems allow polymorphism via universal quantification of
+    variables, but in System F this polymorphism is explicit and can occur anywhere,
+    whereas in Hindley-Milner the polymorphism is implicit, and can only occur at
+    the “top level” (in a so-called “polytype” or “type scheme.”) This restriction
+    of polymorphism is the key which makes inference (via Algorithm W) for Hindley-Milner
+    decidable (and practical), whereas inference for System F undecidable.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '**Existential types in System F.** A common generalization of System F is to
+    equip it with existential types:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: In System F, it is technically not necessary to add existentials as a primitive
+    concept, as they can be encoded using universal quantifiers by saying `∃a. τ =
+    ∀r. (∀a. τ → r) → r`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Existential types in Hindley-Milner?** This strategy will not work for Hindley-Milner:
+    the encoding requires a higher-rank type, which is precisely what Hindley-Milner
+    rules out for the sake of inference.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In any case, it is a fool''s game to try to infer existential types: there''s
+    no best type! HM always infers the *most* general type for an expression: e.g.,
+    we will infer `f :: a -> a` for the function `f = \x -> x`, and not `Int -> Int`.
+    But the whole point of data abstraction is to pick a more abstract type, which
+    is not going to be the most general type and, consequently, is not going to be
+    unique. What should be abstract, what should be concrete? Only the user knows.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Existential types in Haskell.** Suppose that we are willing to write down
+    explicit types when existentials are *packed*, can Hindley-Milner do the rest
+    of the work: that is to say, do we have complete and decidable inference for the
+    rest of the types in our program?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Haskell is an existence (cough cough) proof that this can be made to work.
+    In fact, there are two ways to go about doing it. The first is what you will see
+    if you Google for “Haskell existential type”:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`Ex f` is isomorphic to `∃a. f a`, and similar to the System F syntax, they
+    can be packed with the `Ex` constructor and unpacked by pattern-matching on them.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The second way is to directly use the System F encoding using Haskell''s support
+    for rank-n types:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: The [boxy types paper](http://research.microsoft.com/pubs/67445/boxy-icfp.pdf)
+    demonstrated that you *can* do inference, so long as all of your higher rank types
+    are annotated. Although, perhaps it was not as simple as hoped, since impredicative
+    types are a source of constant bugs in GHC's type checker.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The problem
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**Explicit unpacks suck.** As anyone who has tried programming with existentials
+    in Haskell can attest, the use of existentials can still be quite clumsy due to
+    the necessity of *unpacking* an existential (casing on it) before it can be used.
+    That is to say, the syntax `let Ex x = ... in ...` is not allowed, and it is an
+    easy way to get GHC to tell you its brain exploded.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Leijen](http://research.microsoft.com/en-us/um/people/daan/download/papers/existentials.pdf)
+    investigated the problem of handling existentials *without* explicit unpacks.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Loss of principal types without explicit unpacks, and Leijen''s solution.**
+    Unfortunately, the naive type system does not have principal types. Leijen gives
+    an example where there is no principal type:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Neither type is a subtype of the other. In his paper, Leijen suggests that the
+    existential should be unwrapped as late as possible (since you can go from the
+    first type to the second, but not vice versa), and thus, the first type should
+    be preferred.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The solution
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '**A different approach.** What if we always lift the existential to the top
+    level? This is really easy to do if you limit unpacks to the top-level of a program,
+    and it turns out this works *really well*. (The downside is that dynamic use of
+    existentials is not supported.)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**There''s an existential in every top-level Haskell algebraic data type.**
+    First, I want to convince you that this is not all that strange of an idea. To
+    do this, we look at Haskell''s support for algebraic data types. Algebraic data
+    types in Haskell are *generative*: each data type must be given a top-level declaration
+    and is considered a distinct type from any other data type. Indeed, Haskell users
+    use this generativity in conjunction with the ability to hide constructors to
+    achieve data abstraction in Haskell. Although there is not actually an existential
+    lurking about—generativity is *not* data abstraction—generativity is an essential
+    part of data abstraction, and HM has no problem with this.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Top-level generativity corresponds to existentials that are unpacked at the
+    top-level of a program (ala F-ing modules).** We don''t need existentials embedded
+    inside our Haskell expressions to support the generativity of algebraic data types:
+    all we need is the ability to pack an existential type at the top level, and then
+    immediately unpack it into the top-level context. In fact, F-ing modules goes
+    even further: existentials can always be lifted until they reach the top level
+    of the program. Modular programming with applicative functors (the ML kind) can
+    be *encoded* using top-level existentials which are immediately unpacked as they
+    are defined.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The proposal.** So let us suggest the following type system, Hindley-Milner
+    with top-level existentials (where `a*` denotes zero to many type variables):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'There is one new top-level binding form, `seal`. We can give it the following
+    typing rule:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It also elaborates directly to System F with existentials:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'A few observations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In conventional presentations of HM, let-bindings are allowed to be nested inside
+    expressions (and are generalized to polytypes before being added to the context).
+    Can we do something similar with `seal`? This should be possible, but the bound
+    existential type variables must be propagated up.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'This leads to a second problem: naively, the order of quantifiers must be `∃b.
+    ∀a. τ` and not `∀a. ∃b. τ`, because otherwise we cannot add the existential to
+    the top-level context. However, there is a "skolemization" trick (c.f. Shao and
+    F-ing modules) by which you can just make `b` a higher-kinded type variable which
+    takes `a` as an argument, e.g., `∀a. ∃b. b` is equivalent to `∃b''. ∀a. b'' a`.
+    This trick could serve as the way to support inner `seal` bindings, but the encoding
+    tends to be quite involved (as you must close over the entire environment.)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: This rule is not very useful for directly modeling ML modules, as a “module”
+    is usually thought of as a record of polymorphic functions. Maybe you could generalize
+    this rule to bind multiple polymorphic functions?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Conclusion.** And that''s as far as I''ve worked it out. I am hoping someone
+    can tell me (1) who came up with this idea already, and (2) why it doesn''t work.'
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,77 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:18:01'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Errata for gin and monotonic : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2010/12/errata-for-gin-and-monotonic/](http://blog.ezyang.com/2010/12/errata-for-gin-and-monotonic/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Errata for gin and monotonic
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Between packing and hacking on GHC, I didn’t have enough time to cough up the
+    next post of the series or edit the pictures for the previous post, so all you
+    get today is a small errata post.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The full list diagram is missing some orderings: ★:⊥ ≤ ★:⊥:⊥ and so on.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In usual denotational semantics, you can’t distinguish between ⊥ and `λ_.⊥`.
+    However, as Anders Kaseorg and the Haskell Report point out, with `seq` you can
+    distinguish them. This is perhaps the true reason why seq is a kind of nasty function.
+    I’ve been assuming the stronger guarantee (which is what zygoloid pointed out)
+    when it’s not actually true for Haskell.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The “ought to exist” arrow in the halts diagram goes the wrong direction.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In the same fashion of the full list diagram, `head` is missing some orderings,
+    so in fact they gray blob is entirely connected. There are situations when we
+    can have disconnected blobs, but not for a domain with only one maximum.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Obvious typo for fst.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The formal partial order on functions was not defined correctly: it originally
+    stated that for f ≤ g, f(x) = g(x); actually, it’s weaker than that: f(x) ≤ g(x).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'A non-erratum: the right-side of the head diagram is omitted because... adding
+    all the arrows makes it look pretty ugly. Here is the sketch I did before I decided
+    it wasn’t a good picture.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Thanks Anders Kaseorg, zygoloid, polux, and whoever pointed out the mistake
+    in the partial order on functions (can’t find that correspondence now) for corrections.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Non sequitur.* Here is a *really* simple polyvariadic function. The same basic
+    idea is how Text.Printf works. May it help you in your multivariadic travels.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE

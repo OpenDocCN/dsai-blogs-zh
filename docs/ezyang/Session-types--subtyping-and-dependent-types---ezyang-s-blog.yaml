@@ -1,0 +1,112 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:18:09'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Session types, subtyping and dependent types : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2010/09/session-types-subtyping-and-dependent-types/](http://blog.ezyang.com/2010/09/session-types-subtyping-and-dependent-types/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'While I was studying session type encodings, I noticed something interesting:
+    the fact that session types, in their desire to capture protocol control flow,
+    find themselves implementing something strongly reminiscent of dependent types.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Any reasonable session type encoding requires the ability to denote choice:
+    in Simon Gay’s paper this is the `T-Case` rule, in Neubauer and Thiemann’s work
+    it is the `ALT` operator, in Pucella and Tov’s implementation it is the `:+:`
+    type operator, with the `offer`, `sel1` and `sel2` functions. There is usually
+    some note that a binary alternation scheme is—in terms of user interface—inferior
+    to some name-based alternation between an arbitrary number of cases, but that
+    the latter is much harder to implement.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'What the authors of these papers were really asking for was support for something
+    that smells like dependent types. This becomes far more obvious when you attempt
+    to write a session type encoding for an existing protocol. Consider the following
+    tidbit from Google’s SPDY:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once a stream is created, it can be used to send arbitrary amounts of data.
+    Generally this means that a series of data frames will be sent on the stream until
+    a frame containing the FLAG_FIN flag is set. The FLAG_FIN can be set on a SYN_STREAM,
+    SYN_REPLY, or a DATA frame. Once the FLAG_FIN has been sent, the stream is considered
+    to be half-closed.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'The format for a data frame is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Whereas `offer` is implemented by transmitting a single bit across the network,
+    here, the critical bit that governs whether or not the stream will be closed is
+    embedded deep inside the data. Accordingly, if I even want to *consider* writing
+    a session type encoding, I have to use a data definition with an extra phantom
+    type in it, and not the obvious one:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: I’ve had to promote `FlagFin` from a regular term into a type fitting into the
+    `fin` hole, something that smells suspiciously of dependent types. Fortunately,
+    the need for dependent types is averted by the fact that the session type will
+    immediately do a case split on the type, accounting for both the case in which
+    it is true and the case in which it is false. We don’t know at compile time what
+    the value will actually be, but it turns out we don’t care! And if we are careful
+    to only permit `fin` to be `TrueTy` when `FlagFin` is actually `True`, we don’t
+    even need to have `FlagFin` as a field in the record.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This observation is what I believe people are alluding to when they say that
+    you can go pretty far with type tricks without resorting to dependent types. Pushing
+    compile-time known values into types is one obvious example (Peano integers, anyone?),
+    but in this case we place compile-time unknown values into the types just by dealing
+    with all possible cases!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Alas, actually doing this in Haskell is pretty awkward. Consider some real-world
+    algebraic data type, a simplified version of the SPDY protocol that only allows
+    one stream at a time:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Each constructor needs to be turned into a type, as do the `FlagFin`, but it
+    turns out the other data doesn’t matter for the session typing. So we end up writing
+    a data declaration for each constructor, and no good way of stitching them back
+    together:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The thread we are looking for here is subtyping, specifically the more exotic
+    sum-type subtyping (as opposed to product-type subtyping, under the more usual
+    name record subtyping). Another way of thinking about this is that our type now
+    represents a finite set of possible terms that may inhabit a variable: as our
+    program evolves, more and more terms may inhabit this variable, and we need to
+    do case-splits to cut down the possibilities to a more manageable size.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Alas, I hear that subtyping gunks up inference quite a bit. And, alas, this
+    is about as far as I have thought it through. Doubtless there is a paper that
+    exists out there somewhere that I ought to read that would clear this up. What
+    do you think?
+  prefs: []
+  type: TYPE_NORMAL

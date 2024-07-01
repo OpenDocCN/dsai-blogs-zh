@@ -1,0 +1,343 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:17:14'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A taste of Cabalized Backpack : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2014/08/a-taste-of-cabalized-backpack/](http://blog.ezyang.com/2014/08/a-taste-of-cabalized-backpack/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**Update.** Want to know more about Backpack? Read the [specification](https://github.com/ezyang/ghc-proposals/blob/backpack/proposals/0000-backpack.rst)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: So perhaps you've [bought into modules and modularity](http://blog.ezyang.com/2014/08/whats-a-module-system-good-for-anyway/)
+    and want to get to using Backpack straightaway. How can you do it? In this blog
+    post, I want to give a tutorial-style taste of how to program Cabal in the Backpack
+    style. These examples are executable, but you'll have to build custom versions
+    of [GHC](https://github.com/ezyang/ghc/tree/ghc-backpack) and [Cabal](https://github.com/ezyang/cabal/tree/backpack)
+    to build them. Comments and suggestions would be much appreciated; while the design
+    here is theoretically well-founded, for obvious reasons, we don't have much on-the-ground
+    programmer feedback yet.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A simple package in today's Cabal
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: To start, let's briefly review how Haskell modules and Cabal packages work today.
+    Our running example will be the `bytestring` package, although I'll inline, simplify
+    and omit definitions to enhance clarity.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s suppose that you are writing a library, and you want to use efficient,
+    packed strings for some binary processing you are doing. Fortunately for you,
+    the venerable Don Stewart has already written a `bytestring` package which implements
+    this functionality for you. This package consists of a few modules: an implementation
+    of strict `ByteStrings`...'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '...and an implementation of lazy `ByteStrings`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'These modules are packaged up into a package which is specified using a Cabal
+    file:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can then make a simple module and package which depends on the `bytestring`
+    package:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It''s worth noting a few things about this completely standard module setup:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It's not possible to switch `Utils` from using lazy `ByteStrings` to strict
+    `ByteStrings` without literally editing the `Utils` module. And even if you do
+    that, you can't have `Utils` depending on strict `ByteString`, and `Utils` depending
+    on lazy `ByteString`, in the same program, without copying the entire module text.
+    (This is not too surprising, since the code *really is* different.)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Nevertheless, there is some amount of indirection here: while `Utils` includes
+    a specific `ByteString` module, it is unspecified *which* version of `ByteString`
+    it will be. If (hypothetically) the `bytestring` library released a new version
+    where lazy byte-strings were actually strict, the functionality of `Utils` would
+    change accordingly when the user re-ran dependency resolution.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'I used a qualified import to refer to identifiers in `Data.ByteString.Lazy`.
+    This is a pretty common pattern when developing Haskell code: we think of `B`
+    as an *alias* to the actual model. Textually, this is also helpful, because it
+    means I only have to edit the import statement to change which `ByteString` I
+    refer to.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Generalizing Utils with a signature
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'To generalize `Utils` with some Backpack magic, we need to create a *signature*
+    for `ByteString`, which specifies what the interface of the module providing `ByteStrings`
+    is. Here one such signature, which is placed in the file `Data/ByteString.hsig`
+    inside the *utilities* package:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The format of a signature is essentially the same of that of an `hs-boot` file:
+    we have normal Haskell declarations, but omitting the actual implementations of
+    values.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The `utilities` package now needs a new field to record signatures:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Notice that there have been three changes: (1) We''ve removed the direct dependency
+    on the `bytestring` package, and (2) we have a new field **signatures** which
+    simply lists the names of the signature files (also known as **holes**) that we
+    need filled in.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'How do we actually use the utilities package, then? Let''s suppose our goal
+    is to produce a new module, `Utils.Strict`, which is `Utils` but using strict
+    `ByteStrings` (which is exported by the bytestring package under the module name
+    `Data.ByteString`). To do this, we''ll need to create a new package:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'That''s it! `strict-utilities` exports a single module `Utils.Strict` which
+    is `utilities` using `Data.ByteString` from `bytestring` (which is the strict
+    implementation). This is called a *mix-in*: in the same dependency list, we simply
+    mix together:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`utilities`, which *requires* a module named `Data.ByteString`, and'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`bytestring`, which *supplies* a module named `Data.ByteString`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Cabal automatically figures out that how to instantiate the utilities package
+    by matching together *module names*. Specifically, the two packages above are
+    connected through the module name `Data.ByteString`. This makes for a very convenient
+    (and as it turns out, expressive) mode of package instantiation. By the way, **reexported-modules**
+    is a new (orthogonal) feature which lets us reexport a module from the current
+    package or a dependency to the outside world under a different name. The modules
+    that are exported by the package are the exposed-modules and the reexported-modules.
+    The reason we distinguish them is to make clear which modules have source code
+    in the package (exposed-modules).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Unusually, `strict-utilities` is a package that contains no code! Its sole purpose
+    is to mix existing packages.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, you might be wondering: how do we instantiate utilities with the lazy
+    `ByteString` implementation? That implementation was put in `Data.ByteString.Lazy`,
+    so the names don''t match up. In this case, we can use another new feature, module
+    thinning and renaming:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: The new `backpack-includes` field says that only the `Data.ByteString.Lazy`
+    module should brought into scope, under the name `Data.ByteString`. This is sufficient
+    to mix in link `utilities` with the lazy implementation of `ByteString`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'An interesting duality is that you can do the renaming the other way:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Instead of renaming the implementation, I renamed the hole! It''s equivalent:
+    the thing that matters it that the signature and implementation need to be mixed
+    under the *same* name in order for linking (the instantiation of the signature
+    with the implementation) to occur.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are a few things to note about signature usage:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you are using a signature, there''s not much point in also specifying an
+    explicit import list when you import it: you are guaranteed to *only* see types
+    and definitions that are in the signature (modulo type classes... a topic for
+    another day). Signature files act like a type-safe import list which you can share
+    across modules.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: A signature can, and indeed often must, import other modules. In the type signature
+    for `singleton` in `Data/ByteString.hsig`, we needed to refer to a type `Word8`,
+    so we must bring it into scope by importing `Data.Word`.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Now, when we compile the signature in the `utilities` package, we need to know
+    where `Data.Word` came from. It could have come from another signature, but in
+    this case, it''s provided by the *definite* package base: it''s a proper concrete
+    module with an implementation! Signatures can depend on implementations: since
+    we can only refer to types from those modules, we are saying, in effect: any implementation
+    of the `singleton` function and any representation of the `ByteString` type is
+    acceptable, but regarding `Word8` you must use the *specific* type from `Data.Word`
+    in `prelude`.'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'What happens if, independently of my packages `strict-utilities`, someone else
+    also instantiatiates `utilities` with `Data.ByteString`? Backpack is clever enough
+    to reuse the instantiation of `utilities`: this property is called **applicativity**
+    of the module system. The specific rule that we use to decide if the instantiation
+    is the same is to look at how all of the holes needed by a *package* are instantiated,
+    and if they are instantiated with precisely the same modules, the instantiated
+    packages are considered type equal. So there is no need to actually create `strict-utilities`
+    or `lazy-utilities`: you can just instantiate `utilities` on the fly.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Mini-quiz:** What does this package do?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Sharing signatures
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: It's all very nice to be able to explicitly write a signature for `Data.ByteString`
+    in my package, but this could get old if I have to do this for every single package
+    I depend on. It would be much nicer if I could just put all my signatures in a
+    package and include that when I want to share it. I want all of the Hackage mechanisms
+    to apply to my signatures as well as my normal packages (e.g. versioning). Well,
+    you can!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The author of `bytestring` can write a `bytestring-sig` package which contains
+    only signatures:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, `utilities` can include this package to indicate its dependence on the
+    signature:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Unlike normal dependencies, signature dependencies should be *exact*: after
+    all, while you might want an upgraded implementation, you don''t want the signature
+    to change on you!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can summarize all of the fields as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**exposed-modules** says that there is a public module defined *in this package*'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'System Message: WARNING/2 (`<stdin>`, line 189)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Enumerated list ends without a blank line; unexpected unindent.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 2\. **other-modules** says that there is a private module defined in this package
+    4\. **signatures** says that there is a public signature defined in this package
+    (there are no private signatures; they are always public, because a signature
+    *always* must be implemented) 5\. **reexported-modules** says that there is a
+    public module or signature defined in a dependency.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this list, public means that it is available to clients. Notice the first
+    four fields list all of the source code in this package. Here is a simple example
+    of a client:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Summary
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'We''ve covered a lot of ground, but when it comes down to it, Backpack really
+    comes together because of set of orthogonal features which interact in a good
+    way:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Module signatures**: the *heart* of a module system, giving us the ability
+    to write *indefinite packages* and mix together implementations,'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Module reexports**: the ability to take locally available modules and reexport
+    them under a different name, and'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '**Module thinning and renaming** : the ability to selectively make available
+    modules from a dependency.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: To compile a Backpack package, we first run the traditional version dependency
+    solving, getting exact versions for all packages involved, and then we calculate
+    how to link the packages together. That's it! In a future blog post, I plan to
+    more comprehensively describe the semantics of these new features, especially
+    module signatures, which can be subtle at times.
+  prefs: []
+  type: TYPE_NORMAL

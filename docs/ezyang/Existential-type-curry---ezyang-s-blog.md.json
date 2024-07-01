@@ -1,0 +1,1 @@
+["```\ndata OpaqueBox = forall a. OpaqueBox a\n\n```"]

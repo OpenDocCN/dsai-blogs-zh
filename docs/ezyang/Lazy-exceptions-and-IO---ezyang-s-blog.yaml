@@ -1,0 +1,88 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:18:19'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Lazy exceptions and IO : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2010/05/imprecise-exceptions-and-io/](http://blog.ezyang.com/2010/05/imprecise-exceptions-and-io/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Lazy exceptions and IO
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Consider the following piece of code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'What might you expect the output to be? A straightforward transcription to
+    Python might look like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: and anyone with a passing familiarity with the any strict language will say,
+    "Of course, it will output:"
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Of course, lazy exceptions (which is what `error` emits) aren''t called lazy
+    for no reason; the Haskell code outputs:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: What happened? Haskell was lazy, and didn't bother evaluating the pure insides
+    of the IO `return alwaysFails` until it needed it for unsafeCall, at which point
+    there was no more `catch` call guarding the code. If you don't believe me, you
+    can add a trace around `alwaysFails`. You can also try installing `errorHandler_`
+    on `unsafeCall`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What is the moral of the story? Well, one is that `error` is evil, but we already
+    knew that...
+  prefs: []
+  type: TYPE_NORMAL
+- en: You may install exception handlers for most IO-based errors the obvious way.
+    (If we had replaced `return alwaysFails` with `alwaysFails`, the result would
+    have been the strict one.) You may not install exception handlers for errors originating
+    from pure code, since GHC reserves the right to schedule arbitrarily the time
+    when your code is executed.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If pure code is emitting exceptions and you would like it to stop doing that,
+    you'll probably need to force strictness with `$!` `deepseq` or `rnf`, which will
+    force GHC to perform the computation inside your guarded area. As my readers point
+    out, a good way to think about this is that the *call* is not what is exceptional,
+    the *structure* is.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If you are getting an imprecise exception from pure code, but can't figure out
+    where, good luck! I don't have a good recipe for figuring this out yet. (Nudge
+    to my blog readers.)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '*Postscript.* Note that we needed to use `Control.Exception.catch`. `Prelude.catch`,
+    as per Haskell98, only catches IO-based errors.'
+  prefs: []
+  type: TYPE_NORMAL

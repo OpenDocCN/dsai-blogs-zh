@@ -1,0 +1,141 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:17:38'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Mystery Hunt and the Scientific Endeavour : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2012/01/mystery-hunt-and-the-scientific-endeavour/](http://blog.ezyang.com/2012/01/mystery-hunt-and-the-scientific-endeavour/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: It can be hard to understand the appeal of spending three days, without sleep,
+    solving what some have called “[the hardest recreational puzzles in the world,](http://www.thisamericanlife.org/radio-archives/episode/326/quiz-show?act=2)”;
+    but over this weekend, hundreds of people converged on the MIT campus to do just
+    that, as part of [MIT Mystery Hunt](http://web.mit.edu/puzzle/www/). To celebrate
+    the finding of the coin, I'd like to share this little essay that I found in my
+    files, which compares Mystery Hunt and the scientific endeavour. (If you are not
+    familiar with Mystery Hunt, I recommend listening to the linked *This American
+    Life* program.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Thomas Kuhn, in his famous book *The Structure of Scientific Revolutions*,
+    states that “normal science” is “puzzle solving”: what he means is that the every
+    day endeavors of scientists are the addressing of small, tractable problems, these
+    problems are “puzzles” not “grand mysteries of the universe.” Kuhn goes on to
+    describe what is involved with normal science: generation of facts, increasing
+    the fit between theory and observation, and paradigm articulation. We will see
+    that, as one might expect, these activities are part of “normal” puzzle solving.
+    But (perhaps more unexpectedly) Popperian falsification and Kuhnian revolutions
+    also have something to say about this situation. There are limits to the analogy
+    of puzzles to science, the perhaps most striking of which is that a puzzle has
+    a single, definite solution. But because it is not possible to call up the puzzle
+    writers midway through a puzzle and ask them, “Am I on the right track?” (you
+    are only allowed to phone in the final answer) the intermediate steps still are
+    somewhat informative of the practice of science. In this context, I argue that
+    Popper assumes a microscopic view of scientific progress, whereas Kuhn assumes
+    a macroscopic view of scientific progress.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'What is a Mystery Hunt puzzle? This is a question that, at first glance, may
+    seem to defy answering: puzzles can vary from a crossword to an album of images
+    of birds to a single audio file of seemingly random electronic pitches. The answer
+    is always a phrase, perhaps “KEPLERS THIRD LAW” or “BOOTS,” but a puzzle, like
+    a scientific problem, doesn''t come with instructions for how to solve it. Thus,
+    every Mystery Hunt puzzle starts off in Kuhn''s pre-science stage: without any
+    theory about how the puzzle works, puzzlers roll up their sleeves and start collecting
+    miscellaneous facts that may be relevant to the puzzle at hand. If there are pictures
+    of birds, one starts off identifying what the birds are; if there are short video
+    clips of people waving flags, one starts off decoding the semaphore messages.
+    This is a stage that doesn''t require very much insight: there is an obvious thing
+    to do. Some of the information collected may be irrelevant (just as the Linnaean
+    classification of species was broadly modified in light of modern information
+    about observable characteristics of plants and animals), but all-in-all this information
+    forms a useful basis for theory formation. But while Popper doesn’t have much
+    to say about data collection, Kuhn’s concept of the theory-ladenness of observation
+    is important. The theory-ladenness of observation states that it is impossible
+    to make an observation without some preconceptions and theories about how the
+    world works. For example, a list of images of birds may suggest that each bird
+    needs to be identified, but in the process of this identification it may be realized
+    that the images corresponded directly to watercolor engravings from Audubon''s
+    birds of America (in which case the new question is, which plates?) Even during
+    pre-science, small theories are continually being invented and falsified.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once the data has been collected, a theory about how all the data is to be
+    put together must be formed: this step is called “answer extraction”. In regular
+    science, forming the right theory is something that can take many, many years;
+    for a puzzle, the process is accelerated by a collection of pre-existing theories
+    that an experienced puzzler may attempt (e.g. each item has a numbering which
+    corresponds to a letter) as well as hints that a puzzle writer may place in a
+    puzzle''s flavor text and title (e.g. “Song of birds” refers to “tweeting” refers
+    to “Twitter”, which means the team should take an extracted phrase to mean a Twitter
+    account.) Naïve inductivism suggests that unprejudiced observation of the data
+    should lead to a theory which explains all of the information present. However,
+    puzzles are specifically constructed to resist this sort of straightforward observation:
+    instead, what more frequently happens is akin to Popper''s falsificationism, where
+    theories are invented out of sheer creativity (or perhaps historical knowledge
+    of previous puzzles) and then they are tested against the puzzle. To refer once
+    again to the bird puzzle, one proposed theory may be that the first letter of
+    the scientific names of the birds spells a word in the English language. When
+    the scientific names are gathered and the first letters found not to form a word,
+    the theory is falsified, and we go and look for something else to do. This makes
+    the Popperian view highly individualistic: while only some people may come up
+    with the “good ideas”, anyone can falsify a theory by going out and doing the
+    necessary calculation. Sophisticated falsification allows for the fact that someone
+    might go out and do the calculation incorrectly (thus sending the rest of the
+    puzzlers on a wild goose hunt until someone comes back to the original idea and
+    realizes it actually does work.) However, it only explains the scientific endeavor
+    at very high resolution: it explains the process for a single theory; and we''ll
+    see that Kuhn''s paradigms help broaden our perspective on the overall puzzle
+    solving endeavor.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Kuhn states that normal science organizes itself around paradigms, which are
+    characterized by some fundamental laws (Maxwell''s equations, Newton''s laws)
+    as well conventions for how these laws are to be used to solve problems. Unlike
+    a theory, a paradigm cannot be “falsified”, at least in the Popperian sense: a
+    paradigm can accommodate abnormalities, which may resolve themselves after further
+    investigation. The difference is one of scope. So, in a puzzle, while we might
+    have a straightforwardly falsifiable theory “the first letters form a word,” a
+    more complicated, thematic idea such as “the puzzle is Dr. Who themed” is closer
+    to a paradigm, in that the precise mechanism by which you get answer from “Dr.
+    Who” is unspecified, to be resolved by “normal puzzling.” The paradigm is vague,
+    but it has “the right idea”, and with sufficient effort, the details can be worked
+    out. Which paradigm is to be worked on is a social process: if a puzzler comes
+    in freshly to a puzzle and finds that a group of people is already working within
+    one paradigm, he is more likely to follow along those lines. Of course, if this
+    group is stuck, they may call in someone from the outside precisely to think *outside*
+    of the paradigm. In this manner, revolutions, as Kuhn describes them, occur. When
+    a paradigm is failing to make progress (e.g. failing to admit an answer), the
+    puzzlers will continue to attempt to apply it until a convincing alternative paradigm
+    comes along, at which point they may all jump to this new method. The revolution
+    is compressed, but it still carries many common traits: including the lone puzzler
+    who still thinks the old method will admit an answer with “just a little more
+    work.” (Sometimes they''re right!)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We see a striking correspondence between the activities of a scientist working
+    in a lab, and the activities of a scientist working on a Mystery Hunt puzzle.
+    If you''ll allow me to indulge in a little psychoanalysis, I think this similarity
+    is part of the reason why Mystery Hunt is so appealing to people with a science,
+    technology, engineering and maths background: in your every day life, you are
+    faced with the most vicious puzzles known to man, as they are by definition the
+    ones that have resisted any attempt to resolution. Months can go by without any
+    progress. In Mystery Hunt, you are once again faced with some of the most vicious
+    puzzles known to man. But there''s a difference. You see, in Mystery Hunt, there
+    is an answer. And you can find it.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Happy puzzling!
+  prefs: []
+  type: TYPE_NORMAL

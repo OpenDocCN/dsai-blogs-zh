@@ -1,0 +1,47 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:17:11'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Width-adaptive XMonad layout : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2015/05/width-adaptive-xmonad-layout/](http://blog.ezyang.com/2015/05/width-adaptive-xmonad-layout/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Width-adaptive XMonad layout
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'My usual laptop setup is I have a wide monitor, and then I use my laptop screen
+    as a secondary monitor. For a long time, I had two XMonad layouts: one full screen
+    layout for my laptop monitor (I use big fonts to go easy on the eyes) and a two-column
+    layout when I''m on the big screen.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But I had an irritating problem: if I switched a workspace from the small screen
+    to the big screen, XMonad would still be using the full screen layout, and I would
+    have to Alt-Tab my way into the two column layout. To add insult to injury, if
+    I moved it back, I''d have to Alt-Tab once again.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'After badgering the fine folks on #xmonad, I finally wrote an extension to
+    automatically switch layout based on screen size! Here it is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: I'm going to submit it to xmonad-contrib, if I can figure out their darn patch
+    submission process...
+  prefs: []
+  type: TYPE_NORMAL

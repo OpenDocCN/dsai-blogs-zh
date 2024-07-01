@@ -1,0 +1,165 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:18:04'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Is multiply-carry strongly universal? : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2010/11/is-multiply-carry-strongly-universal/](http://blog.ezyang.com/2010/11/is-multiply-carry-strongly-universal/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: I’ve been wanting to implement a [count-min sketch](http://www.eecs.harvard.edu/~michaelm/CS222/countmin.pdf)
+    for some time now; it’s a little less widely known than the bloom filter, a closely
+    related *sketch* data structure (that is, a probabilistic data structure that
+    approximates answers to certain queries), but it seems like a pretty practical
+    structure and has been used in [some interesting ways](http://research.microsoft.com/pubs/132859/popularityISeverything.pdf).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Alas, when you want to implement a data structure that was proposed less than
+    a decade ago and hasn’t found its way into textbooks yet, there are a lot of theoretical
+    vagaries that get in the way. In this particular case, the theoretical vagary
+    was selection of a *universal hash family.* Having not taken a graduate-level
+    algorithms course yet, I did not know what a universal hash family was, so it
+    was off to the books for me.
+  prefs: []
+  type: TYPE_NORMAL
+- en: From my survey of course notes, papers and textbooks, I noticed two things.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, there are a lot of different independence guarantees a universal hash
+    family may have, each of which may go under many different names. Assume that
+    our hash family `H` is a family of functions from `h : M → N` where `M = {0, 1,
+    ..., m-1}` and `N = {0, 1, ..., n-1}` with `m >= n`. M corresponds to our “universe”,
+    the possibly values being hashed, while N is the range of the hash function.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A *weak universal hash family*, also called a *weak 2-universal hash family*
+    and sometimes stated with the *weak* elided, is a hash family that for a hash
+    function `h` chosen uniformly at random from `H`:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'A *strongly 2-universal hash family*, also called a *(strongly) 2-independent
+    universal hash family* and sometimes stated with *2-universal* elided, is one
+    that fulfills this condition:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'A *(strongly) k-independent universal hash family* generalizes the above notion,
+    to the following condition:'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: Second, the reason why *weak* is commonly elided from *weak hash function* is
+    that 2-universal hash families tend to also be 2-independent. *Randomized Algorithms*
+    states “Most known constructions of 2-universal hash families actually yield a
+    strongly 2-universal hash family. For this reason, the two definitions are generally
+    not distinguished from one another” and asks the student to prove that if `n =
+    m = p` is a prime number, the Carter and Wegman’s hash family is strongly 2-universal.
+    (I’ll state what this is shortly.) So [Wikipedia](http://en.wikipedia.org/wiki/Universal_hashing)
+    happily adopts the weak criteria and only briefly mentions 2-independence in the
+    last section. (I have not edited the article because I’m not sure what, if any
+    change, would be made.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So, what’s Carter and Wegman’s universal hash family? Quite simple:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'given that *p ≥ m* is prime and ![a,b \in {0, 1, \cdots, p-1}](img/fa6343e069d49d443e9390196446481c.png
+    "a,b \in {0, 1, \cdots, p-1}"). Except, uh, no one actually uses a modulus in
+    practice. Here’s one example from [Cormode’s implementation](http://www.cs.rutgers.edu/~muthu/massdal-code-index.html):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This implementation is clearly correct:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The multiplication and addition can’t overflow the `long long` result, and
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The second line takes advantage of our ability to do fast modulus with Mersenne
+    primes with a few alternate bitwise operations. Of course, in order to do this,
+    we need to be very careful what prime we pick. Mmm magic numbers.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: OK, so that’s very nice. There is a minor bit of sloppiness in that we haven’t
+    explicitly ensured that `n = m = p`, so I’m not 100% convinced we preserve strong
+    universality. But I haven’t worked out the *Randomized Algorithms* exercise so
+    I don’t know how important this property is in practice.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As an aside, [this function](http://www2.research.att.com/~marioh/sketches/index.html)
+    also claims to be this very universal hash but I have a hard time believing it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We now turn our attention to multiply-carry, which Wikipedia claims is *the
+    fastest universal hash family currently known for integers.* It’s designed to
+    be easy to implement on computers: `(unsigned) (a*x) >> (w-M)` (with `a` odd)
+    is all you need. Well, to be precise, it’s the fastest *2-universal* has family
+    currently known: the [relevant paper](http://www.diku.dk/~jyrki/Paper/CP-11.4.1997.pdf)
+    only gives the weak universality proof about `Pr[h(x) = h(y)]`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So, my question is thus: *is multiply-carry strongly universal*? Motwani and
+    Raghavan suggest it probably is, but I couldn’t dig up a proof.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Postscript.* Fortunately, for count-min-sketch, we don’t actually need strong
+    universality. I checked with Graham Cormode and they only use 2-universality in
+    their paper. But the original question still stands... for strictly theoretical
+    grounds, anyway.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Non sequitur.* Here’s an interesting combinator for combining functions used
+    in folds:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It lets you bundle up two combining functions so that you can apply both of
+    them to a list in one go:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Flipping the combinator would make it work for right folds. This gives us the
+    following cute implementation of the `average` function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Maybe we could write a rewrite rule to do this for us.
+  prefs: []
+  type: TYPE_NORMAL

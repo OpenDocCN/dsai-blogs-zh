@@ -1,0 +1,34 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:18:04'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Dead Edward Day : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2010/11/dead-edward-day/](http://blog.ezyang.com/2010/11/dead-edward-day/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Dead Edward Day
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Should software engineers be required to implement the abstractions use before
+    using them? (Much like how before you’re allowed to use a theorem in a math textbook,
+    you have to prove it first.) A bit like reinventing the wheel for pedagogical
+    purposes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: (I've been sick since Saturday, so it’s a Dead Edward Day. Hopefully I’ll clean
+    up the DP Zoo post and present it with more annotations for this Friday.)
+  prefs: []
+  type: TYPE_NORMAL

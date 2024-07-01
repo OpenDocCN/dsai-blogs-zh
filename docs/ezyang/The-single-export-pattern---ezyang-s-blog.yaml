@@ -1,0 +1,64 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:17:22'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The single export pattern : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2013/03/the-single-export-pattern/](http://blog.ezyang.com/2013/03/the-single-export-pattern/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: The single export pattern
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '*From the files of the ECMAScript TC39 proceedings*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Single export** refers to a design pattern where a module identifier is overloaded
+    to also represent a function or type inside the module. As far as I can tell,
+    the term “single export” is not particularly widely used outside the ECMAScript
+    TC39 committee; however, the idea shows up in other contexts, so I’m hoping to
+    popularize this particular name (since names are powerful).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The basic idea is very simple. In JavaScript, a module is frequently represented
+    as an object:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The methods of `sayHello` are the functions exported by the module. But what
+    about `sayHello` itself? Because functions are objects too, we could imagine that
+    `sayHello` was a function as well, and thus:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: would be a valid fragment of code, perhaps equivalent to `sayHello.run()`. Only
+    one symbol can be exported this way, but in many modules, there is an obvious
+    choice (think of jQuery’s `$` object, etc).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This pattern is also commonly employed in Haskell, by taking advantage of the
+    fact that types and modules live in different namespaces:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`Map` is now overloaded to be both a type and a module.'
+  prefs: []
+  type: TYPE_NORMAL

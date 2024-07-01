@@ -1,0 +1,41 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:17:24'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Metro Maps of the News : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2012/12/metro-maps-of-the-news/](http://blog.ezyang.com/2012/12/metro-maps-of-the-news/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Metro Maps of the News
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Metro maps are a visual metaphor for complex, interdependent story lines developed
+    by [Dafna Shahaf](http://www.cs.cmu.edu/~dshahaf/). Dafna’s thesis involved techniques
+    for automatically taking a corpus of news articles and extracting a coherent narratives
+    that covered the overall space. For our final [CS448b](https://graphics.stanford.edu/wikis/cs448b-12-fall/)
+    project, we took one of the narratives Dafna had generated and created [a system
+    for displaying the maps.](http://metro.ezyang.com) (The demo is best viewed on
+    a large monitor.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: We only had enough time to get the viewer aspect polished, but we think that
+    it would not be too difficult to extend this framework for the *construction*
+    of metro maps (in case you don’t have access to Dafna’s algorithm).
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is joint work with Russell Chou and Jacob Jensen.
+  prefs: []
+  type: TYPE_NORMAL

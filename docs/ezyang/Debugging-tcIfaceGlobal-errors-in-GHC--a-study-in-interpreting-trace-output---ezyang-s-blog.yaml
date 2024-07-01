@@ -1,0 +1,431 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:17:06'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Debugging tcIfaceGlobal errors in GHC: a study in interpreting trace output
+    : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2016/05/debugging-tcifaceglobal-errors-in-ghc-a-study-in-interpreting-trace-output/](http://blog.ezyang.com/2016/05/debugging-tcifaceglobal-errors-in-ghc-a-study-in-interpreting-trace-output/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: I recently solved a bug where GHC was being insufficiently lazy (yes, *more*
+    laziness needed!) I thought this might serve as a good blog post for how I solve
+    these sorts of laziness bugs, and might engender a useful conversation about how
+    we can make debugging these sorts of problems easier for people.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hark! A bug!
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Our story begins with an [inflight patch](https://phabricator.haskell.org/D2213)
+    for some related changes I’d been working on. The contents of the patch are not
+    really important—it just fixed a bug where `ghc --make` did not have the same
+    behavior as `ghc -c` in programs with `hs-boot` files.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Validating the patch on GHC’s test suite, I discovered that made the `prog006`
+    test for GHCi start failing with the following error:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`tcIfaceGlobal` errors are a “dark” corner of how GHC implements hs-boot files,
+    but since I’d been looking at this part of the compiler for the past week, I decided
+    to boldly charge forward.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If your test case doesn't fit on a slide, it's not small enough
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '`prog006` is not a simple test case, as it involves running the following commands
+    in a GHCi session:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'While the source files involved are *relatively* short, my first inclination
+    was to still simplify the test case. My first thought was that the bug involved
+    some aspect of how GHCi reloaded modules, so my first idea was to try to minimize
+    the source code involved:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This example uses a fancy language feature `ExistentialQuantification`, and
+    its generally a good bet to try to eliminate these sorts of uses if they are not
+    relevant to the problem at hand. So my first idea was to replace the type class
+    in module A with something more pedestrian, e.g., a type synonym. (Note: why not
+    try to eliminate the `hs-boot`? In this case, I happened to know that a `tcIfaceGlobal`
+    error can *only* occur when compiling an `hs-boot` file.)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I did this transformation, resulting in the following smaller program:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This program indeed also gave a `tcIfaceGlobal` error... but then I realized
+    that `Boot.hs` is not well-typed anyway: it’s missing a declaration for `Data`!
+    And indeed, when I inserted the missing declaration, the panic went away.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: One of the important things in debugging is to know when you have accidentally
+    triggered a different bug. And indeed, this was a different bug, [which I reported
+    here](https://ghc.haskell.org/trac/ghc/ticket/12063).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the process of reducing this test case I discovered that the bug had nothing
+    to do with GHCi at all; e.g., if I just ran `ghc --make Boot2.hs` that was sufficient
+    to trigger the bug. (Or, for a version of GHC without my patch in question, running
+    `ghc -c Boot2.hs` after building the rest—`ghc --make` has different behavior
+    prior to the patch which started this all masks the bug in question.) So here''s
+    the final test-case (with some shorter names to avoid some confusing messages):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Debugging is easier when you know what the problem is
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'When debugging a problem like this, it helps to have some hypothesis about
+    why the bug is occurring. And to have a hypothesis, we must first ask ourselves
+    the question: what is `tcIfaceGlobal` doing, anyway?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Whenever you have a panic like this, you should grep for the error message
+    and look at the surrounding source code. Here it is for `tcIfaceGlobal` (on a
+    slightly older version of GHC which also manifests the bug):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And if you see a Note associated with the code, you should definitely go find
+    it and read it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'So case (a) is exactly what''s going on here: when we are typechecking `Boot.hs`
+    and load the interface `A.hi`, when we typecheck the reference to `D`, we don’t
+    go and typecheck `Boot.hi-boot`; instead, we try to *tie the knot* with the locally
+    defined `Data` in the module. If `Data` is not in the type environment, we get
+    the panic we were seeing.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: What makes things tricky is that there is no explicit call to "typecheck the
+    reference to `D`"; instead, this lump of work is unsafely wrapped into a thunk
+    for the `TyThing` representing `D`, which is embedded within the description of
+    `K`. When we force this thunk, GHC will *then* scurry off and attempt to typecheck
+    the types associated with `D`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Back to our original question: why is `D` not defined in the local type environment?
+    In general, this is because we forced the thunk for `K` (and thus caused it to
+    call `tcIfaceGlobal D`) before we actually added `D` to the type environment.
+    But why did this occur? There seem to be two possible explanations for this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The first explanation is that we forgot to update the type environment before
+    we forced the thunk. The fix then would be to add some extra updates to the global
+    type environment so that we can see the missing types when we do force the thunk.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The second explanation is that we are forcing the thunk too early, and there
+    is some code that needs to be made *lazier* so that we only force thunk at the
+    point when the type environment has been updated sufficiently.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: So, which is it?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Reading the tea-leaf traces
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: In both cases, it seems useful to know *where* in the typechecking process we
+    actually force the thunk. Now here’s the point where I should rebuild GHC with
+    profiling and then get a stack trace out of `tcIfaceGlobal`, but I was feeling
+    a bit lazy and so I decided to use GHC’s tracing facilities instead.
+  prefs: []
+  type: TYPE_NORMAL
+- en: GHC has existing flags `-ddump-tc-trace`, `-ddump-rn-trace` and `-ddump-if-trace`
+    which dump out *a lot* of debugging trace information associated with typechecking,
+    renaming and interface loading, respectively. Most of these messages are very
+    terse and don’t say very much about how the message is supposed to be interpreted;
+    if you want to interpret these messages you are going to have to search the source
+    code and see what code is outputting the trace.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here''s the end of the trace we get from compiling, in one-shot mode, `Boot.hs`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: Amazingly, this trace actually tells you *exactly* what you need to know to
+    solve the bug... but we're getting ahead of ourselves. First, we need to know
+    how to interpret this trace.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Each trace message, e.g., `Tc2 (src)`, `Tc3`, etc., comes with a unique string
+    which you can use to find where the trace originates from. For example, grepping
+    for `Tc2` lands you in `TcRnDriver.hs`, right where we are about to start renaming
+    and typechecking all of the declarations in the source file. Similarly, `lk1`
+    lands you in `TcHsType.hs`, where we are trying to lookup the `TyThing` associated
+    with `K`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The `Starting fork` messages are of particular interest: this is `-ddump-if-trace`''s
+    way of saying, “I am evaluating a thunk which has some deferred work typechecking
+    interfaces.“ So we can see that shortly after the trace `lk1`, we force the thunk
+    for the type class declaration `K`; furthermore, while we are forcing this thunk,
+    we further force the thunk for the class operation `method :: D -> a`, which actually
+    causes the panic.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Rube Goldberg machine
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'I didn’t read the trace closely enough, so I spent some time manually adding
+    extra tracing declarations and tracing the flow of the code during typechecking.
+    Starting with `Tc2 (src)`, we can actually use the trace to follow the flow of
+    typechecking (use of `hasktags` here is essential!):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`tcRnModuleTcRnM` is the main entry point for renaming and typechecking a module.
+    After processing imports, it calls `tcRnSrcDecls` to typecheck the main body.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`tcRnSrcDecls` calls `tc_rn_src_decls` to typecheck all of the top-level declarations;
+    then it simplifies all of the top-level constraints and finalizes all the types.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`tc_rn_src_decls` is the main loop of the Template Haskell / typecheck/renaming
+    dance. We first rename (via `rnTopSrcDecls`) and typecheck (`tcTopSrcDecls`) up
+    until the first splice, then run the splice and recurse.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`tcTopSrcDecls` outputs `Tc2 (src)`. It successively typechecks all the different
+    types of top-level declarations. The big important one is `tcTyClsInstDecls` which
+    typechecks type and class declarations and handles deriving clauses.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`tcTyClsInstDecls` calls `tcTyAndClassDecls` to typecheck top-level type and
+    class declarations, and then calls `tcInstDeclsDeriv` to handle deriving.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`tcTyAndClassDecls` takes every mutually recursive group of type/class declarations
+    and calls `tcTyClGroup` on them.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`tcTyClGroup` calls `tcTyClDecls` to typecheck the group and then checks if
+    everything is well-formed.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`tcTyClDecls` actually type checks the group of declarations. It first kind-checks
+    the group with `kcTyClGroup`; then it type-checks all of the groups together,
+    tying the knot.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '`kcTyClGroup` outputs the (appropriately named) `kcTyClGroup` trace. At this
+    point I stopped tracing.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: By observing the `kcTyClGroup` trace, but no terminating `kcTyClGroup result`
+    trace (which is at the end of this function), we can tell that while we were kind
+    checking, the bad thunk was triggered.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It is actually quite useful to know that the panic occurs while we are kind-checking:
+    kind-checking occurs before we actually construct the knot-tied `TyThing` structures
+    for these top-level declarations. So we know that it is *not* the case that we
+    are failing to update the global type environment, because it definitely is not
+    constructed at this point. It must be that we are forcing a thunk too early.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: AAAAAAAA is the sound of a GHC disappearing down a black hole
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'At this point, I was pretty sure that `lk1`, a.k.a. `tcTyVar` was responsible
+    for forcing the thunk that ultimately lead to the panic, but I wasn''t sure. Here''s
+    the code for the function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`tcTyVar` on `K` should result in the `AGlobal (ATyCon tc)`, and inserting
+    a trace on that branch didn’t result in any extra output. But I sealed the deal
+    by adding ``thing `seq` traceTc "lk2" (ppr name)`` and observing that no `lk2`
+    occurred.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is also clear that it should be OK for us to force `K`, which is an external
+    declaration, at this point in the code. So something has gone wrong inside the
+    thunk itself.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Back to the tea leaves
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Let''s take a look at the end of the trace again:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In human readable terms, the trace tells a story like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Someone forced the thunk representing the `TyThing` for the type class `K` (`Starting
+    fork { Declaration for K`)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: I'm typechecking the contents of the `IfaceDecl` for `K` (`tc-iface-class`,
+    etc.)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: I'm building the actual `Class` representing this type class (`buildClass`)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: I allocate some global names for the class in question. (`newGlobalBinder`)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Oops! I force the thunk representing class operation `method` (which has type
+    `D -> a`)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Shortly after, a panic occurs.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'So, it’s off to read the code for `TcIface`. Here''s the body of the code which
+    typechecks an `IfaceDecl` for a type class declaration:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The methods of a type class are processed in `sigs <- mapM tc_sig rdr_sigs`.
+    Looking at this helper function, we see:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Great! There is already some code which mentions that the types of the signatures
+    need to be done lazily. If we force `op_ty` or `dm''`, we will cause the types
+    here to be loaded. So now all we need to do is find where in `buildClass` these
+    are being forced. Here is the header of `buildClass`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'So let''s look for occurrences of `sig_stuff`. The first place they are used
+    is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s look at that helper function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: There it is! The case on `dm_spec` will force `dm'`, which will in turn cause
+    the type to be forced, which results in a panic. That can’t be right.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It seems that `mk_op_item` only cares about the top level of wrapping on `dm_spec`;
+    `spec` is used lazily inside `dm_info`, which doesn''t appear to be forced later
+    in `mkClass`. So the fix would be to make it so that when can peel back the outer
+    `Maybe` without forcing the contents of `dm`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: We check the fix, and yes! It works!
+  prefs: []
+  type: TYPE_NORMAL
+- en: The parting glass
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'I won’t claim that my debugging process was the most efficient possible—not
+    mentioned in this blog post is the day I spent reading the commit history to try
+    and convince myself that there wasn’t actually a bug where we forgot to update
+    the global type environment. But there seem to be a few generalizable lessons
+    here:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you see some trace output, the way to make the trace most useful to you is
+    to determine *where* in the code the trace comes from, and what the compiler is
+    doing at that point in time. Usually, grepping for the trace message is good enough
+    to figure this out.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: The smaller your test cases, the smaller your traces will be, which will make
+    it easier to interpret the traces. When I ran my test case using `ghc --make`
+    rather than `ghc -c`, there was a lot more logging output. Sure the ending trace
+    is the same but if there was something important in the earlier trace, it would
+    have been that much harder to dig out.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: If you can trust your traces, debugging is easier. If I had trusted the trace
+    output, I could have found the bug a lot more quickly. But I didn't, and instead
+    spent a bunch of time making sure the code was behaving in the way I expected
+    it to. On the plus side, I understand the codepath here a lot better than I used
+    to.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: How can GHC make debugging these types of bugs easier? Have your own laziness-related
+    debugging story? I would love to hear what you think.
+  prefs: []
+  type: TYPE_NORMAL

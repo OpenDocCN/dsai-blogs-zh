@@ -1,0 +1,247 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:18:08'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'High performance monads : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2010/09/high-performance-monads/](http://blog.ezyang.com/2010/09/high-performance-monads/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Continuations are well known for being notoriously tricky to use: they are
+    the “gotos” of the functional programming world. They can make a mess or do amazing
+    things (after all, what are exceptions but a well structured nonlocal goto). This
+    post is intended for readers with a passing familiarity with continuations but
+    a disbelief that they could be useful for their day-to-day programming tasks:
+    I’d like to show how continuations let us define high performance monads ala the
+    [Logic monad](http://hackage.haskell.org/package/logict) in a fairly methodical
+    way. A (possibly) related post is [The Mother of all Monads](http://blog.sigfpe.com/2008/12/mother-of-all-monads.html).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We’ll start off with a warmup: the identity monad.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: The continuation-passing style (CPS) version of this monad is your stock `Cont`
+    monad, but without `callCC` defined.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: While explaining CPS is out of the scope of this post, I’d like to point out
+    a few idioms in this translation that we’ll be reusing for some of the more advanced
+    monads.
+  prefs: []
+  type: TYPE_NORMAL
+- en: In order to “extract” the value of `c`, we pass it a lambda `(\a -> ...)`, where
+    `a` is the result of the `c` computation.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'There is only one success continuation `k :: a -> r`, which is always eventually
+    used. In the case of bind, it’s passed to `runIdCPS`, in the case of return, it’s
+    directly invoked. In later monads, we’ll have more continuations floating around.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Following in step with monad tutorials, the next step is to look at the venerable
+    Maybe data type, and its associated monad instance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'When implementing the CPS version of this monad, we’ll need two continuations:
+    a success continuation (`sk`) and a failure continuation (`fk`).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Compare this monad with `IdCPS`: you should notice that it’s quite similar.
+    In fact, if we eliminated all mention of `fk` from the code, it would be identical!
+    Our monad instance heartily endorses success. But if we add the following function,
+    things change:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This function ignores the success continuation and invokes the failure continuation:
+    you should convince yourself that one it invokes the failure continuation, it
+    immediately bugs out of the `MaybeCPS` computation. (Hint: look at any case we
+    run a `MaybeCPS` continuation: what do we pass in for the failure continuation?
+    What do we pass in for the success continuation?)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For good measure, we could also define:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Which is actually just `return` in disguise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You might also notice that the signature of our `MaybeCPS` newtype strongly
+    resembles the signature of the `maybe` “destructor” function—thus called because
+    it destroys the data structure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '(The types have been reordered for pedagogical purposes.) I’ve deliberately
+    named the “default value” `fk`: they are the same thing!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Both of these pieces of code have the same end result. However, `maybeTest`
+    constructs a `Maybe` data structure inside the monadic portion, before tearing
+    it down again. `runMaybeCPS` skips this process entirely: this is where the CPS
+    transformation derives its performance benefit: there’s no building up and breaking
+    down of data structures.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Now, to be fair to the original Maybe monad, in many cases GHC will do this
+    transformation for you. Because algebraic data types encourage the creation of
+    lots of little data structures, GHC will try its best to figure out when a data
+    structure is created and then immediately destructed, and optimize out that wasteful
+    behavior. Onwards!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The list monad (also known as the “stream” monad) encodes nondeterminism.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`Nil` is essentially equivalent to `Nothing`, so our friend the failure continuation
+    comes back to the fray. We have to treat our success continuation a little differently
+    though: while we could just pass it the value of the first `Cons` of the list,
+    this wouldn’t let us ever get past the first item of the list. So we’ll need to
+    pass our success continuation a resume continuation (`rk`) in case it wants to
+    continue down its path.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Remember that `return` generates singleton lists, so there’s nothing more to
+    continue on to, and we give the success continuation `fk` as the resume continuation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The old data constructors also can be CPS transformed: `nilCPS` looks just
+    like `nothingCPS`. `consCPS` invokes the success continuation, and needs to generate
+    a resume continuation, which conveniently enough is given by its second argument:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'These types should be looking awfully familiar. Rearranging this type a little
+    (and renaming b→r):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'I get:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: Hey, that’s my continuation. So all we’ve done is a fold, just without actually
+    constructing the list!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Keen readers will have also noticed that the CPS formulation of the list is
+    merely the [higher-order Church encoding of lists](http://en.wikipedia.org/wiki/Church_encoding#Higher-order_function).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The CPS transformed version of the list monad wins big in several ways: we
+    never need to construct and destruct the list and appending two lists takes `O(1)`
+    time.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One last example: the leafy tree monad (cribbed from Edward Kmett’s finger
+    tree slides):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'As it turns out, if we want to fold over this data type, we can reuse `LogicCPS`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To go in the other direction, if we combine all of the CPS operations on logic
+    we’ve defined thus far and turn them back into a data type, we get a catenable
+    list:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To wrap (fold) up, we’ve shown that when we build up a large data structure
+    that is only going to be destructed when we’re done, we’re better off fusing the
+    two processes together and [turn our data structure back into code](http://blog.ezyang.com/2010/09/data-is-code/).
+    Similarly, if we would like to do “data structure”-like things to our data structure,
+    it is probably better to actually build it up: the Church encodings for things
+    like `tail` are notoriously inefficient. I’ve not said anything about monads that
+    encode state of some sort: in many ways they’re a different breed of monad from
+    the control flow monad (perhaps a more accurate statement is “Cont is the mother
+    of all control flow monads”).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To quote Star Wars, the next time you find yourself entangled in a mess of continuations,
+    *use the data structure*!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Addendum.* CPS transforming data structure traversal has nothing to do with
+    monads. You can do it to anything. It just so happens that the killer feature
+    of control flow monads, nondeterminism, happens to really benefit from this transformation.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*References.* There are loads and loads of existing treatments of this subject.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I’ve probably missed a bunch of other obvious ones too.
+  prefs: []
+  type: TYPE_NORMAL

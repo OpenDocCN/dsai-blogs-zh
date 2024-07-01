@@ -1,0 +1,1 @@
+["```\n    check_some_condition\n    ! [ -s \"$1\" ]\n\n    ```", "```\n    subcommand() {\n      do_something_with \"$1\" \"$2\"\n    }\n\n    ```", "```\n    pgrep bash | while read name; do\n      echo \"PID: $name\"\n    done\n\n    ```"]

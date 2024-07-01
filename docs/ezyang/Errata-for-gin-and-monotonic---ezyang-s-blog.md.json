@@ -1,0 +1,1 @@
+["```\n{-# LANGUAGE FlexibleInstances #-}\n\nclass PolyDisj t where\n    disj :: Bool -> t\n\ninstance PolyDisj Bool where\n    disj x = x\ninstance PolyDisj t => PolyDisj (Bool -> t) where\n    disj x y = disj (x || y)\n\n```"]

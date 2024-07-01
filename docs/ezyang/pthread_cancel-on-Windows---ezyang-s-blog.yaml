@@ -1,0 +1,107 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:18:09'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'pthread_cancel on Windows : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2010/09/pthread-cancel-on-window/](http://blog.ezyang.com/2010/09/pthread-cancel-on-window/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Edward, I’m afraid I have some bad news. Your [interruptible GHC patch](http://blog.ezyang.com/2010/08/interrupting-ghc/);
+    it was involved in a terrible accident on the way to Windows portability. I hope
+    you understand: we’re doing our best to patch it up, but there have been some
+    complications...'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Pop quiz! What does this pthreads code do?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: It never manages to terminate the second thread...
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If you just had the `pthread_cancel` and the `pthread_setcancelstate` manpages,
+    this might seem a little mysterious. The `pthreads` page, however, makes things
+    clear: `sleep` is among one-hundred and two “cancellable” functions, which `pthread_cancel`
+    must terminate within if a thread’s cancellability status is `PTHREAD_CANCEL_DEFERRED`
+    (there are another two-hundred and forty-two which may or may not be cancelled).
+    If the thread is stuck in userspace, it has to explicitly allow a deferred cancellation
+    with `pthread_testcancel`. Previous versions of the POSIX spec were a little unclear
+    whether or not cancellation should take place upon entry to the system call, or
+    while the system call was running, but the [2008 spec](http://www.opengroup.org/onlinepubs/9699919799/functions/V2_chap02.html#tag_15_09_05_02)
+    is fairly clear:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Cancellation points shall occur when a thread is executing the following functions...
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The million-dollar question is: “Can we implement the same semantics on Windows?”
+    Actually, since it seems that a lot of people would have wanted pthreads functionality
+    on Windows, you would think that this has been already been implemented by [pthreads-win32](http://sourceware.org/pthreads-win32/).
+    We turn to the source!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Interestingly enough, pthreads-win32 doesn’t seem to do anything special: when
+    we translate our test program and run it with pthreads-win32, it gets stuck on
+    the `Sleep` call as well:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: At this point, it’s worth stepping back for a moment and asking, “What are we
+    really trying to do here?” If you were to ask how to terminate threads on, say,
+    Stack Overflow, you’d get a bunch of responses telling you, “Stop that and do
+    it the right way”; namely, by explicitly handling thread termination on the thread
+    itself via another message passing mechanism.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So there are number of different needs for interruptible calls:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: GHC would like to be able to put blocking IO calls on a worker thread but cancel
+    them later; it can currently do this on Linux but not on Windows,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Users would like to write interrupt friendly C libraries and have them integrate
+    seamlessly with Haskell’s exception mechanism, and
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We’d like to have the golden touch of the IO world, instantly turning blocking
+    IO code into nice, well-behaved non-blocking code.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Next time I’ll talk about what different approaches might be needed for each
+    of these goals.
+  prefs: []
+  type: TYPE_NORMAL

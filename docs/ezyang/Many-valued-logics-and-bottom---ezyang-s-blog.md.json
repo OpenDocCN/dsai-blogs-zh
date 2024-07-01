@@ -1,0 +1,1 @@
+["```\nNOT\n    1 0\n    x x\n    0 1\n\nAND\n      1 x 0\n    1 1 x 0\n    x x x 0\n    0 0 0 0\n\nOR\n      1 x 0\n    1 1 1 1\n    x 1 x x\n    0 1 x 0\n\nIMPLICATION\n      1 x 0\n    1 1 x 0\n    x 1 x x\n    0 1 1 1\n\n```"]

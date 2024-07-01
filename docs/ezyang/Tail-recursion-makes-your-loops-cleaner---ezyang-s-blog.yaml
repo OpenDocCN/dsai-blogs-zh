@@ -1,0 +1,53 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:17:46'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Tail recursion makes your loops cleaner : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2011/05/tail-recursion-makes-your-loops-cleaner/](http://blog.ezyang.com/2011/05/tail-recursion-makes-your-loops-cleaner/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Tail recursion makes your loops cleaner
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Recursion is one of those things that functional programming languages shine
+    at—but it seems a bit disappointing that in many cases, you have to convert your
+    beautiful recursive function back into iterative form. After all, iteration is
+    what imperative languages do best, right?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Actually, explicitly tail-recursive functions in functional programming languages
+    can be fairly beautiful: in fact, in the cases of complicated loops, they can
+    be even prettier than their imperative counterparts. Take this midpoint line-drawing
+    algorithm as an example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'There are three loop variables: `x`, `y` and `k`, and depending on various
+    conditions, some of them get updated in different ways. `x` is a bog-standard
+    loop variable; ye old C-style `for` loop could handle it just fine. But `y` and
+    `k` are updated differently depending on some loop conditions. But since they’re
+    parameters to the `go` helper function, it’s always clear what the frequently
+    changing variables are. You lose that nice structure in the imperative translation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: I’ve also managed to introduce a bug in the process...
+  prefs: []
+  type: TYPE_NORMAL

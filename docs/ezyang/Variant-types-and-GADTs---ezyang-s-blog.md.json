@@ -1,0 +1,1 @@
+["```\ndata A = Foo Int | Bar Bool\ndata B = Baz Char | Qux\n\n```", "```\ndata AorB = A A | B B\n\n```", "```\ntype a = [`Foo of int | `Bar of bool]\ntype b = [`Baz of char | `Quz]\ntype a_or_b = [a | b]\n\n```", "```\ndata A\ndata B\ndata AorB t where\n  Foo :: Int -> AorB A\n  Bar :: Bool -> AorB A\n  Baz :: Char -> AorB B\n  Quz :: AorB B\n\n```"]

@@ -1,0 +1,1 @@
+["```\ngit remote add origin $REPO_URL\ngit config branch.master.remote origin\ngit config branch.master.merge refs/heads/master\n\n```"]

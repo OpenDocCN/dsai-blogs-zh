@@ -1,0 +1,166 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:17:54'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Type Kata: Local data type : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2011/04/type-kata-local-data-type/](http://blog.ezyang.com/2011/04/type-kata-local-data-type/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*The imperative.* When should you create a custom data type, as opposed to
+    reusing pre-existing data types such as `Either`, `Maybe` or tuples? Here are
+    some reasons you should reuse a generic type:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It saves typing (both in declaration and in pattern matching), making it good
+    for one-off affairs,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It gives you a library of predefined functions that work with that type,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Other developers have expectations about what the type does that make understanding
+    quicker.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'On the flip side of the coin:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You may lose semantic distinction between types that are the same but have different
+    meanings (the [newtype](http://blog.ezyang.com/2010/08/type-kata-newtypes/) argument),
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The existing type may allow more values than you intended to allow,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Other developers have expectations about what the type does that can cause problems
+    if you mean something different.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: In this post, I’d like to talk about those last two problems with reusing custom
+    types, using two case studies from the GHC codebase, and how the problems where
+    alleviated by defining a data type that was only used by a small section of the
+    codebase.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Great expectations.* The `Maybe` type, by itself, has a very straight-forward
+    interpretation: you either have the value, or you don’t. Even when `Nothing` means
+    something like `Wildcard` or `Null` or `UseTheDefault`, the meaning is usually
+    fairly clear.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'What is more interesting, however, is when `Maybe` is placed in another data
+    type that has its *own* conception of nothing-ness. A very simple example is `Maybe
+    (Maybe a)`, which admits the values `Nothing`, `Just Nothing` or `Just (Just a)`.
+    What is `Just Nothing` supposed to mean? In this case, what we really have masquerading
+    here is a case of a data type with three constructors: `data Maybe2 a = Nothing1
+    | Nothing2 | Just a`. If we intend to distinguish between `Nothing` and `Just
+    Nothing`, we need to assign some different semantic meaning to them, meaning that
+    is not obvious from the cobbled together data type.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Another example, which comes from [Hoopl and GHC](http://blog.ezyang.com/2011/04/hoopl-dataflow-lattices/),
+    is the curious case of `Map Var (Maybe Lit)`. A map already has its own conception
+    of nothingness: that is, when the key-value pair is not in the map at all! So
+    the first thing a developer who encounters this code may ask is, “Why isn’t it
+    just `Map Var Lit`?” The answer to this question, for those of you have read the
+    dataflow lattice post, is that `Nothing` in this circumstance, represents top
+    (there is variable is definitely not constant), which is different from absence
+    in the map, which represents bottom (the variable is constant or not constant).
+    I managed to confuse both the Simons with this strange piece of code, and after
+    taking some time to explain the situation, and they immediately recommended that
+    I make a custom data type for the purpose. Even better, I found that Hoopl already
+    provided this very type: `HasTop`, which also had a number of utility functions
+    that reflected this set of semantics. Fortuitous indeed!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Uninvited guests.* Our example of a data type that allows too many values
+    comes from the linear register allocator in GHC (`compiler/nativeGen/RegAlloc/Linear/Main.hs`).
+    Don’t worry, you don’t need to know how to implement a linear register allocator
+    to follow along.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The linear register allocator is a rather large and unwieldy beast. Here is
+    the function that actually allocates and spills the registers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: There’s a bit of noise here, but the important things to notice is that it’s
+    a mostly recursive function. The first two cases of `lookupUFM` directly call
+    `allocateRegsAndSpill`, but the last case needs to do something complicated, and
+    calls the helper function `allocRegsAndSpill_spill`. It turns out that this function
+    will always eventually call `allocateRegsAndSpill`, so we have two [mutually recursive
+    functions](http://en.wikipedia.org/wiki/Mutual_recursion). The original was probably
+    just recursive, but the long bit handling “Not already in a register, so we need
+    to find a free one” got factored out at some point.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This code is reusing a data type! Can you see it? It’s very subtle, because
+    the original use of the type is legitimate, but it is then *reused* in an inappropriate
+    manner. The answer is `loc`, in the last case statement. In particular, because
+    we’ve already case-matched on `loc`, we know that it can’t possibly be `Just (InReg{})`
+    or `Just (InBoth{})`. If we look at the declaration of `Loc`, we see that there
+    are only two cases left:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'That is, the only remaining cases are `Just (InMem{})` and `Nothing`. This
+    is fairly important, because we lean on this invariant later in `allocRegsAndSpill_spill`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If you hadn’t seen the original case split in `allocateRegsAndSpill`, this
+    particular code may have got you wondering if the last guard also applied when
+    the result was `Just (InReg{})`, in which case the behavior would be very wrong.
+    In fact, if we are `reading`, `loc` must be `Nothing` in that last branch. But
+    there’s no way of saying that as the code stands: you’d have to add some panics
+    and it gets quite messy:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Furthermore, we notice a really interesting extra invariant: what happens if
+    we’re reading from a location that has never been assigned to before (that is,
+    `reading` is `True` and `loc` is `Nothing`)? That is obviously bogus, so in fact
+    we should check if that’s the case. Notice that the original code did *not* enforce
+    this invariant, which was masked out by the use of `otherwise`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Rather than panic on an impossible situation, we should *statically rule out
+    this possibility.* We can do this simply by introducing a new data type for `loc`,
+    and pattern-matching appropriately:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And now the pattern match inside `allocateRegsAndSpill_spill` is nice and tidy:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE

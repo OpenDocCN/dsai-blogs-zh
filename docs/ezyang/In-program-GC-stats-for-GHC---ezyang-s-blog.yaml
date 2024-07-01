@@ -1,0 +1,38 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:17:42'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In-program GC stats for GHC : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2011/07/in-program-gc-stats-for-ghc/](http://blog.ezyang.com/2011/07/in-program-gc-stats-for-ghc/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: I’ll be at this year’s [Hac Phi](http://www.haskell.org/haskellwiki/Hac_%CF%86)
+    (coming up in a week and a half), and I am planning on working on in-program garbage
+    collector statistics for GHC. There is nothing really technically difficult about
+    this task (we just need to expose some functions in the RTS), but it’s not been
+    done yet and I know quite a few performance-minded and long-running-server-minded
+    folks who would love to see this functionality.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'My question for you is this: what would you like such an API to look like?
+    What things should it offer, how would you like to interact with it?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here’s one sample API to get the ball rolling:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE

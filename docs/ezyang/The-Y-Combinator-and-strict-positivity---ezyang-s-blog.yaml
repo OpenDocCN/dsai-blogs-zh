@@ -1,0 +1,100 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:17:27'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The Y Combinator and strict positivity : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2012/09/y-combinator-and-strict-positivity/](http://blog.ezyang.com/2012/09/y-combinator-and-strict-positivity/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: One of the most mind-bending features of the untyped lambda calculus is the
+    fixed-point combinator, which is a function `fix` with the property that `fix
+    f == f (fix f)`. Writing these combinators requires nothing besides lambdas; one
+    of the most famous of which is the Y combinator `λf.(λx.f (x x)) (λx.f (x x))`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, if you’re like me, you saw this and tried to implement it in a typed functional
+    programming language like Haskell:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Oops! It doesn’t typecheck.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There is a solution floating around, which you might have encountered via [a
+    Wikipedia article](http://en.wikipedia.org/wiki/Fixed_point_combinator#Example_of_encoding_via_recursive_types)
+    or [Russell O''Connor''s blog](http://r6.ca/blog/20060919T084800Z.html), which
+    works by breaking the infinite type by defining a newtype:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'There is something very strange going on here, which Russell alludes to when
+    he refers to `Rec` as “non-monotonic”. Indeed, any reasonable dependently typed
+    language will reject this definition (here it is in Coq):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: What is a “non strictly positive occurrence”? It is reminiscent to [“covariance”
+    and “contravariance” from subtyping](http://en.wikipedia.org/wiki/Covariance_and_contravariance_(computer_science)),
+    but more stringent (it is strict, after all!) Essentially, a recursive occurrence
+    of the type (e.g. `Rec`) may not occur to the left of a function arrow of a constructor
+    argument. `newtype Rec a = In (Rec a)` would have been OK, but `Rec a -> a` is
+    not. (`(Rec a -> a) -> a` is not OK either, despite `Rec a` being in a positive
+    position.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: There are good reasons for rejecting such definitions. The most important of
+    these is excluding the possibility of defining the Y Combinator (party poopers!)
+    which would allow us to create a non-terminating term without explicitly using
+    a fixpoint. This is not a big deal in Haskell (where non-termination abounds),
+    but in a language for theorem proving, everything is expected to be terminating,
+    since non-terminating terms are valid proofs (via the Curry-Howard isomorphism)
+    for any proposition! Thus, adding a way to sneak in non-termination with the Y
+    Combinator would make the type system very unsound. Additionally, there is a sense
+    in which types that are non-strictly positive are “too big”, in that they do not
+    have set theoretic interpretations (a set cannot contain its own powerset, which
+    is essentially what `newtype Rec = In (Rec -> Bool)` claims).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To conclude, types like `newtype Rec a = In { out :: Rec a -> a }` look quite
+    innocuous, but they’re actually quite nasty and should be used with some care.
+    This is a bit of a bother for proponents of higher-order abstract syntax (HOAS),
+    who want to write types like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Eek! Non-positive occurrence of `Term` in `Lambda` strikes again! (One can feel
+    the Pittsburgh-trained type theorists in the audience tensing up.) Fortunately,
+    we have things like parametric higher-order abstract syntax (PHOAS) to save the
+    day. But that’s another post...
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks to Adam Chlipala for first introducing me to the positivity condition
+    way back last fall during [his Coq class](http://adam.chlipala.net/cpdt/html/InductiveTypes.html),
+    Conor McBride for making the offhand comment which made me actually understand
+    what was going on here, and Dan Doel for telling me non-strictly positive data
+    types don’t have set theoretic models.
+  prefs: []
+  type: TYPE_NORMAL

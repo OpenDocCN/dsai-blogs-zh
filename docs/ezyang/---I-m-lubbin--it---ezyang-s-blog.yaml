@@ -1,0 +1,402 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:18:01'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'ω: I’m lubbin’ it : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2010/12/omega-i-m-lubbin-it/](http://blog.ezyang.com/2010/12/omega-i-m-lubbin-it/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: New to this series? Start at [the beginning!.](http://blog.ezyang.com/2010/12/hussling-haskell-types-into-hasse-diagrams/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Today we’re going to take a closer look at a somewhat unusual data type, Omega.
+    In the process, we’ll discuss how the [lub](http://hackage.haskell.org/package/lub)
+    library works and how you might go about using it. This is of practical interest
+    to lazy programmers, because lub is a great way to *modularize* laziness, in Conal’s
+    words.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Omega is a lot like the natural numbers, but instead of an explicit `Z` (zero)
+    constructor, we use bottom instead. Unsurprisingly, this makes the theory easier,
+    but the practice harder (but not too much harder, thanks to Conal’s lub library).
+    We’ll show how to implement addition, multiplication and factorial on this data
+    type, and also show how to prove that subtraction and equality (even to vertical
+    booleans) are uncomputable.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This is a literate Haskell post. Since not all methods of the type classes
+    we want to implement are computable, we turn off missing method warnings:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Some preliminaries:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here is, once again, the definition of Omega, as well as two distinguished elements
+    of it, zero and omega (infinity.) Zero is bottom; we could have also written `undefined`
+    or `fix id`. Omega is the least upper bound of Omega and is an infinite stack
+    of Ws.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here are two alternate definitions of `w`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: The first alternate definition writes the recursion with an explicit fixpoint,
+    as we’ve seen in the diagram. The second alternate definition directly calculates
+    ω as the least upper bound of the chain `[⊥, W ⊥, W (W ⊥) ...] = iterate W ⊥`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'What does the lub operator in `Data.Lub` do? Up until now, we’ve only seen
+    the lub operator used in the context of defining the least upper bound of a chain:
+    can we usefully talk about the lub of two values? Yes: the least upper bound is
+    simply the value that is “on top” of both the values.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If there is no value on top, the lub is undefined, and the `lub` operator may
+    give bogus results.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If one value is strictly more defined than another, it may simply be the result
+    of the lub.
+  prefs: []
+  type: TYPE_NORMAL
+- en: An intuitive way of thinking of the lub operator is that it combines the information
+    content of two expressions. So `(1, ⊥)` knows about the first element of the pair,
+    and `(⊥, 2)` knows about the second element, so the lub combines this info to
+    give `(1, 2)`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: How might we calculate the least upper bound? One thing to realize is that in
+    the case of Omega, the least upper bound is in fact the max of the two numbers,
+    since this domain totally ordered.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Correspondingly, the minimum of two numbers is the greatest lower bound: a
+    value that has less information content than both values.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If we think of a conversation that implements `case lub x y of W a -> case
+    a of W _ -> True`, it might go something like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Me
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lub, please give me your value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lub
+  prefs: []
+  type: TYPE_NORMAL
+- en: Just a moment. X and Y, please give me your values.
+  prefs: []
+  type: TYPE_NORMAL
+- en: X
+  prefs: []
+  type: TYPE_NORMAL
+- en: My value is W and another value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lub
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ok Edward, my value is W and another value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Me
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks! Lub, what’s your next value?
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lub
+  prefs: []
+  type: TYPE_NORMAL
+- en: Just a moment. X, please give me your next value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Y
+  prefs: []
+  type: TYPE_NORMAL
+- en: (A little while later.) My value is W and another value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lub
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ok. Y, please give me your next value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Y
+  prefs: []
+  type: TYPE_NORMAL
+- en: My next value is W and another value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lub
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ok Edward, my value is W and another value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Me
+  prefs: []
+  type: TYPE_NORMAL
+- en: Thanks!
+  prefs: []
+  type: TYPE_NORMAL
+- en: X
+  prefs: []
+  type: TYPE_NORMAL
+- en: My value is W and another value.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Lub
+  prefs: []
+  type: TYPE_NORMAL
+- en: Ok.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is a timeline of this conversation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There are a few interesting features of this conversation. The first is that
+    lub itself is lazy: it will start returning answers without knowing what the full
+    answer is. The second is that X and Y “race” to return a particular W, and lub
+    will not act on the result that comes second. However, the ordering doesn’t matter,
+    because the result will always be the same in the end (this will *not* be the
+    case when the least upper bound is not defined!)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The `unamb` library that powers `lub` handles all of this messy, concurrency
+    business for us, exposing it with the `flatLub` operator, which calculates the
+    least upper bound for a flat data type. We need to give it a little help to calculate
+    it for a non-flat data type (although one wonders if this could not be automatically
+    derivable.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'An equivalent, more verbose but more obviously correct definition is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It may also be useful to compare this definition to a normal max of natural
+    numbers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can split the definition of `lub` into two sections: the zero-zero case,
+    and the otherwise case. In `maxNat`, we pattern match against the two arguments
+    and then return Z. We can’t directly pattern match against bottom, but if we promise
+    to return bottom in the case that the pattern match succeeds (which is the case
+    here), we can use `seq` to do the pattern match. We use `flatLub` and `lub` to
+    do multiple pattern matches: if either value is not bottom, then the result of
+    the lub is non-bottom, and we proceed to the right side of `seq`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the alternate definition, we flatten `Omega` into `Bool`, and then use a
+    previously defined lub instance on it (we could have also used `flatLub`, since
+    `Bool` is a flat domain.) Why are we allowed to use flatLub on Omega, which is
+    *not* a flat domain? There are two reasons: the first is that `seq` only cares
+    about whether or not the its first argument is bottom or not: it implicitly flattens
+    all domains into “bottom or not bottom.” The second reason is that `flatLub =
+    unamb`, and though `unamb` requires the values on both sides of it to be equal
+    (so that it can make an *unambiguous* choice between either one), there is no
+    way to witness the inequality of Omega: both equality and inequality are uncomputable
+    for Omega.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: The glb instance rather easy, and we will not dwell on it further. The reader
+    is encouraged to draw the conversation diagram for this instance.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This is a good point to stop and think about why addition, multiplication and
+    factorial are computable on Omega, but subtraction and equality are not. If you
+    take the game semantics route, you could probably convince yourself pretty well
+    that there’s no plausible conversation that would get the job done for any of
+    the latter cases. Let’s do something a bit more convincing: draw some pictures.
+    We’ll uncurry the binary operators to help the diagrams.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is a diagram for addition:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The pairs of Omega form a matrix (as usual, up and right are higher on the partial
+    order), and the blue lines separate sets of inputs into their outputs. Multiplication
+    is similar, albeit a little less pretty (there are a lot more slices).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can see that this function is monotonic: once we follow the partial order
+    into the next “step” across a blue line, we can never go back.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Consider subtraction now:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here, the function is not monotonic: if I move right on the partial order and
+    enter the next step, I can go “backwards” by moving up (the red lines.) Thus,
+    it must not be computable.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is the picture for equality. We immediately notice that mapping (⊥, ⊥)
+    to True will mean that every value will have to map to True, so we can’t use normal
+    booleans. However, we can’t use vertical booleans (with ⊥ for False and () for
+    True) either:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Once again, you can clearly see that this function is not monotonic.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It is now time to actually implement addition and multiplication:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'These functions look remarkably similar to addition and multiplication defined
+    on Peano natural numbers:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'There is the pattern matching on the first zero as before. But `natPlus` is
+    a bit vexing: we pattern match against zero, but return `y`: our `seq` trick won’t
+    work here! However, we can use the observation that `add` will be bottom if its
+    first argument is bottom to see that if x is zero, then the return value will
+    be y. What if x is not zero? We know that `add x y` must be greater than or equal
+    to `y`, so that works as expected as well.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We don’t need this technique for multiplication because zero times any number
+    is zero, and a pattern match will do that automatically for us.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And finally, the tour de force, *factorial*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: We use the same trick that was used for addition, noting that 0! = 1\. For factorial
+    1, both sides of the lub are in fact equal, and for anything bigger, the right
+    side dominates.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To sum up the rules for converting pattern matches against zero into lubs (assuming
+    that the function is computable):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'becomes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '(As you may have noticed, this is just the usual strict computation). The more
+    interesting case:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'becomes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: assuming that the original function `g` was computable (in particular, monotonic.)
+    The case where x is ⊥ is trivial; and since ⊥ is at the bottom of the partial
+    order, any possible value for g x where x is not bottom must be greater than or
+    equal to bottom, fulfilling the second case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*A piece of frivolity.* Quantum bogosort is a sorting algorithm that involves
+    creating universes with all possible permutations of the list, and then destroying
+    all universes for which the list is not sorted.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As it turns out, with `lub` it’s quite easy to accidentally implement the equivalent
+    of quantum bogosort in your algorithm. I’ll use an early version of my addition
+    algorithm to demonstrate:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Alternatively, `(+) = parCommute add` where:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This definition gets the right answer, but needs exponentially many threads
+    to figure it out. Here is a diagram of what is going on:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The trick is that we are repeatedly commuting the arguments to addition upon
+    every recursion, and one of the nondeterministic paths leads to the result where
+    both x and y are zero. Any other branch in the tree that terminates “early” will
+    be less than the true result, and thus `lub` won’t pick it. Exploring all of these
+    branches is, as you might guess, inefficient.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Next time](http://blog.ezyang.com/2010/12/no-one-expects-the-scott-induction/),
+    we will look at Scott induction as a method of reasoning about fixpoints like
+    this one, relating it to induction on natural numbers and generalized induction.
+    If I manage to understand coinduction by the next post, there might be a little
+    on that too.'
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,121 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:17:24'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Maildir synchronizing Sup : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2012/12/maildir-synchronizing-sup/](http://blog.ezyang.com/2012/12/maildir-synchronizing-sup/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Maildir synchronizing Sup
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'On the prompting of Steven Hum, I''ve put some finishing touches on my Sup
+    patchset and am “releasing” it to the world (more on what I mean by “release”
+    shortly.) The overall theme of this patchset is that it integrates as much Sup
+    metadata it can with Maildir data. In particular:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: It merges Damien Leone’s sync-back patchset with the latest Sup mainline. The
+    sync-back patchset synchronizes flags such as “Read” or “Trashed” to the Maildir,
+    which can then be propagated back to your IMAP server using OfflineIMAP.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Furthermore, this patchset has the ability to synchronize arbitrary labels,
+    with a simple set of rules of what folder a message should be moved to depending
+    on what labels it has. For example, inbox and archived messages can be kept in
+    separate folders, so that non-Sup clients can usefully access mail you care about.
+    (Trust me: this is really awesome.) This is coupled with a bonus OfflineIMAP patch
+    which implements fast remote message moving.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It implements inotify on Maildir, so a full directory scan is no longer necessary
+    to retrieve new messages. The bottleneck for polling is now strictly OfflineIMAP.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It implements the ability to save sent and draft messages to Maildir, so they
+    show up in third-party clients.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Finally, it has a number of miscellaneous bugfixes and extra hooks which I have
+    personally found useful.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'There is at least a high probability the patchset will work for you, since
+    I’ve been using it actively for a while. Sup will sometimes crash; if it doesn''t
+    happen reproduceably or cause data loss, I probably won’t investigate too hard.
+    Some of my patches are a bit sketchy (especially those labeled `HACK`: I’ve attempted
+    to document all the skeevy bits in commit messages and code comments.) So, how
+    supported is this version of Sup? Well:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: I am using this patchset, therefore, for all use-cases and environments I care
+    about, it will stay working;
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: I will probably not fix problems I am not affected by, and definitely not problems
+    I cannot reproduce;
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'I do not promise a stable commit history: I’ve rebased the patchset multiple
+    times and will continue to do so.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Some of the early patches are pretty uncontroversial though, and I’d like to
+    see them get into mainline eventually. You can get the code here: [http://gitorious.org/~ezyang/sup/ezyang/commits/maildir-sync/](http://gitorious.org/~ezyang/sup/ezyang/commits/maildir-sync/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: New hooks
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Label synchronization
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'To use this functionality, in `config.yaml`, you need a new option `:maildir_labels`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The value of this option is a dictionary of "accounts" to lists of precedences.
+    (The account label `stanford` doesn’t actually mean anything; it''s just for documentation.)
+    Read it as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For messages belonging in source 4 or source 6 (consult `sources.yaml`), if
+    the message has the `:inbox` tag, move it to source 4, otherwise move it to source
+    6.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'This will automatically start working for any new mail you change the labels
+    of. In order to apply this to old mail, you need to run `sup-sync-back-maildir`.
+    If you''re going to move a lot of mail, you probably want to run this version
+    of OfflineIMAP: [https://github.com/ezyang/offlineimap](https://github.com/ezyang/offlineimap)'
+  prefs: []
+  type: TYPE_NORMAL

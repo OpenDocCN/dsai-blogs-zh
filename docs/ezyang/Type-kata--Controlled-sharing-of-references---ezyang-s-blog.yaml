@@ -1,0 +1,75 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:18:11'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Type kata: Controlled sharing of references : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2010/08/type-kata-controlled-sharing-of-references/](http://blog.ezyang.com/2010/08/type-kata-controlled-sharing-of-references/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*The imperative.* Mutable data structures with many children frequently force
+    any given child to be associated with one given parent data structure:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Client code must be careful not to mix up children that belong to different
+    owners. An object can be copied from one owner to another via a special function.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Sometimes, a function of this style can only be called in special circumstances.
+    If a mutable data structure is copied, and you would like to reference to a child
+    in the new structure but you only have a reference to its original, an implementation
+    may let you forward such a pointer, but only if the destination structure was
+    the most recent copy.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*The kata.* Phantom types in the style of the [ST monad](http://www.haskell.org/ghc/docs/6.12.2/html/libraries/base-4.2.0.1/Control-Monad-ST.html)
+    permit statically enforced separation of children from different monadic owners.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To permit a value of any monad to be used in another monad, implement a function
+    that is polymorphic in both phantom types:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: The function will probably be monadic, because the implementation will need
+    to know what owner the `Node` is being converted to.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To only permit translation under certain circumstances, use a type constructor
+    (you can get these using empty data declarations) on the phantom type:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*Applicability.* Practitioners of Haskell are encouraged to implement and use
+    pure data structures, where sharing renders this careful book-keeping of ownership
+    unnecessary. Nevertheless, this technique can be useful when you are interfacing
+    via the FFI with a library that requires these invariants.'
+  prefs: []
+  type: TYPE_NORMAL

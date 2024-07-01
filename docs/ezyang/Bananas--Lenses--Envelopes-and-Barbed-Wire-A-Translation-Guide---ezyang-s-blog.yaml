@@ -1,0 +1,76 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:18:23'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Bananas, Lenses, Envelopes and Barbed Wire A Translation Guide : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2010/05/bananas-lenses-envelopes-and-barbed-wire-a-translation-guide/](http://blog.ezyang.com/2010/05/bananas-lenses-envelopes-and-barbed-wire-a-translation-guide/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'One of the papers I''ve been slowly rereading since summer began is ["Functional
+    Programming with Bananas, Lenses, Envelopes and Barbed Wire"](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.41.125),
+    by Erik Meijer, Maarten Fokkinga and Ross Paterson. If you want to know what {cata,ana,hylo,para}morphisms
+    are, this is the paper to read: section 2 gives a highly readable formulation
+    of these morphisms for the beloved linked list.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Last time, however, my eyes got a little bit glassy when they started discussing
+    algebraic data types, despite having used and defined them in Haskell; part of
+    me felt inundated in a sea of triangles, circles and squiggles, and by the time
+    they reached the laws for the basic combinators, I might as well have said, "It's
+    all math to me!"
+  prefs: []
+  type: TYPE_NORMAL
+- en: A closer reading revealed that, actually, all of these algebraic operators can
+    be written out in plain Haskell, and for someone who has been working with Haskell
+    for a little bit of time, this can provide a smoother (albeit more verbose) reading.
+    Thus, I present this translation guide.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Type operators.* By convention, types are ![A, B, C\ldots](img/d9934bc8566ad567bcb100e158ab01a5.png
+    "A, B, C\ldots") on the left and `a, b, c...` on the right. We distinguish these
+    from function operators, though the paper does not and relies on convention to
+    distinguish between the two.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: (For the pedantic, you need to add `Hask Hask Hask` to the end of all the Bifunctors.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Function operators.* By convention, functions are ![f, g, h\ldots](img/1c93e1ddd1d811c06cc58b9572f1e318.png
+    "f, g, h\ldots") on the left and `f :: a -> b, g :: a'' -> b'', h...` on the right
+    (with types unified as appropriate).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now, let''s look at the *abides law*:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Translated into Haskell, this states:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Which (to me at least) makes more sense: if I want to extract a value from
+    Either, and then run two functions on it and return the tuple of results, I can
+    also split the value into a tuple immediately, and extract from the either "twice"
+    with different functions. (Try running the function manually on a `Left x` and
+    `Right y`.)'
+  prefs: []
+  type: TYPE_NORMAL

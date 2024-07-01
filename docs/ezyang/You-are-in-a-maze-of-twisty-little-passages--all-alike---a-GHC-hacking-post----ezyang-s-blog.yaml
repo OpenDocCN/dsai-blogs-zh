@@ -1,0 +1,280 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:18:03'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You are in a maze of twisty little passages, all alike… (a GHC hacking post)
+    : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2010/11/another-ghc-hacking-post/](http://blog.ezyang.com/2010/11/another-ghc-hacking-post/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: About a month ago I decided that it would be cool if I could solve the bug [GHC's
+    runtime never terminates unused worker threads](http://hackage.haskell.org/trac/ghc/ticket/4262).
+    Well, I just got around to looking at it today, and after wandering aimlessly
+    around the twisty maze that is the GHC RTS for an hour or so, I finally found
+    a light at the end of a tunnel, in the form of a heart-warmingly simple patch.
+    I’ve sent mail off to Simon Marlow to make sure the light isn’t actually a train,
+    but it occurred to me that it would be interesting to look at my command history
+    and blog about the process by which I came to the conclusion that line 464 of
+    `Capability.c` was the correct place to add my change, since this sort of mental
+    journey is not the one that is really ever recorded anywhere in any shape or form.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Warmups before running the maze.* In a shifty shifty maze like GHC, you want
+    to make sure the guided route (i.e. a clean build) is working before trying anything
+    fancy. I use a [separate build tree from source tree](http://hackage.haskell.org/trac/ghc/wiki/Building/Using#Sourcetreesandbuildtrees),
+    so getting everything up to date involves:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: When this has been resolved in a satisfactory manner (a non-trivial task for
+    platforms with Windows), the code hunting can begin.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Grab your equipment.* What? You mean to say you’ve wandered into this maze
+    and you don’t even know how to tell you’ve gotten to your destination? That’s
+    no good... you’ll need a dousing rod of some sort... something to tell you when
+    you’ve got it right.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In this particular case, the original bug reporter had written up a small,
+    incomplete test script, so the first thing I did was [flesh it out](http://hackage.haskell.org/trac/ghc/ticket/4262#comment:3)
+    into a script that required no human interaction. The benchmark for the new script
+    was clear: `/proc/PID/task` should report a number substantially smaller than
+    200\. To see that the current implementation is broken:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Getting your bearings.* Ok, so what do we want? We want threads to die instead
+    of hanging around. There are two ways to do this: have the thread commit seppuku
+    when it realizes it isn’t wanted, or have some manager kill the thread as necessary.
+    The later is generally considered poor form, since you want to make sure the threads
+    aren’t doing anything critical that will get corrupted if they die. So seppuku
+    it is. Here, now, there are two questions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: When does the thread decide to go into a waiting pool? This is presumably where
+    we’d want it to terminate itself instead.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: How would the thread decide whether or not it should hang around or bug out?
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Mapping out the land.* GHC has this little runtime flag called `-Ds`. It’s
+    pretty useful: it dumps out a whole gaggle of debug information concerning threads,
+    which is precisely what we’d like to look for. Our plan of action is to look at
+    what the thread activity looks like in our test script, and identify the points
+    at which threads should be dying instead of hanging around.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The very beginning of the log looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Note the number `b75006d0`; that’s our main thread and it’s going to be quite
+    a busy beaver. Here is the very first thread we spin off to make a foreign call,
+    but it finishes fairly quickly and isn’t the foreign call we are looking for:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Not before long, we see a veritable avalanche of new threads being created
+    and added to the run queue—these are our threads:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The process continues until we’ve spawned them all:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And then, since there’s nothing to do (all of our threads are in FFI land),
+    we go and run a major GC:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: (I’ve always kind of wondered whether or not FFI calls should be considered
+    deadlocked.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now the threads start coming back from FFI-land and idling:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'I''ve actually cheated a little: the `there are X spare workers` debug statements
+    I added myself. But this section is golden; we’re specifically interested in these
+    lines:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: The thread stops, but it doesn’t die, it just gives up the capability. These
+    are two extremely good candidates for where the thread might alternately decide
+    to kill itself.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Placemarkers.* It’s time to bust out the trusty old `grep` and figure out
+    where these debug messages are being emitted from. Unfortunately, `5` and `finished`
+    are probably dynamically generated messages, so `stopped` is the only real identifier.
+    Fortunately, that’s specific enough for me to find the right line in the RTS:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'That line in `Trace.c` is actually in a generic debugging function `traceSchedEvent_stderr`,
+    but fortunately there’s a big case statement on one of its arguments `tag`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'So `EVENT_STOP_THREAD` is a good next grep. And sure enough:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It looks to be an inline function in `Trace.h`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Classy. So `traceEventStopThread` is the magic word, and sure enough:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: There are two plausible sites in `Schedule.c`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Going digging.* We first have to pick which site to inspect more closely.
+    Fortunately, we notice that the second trace event corresponds to suspending the
+    thread before going into a safe FFI call; that''s certainly not what we''re looking
+    at here. Furthermore, the first is in the scheduler, which makes a lot of sense.
+    But there’s nothing obvious in this vicinity that you might associate with saving
+    a worker task away due to lack of work.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'What about that `giving up` capability message? Some more grepping reveals
+    it to be in the `yieldCapability` function (like one might expect). If we then
+    trace backwards calls to `yieldCapability`, we see it is invoked by `scheduleYield`,
+    which is in turn called by the scheduler loop:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This is very, very interesting. It suggests that the capability itself will
+    tell us whether or not the work to do, and that `yieldCapability` is a promising
+    function to look further into:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'That last call looks intriguing:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: We’ve found it!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Checking the area.* The `spare_workers` queue looks like the queue in which
+    worker threads without anything to do go to chill out. We should verify that this
+    is the case:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Indeed, as we saw in the debug statements above, this was indeed the case:
+    the number of spare workers kept increasing:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Writing up the solution.* So, the patch from here is simple, since we’ve found
+    the correct location. We check if the queue of spare workers is at some number,
+    and if it is, instead of saving ourselves to the queue we just cleanup and then
+    kill ourselves:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And then we test see that this indeed has worked:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Postscript.* There are some obvious deficiencies with this proof-of-concept.
+    It’s not portable. We need to convince ourselves that this truly does all of the
+    cleanup that the RTS expects a worker to do. Maybe our data representation could
+    be more efficient (we certainly don’t need a linked list if the number of values
+    we’ll be storing is fixed.) But these are questions best answered by someone who
+    knows the RTS better, so at this point I [sent in the proof of concept](http://www.haskell.org/pipermail/glasgow-haskell-users/2010-November/019503.html)
+    for further review. Fingers crossed!'
+  prefs: []
+  type: TYPE_NORMAL

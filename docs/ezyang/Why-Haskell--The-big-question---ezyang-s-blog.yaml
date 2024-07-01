@@ -1,0 +1,141 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:18:33'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Why Haskell? The big question : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2010/01/why-haskell/](http://blog.ezyang.com/2010/01/why-haskell/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Why Haskell? The big question
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Language selection is a contentious thing, and often a compromise between "pick
+    the right language for the job" and "use as few languages as possible to increase
+    mindshare." Google, for example, [limits the programming languages](http://steve-yegge.blogspot.com/2007/06/rhino-on-rails.html)
+    their employees are allowed to use; and I have come to associate picking whatever
+    language you want for your own projects as irresponsible, having once been told,
+    "Yeah... that project was written in X and no one besides the guy who wrote it
+    knows X... probably not a good use of your time to work on it." Of course, I've
+    been quite culpable of this myself; I wrote the member dues tracking system for
+    the Assassins' Guild in Haskell, and unless a miracle happens I am kind of doubtful
+    future maintainers will be able to deal with it.
+  prefs: []
+  type: TYPE_NORMAL
+- en: When I am not being irresponsible, Python is my favored language for most of
+    my scripting needs, and as such I am painfully aware of quirks in the language
+    that Haskell would smooth away.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Python code is dynamically typed and variables have no scoping. Brain-o typing
+    errors, variable misnamings and plain ole broken code isn't caught unless a code
+    path is exercised. *What makes it better:* `pylint -e` catches large classes of
+    errors (but you commonly have to wade through recursion limit errors to find it,
+    and I strongly believe any error checking not built in the compiler is doomed
+    to be ignored by the people who need it most), as is full code coverage on whatever
+    automated tests you have. *Why Haskell rocks:* the static analysis is complete
+    enough that if it compiles, it runs correctly.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Python is slow. If you don''t believe it: ask yourself why the runtime can''t
+    be loaded quickly enough to make running Python as CGI tenable, or why Google
+    has banned it from living in public facing code, or why engineers treat rewriting
+    a Python daemon in C++ as the inevitable conclusion when you just can''t wring
+    out anymore speed. *What makes it better:* Not everything has to be blazing fast.
+    *Why Haskell rocks:* Insane people writing insane compilers like GHC which compile
+    into native binaries and have absolutely epic speed.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Python has an limit to comprehensible code golfing. While duplication of high-level
+    code structure is no where as bad in Python as it might be for Java or C++, attempts
+    to purify code even further often lead to highly incomprehensible higher order
+    functions that require copious documentation. As people say, "Don't write Haskell
+    in Python." *Why Haskell rocks:* The type system not only becomes essential to
+    the documentation of the code, it also serves as a framework by which a user can
+    "snap" together combinators and data like legoblocks, leading to a much higher
+    tolerance of complexity.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Python has inherited an aging object-oriented paradigm. However, I am increasingly
+    convinced that typeclass based systems ([Go](http://golang.org/) is one decidedly
+    imperative language that has picked them up) are the way to go. In combination
+    with type signatures, they provide the two primary benefits of OOP: a logical
+    organization of functionality and polymorphism, without all of the complicated
+    gunk that is multiple inheritance, mix-ins, metaclasses, etc. *Why Haskell rocks:*
+    First-class support for type-classes.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Python has abysmal threading support. It has the global interpreter lock. *Why
+    Haskell rocks:* It not only has fast, green threads and the notion of purity to
+    make splitting computations feasible, it has made it extremely simple to experiment
+    with scheduling algorithms with the computation. I can't say much more in this
+    field, because I have very little experience writing parallel Haskell code.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'But I would cringe to attempt to write in Haskell one of the large projects
+    that I have done in imperative languages like PHP or Python (I mention these two
+    particular languages, because within them I have built [two](http://htmlpurifier.org)
+    [systems](http://scripts.mit.edu/wizard) that are actually large), for these very
+    important reasons:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Haskell has not grown sufficient library support to become fully multiparadigm.
+    I am highly skeptical that a straight-forward port of any given piece of Python
+    code would be possible; despite great advances in shepherding the more dynamic
+    features of Python into Haskell's type system with packages such as Text.Printf,
+    action at a distance intrinsic of an imperative program would require heavy IO
+    wizardry in Haskell.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It's not obvious which problems in the imperative domain truly are better kept
+    in the imperative domain, as [James Hague](http://prog21.dadgum.com/54.html) has
+    mused recently. The Haskell community is fairly unified in its stance that as
+    little code should be in the IO monad as possible, but when we bring in small
+    bits of the imperative world to help us in cases such as the State monad, we acknowledge
+    the imperative paradigm is useful... or at least an easy way out. Perhaps if we
+    tried harder we could find a more elegant, maintainable, purely functional solution;
+    and one of the favorite pastimes of academics is to figure these things out. But
+    this is hard even for those used to thinking functionally, and the answers often
+    need to be discovered, let alone implemented.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: All of the engineering folklore, wisdom and best practices that have been accumulated
+    from years of hacking on large, imperative codebases may or may not apply to functional
+    codebases anymore. If functional libraries are encouraged to be as decoupled as
+    possible, do we need to allow for further decoupling in the API? Does pure code
+    need to be logged, or is its determinism make it trivial to debug? What testing
+    do we need, and how much trust do we put in the types? How does API documentation
+    and cross-referencing need to evolve for functional codebases? How the heck do
+    you go ahead and debug a logic error in a section of pure Haskell code?
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Yet, there are [companies](http://www.galois.com/) that are putting out production
+    size codebases in Haskell, which makes me optimistic that answers to these questions
+    will soon become public knowledge; if not for Haskell, for some other purely functional
+    language. And the "classic" solutions in the imperative world have often lead
+    to insidious errors, especially in a world of multithreaded applications, and
+    we *must not* settle for "good enough." Software sucks, but purely functional
+    systems with strong, flexible types have the promise to eliminate large swaths
+    of this suckage. And *that* is why I Haskell.
+  prefs: []
+  type: TYPE_NORMAL

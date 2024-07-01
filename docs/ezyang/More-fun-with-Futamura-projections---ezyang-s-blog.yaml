@@ -1,0 +1,236 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:18:23'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'More fun with Futamura projections : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2010/03/more-fun-with-futamura-projections/](http://blog.ezyang.com/2010/03/more-fun-with-futamura-projections/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*Code written by Anders Kaseorg.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In [The Three Projections of Doctor Futamura](http://blog.sigfpe.com/2009/05/three-projections-of-doctor-futamura.html),
+    Dan Piponi treats non-programmers to an explanation to the Futamura projections,
+    a series of mind-bending applications of partial evaluation. Go over and read
+    it if you haven't already; this post is intended as a spiritual successor to that
+    one, in which we write some Haskell code.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*The pictorial type of a mint.* In the original post, Piponi drew out machines
+    which took various coins, templates or other machines as inputs, and gave out
+    coins or machines as outputs. Let''s rewrite the definition in something that
+    looks a little bit more like a Haskell type.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, something simple: the very first machine that takes blank coins and
+    mints new coins.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We''re now using an arrow to indicate an input-output relationship. In fact,
+    this is just a function that takes blank coins as input, and outputs engraved
+    coins. We can generalize this with the following type synonym:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'What about that let us input the description of the coin? Well, first we need
+    a simple data type to represent this description:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '(Yeah, that data-type can''t really do anything interesting. We''re not actually
+    going to be writing implementations for these machines.) From there, we have our
+    next "type-ified'' picture of the interpreter:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Or, in code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'From there, it''s not a far fetch to see what the compiler looks like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'I would like to remark that we could have fully written out this type, as such:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: We've purposely kept the unnecessary parentheses, since Haskell seductively
+    suggests that you can treat `a -> b -> c` as a 2-ary function, when we'd like
+    to keep it distinct from `(a, b) -> c`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'And at last, we have the specializer:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We''ve named the variables in our Specializer type synonym suggestively, but
+    program doesn''t just have to be Program: the whole point of the Futamura projections
+    is that we can put different things there. The other interesting thing to note
+    is that any given Specializer needs to be parametrized not just on the input and
+    output, but the program it operates on. That means the concrete type that the
+    Specializer assumes varies depending on what we actually let `program` be. It
+    does *not* depend on the first argument of the specializer, which is forced by
+    `program`, `input` and `output` to be `(program, input) -> output`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Well, what are those concrete types? For this task, we can ask GHC.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*To the fourth projection, and beyond!* First, a few preliminaries. We''ve
+    kept `input` and `output` fully general in our type synonyms, but we should actually
+    fill them in with a concrete data type. Some more vacuous definitions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: We don't actually care how we implement our program or our interpreter, thus
+    the `undefined`; given our vacuous data definitions, there do exist valid instances
+    of these, but they don't particularly increase insight.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We''ve treated the specializer a little differently: partial evaluation and
+    partial application are very similar: in fact, to the outside user they do precisely
+    the same thing, only partial evaluation ends up being faster because it is actually
+    doing some work, rather than forming a closure, with the intermediate argument
+    hanging around in limbo and not doing any useful work. However, we need to uncurry
+    the curry, since Haskell functions are curried by default.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, the Futamura projections:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Without the monomorphism restriction, `s` would have worked just as well, but
+    we're going to give `s1` an explicit type shortly, and that would spoil the fun
+    for the rest of the projections. (Actually, since we gave `s` an explicit type,
+    the monomorphism restriction wouldn't apply.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'So, what is the type of `s1`? It''s definitely not general: `i` and `p` are
+    fully explicit, and Specializer doesn''t introduce any other polymorphic types.
+    This should be pretty easy to tell, but we''ll ask GHC just in case:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Of course. It matches up with our variable names!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Time for the second Futamura projection:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Notice I''ve written `s2` this time around. That''s because `` s1 (s1, i)``
+    doesn''t typecheck; if you do the unification you''ll see the concrete types don''t
+    line up. So what''s the concrete type of `s2`? A little more head-scratching,
+    and perhaps a quick glance at Piponi''s article will elucidate the answer:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The third Futamura projection, the interpreter-to-compiler machine:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: '(You should verify that `s2 (s2, s1)` and `s1 (s1, s2)` and any permutation
+    thereof doesn''t typecheck.) We''ve also managed to lose any direct grounding
+    with the concrete:: there''s no `p` or `i` to be seen. But `s2` and `s1` are definitely
+    concrete types, as we''ve shown earlier, and GHC can do the unification for us:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In fact, it''s been so kind as to substitute some of the more gnarly types
+    with the relevant type synonyms for our pleasure. If we add some more parentheses
+    and take only the output:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: And there's our interpreter-to-compiler machine!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: But why stop there?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: Or even there?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: And we could go on and on, constructing the *nth* projection using the specializers
+    we used for the *n-1* and *n-2* projections.
+  prefs: []
+  type: TYPE_NORMAL
+- en: This might seem like a big bunch of type-wankery. I don't think it's just that.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Implementors of partial evaluators care, because this represents a mechanism
+    for composition of partial evaluators. `S2` and `S1` could be different kinds
+    of specializers, with their own strengths and weaknesses. It also is a vivid demonstration
+    of one philosophical challenge of the partial-evaluator writer: they need to write
+    a single piece of code that can work on arbitrary *n* in *Sn*. Perhaps in practice
+    it only needs to work well on low *n*, but the fact that it works at all is an
+    impressive technical feat.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For disciples of partial application, this is something of a parlor trick:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'But this is a useful parlor trick: somehow we''ve managed to make an arbitrarily
+    variadic function! I''m sure this technique is being used somewhere in the wild,
+    although as of writing I couldn''t find any examples of it (Text.Printf might,
+    although it was tough to tell this apart from their typeclass trickery.)'
+  prefs: []
+  type: TYPE_NORMAL

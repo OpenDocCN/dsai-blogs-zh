@@ -1,0 +1,58 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:17:44'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Multi-monitor xmobar placement on Gnome : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2011/06/multi-monitor-xmobar-placement-on-nome/](http://blog.ezyang.com/2011/06/multi-monitor-xmobar-placement-on-nome/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Multi-monitor xmobar placement on Gnome
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: This post describes how to change which monitor xmobar shows up on in a multi-monitor
+    setup. This had always been an annoyance for me, since on an initial switch to
+    multi-monitor, xmobar would be living on the correct monitor, but if I ever restarted
+    XMonad thereafter, it would migrate to my other monitor, much to my annoyance.
+    Note that a monitor is different from an X screen, which *can* be directly configured
+    from xmobar using the `-x` command line.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'How does xmobar pick what screen to use? It selects the “primary” monitor,
+    which by default is the first entry in your `xrandr` list:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: We can switch the primary monitor using the `xrandr --output $MONITOR --primary`
+    command. However, this change is not persistent; you’d have to run this command
+    every time you add a new monitor.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Fortunately, it turns out `gnome-settings-daemon` records information about
+    monitors it has seen in order to configure them properly. This information is
+    in `.config/monitors.xml`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: So all we need to do is tweak `primary` to be `yes` on the appropriate monitor.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Hat tip to David Benjamin and Evan Broder for letting me know how to do this.
+  prefs: []
+  type: TYPE_NORMAL

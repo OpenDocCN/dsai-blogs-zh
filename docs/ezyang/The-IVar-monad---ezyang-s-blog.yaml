@@ -1,0 +1,101 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:17:44'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The IVar monad : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2011/06/the-iva-monad/](http://blog.ezyang.com/2011/06/the-iva-monad/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: An IVar is an [immutable variable](http://blog.ezyang.com/2011/05/reified-laziness/);
+    you write once, and read many times. In the `Par` monad framework, we use a prompt
+    monad style construction in order to encode various operations on IVars, which
+    deterministic parallel code in this framework might use. The question I'm interested
+    in this post is an alternative encoding of this functionality, which supports
+    nondeterministic concurrency and shows up in other contexts such as Python Twisted,
+    node.js, any JavaScript UI library and LWT. [Numerous bloggers](http://amix.dk/blog/post/19509)
+    [have commented](http://matthew.yumptious.com/2009/04/javascript/dojo-deferred-is-a-monad/)
+    [on this](http://www.reddit.com/r/programming/comments/mjcf/the_monad_laws/cmobm).
+    But despite all of the monad mania surrounding what are essentially glorified
+    callbacks, no one actually *uses* this monad when it comes to Haskell. Why not?
+    For one reason, Haskell has cheap and cheerful preemptive green threads, so we
+    can write our IO in synchronous style in lots of threads. But another reason,
+    which I will be exploring in a later blog post, is that naively implementing bind
+    in this model space leaks! (Most event libraries have worked around this bug in
+    some way or another, which we will also be investigating.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First things first, though. We start by implementing the `IVar` monad in Haskell.
+    We build it incrementally, starting by demonstrating that `IO (IORef a)` is a
+    monad. It''s not particularly interesting: we could get all of it''s features
+    using `IO`. Our main interest in it is demonstrating the basic structure by which
+    we will present a nondeterministic `IVar` monad.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We never ever pass around values: rather, we put them inside `IORef` boxes.
+    The bind operation involves reading out the content of a box, and then getting
+    a new box out of the function we''re binding to `f`. We always know what the contents
+    of a box are: we never call `writeIORef`. Also notice that retrieving the reference
+    is in `IO`, so arbitrary other side effects could occur while this is happening.
+    When we have an actual `IVar`, those side effects could involve spinning off another
+    thread of execution, which will eventually fill the `IVar`. Pay attention to these
+    “boxes”: we’ll be interested in their usage properties for performance purposes.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In the case of an `IVar`, we now would like to have “empty” boxes, which may
+    only get filled in at some later date. We might be tempted to implement this using
+    `IO (IORef (Maybe a))`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'But we’re in a bit of a bind (ahem): we don’t actually know what value we need
+    to pass to `f` if the box is still empty. What do we do?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The traditional solution is save `f` away for another time when the value truly
+    does become available, at which point we invoke all of the blocking callbacks
+    with the new value. Since our monad admits arbitrary side effects, these callbacks
+    can still do useful work. (By the way, `IORef (IVarContents a)` is essentially
+    what the `Par` monad uses to encode `IVars`.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Now we can implement that last case:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`filIVar` is some magical function which fills an empty IVar and reschedules
+    anyone who was waiting for that value for execution. One possible (and a little
+    silly) implementation, which assumes single-threading, could be:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: This is all fairly straightforward, and some variant of this has been reimplemented
+    by basically any cooperative nonblocking async library. In my next post, I’d like
+    to explicate some problems with this naive monadic encoding, as explained by the
+    authors of LWT, and put a finger precisely what kind of variations of this pattern
+    we actually see in the wild.
+  prefs: []
+  type: TYPE_NORMAL

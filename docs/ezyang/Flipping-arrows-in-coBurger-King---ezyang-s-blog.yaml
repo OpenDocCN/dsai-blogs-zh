@@ -1,0 +1,299 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:18:14'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Flipping arrows in coBurger King : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2010/07/flipping-arrows-in-coburger-king/](http://blog.ezyang.com/2010/07/flipping-arrows-in-coburger-king/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*Category theory crash course for the working Haskell programmer.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A frequent question that comes up when discussing the dual data structures—most
+    frequently comonad—is “What does the co- mean?” The snippy category theory answer
+    is: “Because you flip the arrows around.” This is confusing, because if you look
+    at one variant of the monad and comonad typeclasses:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: there are a lot of “arrows”, and only a few of them flipped (specifically, the
+    arrow inside the second argument of the `>>=` and `=>>` functions, and the arrow
+    in return/extract). This article will make precise what it means to “flip arrows”
+    and use the “dual category”, even if you don’t know a lick of category theory.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Notation.* There will be several diagrams in this article. You can read any
+    node (aka object) as a Haskell type, and any solid arrow (aka morphism) as a Haskell
+    function between those two types. (There will be arrows of different colors to
+    distinguish concepts.) So if I have `f :: Int -> Bool`, I will draw that as:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Functors.* The Functor typeclass is familiar to the working Haskell programmer:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'While the typeclass seems to imply that there is only one part to an instance
+    of Functor, the implementation of `fmap`, there is another, almost trivial part:
+    `t` is now a type function of kind `* -> *`: it takes a type (`a`) and outputs
+    a new type (unimaginatively named `t a`). So we can represent it by this diagram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The arrows are colored differently for a good reason: they are indicating completely
+    different things (and just happen to be on the same diagram). While the red arrow
+    represents a concrete function `a -> b` (the first argument of `fmap`), the dashed
+    blue arrow does not claim that a function `a -> t a` exists: it’s simply indicating
+    how the functor maps from one type to another. It could be a type with no legal
+    values! We could also posit the existence of a function of that type; in that
+    case, we would have a pointed functor:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: But for our purposes, such a function (or is it?) won’t be interesting until
+    we get to monads.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You may have heard of the Functor law, an equality that all Functors should
+    satisfy. Here it is in textual form:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'and here it is in pictorial form:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One might imagine the diagram as a giant `if..then` statement: if `f`, `g`
+    and `g . f` exist, then `fmap f`, `fmap g` and `fmap (g . f)` exist (just apply
+    `fmap` to them!), and they happen to compose in the same way.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Now, it so happens that if we have `f :: a -> b` and `g :: b -> c`, `g . f`
+    is also guaranteed to exist, so we didn’t really need to draw the arrow either.
+    This is such an implicit notion of function composition, so we will take a moment
+    and ask: why is that?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It turns out that when I draw a diagram of red arrows, I’m drawing what mathematicians
+    call a *category* with objects and arrows. The last few diagrams have been drawn
+    in what is called the category Hask, which has objects as Haskell types and arrows
+    as Haskell functions. The definition of a category builds in arrow composition
+    and identities:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: (you can mentally substitute `~>` with `->` for Hask) and there are also laws
+    that make arrow composition associative. Most relevantly, the categorical arrows
+    are precisely the arrows you flip when you talk about a dual category.
+  prefs: []
+  type: TYPE_NORMAL
+- en: “Great!” you say, “Does that mean we’re done?” Unfortunately, not quite yet.
+    It is true that the comonad is a monad for an opposite (or dual) category, it
+    is *not* the category `Hask.` (This is not the category you are looking for!)
+    Still, we’ve spent all this time getting comfortable drawing diagrams in `Hask`,
+    and it would be a shame to not put this to good use. Thus, we are going to see
+    an example of the dual category of Hask.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Contravariant functors.* You may have heard `fmap` described as a function
+    that “lifts” functions in to a functorial context: this “functorial context” is
+    actually just another category. (To actually mathematically show this, we''d need
+    to show that the functor laws are sufficient to preserve the category laws.) For
+    normal functors, this category is just Hask (actually a subcategory of it, since
+    only types `t _` qualify as objects). For contravariant functors, this category
+    is Hask^op.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Any function `f :: a -> b` in Hask becomes a function `contramap f :: f b ->
+    f a` in a contravariant functor:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here is the corresponding diagram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Notice that we’ve partitioned the diagram into two sections: one in Hask, and
+    one in Hask^op, and notice how the function arrows (red) flip going from one category
+    to the other, while the functor arrows (blue) have not flipped. `t a` is still
+    a contravariant functor value.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You might be scratching your head and wondering: is there any instance of `contramap`
+    that we could actually use? In fact, there is a very simple one that follows directly
+    from our diagram:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: Understanding this instance is not too important for the rest of this article,
+    but interested readers should compare it to the functor on normal functions. Beyond
+    the newtype wrapping and unwrapping, there is only one change.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Natural transformations.* I’m going to give away the punchline: in the case
+    of comonads, the arrows you are looking for are natural transformations. What
+    are natural transformations? What kind of category has natural transformations
+    as arrows? In Haskell, natural transformations are roughly polymorphic functions:
+    they’re mappings defined on functors. We’ll notate them in gray, and also introduce
+    some new notation, since we will be handling multiple Functors: subscripts indicate
+    types: `fmap_t` is `fmap :: (a -> b) -> t a -> t b)` and `η_a` is `η :: t a ->
+    s a`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s review the three types of arrows flying around. The red arrows are functions,
+    they are morphisms in the category Hask. The blue arrows are indicate a functor
+    mapping between types; they also operate on functions to produce more functions
+    (also in the category Hask: this makes them *endofunctors*). The gray arrows are
+    *also* functions, so they can be viewed as morphisms in the category Hask, but
+    sets of gray arrows across all types (objects) in Hask from one functor to another
+    collectively form a natural transformation (two *components* of a natural transformation
+    are depicted in the diagram). A single blue arrow is *not* a functor; a single
+    gray arrow is *not* natural transformations. Rather, appropriately typed collections
+    of them are functors and natural transformations.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Because `f` seems to be cluttering up the diagram, we could easily omit it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Monad.* Here is the typeclass, to refresh your memory:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You may have heard of an alternate way to define the Monad typeclass:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'where:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`join` is far more rooted in category theory (indeed, it defines the natural
+    transformation that is the infamous binary operation that makes monads monoids),
+    and you should convince yourself that either `join` or `>>=` will get the job
+    done.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Suppose that we know nothing about what monad we’re dealing with, only that
+    it is a monad. What sort of types might we see?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Curiously enough, I’ve colored the arrows here as natural transformations,
+    not red, as we have been doing for undistinguished functions in Hask. But where
+    are the functors? `m a` is trivial: any Monad is also a valid instance of functor.
+    `a` seems like a plain value, but it can also be treated as `Identity a`, that
+    is, `a` inside the identity functor:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'and `Monad m => m (m a)` is just a functor two skins deep:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'or, in point-free style:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '(Each fmap embeds the function one functor deeper.) We can precisely notate
+    the fact that these functors are composed with something like (cribbed from [sigfpe](http://blog.sigfpe.com/2008/11/from-monoids-to-monads.html)):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: in which case `m :<*> m` is a functor.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'While those diagrams stem directly from the definition of a monad, there are
+    also important monad laws, which we can also draw diagrams for. I’ll draw just
+    the monad identity laws with `f`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`return_a` indicates `return :: a -> m a`, and `join_a` indicates `join ::
+    m (m a) -> m a`. Here are the rest with `f` removed:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You can interpret light blue text as “fresh”—it is the new “layer” created
+    (or compressed) by the natural transformation. The first diagram indicates the
+    identity law (traditionally `return x >>= f == f x` and `f >>= return == f`);
+    the second indicates associativity law (traditionally `(m >>= f) >>= g == m >>=
+    (\x -> f x >>= g)`). The diagrams are equivalent to this code:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*Comonads.* Monads inhabit the category of endofunctors `Hask -> Hask`. The
+    category of endofunctors has endofunctors as objects and (no surprise) natural
+    transformations as arrows. So when we make a comonad, we flip the natural transformations.
+    There are two of them: join and return.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is the type class:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: Which have been renamed `duplicate` and `extract` respectively.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We can also flip the natural transformation arrows to get our Comonad laws:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*Next time.* While it is perfectly reasonable to derive `<<=` from cojoin and
+    coreturn, some readers may feel cheated, for I have never actually discussed the
+    functions from monad that Haskell programmers deal with on a regular basis: I
+    just changed around the definitions until it was obvious what arrows to flip.
+    So some time in the future, I hope to draw some diagrams for Kleisli arrows and
+    show what that is about: in particular, why `>=>` and `<=<` are called Kleisli
+    composition.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Apology.* It being three in the morning, I’ve managed to omit all of the formal
+    definitions and proofs! I am a very bad mathematician for doing so. Hopefully,
+    after reading this, you will go to the Wikipedia articles on each of these topics
+    and find their descriptions penetrable!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Postscript.* You might be interested in this [follow-up post about duality
+    in simpler settings](http://blog.ezyang.com/2012/10/duality-for-haskellers/) than
+    monads/comonads.'
+  prefs: []
+  type: TYPE_NORMAL

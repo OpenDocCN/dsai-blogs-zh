@@ -1,0 +1,1 @@
+["```\n$ cabal install hakyll\ncabal: The following packages are likely to be broken by the reinstalls:\npandoc-1.9.4.5\nGraphalyze-0.14.0.0\nUse --force-reinstalls if you want to install anyway.\n\n```", "```\n$ cabal install hledger-0.18\nResolving dependencies...\ncabal: Could not resolve dependencies:\n# pile of output\n\n```"]

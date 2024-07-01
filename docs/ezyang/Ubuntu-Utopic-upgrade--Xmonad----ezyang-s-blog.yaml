@@ -1,0 +1,62 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:17:11'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Ubuntu Utopic upgrade (Xmonad) : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2014/12/ubuntu-utopic-upgrade-xmonad/](http://blog.ezyang.com/2014/12/ubuntu-utopic-upgrade-xmonad/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Ubuntu Utopic upgrade (Xmonad)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: I finally got around to upgrading to Utopic. [A year ago](http://blog.ezyang.com/2013/10/xmonad-and-media-keys-on-saucy/)
+    I reported that gnome-settings-daemon no longer provided keygrabbing support.
+    This was eventually reverted for Trusty, which kept everyone's media keys.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I''m sorry to report that in Ubuntu Utopic, the legacy keygrabber is no more:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: It appears that the Unity team has forked gnome-settings-daemon into unity-settings-daemon
+    (actually this fork happened in Trusty), and as of Utopic gnome-settings-daemon
+    and gnome-control-center [have been gutted](https://bugs.launchpad.net/ubuntu/+source/gnome-settings-daemon/+bug/1318539)
+    in favor of unity-settings-daemon and unity-control-center. Which puts us back
+    in the same situation as a year ago.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I don''t currently have a solution for this (pretty big) problem. However,
+    I have solutions for some minor issues which did pop up on the upgrade:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If your mouse cursor is invisible, try running `gsettings set org.gnome.settings-daemon.plugins.cursor
+    active false`
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If you don't like that the GTK file dialog doesn't sort folders first anymore,
+    try running `gsettings set org.gtk.Settings.FileChooser sort-directories-first
+    true`. ([Hat tip](http://gexperts.com/wp/gnome-3-12-filesnautilus-sort-folders-before-files-issues/))
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: And to reiterate, replace calls to gnome-settings-daemon with unity-settings-daemon,
+    and use unity-control-panel to do general configuration.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL

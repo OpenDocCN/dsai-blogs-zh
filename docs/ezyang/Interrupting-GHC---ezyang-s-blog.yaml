@@ -1,0 +1,260 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:18:10'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Interrupting GHC : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2010/08/interrupting-ghc/](http://blog.ezyang.com/2010/08/interrupting-ghc/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In my [tech talk about abcBridge](http://blog.ezyang.com/2010/08/galois-tech-talk-abcbridge-functional-interfaces-for-aigs-and-sat-solving/),
+    one of the “unsolved” problems I had with making FFI code usable as ordinary Haskell
+    code was interrupt handling. Here I describe an experimental solution involving
+    a change to the GHC runtime system as suggested by [Simon Marlow](http://permalink.gmane.org/gmane.comp.lang.haskell.glasgow.user/18771).
+    The introductory section may be interesting to practitioners looking for working
+    examples of code that catches signals; the later section is a proof of concept
+    that I hope will turn into a fully fleshed out patch.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In many interactive applications (especially for REPLs), you would like to be
+    able to catch when a user hits `^C` and terminate just the current computation,
+    not the entire program. `fooHs` is some function that may take a long time to
+    run (in this case, `fooHs` never terminates).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'By default, GHC generates an asynchronous exception which we can catch using
+    the normal exception handling facilities to say “don’t exit yet”:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Sometimes, you don’t want an exception generated at all and would like to deliberate
+    on the signal as soon as it arrives. You might be in some critical section of
+    the program that should not be interrupted! In such a case, you can install a
+    signal handler with `installHandler` from [System.Posix.Signals](http://www.haskell.org/ghc/docs/6.12-latest/html/libraries/unix-2.4.0.1/System-Posix-Signals.html).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Care should be taken to make sure you restore the original signal handler when
+    you’re done.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you do decide you want to generate an exception from inside a signal handler,
+    a little care must be taken: if we try to do just a simple throw, our exception
+    will seemingly vanish into the void! This is because the interrupt handler is
+    run on a different thread, and we have to use `throwTo` from [Control.Concurrent](http://www.haskell.org/ghc/docs/6.12.2/html/libraries/base-4.2.0.1/Control-Concurrent.html)
+    to ensure our exception is sent to the right thread.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: This code works fine for pure Haskell work.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'However, our question is whether or not we can interrupt Haskell threads that
+    are inside the FFI, not just pure Haskell code. That is, we’d like to replace
+    `fooHs` with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'where `foo.h` contains:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'and `foo.c` contains:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In real practice, `foo` will be some highly optimized function written in C
+    that may take a long time to run. We also can’t kill functions willy nilly: we
+    should be able to forcibly terminate it at any time without corrupting some global
+    state.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If we try our existing `interruptible` functions, we find they don’t work:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`reallySimpleInterruptible` registers the SIGINT, but the foreign call continues.
+    On the second SIGINT, the program terminates. This is the [default behavior of
+    the runtime system](http://hackage.haskell.org/trac/ghc/wiki/Commentary/Rts/Signals):
+    the RTS will attempt to gracefully abort the computation, but has no way of killing
+    an FFI call, and forcibly terminates the program when the second SIGINT arrives.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`simpleInterruptible` fares even worse: without the “exit on the second signal”
+    behavior, we find that we can’t kill the program by pressing `^C`! The thread
+    that requested the FFI call is ignoring our exceptions.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Nota bene.* Please let the author know of any factual inaccuracies in this
+    section.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Time to dive into the runtime system! The code that manages asynchronous exception
+    lives in `RaiseAsync.c` in the `rts` directory. In particular, there is the function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: Which is called when a thread invokes `throwTo` to create an exception in another
+    thread.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It’s instructive to first look at what happens when there is no funny business
+    going along, that is, when the thread is not blocked:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: If the thread is running normally, we use `raiseAsync` to raise the exception
+    and we’re done! However, the thread may have called `block` (from [Control.Exception](http://haskell.org/ghc/docs/6.12.2/html/libraries/base-4.2.0.1/Control-Exception.html#v%3Ablock)),
+    in which case we add the exception to the target’s blocked exceptions queue, and
+    wait for the target to become unblocked.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Another state that a Haskell thread can be in is this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: The runtime system waits for the thread to stop being blocked on the FFI call
+    before delivering the exception—it will get there eventually! But if the FFI call
+    takes a long time, this will be too late. We could replace this call with `raiseAsync`,
+    but what we find is that, while the exception gets raised and the Haskell thread
+    resumes normal execution, the *FFI computation continues*!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If this seems mysterious, it’s useful to review how [the multithreaded scheduler](http://hackage.haskell.org/trac/ghc/wiki/Commentary/Rts/Scheduler)
+    in the GHC runtime system works. Haskell threads are light-weight, and don’t have
+    a one-to-one corresponding with OS threads. Instead, Haskell threads, represented
+    with a TSO (thread-state object), are scheduled on a smaller number of OS threads,
+    abstracted in the RTS as Tasks. Each OS thread is associated with a CPU core,
+    abstracted in the RTS as a Capability.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'At the very start of execution, the number of OS threads is the same as the
+    number of virtual cores (as specified by the `-N` RTS option): in terms of Haskell
+    code, we gain parallelism by having multiple capabilities, *not* multiple tasks!
+    A capability can only belong to one task at a time. However, if a task blocks
+    on the operating system, it may give up it’s capability to another task, which
+    can continue running Haskell code, thus we frequently refer to these tasks as
+    worker threads.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: A Task (OS thread) does work by executing InCalls requested by a TSO (Haskell
+    thread) in the run queue, scheduling them in a round-robin fashion. During the
+    course of this execution, it may run across an FFI call. The behavior here diverges
+    depending on whether or not the FFI call is safe or unsafe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: If the call is unsafe, we just make the call, without relinquishing the capability!
+    This means no other Haskell code can run this virtual core, which is bad news
+    if the FFI call takes a long time or blocks, but if it’s really fast, we don’t
+    have to give up the capability only to snatch it back again.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: If the call is safe, we release the capability (allowing other Haskell threads
+    to proceed), and the Haskell thread is suspended as waiting on a foreign call.
+    The current OS thread then goes and runs the FFI call.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Thus, if we attempt to directly wake up the original Haskell thread by throwing
+    it an exception, it will end up getting scheduled on a *different* OS thread (while
+    the original thread continues running the FFI call!)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The trick is to kill the OS thread that is running the FFI call.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: Which OS thread is it, anyhow? It couldn’t possibly be thread attempting to
+    throw the exception and it doesn’t have anything to do with the suspended Haskell
+    thread, which is waiting to be woken up but doesn’t know what it’s waiting to
+    be woken up from. However, the task running the FFI call knows which Haskell thread
+    is waiting on it, so we can just walk the list of all tasks looking for the one
+    that matches up with the target of our exception. Once we find it, we kill the
+    thread with fire (`pthread_cancel`) and wakeup the orignating Haskell thread with
+    an exception.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There is one subtlety that Marlow pointed out: we do not want to destroy bound
+    threads, because they may contain thread local state. Worker threads are identical
+    and thus expendable, but bound threads cannot be treated so lightly.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We’ve been a bit mean: we haven’t given the library a chance to clean up when
+    it got interrupted. Fortunately, the library can use `pthread_setcancelstate`
+    and `pthread_setcanceltype`, to give it a chance to cleanup before exiting.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It turns out that even with the RTS patch, we still aren’t quite able to interrupt
+    FFI calls. If we add in an explicit new Haskell thread, hwoever, things work:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The output of this literate Haskell file, when compiled with `-threaded` on
+    the patched RTS is as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: Proof of concept accomplished! Now to make it work on Windows...
+  prefs: []
+  type: TYPE_NORMAL

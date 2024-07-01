@@ -1,0 +1,107 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:17:24'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Google Nexus 7 setup notes : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2012/12/googl-nexus-7-setup-notes/](http://blog.ezyang.com/2012/12/googl-nexus-7-setup-notes/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Google Nexus 7 setup notes
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'I acquired a Google Nexus 7 (Wi-Fi only) over winter break. I don’t really
+    like getting new devices: they invariably require a lot of work to setup to my
+    liking. Here are some notes:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Jailbreaking the device from Linux is still fiddly. Ultimately, it’s probably
+    easiest to just find a Windows box and use the [Nexus Root Toolkit](http://www.wugfresh.com/nrt/).
+    The tool is somewhat racy; try the detection code again if it fails the first
+    time.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Transferring files to/from Linux is a pain in the ass. I have SCP over SSHDroid
+    working; I also tried both DropBear SSH Servers but they did not come with scp
+    binaries and were thus fairly useless for the purpose of file transfer. SSHDroid
+    didn’t work out of the box: I needed to apply [comment 14](http://code.google.com/p/droidsshd/issues/detail?id=2#c14)
+    to make the real scp binaries get picked up in the path. By default, these apps
+    are configured to accept password-authentication (not even keyboard-interactive!)
+    with extremely weak default passwords: make sure you disable that. Still looking
+    for a good rsync implementation. On the USB side, Ubuntu/Gnome/Nautilus natively
+    recognised Nexus in PTP mode but when I tried copying files it hung. MTP is fairly
+    unsupported by Ubuntu 12.10, but go-mtpfs works decently well given a sufficiently
+    modern libmtp. Adam Glasgall has [packaged libmtp for Quantal](https://launchpad.net/~aglasgall/+archive/libmtp),
+    so go add his PPA, and then [follow the installation instructions of go-mtpfs](https://github.com/hanwen/go-mtpfs).
+    **Update:** Transferring files directly to removable media has also worked reasonably
+    well.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The tablet really does feel like a phone, courtesy of both being on the Android
+    platform. But no 3G means offline is a lot more important, and the larger screen
+    makes certain types of applications a lot more pleasant to use (**Update:** I’ve
+    settled on MX Player as my video player of choice, since it supports Advanced
+    SubStation Alpha subtitling and MKV files. Unfortunately, it doesn't support deep
+    color (e.g. 10-bit).)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Micro USB to USB OTG cable is really handy, esp. for hooking up keyboards or
+    external media. I’d dare say, it’s a more essential accessory than a cover. Note
+    that the micro-USB port isn’t able to power USB devices with high power requirements
+    (e.g. spinning platter external disks), so you’ll need a powered USB hub to connect
+    them. (One symptom of this is if you try to mount an under-powered hard drive,
+    the directory listing will persistently come up empty. It may also may make clicking
+    noises: probably not good for the drive.) I use USB-OTG to perform mounting.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'I tried to get my paper database on Mendeley mirrored onto my tablet, but it''s
+    been pretty tough. I’ve been trying to use Referey, which is a Mendeley-client
+    for Android, but it requires me to somehow propagate my Mendeley SQLite database
+    and all of my PDFs. Dropbox seems like a good match here, except that the official
+    Dropbox client doesn''t support keeping entire folders synced (only favorite files).
+    If you’re like me, and you don''t know exactly what papers you are going to be
+    reading, you have to use something different, e.g. Dropsync. (BTW, if you, like
+    me, have the clever idea of putting the SQLite database with your PDFs, so they
+    all get synced in one folder, don’t ever "Tidy Up": Mendeley will happily delete
+    your SQLite database as a “foreign object”.) Mendeley and Dropbox seem to interact
+    poorly with each other in various ways (case-sensitivity; also, Mendeley likes
+    to make filenames that are too long, and Dropbox will stupidly and happily accept
+    them).'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: The “open windows” button doesn’t appear to properly respect when an application
+    is closed through its own volition (i.e. through an exit button natively supported
+    by the aplication.) This is a bit annoying.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Oh yeah, and Happy New Year. :)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Update:** I had my Nexus 7 inexplicably brick itself. Fortunately, once the
+    phone is unlocked, it is very easy to reflash the image (and I didn’t lose data,
+    which normally occurs when you first unlock a fone). I did this by `fastboot update
+    image-nakasi-jop40d.zip` while the phone was in the bootloader (hold down both
+    volume keys while powering up, and the image was downloaded from [Google](https://developers.google.com/android/nexus/images#nakasi)),
+    and then applying the last set of steps from [here](http://web.archive.org/web/20120727033322/http://robertpitt.me/2012/07/rooting-the-nexus-7-via-linux/)
+    to get SuperSu installed again (i.e. fastbooting into ClockworkMod and then sideloading
+    SuperSu).'
+  prefs: []
+  type: TYPE_NORMAL

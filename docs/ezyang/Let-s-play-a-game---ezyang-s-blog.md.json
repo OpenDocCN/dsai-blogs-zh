@@ -1,0 +1,1 @@
+["```\nm a -> (a -> m b) -> m b\nCont r a -> (a -> Cont r b) -> Cont r b\n((a -> r) -> r) -> (a -> ((b -> r) -> r)) -> ((b -> r) -> r)\n((a -> r) -> r) -> (a -> (b -> r) -> r) -> (b -> r) -> r\n\n```"]

@@ -1,0 +1,53 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:18:28'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Cute macro tricks in the kernel : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2010/02/kernel-macro-tricks/](http://blog.ezyang.com/2010/02/kernel-macro-tricks/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Cute macro tricks in the kernel
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: A classic stylistic tip given to C programmers is that inline functions should
+    be preferred over macros, when possible. This advice stems from the fact that
+    a macro and an inline function can achieve the same effect, but the inline function
+    also gets type checking.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As it turns out, you *can* achieve static type checking with macros, if you''re
+    willing to resort to the same cute trick that this following snippet from the
+    Linux kernel uses:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Hmm... I wonder what that `param_check_##type` call is all about. Digging through
+    a few more macro definitions, we see:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'So there you go. A throw-away inline function named `__check_##name` enforces
+    that `p` is the same type as `type`. A comment is also given, explaining what''s
+    going on:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE

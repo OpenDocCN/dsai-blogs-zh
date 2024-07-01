@@ -1,0 +1,63 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:17:15'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Equality, roughly speaking : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2014/01/equality-roughly-speaking/](http://blog.ezyang.com/2014/01/equality-roughly-speaking/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Equality, roughly speaking
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'In Software Foundations, equality is [defined in this way](http://www.cis.upenn.edu/~bcpierce/sf/Logic.html#lab220):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Even Coq's equality relation is not built in. It has (roughly) the following
+    inductive definition.
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs:
+  - PREF_BQ
+  type: TYPE_PRE
+- en: '*Why the roughly?* Well, as it turns out, Coq defines equality a little differently
+    (reformatted to match the Software Foundations presentation):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'What’s the difference? The trick is to look at the induction principles that
+    Coq generates for each of these:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: During our Homotopy Type Theory reading group, Jeremy pointed out that the difference
+    between these two principles is exactly the difference between path induction
+    (eq0) and based path induction (eq1). (This is covered in the [Homotopy Type Theory
+    book](http://homotopytypetheory.org/book/) in section 1.12) So, Coq uses the slightly
+    weirder definition because it happens to be a bit more convenient. (I’m sure this
+    is folklore, but I sure didn’t notice this until now! For more reading, check
+    out this [excellent blog post by Dan Licata](http://homotopytypetheory.org/2011/04/10/just-kidding-understanding-identity-elimination-in-homotopy-type-theory/).)
+  prefs: []
+  type: TYPE_NORMAL

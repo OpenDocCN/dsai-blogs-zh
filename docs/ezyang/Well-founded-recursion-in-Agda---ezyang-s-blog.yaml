@@ -1,0 +1,315 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:18:16'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Well-founded recursion in Agda : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2010/06/well-founded-recursion-in-agda/](http://blog.ezyang.com/2010/06/well-founded-recursion-in-agda/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Last Tuesday, Eric Mertens gave the Galois tech talk [Introducing Well-Founded
+    Recursion](http://www.galois.com/blog/2010/06/11/tech-talk-introducing-well-founded-recursion/).
+    I have to admit, most of this went over my head the first time I heard it. Here
+    are some notes that I ended up writing for myself as I stepped through the code
+    again. I suggest reading the [slides](http://code.galois.com/talk/2010/10-06-mertens.pdf)
+    first to get a feel for the presentation. These notes are oriented towards a Haskell
+    programmer who feels comfortable with the type system, but not Curry-Howard comfortable
+    with the type system.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Agda is a proof assistant based on intuitionistic type theory; that is, the
+    Curry-Howard isomorphism. The *Curry-Howard isomorphism* states that things that
+    look like types and data can also be treated as propositions and proofs, and one
+    of the keys to understanding well-founded recursion in Agda is to freely interchange
+    between the two, because we will use the type system as a way of making propositions
+    about our code, which Agda will use when checking it. We’ll try to present both
+    perspectives of the types and propositions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Types : Data :: Propositions : Proofs'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Agda needs to be convinced that your proof works: in particular, Agda wants
+    to know if you''ve covered all the cases (exhaustive pattern matching, totality)
+    and if you aren''t going to procrastinate on the answer (termination). Agda is
+    very clever when it comes to case checking: if it knows that a case couldn''t
+    be fulfilled in practice, because its type represents a falsehood, it will not
+    ask you to fill it out. However, the termination checker frequently needs help,
+    which is where well-founded recursion comes in.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Warmups.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Our first data type today is top: the type inhabited by precisely one value,
+    unit. This is () in Haskell. Data inhabits a type the way a proof exists for a
+    proposition; you can think of a type as a “house” in which there reside any number
+    of inhabitants, the data types. Frequently infinitely many. You’ll see Set pop
+    a lot: rigorously, it''s the type of “small” types, with Set₁ being larger, Set₂
+    larger still, and so forth...'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Bottom is the type inhabited by nothing at all. If no proof exists for the proposition,
+    it is false! In the same way, the top proposition is vacuously true, since we
+    said so! At the value level, this is undefined or error “foobar” in Haskell; at
+    the type level, it's be called Void, though no one actually uses that in real
+    code. In Agda, these are one and the same.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We pulled in natural numbers from Data.Nat, but here''s what a minimal definition
+    would look like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: It is worth dwelling that Agda numeric constants such as 0 or 2 are syntax sugar
+    for zero and suc (suc zero). They also may show up in types, since Agda is dependently
+    typed. (In Haskell, you’d have to push the definition of natural numbers into
+    the type system; here we can write a normal data definition and then lift them
+    up automatically. [Power to the working class!](http://strictlypositive.org/winging-jpgs/))
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'This function does something very strange:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In fact, it is equivalent to this expanded version:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: So the resulting type is not A → A → Set, but rather, it is something *whose*
+    type is A, something else *whose* type is A, and as a result something whose type
+    is Set. In Haskell terms, this is not a type function of kind `* → *`; this is
+    more like an illegal `* -> (a -> a -> *)`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is an example of a simple relation: less-than for natural numbers.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Not so simple Agda syntax:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The (m : ℕ) indicates that _<_ is parametrized by m, making m, a value of type
+    ℕ, available throughout our data constructors. Parametrization means it is also
+    required to be the first argument of _<_; at this point, you should check all
+    of the type signatures of the constructors and see that they really are of form
+    m<_'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'The {n : ℕ} indicates an “implicit” parameter, which means when we go to invoke
+    <-step, we don''t need to pass it; Agda will automatically figure it out from
+    a later argument, in this case, m < n.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Remember that “for all x : A, y : B”, is the same as providing a total function
+    f(x : A) : B. So there''s a convenient shorthand ∀ x → which is equivalent to
+    (x : _) → (the underscore means any type is ok.)'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'With the syntax out of the way, the mathematical intent of this expression
+    should be clear: for any number, we automatically get a proof m<m+1; and with
+    m<n → m<n+1, we can inductively get the rest of the proofs. If you squint, you
+    can also see what is meant in terms of data: <-base is a nullary constructor,
+    whereas <-step is a recursive constructor.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s prove that 3 < 5\. We start off with <-base : 3 < 4 (how did we know
+    we should start there and not with 4 < 5? Notice that m, our parameter, is 3:
+    this is a hint that all of our types will be parametrized by 3.) Apply step once:
+    3 < suc 4 = 3 < 5, QED.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Recall that true propositions are inhabited by data types, whereas false propositions
+    are not. How can we invert them? In logic, we could say, “Suppose that the proposition
+    was the case; derive a contradiction.” In types, we use the empty function: the
+    function that has no domain, and thus while existing happily, can’t take any inputs.
+    A function has no domain only if it’s input type is not inhabited, so the only
+    way we can avoid having to give a contradiction is to... not let them ask the
+    question in the first place!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '() denotes falsity, in this case () : 5 < 0, which clearly can never be true,
+    since <-base doesn’t pattern match against it (suc m != 0). A point worth mentioning
+    is that Agda requires your programs to be complete, but doesn''t ask you to pattern
+    match against absurdities.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*Well-foundedness.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We introduce a little Agda notation; modules let us parametrize over some variable
+    over an extended block then just the constructors of a ‘data’ declaration. Members
+    of a module can be accessed ala WF.Well-founded A (rest of the arguments). This
+    is quite convenient and idiomatic, though not strictly necessary; we could have
+    just parametrized all of the members accordingly. We also happen to be parametrizing
+    over a type.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: Logically, what it means for an element to be accessible is that for all y such
+    that y < x, y is accessible. From a data and logic view, it states if you want
+    me to give you Acc x, the data/proof you want, you'll have to give me a proof
+    that for all y, if you give me a proof that y < x, I can determine Acc y. Now
+    that we're trying to prove properties about our types and functions, treating
+    our data types as strictly data is making less and less sense.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: The entire type A is well-founded if all elements in it are accessible. Alternatively,
+    the entire type A is well-founded if, given an element in it, I can produce an
+    accessibility proof for that element. Note that its type is Set; this a type,
+    the proposition I want to prove!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: Proof for well-foundedness on naturals related by less-than.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: Base case, (e.g. x=5, y=4). This, conveniently enough, triggers the well-founded
+    structural recursion on ℕ by checking if y is well-founded now.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: The structural recursion here is on _<_; we are peeling back the layers of <-step
+    until y<x = <-base, as might be the case for 3<4 (but not 3<6). We're essentially
+    appealing to a weaker proof that is still sufficient to prove what we're interested
+    in. Notice that we are also recursing on x; actually, whatever we know about x,
+    we knew from y<x (less information content!), so we indicate that with a dot.
+    Eventually, x will be small enough that y is not much smaller than x (<-base).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Where do we deal with zero? Consider aux zero : ∀ y -> y < zero → WF.Acc _<_
+    y. This is the empty function, since y < zero = ⊥ (no ℕ is less than zero!) In
+    fact, this is how we get away with not writing cases for yx (the upper triangle):
+    it''s equivalent to y≮x which are all bottom, and give us empty functions for
+    free.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In fact, there is a double-structural recursion going on here, one x, and one
+    on y<x. The structural recursion on x is on just aux, but once we conclude <-base,
+    we do a different structural recursion on y with <-ℕ-wf. This fills out the bottom
+    right triangle on the xy-plane split by y=x-1; the upper left triangle is not
+    interesting, since it's just a barren wasteland of bottom.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Standard mathematical trick: if you can reduce your problem into another that
+    you''ve already solved, you solved your problem!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: The types have to look right, so we unwrap our old proof g and wrap it into
+    a new lambda, pushing the reduction via f into our proof (i.e. WF.acc data constructor).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: Here, we finally use our machinery to prove that lists, compared with their
+    lengths, are well-founded.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: A little bit of scaffolding code that does not actually “change” the proof,
+    but changes the propositions. We’ll need this for the PartitionLemma.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: Show that partitioning a list doesn't increase its size.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: For all predicates and lists, each partition's length is less than or equal
+    to the original length of the list. proj₁ and proj₂ are Haskell fst and snd.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: Though we've expressed our proposition in terms of ≼, we still use the original
+    < constructor. <-base actually means equality, in this context!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: And finally, Quicksort.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: Open the presents (proofs).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE23]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'From the partition lemma, we get small ≼ xs and big ≼ xs. By making length
+    well-founded, we are now able to “glue” together the layer of indirection: x ∷
+    xs originally was strictly smallers and structurally recursive, and the partition
+    lemma lets us say to the termination checker that small, big and xs are essentially
+    the same.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE24]'
+  prefs: []
+  type: TYPE_PRE

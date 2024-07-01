@@ -1,0 +1,81 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:17:41'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Joseph and the Amazing Technicolor Box : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2011/08/joseph-and-the-amazing-technicolor-box/](http://blog.ezyang.com/2011/08/joseph-and-the-amazing-technicolor-box/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Joseph and the Amazing Technicolor Box
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Consider the following data type in Haskell:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'How many computable functions of type `Box a -> Box a` are there? If we strictly
+    use denotational semantics, there are seven:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: But if we furthermore distinguish the *source* of the bottom (a very operational
+    notion), some functions with the same denotation have more implementations...
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Irrefutable pattern match:* `f ~(B x) = B x`. No extras.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Identity:* `f b = b`. No extras.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Strict:* `f (B !x) = B x`. No extras.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Constant boxed bottom:* Three possibilities: `f _ = B (error "1")`; `f b =
+    B (case b of B _ -> error "2")`; and `f b = B (case b of B !x -> error "3")`.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Absent:* Two possibilities: `f (B _) = B (error "4")`; and ``f (B x) = B (x
+    `seq` error "5")``.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Strict constant boxed bottom:* `f (B !x) = B (error "6")`.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '*Bottom:* Three possibilities: `f _ = error "7"`; `f (B _) = error "8"`; and
+    `f (B !x) = error "9"`.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: List was ordered by colors of the rainbow. If this was hieroglyphics to you,
+    may I interest you in [this blog post?](http://blog.ezyang.com/2010/12/gin-and-monotonic/)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Postscript.* GHC can and will optimize `f b = B (case b of B !x -> error "3")`,
+    ``f (B x) = B (x `seq` error "5")`` and `f (B !x) = error "9"` into alternative
+    forms, because in general we don''t say if `seq (error "1") (error "2")` is semantically
+    equivalent `error "1"` or `error "2"`: any one is possible due to imprecise exceptions.
+    But if you really care, you can use `pseq`. However, even with exception set semantics,
+    there are more functions in this "refined" view of the normal denotational semantics.'
+  prefs: []
+  type: TYPE_NORMAL

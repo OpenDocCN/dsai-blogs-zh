@@ -1,0 +1,67 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:18:14'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Groom: human readable Show for Haskell : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2010/07/groom-human-readable-show-for-haskell/](http://blog.ezyang.com/2010/07/groom-human-readable-show-for-haskell/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'Groom: human readable Show for Haskell'
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Tapping away at a complex datastructure, I find myself facing a veritable wall
+    of Babel.
+  prefs: []
+  type: TYPE_NORMAL
+- en: “Zounds!” I exclaim, “The GHC gods have cursed me once again with a derived
+    Show instance with no whitespace!” I mutter discontently to myself, and begin
+    pairing up parentheses and brackets, scanning the sheet of text for some discernible
+    feature that may tell me of the data I am looking for.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'But then, a thought comes to me: “Show is specified to be a valid Haskell expression
+    without whitespace. What if I parsed it and then pretty-printed the resulting
+    AST?”'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Four lines of code later (with the help of `Language.Haskell`)...
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Ah, much better!](http://hackage.haskell.org/package/groom)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*How to use it.* In your shell:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'and in your program:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*Update.* Gleb writes in to mention [ipprint](http://hackage.haskell.org/package/ipprint)
+    which does essentially the same thing but also has a function for `putStrLn .
+    show` and has some tweaked defaults including knowledge of your terminal size.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Update 2.* Don mentions to me the [pretty-show](http://hackage.haskell.org/package/pretty-show)
+    package by Iavor S. Diatchki which also does similar functionality, and comes
+    with an executable that lets you prettify output offline!'
+  prefs: []
+  type: TYPE_NORMAL

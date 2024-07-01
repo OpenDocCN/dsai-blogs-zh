@@ -1,0 +1,147 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:17:11'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'An Eq instance for non de Bruijn terms : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2015/01/an-eq-instance-for-non-de-bruijn-terms/](http://blog.ezyang.com/2015/01/an-eq-instance-for-non-de-bruijn-terms/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**tl;dr** *A non-nameless term equipped with a map specifying a de Bruijn numbering
+    can support an efficient equality without needing a helper function. More abstractly,
+    quotients are not just for proofs: they can help efficiency of programs too.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The cut.** You''re writing a small compiler, which defines expressions as
+    follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Where `Var` is provided from some globally unique supply. But while working
+    on a common sub-expression eliminator, you find yourself needing to define *equality*
+    over expressions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You know the default instance won’t work, since it will not say that `Lam 0
+    (Var 0)` is equal to `Lam 1 (Var 1)`. Your colleague Nicolaas teases you that
+    the default instance would have worked if you used a *nameless representation*,
+    but de Bruijn levels make your head hurt, so you decide to try to write an instance
+    that does the right thing by yourself. However, you run into a quandary:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If `v == v''`, things are simple enough: just check if `e == e''`. But if they''re
+    not... something needs to be done. One possibility is to *rename* `e''` before
+    proceeding, but this results in an equality which takes quadratic time. You crack
+    open the source of one famous compiler, and you find that in fact: (1) there is
+    *no* Eq instance for terms, and (2) an equality function has been defined with
+    this type signature:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Where `RnEnv2` is a data structure containing renaming information: the compiler
+    has avoided the quadratic blow-up by deferring any renaming until we need to test
+    variables for equality.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: “Well that’s great,” you think, “But I want my Eq instance, and I don’t want
+    to convert to de Bruijn levels.” Is there anything to do?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Perhaps a change of perspective in order:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**The turn.** Nicolaas has the right idea: a nameless term representation has
+    a very natural equality, but the type you''ve defined is too big: it contains
+    many expressions which should be equal but structurally are not. But in another
+    sense, it is also too *small*.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here is an example. Consider the term `x`, which is a subterm of `λx. λy. x`.
+    The `x` in this term is free; it is only through the context `λx. λy. x` that
+    we know it is bound. However, in the analogous situation with de Bruijn levels
+    (not indexes—as it turns out, levels are more convenient in this case) we have
+    `0`, which is a subterm of `λ λ 0`. Not only do we know that `0` is a free variable,
+    but we also know that it binds to the outermost enclosing lambda, *no matter the
+    context.* With just `x`, we don’t have enough information!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you know you don’t know something, you should learn it. If your terms don’t
+    know enough about their free variables, you should *equip* them with the necessary
+    knowledge:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'and when you do that, things just might work out the way you want them to:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: (Though perhaps Coq might not be able to tell, unassisted, that this function
+    is structurally recursive.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '**Exercise.** Define a function with type `DeBruijnExpr -> DeBruijnExpr''`
+    and its inverse, where:'
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: ''
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs:
+  - PREF_BQ
+  type: TYPE_PRE
+- en: '**The conclusion.** What have we done here? We have quotiented a type—made
+    it smaller—by *adding* more information. In doing so, we recovered a simple way
+    of defining equality over the type, without needing to define a helper function,
+    do extra conversions, or suffer quadratically worse performance.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Sometimes, adding information is the *only* way to get the minimal definition.
+    This situation occurs in homotopy type theory, where *equivalences* must be equipped
+    with an extra piece of information, or else it is not a mere proposition (has
+    the wrong homotopy type). If you, gentle reader, have more examples, I would love
+    to hear about them in the comments. We are frequently told that “less is more”,
+    that the route to minimalism lies in removing things: but sometimes, the true
+    path lies in *adding constraints.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Postscript.* In Haskell, we haven’t truly made the type smaller: I can distinguish
+    two expressions which should be equivalent by, for example, projecting out the
+    underlying `Expr`. A proper type system which supports quotients would oblige
+    me to demonstrate that if two elements are equivalent under the quotienting equivalence
+    relation, my elimination function can''t observe it.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Postscript 2.* This technique has its limitations. Here is one situation where
+    I have not been able to figure out the right quotient: suppose that the type of
+    my expressions are such that all free variables are *implicitly universally quantified.*
+    That is to say, there exists some ordering of quantifiers on `a` and `b` such
+    that `a b` is equivalent to `b a`. Is there a way to get the quantifiers in order
+    *on the fly*, without requiring a pre-pass on the expressions using this quotienting
+    technique? I don’t know!'
+  prefs: []
+  type: TYPE_NORMAL

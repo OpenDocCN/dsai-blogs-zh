@@ -1,0 +1,1 @@
+["```\nfind . \\( -path '*/.*' \\) -prune -o -mtime -180 -print\n\n```"]

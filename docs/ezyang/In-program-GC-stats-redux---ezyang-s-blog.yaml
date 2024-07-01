@@ -1,0 +1,34 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:17:41'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In-program GC stats redux : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2011/08/in-program-gc-stats-redux/](http://blog.ezyang.com/2011/08/in-program-gc-stats-redux/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: In-program GC stats redux
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: Hac Phi was quite productive (since I managed to get two blog posts out of it!)
+    On Saturday I committed a new module `GHC.Stats` to base which implemented a modified
+    subset of [the API I proposed previously.](http://blog.ezyang.com/2011/07/in-program-gc-stats-for-ghc/)
+    Here is the API; to use it you’ll need to compile GHC from Git. Please test and
+    let me know if things should get changed or clarified!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE

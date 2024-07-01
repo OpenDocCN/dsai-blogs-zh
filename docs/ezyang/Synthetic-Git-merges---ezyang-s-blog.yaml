@@ -1,0 +1,105 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:17:42'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Synthetic Git merges : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2011/07/synthetic-git-merges/](http://blog.ezyang.com/2011/07/synthetic-git-merges/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'In theory, Git supports custom, low-level merge drivers with the `merge` configuration
+    properties. In practice, no one actually wants to write their own merge driver
+    from scratch. Well, for many cases where a custom merge driver would come in handy,
+    you don’t have to write your merge driver from scratch! Consider these cases:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: You want to merge files which have differing newline styles,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You want to merge files where one had lots of trailing whitespace removed,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You want to merge files one branch has replaced certain strings with custom
+    strings (for example, a configuration file which instantiated `PASSWORD`, or a
+    file that needs to be anonymized if there is a merge conflict),
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You want to merge a binary file that has a stable textual format, or
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: You want to merge with knowledge about specific types of conflicts and how to
+    resolve them (a super-smart `rerere`).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'For all of these cases, you can instead perform a *synthetic Git merge* by
+    modifying the input files (constructing synthetic merge inputs), calling Git’s
+    `git merge-file` to do the actual merge, and then possibly editing the result,
+    before handing it back off to the original invoker of your merge driver. It’s
+    really simple. Here’s an example driver that handles files with differing newline
+    styles by canonicalizing them to UNIX:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'You can then set it up by frobbing your `.git/config`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And your `.git/info/attributes`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: In [Wizard](http://scripts.mit.edu/wizard/), we implemented (more clever) newline
+    canonicalization, configuration value de-substitution (this reduces the diff between
+    upstream and downstream, reducing the amount of conflicts due to proximity), and
+    custom `rerere` behavior. I’ve also seen a coworker of mine use this technique
+    manually to handle merge conflicts involving trailing whitespace (in Mercurial,
+    no less!)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Actually, we took this concept further: rather than only create synthetic files,
+    we create entirely synthetic trees, and then call `git merge` on them proper.
+    This has several benefits:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We can now pick an arbitrary ancestor commit to perform the merge from (this,
+    surprisingly enough, really comes in handy for our use-case),
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Git has an easier time detecting when files moved and changed newline style,
+    etc, and
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: It’s a bit easier to use, since you just call a custom command rather than have
+    to remember how to setup your Git config and attributes properly (and keep them
+    up to date!)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Merges are just metadata—multiple parents commits. Git doesn’t care how you
+    get the contents of your merge commit. Happy merging!
+  prefs: []
+  type: TYPE_NORMAL

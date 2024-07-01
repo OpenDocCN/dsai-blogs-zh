@@ -1,0 +1,1 @@
+["```\ndef get_file_set(rev):\n    return set(shell.eval(\"git\", \"ls-tree\", \"-r\", \"--name-only\", rev).split(\"\\n\"))\nold_files = get_file_set(\"HEAD\")\nnew_files = get_file_set(self.version)\nadded_files = new_files - old_files\nfor f in added_files:\n    if os.path.lexists(f): # *\n        shell.call(\"git\", \"add\", f)\n\n```"]

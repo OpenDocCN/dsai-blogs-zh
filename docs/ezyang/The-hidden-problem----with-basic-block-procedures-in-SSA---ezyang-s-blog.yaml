@@ -1,0 +1,64 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:16:57'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The hidden problem(?) with basic block procedures in SSA : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2020/10/the-hidden-problem-with-basic-block-procedures-in-ssa/](http://blog.ezyang.com/2020/10/the-hidden-problem-with-basic-block-procedures-in-ssa/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Years ago, Nadav Rotem related to me this story about why basic block procedures
+    in Swift are not as good as they seem. Nelson Elhage reminded me about this [on
+    Twitter](https://twitter.com/nelhage/status/1319785483153494016) and so I thought
+    this should be put into the public record.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Basic block procedures make certain optimizations more difficult. Consider
+    this program:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: Is this program easier or more difficult to optimize than the traditional SSA
+    with phi-nodes formulation?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Suppose that the optimizer determines that y1 is unused inside j3/L3 and can
+    be eliminated. In basic block land, y1 can be eliminated simply by deleting "y1
+    = phi x1 x3". However, in join point land, you have to not only eliminate y1 but
+    also update all the call sites of j3, since you've changed the function signature.
+    In a mutable AST, changing function signatures is a pain; in particular, the mutations
+    you would have to do to eliminate the argument include intermediate states that
+    are not valid ASTs (making it easy to accidentally trigger asserts.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When I saw this example, I wondered why GHC (which has the moral equivalent
+    of basic block procedures in the form of join points) didn''t have this problem.
+    Well, it turns out this optimization can be done as a series of local transformations.
+    First, we do a worker/wrapper transformation, introducing an intermediate block
+    (the worker) that drops the dead argument:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Later, we inline j3, which removes the wrapper. Worker/wrapper is a very important
+    optimization for functional programs, but it's easy to imagine why it is less
+    preferred in mutable compiler land.
+  prefs: []
+  type: TYPE_NORMAL

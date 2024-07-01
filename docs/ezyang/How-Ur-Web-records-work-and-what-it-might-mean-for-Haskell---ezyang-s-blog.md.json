@@ -1,0 +1,1 @@
+["```\ndata Foo = Foo { bar :: Int, baz :: Bool }\n\n```", "```\ntype foo = { Bar : int, Baz : bool }\n\n```", "```\ndatatype foo = Foo of { Bar : int, Baz : bool }\n\n```", "```\ntype foo' = { Bar : int, Baz : bool }\ndatatype foo = Foo of foo'\n\n```", "```\ntype foo = { Bar : int, Baz : bool }\n\n```", "```\ntype foo = $[ Bar = int, Baz = bool ]\n\n```"]

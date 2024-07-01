@@ -1,0 +1,49 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:17:44'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Scheduling IVars : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2011/07/scheduling-ivar/](http://blog.ezyang.com/2011/07/scheduling-ivar/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Scheduling IVars
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'One downside to the stupid scheduler I mentioned in the previous [IVar monad
+    post](http://blog.ezyang.com/2011/06/the-iva-monad/) was that it would easily
+    stack overflow, since it stored all pending operations on the stack. We can explicitly
+    move all of these pending callbacks to the heap by reifying the execution schedule.
+    This involves adding `Schedule` state to our monad (I’ve done so with `IORef Schedule`).
+    Here is a only slightly more clever scheduler (I''ve also simplified some bits
+    of code, and added a new `addCallback` function):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here is some sample code that demonstrates the basic idea:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Actually, this simple infinite loop leaks space. (The reader is invited to try
+    it out themselves.) This is precisely the problem the authors of LWT ran into.
+    I hate chopping blog posts into little pieces, but getting this code right took
+    a little longer than I expected and I ran out of time—so please wait till next
+    time for more treatment!
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,35 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:18:04'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Blog name changed… : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2010/10/blog-name-changed/](http://blog.ezyang.com/2010/10/blog-name-changed/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Blog name changed…
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: '...because I don’t live in a room numbered 245s anymore. Yep. :-)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This is a cow. They munch grass next to the River Cam.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Pop quiz*. What do matrix-chain multiplication, longest common subsequence,
+    construction of optimal binary search trees, bitonic euclidean traveling-salesman,
+    edit distance and the Viterbi algorithm have in common?'
+  prefs: []
+  type: TYPE_NORMAL

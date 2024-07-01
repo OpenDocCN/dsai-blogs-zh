@@ -1,0 +1,35 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:17:55'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'GHC migrating to Git : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2011/03/ghc-migrating-to-git/](http://blog.ezyang.com/2011/03/ghc-migrating-to-git/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: GHC migrating to Git
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'From `cvs-ghc@haskell.org`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: There are some things that I will miss from Darcs (`darcs send` and the cases
+    where "everything is a patch" actually does work well), but all and all I’m quite
+    pleased to see GHC moving to Git.
+  prefs: []
+  type: TYPE_NORMAL

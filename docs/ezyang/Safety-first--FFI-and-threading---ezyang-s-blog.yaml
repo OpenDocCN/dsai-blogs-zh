@@ -1,0 +1,111 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:18:14'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Safety first: FFI and threading : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2010/07/safety-first-ffi-and-threading/](http://blog.ezyang.com/2010/07/safety-first-ffi-and-threading/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**Update.** While this blog post presents two true facts, it gets the causal
+    relationship between the two facts wrong. [Here is the correction.](http://blog.ezyang.com/2014/12/unintended-consequences-bound-threads-and-unsafe-ffi-calls/)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Attention conservation notice.* Don’t use `unsafe` in your FFI imports! We
+    really mean it!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Consider the following example in from an old version of Haskellwiki’s [FFI
+    introduction](http://www.haskell.org/haskellwiki/?title=FFI_Introduction&oldid=33660):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: The comment blithely notes that the function can’t “callback to Haskell.” Someone
+    first learning about the FFI might think, “Oh, that means I can put most `unsafe`
+    on most of my FFI declarations, since I’m not going to do anything advanced like
+    call back to Haskell.”
+  prefs: []
+  type: TYPE_NORMAL
+- en: Oh my friend, if only it were that simple!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Recall that when you create a thread in Haskell with `forkIO`, you’re not creating
+    a real operating system thread; you’re creating a green thread that Haskell’s
+    runtime system manages across its pool of operating system threads. This is usually
+    very good: real threads are heavyweight, but Haskell threads are light and you
+    can use a lot of them without paying too much. But here’s the rub:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The runtime system cannot preempt unsafe FFI calls!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In particular, when you invoke an `unsafe` FFI import, you effectively suspend
+    everything else going on in the system: Haskell is not able to preempt it (in
+    particular `unsafe` indicated that there was no need to save the state of the
+    RTS), and the foreign code will keep running by itself until it finishes.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Don’t believe me? Try it out yourself (I conducted my tests on 6.12.1). You’ll
+    need a few files:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And `UnsafeFFITest.hs`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Compile and run the relevant files with:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The output you see should be similar to this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: The first call played nice and let Haskell move along, but the second call didn’t.
+    Some things to try for yourself include swapping the order of the forks, using
+    `forkOS` (which many people, including myself, incorrectly assumed creates another
+    operating system call) and changing the RTS option `-N`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: What does this mean? Essentially, only if you’re *really* sure Haskell will
+    never have to preempt your C call (which I would not be comfortable saying except
+    for the smallest, purest C functions), don’t use `unsafe`. It’s not worth it.
+    Safety first!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Postscript.* Thanks `#haskell` for helping me hash out this line of thought
+    (I’d run into this behavior earlier, but it hadn’t occurred to me that it was
+    bloggable.)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Postscript 2.* Thanks to Simon Marlow for clarifying some mistakes that I
+    made in my original treatment of the topic. If you’re interested in more details
+    about the interaction of concurrency and the FFI, check out the paper he pointed
+    to: [Extending the Haskell Foreign Function Interface with Concurrency](http://www.haskell.org/~simonmar/bib/concffi04_abstract.html).'
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,177 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:17:21'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Anatomy of an MVar operation : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2013/05/anatomy-of-an-mvar-operation/](http://blog.ezyang.com/2013/05/anatomy-of-an-mvar-operation/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Adam Belay (of [Dune](http://dune.scs.stanford.edu/) fame) was recently wondering
+    why Haskell’s MVars are so slow. “Slow?” I thought, “aren’t Haskell’s MVars supposed
+    to be really fast?” So I did some digging around how MVars worked, to see if I
+    could explain.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s consider the operation of the function `takeMVar` in [Control.Concurrent.MVar](http://hackage.haskell.org/packages/archive/base/latest/doc/html/Control-Concurrent-MVar.html#v:takeMVar).
+    This function is very simple, it unpacks `MVar` to get the underlying `MVar#`
+    primitive value, and then calls the primop `takeMVar#`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '[Primops](http://hackage.haskell.org/trac/ghc/wiki/Commentary/PrimOps) result
+    in the invocation of `stg_takeMVarzh` in `PrimOps.cmm`, which is where the magic
+    happens. For simplicity, we consider only the *multithreaded* case.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The first step is to **lock the closure**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Objects on the GHC heap have an *info table header* which indicates what kind
+    of object they are, by pointing to the relevant info table for the object. These
+    headers are *also* used for synchronization: since they are word-sized, they can
+    be atomically swapped for other values. `lockClosure` is in fact a spin-lock on
+    the info table header:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`lockClosure` is used for some other objects, namely thread state objects (`stg_TSO_info`,
+    via `lockTSO`) and thread messages i.e. exceptions (`stg_MSG_THROWTO_info`, `stg_MSG_NULL_info`).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The next step is to **apply a GC write barrier on the MVar**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: As I’ve [written before](http://blog.ezyang.com/2013/01/the-ghc-scheduler/),
+    as the MVar is a mutable object, it can be mutated to point to objects in generation
+    0; thus, when a mutation happens, it has to be added to the root set via the mutable
+    list. Since mutable is per capability, this boils down into a bunch of pointer
+    modifications, and does not require any synchronizations. Note that we will need
+    to add the MVar to the mutable list, *even* if we end up blocking on it, because
+    the MVar is a retainer of the *thread* (TSO) which is blocked on it! (However,
+    I suspect in some cases we can get away with not doing this.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Next, we case split depending on whether or not the MVar is full or empty.
+    If the MVar is empty, we need to **block the thread until the MVar is full**:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'A useful thing to know when decoding C-- primop code is that `StgTSO_block_info(...)`
+    and its kin are how we spell field access on objects. C-- doesn’t know anything
+    about C struct layout, and so these “functions” are actually macros generated
+    by `utils/deriveConstants`. Blocking a thread consists of three steps:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We have to add the thread to the blocked queue attached to the MVar (that’s
+    why blocking on an MVar mutates the MVar!) This involves performing a heap allocation
+    for the linked list node as well as mutating the tail of the old linked list.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We have to mark the thread as blocked (the `StgTSO` modifications).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: We need to setup a stack frame for the thread so that when the thread wakes
+    up, it performs the correct action (the invocation to `stg_block_takemvar`). This
+    invocation is also responsible for unlocking the closure. While the machinery
+    here is pretty intricate, it’s not really in scope for this blog post.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: If the MVar is full, then we can go ahead and **take the value from the MVar.**
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'But that’s not all. If there are other blocked `putMVars` on the MVar (remember,
+    when a thread attempts to put an MVar that is already full, it blocks until the
+    MVar empties out), then we should immediately unblock one of these threads so
+    that the MVar can always be left in a full state:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: There is one interesting thing about the code that checks for blocked threads,
+    and that is the check for *indirectees* (`stg_IND_info`). Under what circumstances
+    would a queue object be stubbed out with an indirection? As it turns out, this
+    occurs when we *delete* an item from the linked list. This is quite nice, because
+    on a singly-linked list, we don't have an easy way to delete items unless we also
+    have a pointer to the previous item. With this scheme, we just overwrite out the
+    current item with an indirection, to be cleaned up next GC. (This, by the way,
+    is why we can't just chain up the TSOs directly, without the extra linked list
+    nodes. [1])
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'When we find some other threads, we immediately run them, so that the MVar
+    never becomes empty:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'There is one detail here: `PerformPut` doesn’t actually run the thread, it
+    just looks at the thread’s stack to figure out what it was *going* to put. Once
+    the MVar is put, we then wake up the thread, so it can go on its merry way:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'To sum up, when you `takeMVar`, you pay the costs of:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: one spinlock,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: on order of several dozen memory operations (write barriers, queue twiddling),
+    and
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: when the MVar is empty, a (small) heap allocation and stack write.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: 'Adam and I puzzled about this a bit, and then realized the reason why the number
+    of cycles was so large: our numbers are for *roundtrips*, and even with such lightweight
+    synchronization (and lack of syscalls), you still have to go through the scheduler
+    when all is said and done, and that blows up the number of cycles.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[1] It wasn’t always this way, see:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE

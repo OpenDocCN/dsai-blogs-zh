@@ -1,0 +1,333 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:18:05'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'OCaml for Haskellers : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2010/10/ocaml-for-haskellers/](http://blog.ezyang.com/2010/10/ocaml-for-haskellers/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: I’ve started formally learning OCaml (I’ve been reading ML since Okasaki, but
+    I’ve never written any of it), and here are some notes about differences from
+    Haskell from Jason Hickey's *Introduction to Objective Caml*. The two most notable
+    differences are that OCaml is *impure* and *strict.*
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Features.* Here are some features OCaml has that Haskell does not:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: OCaml has named parameters (`~x:i` binds to `i` the value of named parameter
+    `x`, `~x` is a shorthand for `~x:x`).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: OCaml has optional parameters (`?(x:i = default)` binds `i` to an optional named
+    parameter `x` with default `default`).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: OCaml has open union types (`[> 'Integer of int | 'Real of float]` where the
+    type holds the implementation; you can assign it to a type with `type 'a number
+    = [> 'Integer of int | 'Real of float] as a`). Anonymous closed unions are also
+    allowed (`[< 'Integer of int | 'Real of float]`).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: OCaml has mutable records (preface record field in definition with `mutable`,
+    and then use the `<-` operator to assign values).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: OCaml has a module system (only briefly mentioned today).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: OCaml has native objects (not covered in this post).
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Syntax.* Omission means the relevant language feature works the same way (for
+    example, let `f x y = x + y` is the same)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Organization:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Types:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Operators:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: (arithmetic versus logical shift in Haskell depends on the type of the Bits.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Float operators in OCaml: affix period (i.e. `+.`)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Float casting:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'String operators:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Composite types:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Lists:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Data types:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: (note that in OCaml you'd need `Node (v,l,r)` to match, despite there not actually
+    being a tuple)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Records:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: (OCaml records also have destructive update.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Maybe:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Array:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'References:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Top level definition:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Lambda:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Recursion:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Mutual recursion (note that Haskell let is always recursive):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Function pattern matching:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: '(note: you can put pattern matches in the arguments for OCaml, but lack of
+    an equational function definition style makes this not useful)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Case:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Exceptions:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Build:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Run:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE20]'
+  prefs: []
+  type: TYPE_PRE
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Type signatures.* Haskell supports specifying a type signature for an expression
+    using the double colon. OCaml has two ways of specifying types, they can be done
+    inline:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE21]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'or they can be placed in an interface file (extension `mli`):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE22]'
+  prefs: []
+  type: TYPE_PRE
+- en: The latter method is preferred, and is analogous to an `hs-boot` file as [supported
+    by GHC](http://www.haskell.org/ghc/docs/6.10.2/html/users_guide/separate-compilation.html#mutual-recursion).
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Eta expansion.* Polymorphic types in the form of `''_a` can be thought to
+    behave like Haskell’s monomorphism restriction: they can only be instantiated
+    to one concrete type. However, in Haskell the monomorphism restriction was intended
+    to avoid extra recomputation for values that a user didn’t expect; in OCaml the
+    value restriction is required to preserve the soundness of the type system in
+    the face of side effects, and applies to functions too (just look for the tell-tale
+    `''_a` in a signature). More fundamentally, `''a` indicates a generalized type,
+    while `''_a` indicates a concrete type which, at this point, is unknown—in Haskell,
+    all type variables are implicitly universally quantified, so the former is always
+    the case (except when the monomorphism restriction kicks in, and even then no
+    type variables are ever shown to you. But OCaml requires monomorphic type variables
+    to not escape from compilation units, so there is a bit of similarity. Did this
+    make no sense? Don’t panic.)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In Haskell, we’d make our monomorphic value polymorphic again by specifying
+    an explicit type signature. In OCaml, we generalize the type by eta expanding.
+    The canonical example is the `id` function, which when applied to itself (`id
+    id`) results in a function of type `'_a -> '_a` (that is, restricted.) We can
+    recover `'a -> 'a` by writing `fun x -> id id x`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'There is one more subtlety to deal with OCaml’s impurity and strictness: eta
+    expansion acts like a thunk, so if the expression you eta expand has side effects,
+    they will be delayed. You can of course write `fun () -> expr` to simulate a classic
+    thunk.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Tail recursion.* In Haskell, you do not have to worry about tail recursion
+    when the computation is lazy; instead you work on putting the computation in a
+    data structure so that the user doesn''t force more of it than they need (guarded
+    recursion), and “stack frames” are happily discarded as you pattern match deeper
+    into the structure. However, if you are implementing something like `foldl''`,
+    which is strict, you’d want to pay attention to this (and not build up a really
+    big thunk.)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Well, OCaml is strict by default, so you always should pay attention to making
+    sure you have tail calls. One interesting place this comes up is in the [implementation
+    of map](http://ocaml.janestreet.com/?q=node/71), the naive version of which cannot
+    be tail-call optimized. In Haskell, this is not a problem because our map is lazy
+    and the recursion is hidden away in our cons constructor; in OCaml, there is a
+    trade off between copying the entire list to get TCO, or not copying and potentially
+    exhausting stack space when you get big lists. (Note that a strict map function
+    in Haskell would have the same problem; this is a difference between laziness
+    and strictness, and not Haskell and OCaml.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*File organization.* A single file OCaml script contains a list of statements
+    which are executed in order. (There is no `main` function).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The moral equivalent of Haskell modules are called *compilation units* in OCaml,
+    with the naming convention of `foo.ml` (lower case!) corresponding to the `Foo`
+    module, or `Foo.foo` referring to the `foo` function in `Foo`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: It is considered good practice to write interface files, `mli`, as described
+    above; these are like export lists. The interface file will also contain data
+    definitions (with the constructors omitted to implement hiding).
+  prefs: []
+  type: TYPE_NORMAL
+- en: By default all modules are automatically “imported” like `import qualified Foo`
+    (no import list necessary). Traditional `import Foo` style imports (so that you
+    can use names unqualified) can be done with `open Foo` in OCaml.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Module system.* OCaml does not have type classes but it does have modules
+    and you can [achieve fairly similar effects with them](http://okmij.org/ftp/ML/ML.html#typeclass).
+    (Another classic way of getting type class style effects is to use objects, but
+    I’m not covering them today.) I was going to talk about this today but this post
+    is getting long so maybe I’ll save it for another day.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Open question.* I’m not sure how much of this is OCaml specific, and how much
+    generalizes to all ML languages.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Update.* ocamlrun is not the same as runghc; I''ve updated the article accordingly.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Update 2.* Raphael Poss has written a nice article in reverse: [Haskell for
+    OCaml programmers](http://staff.science.uva.nl/~poss/haskell-for-ocaml-programmers.html)'
+  prefs: []
+  type: TYPE_NORMAL

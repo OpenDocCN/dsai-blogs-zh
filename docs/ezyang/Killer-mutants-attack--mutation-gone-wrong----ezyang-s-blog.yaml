@@ -1,0 +1,122 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:17:56'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Killer mutants attack (mutation gone wrong) : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2011/03/killer-mutants-attack-mutation-gone-wrong/](http://blog.ezyang.com/2011/03/killer-mutants-attack-mutation-gone-wrong/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: This is a collection of WTFs due to misuse of mutable state.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: We'll start off with some Java. What do you expect this snippet of code to do?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Ostensibly, it registers the current object to receive just accelerometer updates.
+    But what if I told you getDefaultSensor was implemented like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This code completely fails to manage the expected semantics: there is a single
+    `sm` wide `Sensor` object (stored in `sensors`) that accumulates sensor values
+    as `getDefaultSensor` is called. So in fact, `this` will receive events from both
+    the accelerometer and the magnetometer. The only saving grace is that when we
+    register event listeners, we usually do want them to receive all events, so we
+    might not notice if we weren''t looking too closely. This is real code from [OpenIntents
+    SensorSimulator](http://code.google.com/p/openintents/source/browse/trunk/sensorsimulator/SensorSimulatorSettings/src/org/openintents/sensorsimulator/hardware/SensorManagerSimulator.java).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Lest you think I only make fun of other people''s code, here is [a diff from
+    a project of my own](https://github.com/ezyang/git-ftp/commit/291bc437da61ca7065b7e3651446704fd47decab):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It looks fairly plausible: I’ve factored out some common `storebinary` logic.
+    Can you tell what the bug is? [Here’s a hint](https://github.com/ezyang/git-ftp/commit/ec14419c53ae5e4ac155f5daf685fface98c01a8).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The problem is that the `upload_all` changes the current working directory on
+    the FTP connection (mutable state!), while `upload_diff` does not (working entirely
+    from the `base` working directory). The upload function assumed `upload_all` style
+    working directory changes, and so all `upload_diff` uploads were dumped in the
+    base directory. Mutability hurts modularity! The fix was to get rid of this mutation
+    and manually calculate the full path; this also removed some delicate invariant
+    preservation in the original `upload_all` implementation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Paradoxically enough, though Haskell encourages you not to use mutation, when
+    you do use it, Haskell expressive static type system gives you the unusual ability
+    to statically encode complicated invariants about your mutation—invariants that
+    would not have been necessary if you hadn’t used mutation. A small example of
+    this is [ST monad](http://www.haskell.org/haskellwiki/Monad/ST), which uses rank-2
+    types to ensure that references to mutable memory cannot escape `runST`, the isolated
+    “mutation thread.”
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To the limit, you may find yourself knee deep in advanced type system features
+    if you try to statically rule out incorrect usages of a mutable API. I found this
+    out when I worked with [abcBridge](http://blog.ezyang.com/2010/08/galois-tech-talk-abcbridge-functional-interfaces-for-aigs-and-sat-solving/),
+    and tried very hard to use types to prevent improper use of underlying C library.
+    Here is one relevant code quote:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: This truly is some WTF, rank-2-phantom-types code, but it grew out of a very
+    specific bug I stumbled onto and was unconvinced that I’d remember to avoid in
+    the future (can you guess what it was?) A curious reader may ask, why do I need
+    to duplicate networks in the first place? Because some operations that the underlying
+    library provides are destructive, and the only way I can provide the illusion
+    of persistent networks is duplicating before destruction.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In summary:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Mutation is frequently not what people expect,
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Mutation is not modular, and
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Mutation is complicated.
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Avoid it when you can!
+  prefs: []
+  type: TYPE_NORMAL

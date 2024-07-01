@@ -1,0 +1,1 @@
+["```\n{-# LANGUAGE FlexibleContexts #-}\n\nimport Control.Monad.Trans.Control\nimport Control.Monad.State\n\ndouble :: IO a -> IO a\ndouble m = m >> m\n\ndoubleG :: MonadBaseControl IO m => m a -> m a\ndoubleG = liftBaseOp_ double\n\nincState :: MonadState Int m => m ()\nincState = get >>= \\x -> put (x + 1)\n\nmain = execStateT (doubleG (incState)) 0 >>= print\n\n```"]

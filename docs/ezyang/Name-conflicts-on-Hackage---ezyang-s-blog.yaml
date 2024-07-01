@@ -1,0 +1,94 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:18:20'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Name conflicts on Hackage : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2010/05/name-conflicts-on-hackage/](http://blog.ezyang.com/2010/05/name-conflicts-on-hackage/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*Attention Conservation Notice.* Unqualified identifiers that are used the
+    most on Hackage.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Perhaps you dread the error message:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: It is the message of the piper that has come to collect his dues for your unhygenic
+    unqualified unrestricted module import style.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Or perhaps your a library writer and trying to think up of a new symbol for
+    your funky infix combinator, but you aren't sure what other libraries have used
+    already.
+  prefs: []
+  type: TYPE_NORMAL
+- en: I took [the archive (TAR)](http://hackage.haskell.org/cgi-bin/hackage-scripts/archive.tar)
+    of the latest Hackage packages for everything, whipped up a script to extract
+    all unqualified names exported by public modules, and then counted up the most
+    used.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Disclaimer.* Data constructors and record fields, unless they were explicitly
+    exported, are not included in this count. I also don''t count modules that export
+    *everything* from the global namespace because they omitted a list of names to
+    export. Counts are per module, and not per package. CPP and HSC files were not
+    counted, due to limitations of haskell-src-exts.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Top twenty identifiers (as of September 2, 2012).*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: '*Top twenty infix operators (as of September 2, 2012).*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: The exclamation mark has earned the reputation as an "indexing" operator, and
+    unsurprisingly is at the top. I hear from Edward Kmett that `<>` is making its
+    way into the base as `mappend`, which is welcome, although might suck for the
+    other six modules which redefined it for their own nefarious purposes.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*All infix operators, sorted by usage and then lexicographically (as of September
+    2, 2012).*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: It's a veritable zoo! (I'm personally reminded of Nethack.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Source.* The horrifying code that drove this exercise can be found at [Github](http://github.com/ezyang/hackage-query).
+    I used the following shell one-liner:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: to extract all of the tarballs inside the tar file.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Postscript.* It would be neat if someone could fix the discrepancies that
+    I described earlier and do a more comprehensive/correct search over this space.'
+  prefs: []
+  type: TYPE_NORMAL

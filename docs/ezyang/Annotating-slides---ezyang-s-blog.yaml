@@ -1,0 +1,110 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:18:10'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Annotating slides : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2010/09/annotating-slides/](http://blog.ezyang.com/2010/09/annotating-slides/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Annotating slides
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'A little trick for your toolbox: after you’ve generated your slide deck and
+    printed it out to PDF, you might want to annotate the slides with comments. These
+    is a good idea for several reasons:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If you’ve constructed your slides to be text light, they might be optimized
+    for presentation but not for reading later on. (“Huh, here is this diagram, I
+    sure wish I knew what the presenter was saying at that point.”)
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Writing out a dialog to go along the slides is a nonvocal way of practicing
+    your presentation!
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: But how do you interleave the slide pages with your annotations? With the power
+    of `enscript` and `pdftk`, you can do this entirely automatically, without even
+    having to leave your terminal! Here’s the recipe.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Create an “annotations” text file (we’ll refer to it as `annot.txt`). This will
+    contain your text commentary to accompany the slides. Write the text explaining
+    your first slide, and then insert a *form feed* (`^L`, you can do so by pressing
+    `C-l` in vim (insert mode) or `C-q C-l` in emacs.) Write the text for your second
+    slide. Rinse and repeat.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'We now want to render this into a PDF file, with the same dimensions as your
+    slide deck. Figure out what the size of your slides are in pixels, and then edit
+    your `~/.enscriptrc` to contain the following line:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'where ll stands for lower left and ur stands for upper right: these four numbers
+    denote the bounding box for the text. One possible combination for these might
+    be:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: We can now invoke enscript to generate a nicely formatted PostScript file of
+    our annotations in the right dimensions, with `enscript annot.txt -p annot.ps
+    -M Slide -B -f Palatino-Roman14` (pick a different font, if you like.)
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: Convert the resulting PostScript file into a PDF, with `ps2pdf annot.ps`.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Now, with pdftk, we will split our annotations PDF and our slides PDF into
+    individual pages, and then merge them back together into one PDF. We can use `burst`
+    to output the pages, suggestively naming the output files so they interleave correctly:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'and then we join them back together:'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Here’s the full script:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Don’t forget to define `Slide` in your `.enscriptrc`, and happy annotating!
+  prefs: []
+  type: TYPE_NORMAL

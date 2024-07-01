@@ -1,0 +1,162 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:16:57'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A compile-time debugger that helps you write tensor shape checks : ezyang’s
+    blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2018/04/a-compile-time-debugger-that-helps-you-write-tensor-shape-checks/](http://blog.ezyang.com/2018/04/a-compile-time-debugger-that-helps-you-write-tensor-shape-checks/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: A run-time debugger allows you to see concrete values in a program, make changes
+    to them, and continue running your program. A **compile-time debugger** allows
+    you to see symbolic values in a program, reason about them, and write the rest
+    of your program, e.g. filling in missing tensor size checks, for example.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here's an example of a compiler-time debugger in action.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let''s suppose you are writing a simple program to read a pair of tensors from
+    two files and do a matrix multiply on them. "Easy," you think, while writing the
+    following program:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'However, there is a twist: this matrix multiply is an *unchecked* matrix multiply.
+    If you pass it tensors which cannot be validly multiplied together, this is undefined
+    behavior. Your compiler has cottoned up to this fact and is refusing to compile
+    your program. You fire up your compile-time debugger, and it drops you to the
+    point of your program right before the error:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Let''s take a careful look at the variables in scope. Our compile-time debugger
+    tells us the type of a variable x by writing `x : t`, meaning that x has type
+    t. We have all sorts of ordinary types like natural numbers (Nat) and lists of
+    natural numbers (List(Nat)). More interestingly, a *tensor* is parametrized by
+    a list of natural numbers, which specify their sizes at each dimension. (For simplicity,
+    the underlying field of the tensor is assumed to be fixed.)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Our debugger has a command line, so we can ask it questions about the types
+    of things in our program (`:t` is for type):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: The type of matrix multiplication should make sense. We say a matrix multiply
+    takes two 2-D tensors of sizes AxB and BxC, and produces a tensor of size AxC.
+    An equivalent way of phrasing, as was done in the type above, is to say, “for
+    any natural numbers A, B and C, matrix multiply will take a tensor of size AxB
+    and a tensor of BxC, and give you a tensor of size AxC”.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'It is also instructive to see what the type of `load` is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: We do not know what the dimensions of a tensor loaded from a file are; all we
+    can say is that *there exists* some size (list of natural numbers), which describes
+    the tensor in question. Our compile-time debugger has helpfully given us names
+    for the sizes of our tensors in scope, `_x_size` and `_y_size`, and has also told
+    us how to compute them at runtime (`x.size()` and `y.size()`).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Enough of this. Let''s remind ourselves why our program has failed to typecheck:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: The compiler is absolutely right. We don't know anything about the size of x
+    or y; they could be 2D, or they could be 100D, or not have matching dimensions.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'As an aside: sometimes, it''s OK not to know anything about the sizes. Consider
+    the case of adding a tensor to itself:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: We don't know anything about `_x_size`, but `add` doesn't care; it'll take any
+    `List(Nat)`, and `_x_size` is certainly one of those.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Back to business. We are going to insert dynamic checks will will refine our
+    knowledge of x and y, until it is obvious that matrix multiply will succeed.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'What is a dynamic check? Operationally, a dynamic check tests whether or not
+    some condition is true, and aborts if it is not. If we successfully run the dynamic
+    check, we now have new *information* about the symbolic types in our scope. So
+    for example, after adding a *runtime* test that two numbers are equal, we can
+    subsequently assume at *compile time* that the numbers are equal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'First things first, we''d like to assert that our tensors are 2D tensors:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'List length is a very helpful property to test against, since it greatly specifies
+    the shape of the list in question. We can do the same for `_y_size`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We''re very close now. All we need to do is assert that the inner dimensions
+    are equal:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: Victory!
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Extracting the contents of this session back into our code, we now have:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'At this point, I must come clean: the compile time debugger I''ve described
+    above doesn''t actually exist. But it is not all that different from the proof
+    modes of interactive proof assistants the automated theorem proving community
+    works with today. But unlike theorem proving, we have a secret weapon: when the
+    going gets tough, the tough turns into a runtime check. Conventional wisdom says
+    that automated theorem proving requires too idealized a setting to be useful in
+    writing software today. Conventional wisdom is wrong.'
+  prefs: []
+  type: TYPE_NORMAL

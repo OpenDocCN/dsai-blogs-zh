@@ -1,0 +1,138 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:17:44'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Debugging compilers with optimization fuel : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2011/06/debugging-compilers-with-optimization-fuel/](http://blog.ezyang.com/2011/06/debugging-compilers-with-optimization-fuel/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Today I would like to describe how I pin down compiler bugs, specifically, bugs
+    tickled by optimizations, using a neat feature that Hoopl has called *optimization
+    fuel.* Unfortunately, this isn’t a particularly Googleable term, so hopefully
+    this post will get some Google juice too. Optimization fuel was originally introduced
+    by David Whalley in 1994 in a paper *Automatic isolation of compiler errors.*
+    The basic idea is that all optimizations performed by the compiler can be limited
+    (e.g. by limiting the fuel), so when we suspect the optimizer is misbehaving,
+    we binary search to find the maximum amount of fuel we can give the compiler before
+    it introduces the bug. We can then inspect the offending optimization and fix
+    the bug. Optimization fuel is a feature of the new code generator, and is only
+    available if you pass `-fuse-new-codegen` to GHC.
+  prefs: []
+  type: TYPE_NORMAL
+- en: The bug
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'The bug shows up when I attempt to build GHC itself with the new code generator.
+    Building GHC is a great way to ferret out bugs, since it has so much code in it,
+    it manages to cover a lot of cases:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We quickly grep the codebase to find the relevant error, which is in `compiler/nativeGen/RegAlloc/Linear/JoinToTargets.hs`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: But the source code doesn’t particularly suggest what the problem might be.
+    Time to start using optimization fuel!
+  prefs: []
+  type: TYPE_NORMAL
+- en: Binary search
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'We can modify the amount of optimization fuel GHC has, for running optimizations,
+    by changing the value of `-dopt-fuel`. The first thing we do if see the bug is
+    present with zero optimization fuel:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: Great, it worked! We pick some large number to start our binary search at (and
+    pass `-fforce-recomp`, so GHC actually compiles the program.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: I then binary search (test 500, if that fails test 750, etc), until I find the
+    point at which adding one to the fuel causes the failure.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Viewing the culprit
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'How do we convince GHC to tell us what optimization it did with the 710st bit
+    of fuel? My favorite method is to dump out the optimized C-- from both runs, and
+    then do a diff. We can dump the C-- to a file using `-ddump-opt-cmm -ddump-to-file`,
+    and then diff reveals:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The optimization is deleting an assignment. Is this valid? Here is the full
+    code, with some annotations:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Seems not: the variable is used in `MO_S_Rem_W32`: that’s no good. We conclude
+    that the bug is in an optimization pass, and it is not the case that the register
+    allocator failed to handle a case that our optimization is now tickling.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fixing the bug
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'With this information, we can also extract the program fragment that caused
+    this bug:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'We can also see how our pipeline is processing the program, and observe precisely
+    where in the process the bad optimization was made:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Since this is a spurious instance of code removal, we look for all mentions
+    of `emptyGraph` in the rewrite assignments optimization pass:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: This looks like it should be an unobjectionable case of dead assignment elimination
+    coupled with liveness analysis, but for some reason, the backwards facts are not
+    being propagated properly. In fact, the problem is that I attempted to optimize
+    the Hoopl dataflow function, and got it wrong. (Fixpoint analysis is tricky!)
+    After reverting my changes, the unsound optimization goes away. *Phew.*
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,165 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:17:17'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Of Monadic Fixpoints and Heap Offsets : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2013/09/of-monadic-fixpoints-and-heap-offsets/](http://blog.ezyang.com/2013/09/of-monadic-fixpoints-and-heap-offsets/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Here at ICFP, sometimes the so-called “hallway track” is sometimes just as important
+    as the ordinary track. Johan Tibell was wanting to avoid an out-of-line call to
+    `allocate` function in GHC when a small array of statically known size was allocated.
+    But he found the way that GHC's new code generator handles heap allocation a bit
+    confusing, and so we skipped out of one session today to work it out. In this
+    post, I would like to explain how the code generation monad figures out what the
+    heap offsets in the code are, by way of a kind of cute (and also slightly annoying)
+    trick involving a “monadic” fixpoint.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'First, some background about the code generator. The big overall pattern of
+    a function that GHC has to generate code for is something like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Check if there is enough heap space, if not GC,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Write a bunch of data to the heap,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Push some things to the stack,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Jump to the appropriate continuation.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Concretely, the code will be along the lines of:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: This seems reasonable, but how does one go about actually generating this code?
+    The code is generated in order, but the amount of heap that needs to be checked
+    is not known until we've finished laying out the rest of the code. If we put on
+    our mutation hats, we might say, “Well, leave it out for now, and then mutate
+    it in when you know the actual value”, but there is still the knotty question
+    of what the offsets should be when we are writing values to the heap. Notice that
+    in the above code, we only bump the heap pointer once; if we repeatedly bump the
+    heap pointer, then the offsets are easy to calculate, but we are wasting instructions;
+    x86 addressing modes support writing to a register plus some offset directly.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Let’s take a look what GHC does when it allocates a dynamic closure to the
+    heap (simplified):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'In words, it:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Retrieves a “virtual heap pointer” (more on this later),
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Gets the true `Hp - n` expression (`base`) using the virtual heap pointer (`getHpRelOffset`,
+    N.B. the off-by-one),
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Emits a bunch of writes to the memory at `base` (`emitSetDynHdr` and `hpStore`),
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Bumps the virtual Hp up with the size of the just allocated closure,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Returns the `Hp - n` expression.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'As it turns out, the virtual heap pointer is just an ordinary state variable
+    in the code generation monad `FCode` (it’s good to take a look at the implementation
+    of the monad you’re using!):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: So `virtHp` just marches upwards as we allocate things; it is, in effect, the
+    contents of the `Hp` register in our inefficient, rebumping implementation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Which leaves us with the pressing question, what is `realHp`? Well, it starts
+    off as zero (since the offset of the real heap pointer is just zero), but once
+    we bump the heap pointer to do the stack check, it is now *precisely the amount
+    of heap we did the heap check for*. Calling back our example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: (Actually, internally the offsets are recorded as words, so, this being 64-bit
+    code, divide everything by eight. BTW, virtHp + 8 == realHp, and that's where
+    the off-by-one comes from.) The math is a little fiddly, but `getHpRelOffset`
+    will calculate the offsets for you; you just have to make sure the virtual offset
+    is right!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'OK, but we still haven’t figured out how we get this magic number 40 from in
+    the first place! The key is to look at the code generator responsible for doing
+    the heap check, `heapCheck`, which is wraps the call to `code`, which is actually
+    responsible for the code generation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: Hey, what's that magic `getHeapUsage` function?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'And here, we see the monadic fixpoint. In order to provide the heap usage to
+    `fcode`, GHC writes itself a check: `hp_hw`. The check is borrowed from the *result*
+    of generating `fcode`, and the string attached is this: “As long as you don’t
+    cash this check before you finish generating the code, everything will be OK!”
+    (It’s a bit like a big bank in that respect.) Cute—and we only need to do the
+    code generation once!'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This technique is not without its dark side. `hp_hw` is dangerous; if you force
+    it in the wrong place, you will chunder into an infinite loop. There are two uses
+    of this variable, both in `compiler/codeGen/StgCmmLayout.hs`, which are careful
+    not to force it. What would be nice is if one could explicitly mark `hp_hw` as
+    blackholed, and attach a custom error message, to be emitted in the event of an
+    infinite loop. How this might be accomplished is left as an exercise for the reader.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: BTW, in case you aren't aware, I've been live-tumblr'ing coverage of ICFP at
+    [http://ezyang.tumblr.com](http://ezyang.tumblr.com) — the coverage is not 100%,
+    and the editing is rough, but check it out!
+  prefs: []
+  type: TYPE_NORMAL

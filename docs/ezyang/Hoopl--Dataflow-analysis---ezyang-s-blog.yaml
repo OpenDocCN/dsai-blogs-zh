@@ -1,0 +1,214 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:17:54'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Hoopl: Dataflow analysis : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2011/04/hoopl-dataflow-analysis/](http://blog.ezyang.com/2011/04/hoopl-dataflow-analysis/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Once you’ve determined what [dataflow facts](http://blog.ezyang.com/2011/04/hoopl-dataflow-lattices/)
+    you will be collecting, the next step is to write the *transfer function* that
+    actually performs this analysis for you!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Remember what your dataflow facts mean, and this step should be relatively
+    easy: writing a transfer function usually involves going through every possible
+    statement in your language and thinking about how it changes your state. We’ll
+    walk through the transfer functions for constant propagation and liveness analysis.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Here is the transfer function for liveness analysis (once again, in `Live.hs`):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '`live` is the meat of our transfer function: it takes an instruction and the
+    current fact, and then modifies the fact in light of that information. Because
+    this is a backwards transfer (`BwdTransfer`), the `Fact x Live` passed to `live`
+    are the dataflow facts *after* this instruction, and our job is to calculate what
+    the dataflow facts are *before* the instruction (the facts flow backwards).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'If you look closely at this function, there’s something rather curious going
+    on: in the line `live (Label _) f = f`, we simply pass out `f` (which ostensibly
+    has type `Fact x Live`) as the result. How does that work? Well, `Fact` is actually
+    a type family:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Look, it’s the O and C phantom types again! If we recall our definition of
+    `Insn` (in `IR.hs`):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: That means for any of the instructions that are *open on exit* (`x = O` for
+    Label, Assign and Store), our function gets `Live`, whereas for an instruction
+    that is *closed on exit* (`x = C` for Branch, Cond, Call and Return), we get `FactBase
+    Live`, which is a map of labels to facts (`LabelMap Live`)—for reasons we will
+    get to in a second.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Because the type of our arguments actually change depending on what instruction
+    we receive, some people (GHC developers among them) prefer to use the long form
+    `mkBTransfer3`, which takes three functions, one for each shape of node. The rewritten
+    code thus looks like this:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: (with the same definitions for `fact`, `addUses` and `addVar`).
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With this in mind, it should be fairly easy to parse the code for `firstLive`
+    and `middleLive`. Labels don’t change the set of live libraries, so our fact `f`
+    is passed through unchanged. For assignments and stores, any uses of a register
+    in that expression makes that register live (`addUses` is a utility function that
+    calculates this), but if we assign to a register, we *lose* its previous value,
+    so it is no longer live. Here is some pseudocode demonstrating:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If you’re curious out the implementation of `addUses`, the `fold_EE` and `fold_EN`
+    functions can be found in `OptSupport.hs`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The naming convention is as follows: `E` represents an `Expr`, while `N` represents
+    a `Node` (`Insn`). The left letter indicates what kind of values are passed to
+    the combining function, while the right letter indicates what is being folded
+    over. So `fold_EN` folds all `Expr` in a `Node` and calls the combining function
+    on it, while `fold_EE` folds all of the `Expr` inside an `Expr` (notice that things
+    like `Load` and `Binop` can contain expressions inside themselves!) The effect
+    of `fold_EN (fold_EE f)`, then, is that `f` will be called on *every* expression
+    in a node, which is exactly what we want if we’re checking for uses of `Var`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'We could have also written out the recursion explicitly:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: But as you can see, there’s a lot of junk involved with recursing down the structure,
+    and you might accidentally forget an `Expr` somewhere, so using a pre-defined
+    fold operator is preferred. Still, if you’re not comfortable with folds over complicated
+    datatypes, writing out the entire thing in full at least once is a good exercise.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The last part to look at is `lastLives`:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: There are several questions to ask.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Why does it receive a `FactBase Live` instead of a `Live`? This is because,
+    as the end node in a backwards analysis, we may receive facts from multiple locations:
+    each of the possible paths the control flow may go down.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'In the case of a `Return`, there are *no* further paths, so we use `fact_bot
+    liveLattice` (no live variables). In the case of `Branch` and `Call`, there is
+    only one further path `l` (the label we’re branching or returning to), so we simply
+    invoke `fact f l`. And finaly, for `Cond` there are two paths: `tl` and `fl`,
+    so we have to grab the facts for both of them and combine them with what happens
+    to be our join operation on the dataflow lattice.'
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: Why do we still need to call `addUses`? Because instructions at the end of basic
+    blocks can use variables (`Cond` may use them in its conditional statement, `Return`
+    may use them when specifying what it returns, etc.)
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'What’s with the call to `S.difference` in `Call`? Recall that `vs` is the list
+    of variables that the function call writes its return results to. So we need to
+    remove those variables from the live variable set, since they will get overwritten
+    by this instruction:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'You should already have figured out what `fact` does: it looks up the set of
+    dataflow facts associated with a label, and returns an empty set (no live variables)
+    if that label isn’t in our map yet.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Once you’ve seen one Hoopl analysis, you’ve seen them all! The transfer function
+    for constant propagation looks very similar:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The notable difference is that, unlike liveness analysis, constant propagation
+    analysis is a forward analysis `FwdTransfer`. This also means the type of the
+    function is `Node e x -> f -> Fact x f`, rather than `Node e x -> Fact x f ->
+    f`: when the control flow splits, we can give different sets of facts for the
+    possible outgoing labels. This is used to good effect in `Cond (Var x)`, where
+    we know that if we take the first branch the condition variable is true, and vice-versa.
+    The rest is plumbing:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`Branch`: An unconditional branch doesn’t cause any of our variables to stop
+    being constant. Hoopl will automatically notice if a different path to that label
+    has contradictory facts and convert the mappings to `Top` as notice, using our
+    lattice’s join function. `mapSingleton` creates a singleton map from the label
+    `l` to the fact `f`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`Cond`: We need to create a map with two entries, which is can be done conveniently
+    with `mkFactBase`, where the last argument is a list of labels to maps.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`Call`: A function call is equivalent to assigning lots of unknown variables
+    to all of its return variables, so we set all of them to unknown with `toTop`.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: '`Return`: Goes nowhere, so an empty map will do.'
+  prefs:
+  - PREF_UL
+  type: TYPE_NORMAL
+- en: Next time, we’ll talk about some of the finer subtleties about transfer functions
+    and join functions, and discuss graph rewriting, and wrap it all up with some
+    use of Hoopl’s debugging facilities to observe how Hoopl rewrites a graph.
+  prefs: []
+  type: TYPE_NORMAL

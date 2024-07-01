@@ -1,0 +1,54 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:17:38'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Problem Set: The Codensity Transformation : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2012/01/problem-set-the-codensity-transformation/](http://blog.ezyang.com/2012/01/problem-set-the-codensity-transformation/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Have you ever wondered how the *codensity transformation*, a surprisingly general
+    trick for speeding up the execution of certain types of monads, worked, but never
+    could understand the paper or Edward Kmett's blog posts on the subject?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Look no further: below is a *problem set* for learning how this transformation
+    works.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The idea behind these exercises is to get you comfortable with the types involved
+    in the codensity transformation, achieved by using the types to guide yourself
+    to the only possible implementation. We warm up with the classic concrete instance
+    for leafy trees, and then generalize over all free monads (don''t worry if you
+    don''t know what that is: we''ll define it and give some warmup exercises).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Experience writing in continuation-passing style may be useful, although in
+    practice this amounts to "listen to the types!"
+  prefs: []
+  type: TYPE_NORMAL
+- en: Solutions and more commentary may be found in Janis Voigtlander's paper "[Asymptotic
+    Improvement of Computations over Free Monads.](http://www.iai.uni-bonn.de/~jv/mpc08.pdf)"
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'To read more, see Edward Kmett''s excellent article which further generalizes
+    this concept:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: If there is a demand, I can add a hints section for the exercises.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE

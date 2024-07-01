@@ -1,0 +1,204 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:17:16'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Calculating Shanten in Mahjong : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2014/04/calculating-shanten-in-mahjong/](http://blog.ezyang.com/2014/04/calculating-shanten-in-mahjong/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Move aside, poker! While the probabilities of various poker hands are well understood
+    and tabulated, the Chinese game of chance [Mahjong](http://en.wikipedia.org/wiki/Mahjong)
+    [1] enjoys a far more intricate structure of expected values and probabilities.
+    [2] This is largely due in part to the much larger variety of tiles available
+    (136 tiles, as opposed to the standard playing card deck size of 52), as well
+    as the turn-by-turn game play, which means there is quite a lot of strategy involved
+    with what is ostensibly a game of chance. In fact, the subject is so intricate,
+    I’ve decided to write my PhD thesis on it. This blog post is a condensed version
+    of one chapter of my thesis, considering the calculation of *shanten*, which we
+    will define below. I’ll be using Japanese terms, since my favorite variant of
+    mahjong is Riichi Mahjong; you can consult the [Wikipedia article](http://en.wikipedia.org/wiki/Japanese_Mahjong)
+    on the subject if you need to translate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Calculating Shanten
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'The basic gameplay of Mahjong involves drawing a tile into a hand of thirteen
+    tiles, and then discarding another tile. The goal is to form a hand of fourteen
+    tiles (that is, after drawing, but before discarding a tile) which is a winning
+    configuration. There are a number of different winning configurations, but most
+    winning configurations share a similar pattern: the fourteen tiles must be grouped
+    into four triples and a single pair. Triples are either three of the same tile,
+    or three tiles in a sequence (there are three “suits” which can be used to form
+    sequences); the pair is two of the same tiles. Here is an example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Represented numerically, this hand consists of the triples and pairs 123 55
+    234 789 456.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'One interesting quantity that is useful to calculate given a mahjong hand is
+    the *shanten* number, that is, the number of tiles away from winning you are.
+    This can be used to give you the most crude heuristic of how to play: discard
+    tiles that get you closer to tenpai. The most widely known shanten calculator
+    is [this one on Tenhou’s website](http://tenhou.net/2/) [3]; unfortunately, the
+    source code for this calculator is not available. There is [another StackOverflow
+    question](http://stackoverflow.com/questions/4239028/how-do-i-calculate-the-shanten-number-in-mahjong)
+    on the subject, but the “best” answer offers only a heuristic approach with no
+    proof of correctness! Can we do better?'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Naïvely, the shanten number is a breadth first search on the permutations of
+    a hand. When a winning hand is found, the algorithm terminates and indicates the
+    depth the search had gotten to. Such an algorithm is obviously correct; unfortunately,
+    with 136 tiles, one would have to traverse ![((136-13)\times 14)^n](img/1085e81084d0a63d130f108b3be5cd74.png
+    "((136-13)\times 14)^n") hands (choices of new tiles times choices of discard)
+    while searching for a winning hand that is n-shanten away. If you are four tiles
+    away, you will have to traverse over six trillion hands. We can reduce this number
+    by avoiding redundant work if we memoize the shanten associated with hands: however,
+    the total number of possible hands is roughly ![136 \choose 13](img/85310b7d2c670be91b970281c8d0f2c3.png
+    "136 \choose 13"), or 59 bits. Though we can fit (via a [combinatorial number
+    system](http://en.wikipedia.org/wiki/Combinatorial_number_system)) a hand into
+    a 64-bit integer, the resulting table is still far too large to hope to fit in
+    memory.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: The trick is to observe that shanten calculation for each of the suits is symmetric;
+    thus, we can dynamic program over a much smaller space of the tiles 1 through
+    9 for some generic suit, and then reuse these results when assembling the final
+    calculation. ![9 \times 4 \choose 13](img/592925b40cd6daac7acba0e87c8019a7.png
+    "9 \times 4 \choose 13") is still rather large, so we can take advantage of the
+    fact that because there are four copies of each tile, an equivalent representation
+    is a 9-vector of the numbers zero to four, with the constraint that the sum of
+    these numbers is 13\. Even without the constraint, the count ![5^9](img/9d72d8e3d725f14d8241177dcce78cd2.png
+    "5^9") is only two million, which is quite tractable. At a byte per entry, that’s
+    2MB of memory; less than your browser is using to view this webpage. (In fact,
+    we want the constraint to actually be that the sum is less than or equal to 13,
+    since not all hands are single-suited, so the number of tiles in a hand is less.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The breadth-first search for solving a single suit proceeds as follows:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Initialize a table A indexed by tile configuration (a 9-vector of 0..4).
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Initialize a todo queue Q of tile configurations.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Initialize all winning configurations in table A with shanten zero (this can
+    be done by enumeration), recording these configurations in Q.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: While the todo queue Q is not empty, pop the front element, mark the shanten
+    of all adjacent uninitialized nodes as one greater than that node, and push those
+    nodes onto the todo queue.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: With this information in hand, we can assemble the overall shanten of a hand.
+    It suffices to try every distribution of triples and the pairs over the four types
+    of tiles (also including null tiles), consulting the shanten of the requested
+    shape, and return the minimum of all these configurations. There are ![4 \times
+    {4 + 4 - 1 \choose 4}](img/1b56ff217fbe5d1f3c793d29b4f4c52b.png "4 \times {4 +
+    4 - 1 \choose 4}") (by [stars and bars](http://en.wikipedia.org/wiki/Stars_and_bars_(combinatorics)))
+    combinations, for a total of 140 configurations. Computing the shanten of each
+    configuration is a constant time operation into the lookup table generated by
+    the per-suit calculation. A true shanten calculator must also accomodate the rare
+    other hands which do not follow this configuration, but these winning configurations
+    are usually highly constrained, and quite easily to (separately) compute the shanten
+    of.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With a shanten calculator, there are a number of other quantities which can
+    be calculated. *Uke-ire* refers to the number of possible draws which can reduce
+    the shanten of your hand: one strives for high uke-ire because it means that probability
+    that you will draw a tile which moves your hand closer to winning. Given a hand,
+    it''s very easy to calculate its uke-ire: just look at all adjacent hands and
+    count the number of hands which have lower shanten.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Further extensions
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'Suppose that you are trying to design an AI which can play Mahjong. Would the
+    above shanten calculator provide a good evaluation metric for your hand? Not really:
+    it has a major drawback, in that it does not consider the fact that some tiles
+    are simply unavailable (they were discarded). For example, if all four “nine stick”
+    tiles are visible on the table, then no hand configuration containing a nine stick
+    is actually reachable. Adjusting for this situation is actually quite difficult,
+    for two reasons: first, we can no longer precompute a shanten table, since we
+    need to adjust at runtime what the reachability metric is; second, the various
+    suits are no longer symmetric, so we have to do three times as much work. (We
+    can avoid an exponential blowup, however, since there is no inter-suit interaction.)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Another downside of the shanten and uke-ire metrics is that they are not direct
+    measures of “tile efficiency”: that is, they do not directly dictate a strategy
+    for discards which minimizes the expected time before you get a winning hand.
+    Consider, for example, a situation where you have the tiles 233, and only need
+    to make another triple in order to win. You have two possible discards: you can
+    discard a 2 or a 3\. In both cases, your shanten is zero, but discarding a 2,
+    you can only win by drawing a 3, whereas discarding a 3, you can win by drawing
+    a 1 or a 4\. Maximizing efficiency requires considering the lifetime ure-kire
+    of your hands.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Even then, perfect tile efficiency is not enough to see victory: every winning
+    hand is associated with a point-score, and so in many cases it may make sense
+    to go for a lower-probability hand that has higher expected value. Our decomposition
+    method completely falls apart here, as while the space of winning configurations
+    can be partitioned, scoring has nonlocal effects, so the entire hand has to be
+    considered as a whole. In such cases, one might try for a Monte Carlo approach,
+    since the probability space is too difficult to directly characterize. However,
+    in the Japanese Mahjong scoring system, there is yet another difficulty with this
+    approach: the scoring system is *exponential*. Thus, we are in a situation where
+    the majority of samples will be low scoring, but an exponentially few number of
+    samples have exponential payoff. In such cases, it’s difficult to say if random
+    sampling will actually give a good result, since it is likely to miscalculate
+    the payoff, unless exponentially many samples are taken. (On the other hand, because
+    these hands are so rare, an AI might do considerably well simply ignoring them.)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: To summarize, Mahjong is a fascinating game, whose large state space makes it
+    difficult to accurately characterize the probabilities involved. In my thesis,
+    I attempt to tackle some of these questions; please [check it out](http://en.wikipedia.org/wiki/April_Fools'_Day)
+    if you are interested in more.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[1] No, I am not talking about the travesty that is mahjong solitaire.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[2] To be clear, I am not saying that poker strategy is simple—betting strategy
+    is probably one of the most interesting parts of the game—I am simply saying that
+    the basic game is rather simple, from a probability perspective.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[3] Tenhou is a popular Japanese online mahjong client. The input format for
+    the Tenhou calculator is `123m123p123s123z`, where numbers before `m` indicate
+    man tiles, `p` pin tiles, `s` sou tiles, and `z` honors (in order, they are: [east,
+    south, west, north, white, green, red](http://tenhou.net/2/?q=1234567z)). Each
+    entry indicates which tile you can discard to move closer to tenpai; the next
+    list is of ure-kire (and the number of tiles which move the hand further).'
+  prefs: []
+  type: TYPE_NORMAL

@@ -1,0 +1,1 @@
+["```\n> Check eq_rect.\neq_rect\n     : forall (A : Type) (x : A) (P : A -> Type),\n       P x -> forall y : A, x = y -> P y\n\n```", "```\neq_ind\n     : forall (A : Type), forall (C : forall (x y : A), x = y -> Type),\n       (forall (x : A), C x x (eq_refl x)) -> forall (x y : A), forall (p : x = y), C x y p\n\n```"]

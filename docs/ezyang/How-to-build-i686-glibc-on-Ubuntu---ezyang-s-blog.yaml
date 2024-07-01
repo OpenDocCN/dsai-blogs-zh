@@ -1,0 +1,44 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:17:38'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'How to build i686 glibc on Ubuntu : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2011/12/how-to-build-i686-glibc-on-ubuntu/](http://blog.ezyang.com/2011/12/how-to-build-i686-glibc-on-ubuntu/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: How to build i686 glibc on Ubuntu
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'An “easy”, two-step process:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[Apply this patch for i686](http://www.eglibc.org/archives/patches/msg00073.html).
+    (Why they haven''t fixed this in the trunk, I have no idea.)'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: Configure with `CFLAGS="-U_FORTIFY_SOURCE -fno-stack-protector -O2"` (this disables
+    fortify source and stack protection which Ubuntu enables by default but interferes
+    with glibc. You need to keep optimizations on, because glibc won't build without
+    it.) You’ll need to do the usual extra dance of creating a separate build directory
+    and specifying a prefix.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Hope this helps someone else. In case you were wondering why I was building
+    glibc, it''s because I was reporting these two bugs in iconv:'
+  prefs: []
+  type: TYPE_NORMAL

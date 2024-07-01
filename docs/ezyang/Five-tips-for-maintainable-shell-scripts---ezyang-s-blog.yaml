@@ -1,0 +1,110 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:18:25'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Five tips for maintainable shell scripts : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2010/03/five-tips-for-maintainable-shell-scripts/](http://blog.ezyang.com/2010/03/five-tips-for-maintainable-shell-scripts/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Five tips for maintainable shell scripts
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: When I was seventeen, I wrote my [very first shell script](http://repo.or.cz/w/htmlpurifier-web.git/blob/136caa2d941e51e5a742df3b05fb3e596f778636:/releases/build.bat).
+    It was a Windows batch file, bits and pieces very carefully cargo-culted from
+    various code samples on the web. I had already had the *exquisite* pleasure of
+    futzing with `pear.bat`, and the thought of scripting was not something I relished;
+    "why not write the damn thing in a *real* programming language!" (The extra delicious
+    bit was "a real programming language" was PHP. Hee.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Eventually I came around to an all-Unix environment, and with it I began to
+    use bash extensively. And suddenly, shell scripting made a lot more sense: you''ve
+    been writing the damn commands day in and day out, just write them to a script
+    instead! There was, however, still the pesky little problem that shell scripts
+    are forever; like it or not, they''ve become pieces of maintained code. Entire
+    build infrastructures have been built on top of shell scripts. They breed like
+    rabbits; you have to be careful about the little buggers.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Here are five tips and tricks to keep in mind when tossing commands into a shell
+    script that will make maintenance in the long-run much more pleasant!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Learn and love to use `set`. There is almost always no good reason not to use
+    the `-e` flag, which causes your script to error out if any command returns with
+    a nonzero exit code, and `-x` can save you hours of debugging by printing precisely
+    what command the script is executing before executing it. With the two enabled,
+    you get very simple "assertions" in your shell script:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: although, if at all possible, you should write error messages to accompany them.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: 'Just because you don''t define subprocedures when you''re at your terminal
+    (or do you? see `alias` and friends) and use reverse command history search with
+    `C-r` doesn''t mean it''s acceptable to repeat commands over and over again your
+    shell script. In particular, if you have a set of commands that *might* go into
+    a separate script, but you feel funny about making a separate file, stuff them
+    in a subprocedure like this:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: In particular, argument passing acts exactly the same way it does in a real
+    shell script, and generally you can treat the subcommand as if it were it's own
+    script; standard input and output work the way you expect them to. The only differences
+    is are that `exit` exits the whole script, so if you'd like to break out of a
+    command use `return` instead.
+  prefs:
+  - PREF_IND
+  type: TYPE_NORMAL
+- en: Argument quoting in shell scripts is a strange and arcane domain of knowledge
+    (although it doesn't have to be; [check out Waldman's notes on shell quoting](http://www.mpi-inf.mpg.de/~uwe/lehre/unixffb/quoting-guide.html)).
+    The short version is you *always* want to wrap variables that will be interpolated
+    with quotes, unless you actually want multiple arguments semantics. I have mixed
+    feelings about whether or not literals should be quoted, and of late have fallen
+    to the dismal habit of not quoting them.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: 'Believe it or not, shell scripting has functional programming leanings. `xargs`,
+    for example, is the quintessential "map" functionality. However, if the command
+    you are pushing arguments to doesn''t take multiple arguments, you can use this
+    trick:'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs:
+  - PREF_IND
+  type: TYPE_PRE
+- en: 'Shell scripting feels incredibly natural when speaking imperatively, and mostly
+    remains this way when you impose control flow. However, it is absolutely a *terrible*
+    language for any data processing (exhibit 1: sed and perl pipelines) and you should
+    avoid doing too much data crunching in it. Creating utility scripts in more reasonable
+    languages can go a long way to keeping your shell scripts pretty.'
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL

@@ -1,0 +1,1 @@
+["```\nvar sayHello = require('./sayhello.js');\nsayHello.run();\n\n```", "```\nsayHello()\n\n```", "```\nimport qualified Data.Map as Map\nimport Data.Map (Map)\n\n```"]

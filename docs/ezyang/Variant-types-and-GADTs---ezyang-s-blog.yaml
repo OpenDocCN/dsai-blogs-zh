@@ -1,0 +1,77 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:17:42'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Variant types and GADTs : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2011/07/variant-types-and-gadts/](http://blog.ezyang.com/2011/07/variant-types-and-gadts/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: OCaml supports anonymous variant types, of the form ``type a = [`Foo of int
+    | `Bar of bool]``, with the appropriate subtyping relations. Subtyping is, in
+    general, kind of tricky, so I have been using these variant types fairly conservatively.
+    (Even if a feature gives you too much rope, it can be manageable and useful if
+    you use discipline.) Indeed, they are remarkably handy for one particular use-case
+    for which I would have normally deployed GADTs. This is the “Combining multiple
+    sum types into a single sum type” use-case.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Consider the following program in Haskell:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'If one would like to define the moral equivalent of A plus B, the most naive
+    way to do this is:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'But this kind of sucks: I would have preferred some kind of flat namespace
+    by which I could refer to `A` and `B` (also, this encoding is not equivalent to
+    `data AorB = Foo Int | Bar Bool | Baz Char | Qux` in the presence of laziness.)
+    If you use normal sum types in OCaml, you’re similarly out of luck. However, you
+    can handily manage this if you use variant types:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Sweet! Note that we’re not using the full generality of variant types: I will
+    only ever refer to these variant constructors in the context of `a`, `b` or `a_or_b`:
+    anonymous variant types are right out. This prevents coercion messes.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I can actually pull this off in Haskell with GADTs, although it’s certainly
+    not obvious for a beginning programmer:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: To pattern match against all constructors, I specify the type `AorB t`; to only
+    do `A` I use `AorB A`, and to only do `B` I use `AorB B`. Don’t ask me how to
+    specify arbitrary subsets of more than two combined sum types. (Solutions in the
+    comment section welcome, though they will be graded on clarity.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: The Haskell approach does have one advantage, which is that the sum type is
+    still closed. Since OCaml can make no such guarantee, things like `bin-prot` need
+    to use up a full honking four-bytes to specify what variant it is (they hash the
+    name and use that as a unique identifier) rather than the two bits (but more likely,
+    one byte) needed here. This also means for more efficient generated code.
+  prefs: []
+  type: TYPE_NORMAL

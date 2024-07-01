@@ -1,0 +1,108 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:18:00'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Thriller: Doing it for the thrills : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2010/12/thriller/](http://blog.ezyang.com/2010/12/thriller/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: 'How do you decide what to work on? I started thinking about this topic when
+    I was wasting time on the Internet because I couldn’t think of anything to do
+    that was productive. This seemed kind of strange: there were lots of things I
+    *needed* to do: vacations to plan, projects to work on, support requests to answer,
+    patches to merge in, theorems to prove, blog posts to write, papers to read, etc.
+    So maybe the problem wasn’t that I didn’t have anything to do, it was just that
+    I had too much stuff to do, and that I needed to pick something.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: This choice is nontrivial. That evening, I didn’t feel like organizing my priorities
+    either, so I just ended up just [reading some comics](http://www.viruscomix.com/),
+    rationalizing it—erm, I mean filing it—under “Rest and Relaxation.” I could have
+    chosen what to do based on some long term plan... yeah right, like I have a long
+    time plan. It seems more practical to have chosen to do something enjoyable (which,
+    when not involving reading comics, can occasionally involve productive work),
+    or something that would give me a little high at the end, a kind of *thrill* from
+    finishing—not necessarily fun when starting off, but fulfilling and satisfying
+    by the end.
+  prefs: []
+  type: TYPE_NORMAL
+- en: So what’s thrilling? In the famous book *The Structure of Scientific Revolutions*,
+    Thomas Kuhn argued that what most scientists do is “normal science”, problem solving
+    in the current field without any expectation of making revolutionary discoveries
+    or changing the way we do science. This is a far cry from the idealistic vision
+    ala “When I grow up, I want to be a scientist and discover a cure for cancer”—it
+    would truly be thrilling to manage that. But if the life of an ordinary scientist
+    is so mundane and so unlikely to result in a revolution, why do incredibly smart
+    people dedicate their lives in the pursuit of scientific knowledge? What is thrilling
+    about science?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Kuhn suggests that this may because humans love solving puzzles, and science
+    is the ultimate puzzle solving activity: there is some hitherto unexplained phenomena,
+    and a scientist attempts fit this phenomena into the existing theories and paradigms.
+    And so while the average person may not find the in-depth analysis of a single
+    section of DNA of a single obscure virus very interesting, for the scientist this
+    generates endless puzzles for them to solve, each step of the way adding some
+    knowledge, however small, to our civilization. And we humans find puzzles thrilling:
+    they occupy us and give us that *satisfaction* when they are solved.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For a software engineer, the thrill may be in the creation of something that
+    works and is useful to others (the rush of having users) or the thrill may be
+    in having solved a particularly tricky problem (the rush that comes after you
+    solve a tricky debugging session, or the rush when you do something very clever).
+    The types of thrill you prefer dictate the kind of learning you are interested
+    in. If you seek the thrill of creation, you will work on gaining the specialized
+    knowledge of specific tools, libraries and applications that you will need in
+    your craft. You will pursue knowledge outside of mere “programming”: aesthetics,
+    design, psychology, marketing and more: the creation of a product is a truly interdisciplinary
+    problem. If you seek the thrill of debugging (the hacker), you will seek specialized
+    knowledge of a different kind, painstaking knowledge of the wire structure of
+    protocols, source code, memory layout, etc. And if you seek the thrill of scientific
+    problem solving, you will seek generalized, abstract knowledge, knowledge that
+    suggests new ways of thinking about and doing things.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'The steps towards each type of thrill are interrelated, but only to a certain
+    degree. I remember a graduate student once telling me, “If you really want to
+    make sure you understand something, you should go implement it. But sometimes
+    this is counterproductive, because you spend so much time trying to make it work
+    that you forget about the high level principles involved.” In this mindset, something
+    becomes clear: not all knowledge is created equal. The first time I learn how
+    to use a web framework, I acquire generalist knowledge—how a web framework might
+    be put together, what functionality it is supposed to have and design idioms—as
+    well as specialist knowledge—how this particular web framework works. But the
+    next time I learn a different web framework, the generalist knowledge I gain is
+    diminished. Repeat enough times, and all that’s left are implementation details:
+    there is no element of surprise. (One caveat: at the limit, learning many, many
+    web frameworks can give you some extra generalist knowledge simply by virtue of
+    having seen so much. We might call this *experience.*)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: For me, this presents an enormous conundrum. I want to create things! But creation
+    requires contiguous chunks of time, which are rare and precious, and requires
+    a constellation of generalist knowledge (the idea) and specialist knowledge (the
+    details). So when I don’t have several weeks to devote to a single project (aka
+    never), what should I do?
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'I’m not sure what I should do, but I have a vague sense for what my current
+    rut is: alternate between working on projects that promise to give some generalist
+    knowledge (whether it’s a short experiment for a blog post or hacking in the majestic
+    mindbending landscape that is GHC) and slugging through my specialist maintenance
+    workload. It... works, although it means I do a bit more writing and system administration
+    than coding these days. *C''est la vie.*'
+  prefs: []
+  type: TYPE_NORMAL

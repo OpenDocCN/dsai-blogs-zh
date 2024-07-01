@@ -1,0 +1,384 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:17:40'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'How to read Haskell like Python : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2011/11/how-to-read-haskell/](http://blog.ezyang.com/2011/11/how-to-read-haskell/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '**tl;dr** — Save this page for future reference.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Have you ever been in the situation where you need to quickly understand what
+    a piece of code in some unfamiliar language does? If the language looks a lot
+    like what you’re comfortable with, you can usually guess what large amounts of
+    the code does; even if you may not be completely familiar how all the language
+    features work.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'For Haskell, this is a little more difficult, since Haskell syntax looks very
+    different from traditional languages. But there''s no really deep difference here;
+    you just have to squint at it just right. Here is a fast, mostly incorrect, and
+    hopefully useful guide for interpreting Haskell code like a Pythonista. By the
+    end, you should be able to interpret this fragment of Haskell (some code elided
+    with `...`):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Types.* Ignore everything you see after `::` (similarly, you can ignore `type`,
+    `class`, `instance` and `newtype`. Some people claim that types help them understand
+    code; if you''re a complete beginner, things like `Int` and `String` will probably
+    help, and things like `LayoutClass` and `MonadError` won''t. Don''t worry too
+    much about it.)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Arguments.* `f a b c` translates into `f(a, b, c)`. Haskell code omits parentheses
+    and commas. One consequence of this is we sometimes need parentheses for arguments:
+    `f a (b1 + b2) c` translates into `f(a, b1 + b2, c)`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Dollar sign.* Since complex statements like `a + b` are pretty common and
+    Haskellers don''t really like parentheses, the dollar sign is used to avoid parentheses:
+    `f $ a + b` is equivalent to the Haskell code `f (a + b)` and translates into
+    `f(a + b)`. You can think of it as a big opening left parenthesis that automatically
+    closes at the end of the line (no need to write `))))))` anymore!) In particular,
+    if you stack them up, each one creates a deeper nesting: `f $ g x $ h y $ a +
+    b` is equivalent to `f (g x (h y (a + b)))` and translates into `f(g(x,h(y,a +
+    b))` (though some consider this bad practice).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'In some code, you may see a variant of `$`: `<$>` (with angled brackets). You
+    can treat `<$>` the same way as you treat `$`. (You might also see `<*>`; pretend
+    that it''s a comma, so `f <$> a <*> b` translates to `f(a, b)`. There''s not really
+    an equivalent for regular `$`)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Backticks.* ``x `f` y`` translates into `f(x,y)`. The thing in the backticks
+    is a function, usually binary, and the things to the left and right are the arguments.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Equals sign.* Two possible meanings. If it''s at the beginning of a code block,
+    it just means you''re defining a function:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Or if you see it to near a `let` keyword, it’s acting like an assignment operator:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Left arrow.* Also acts like an assignment operator:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Why don't we use an equals sign? Shenanigans. (More precisely, `createEntry
+    x` has side effects. More accurately, it means that the expression is monadic.
+    But that’s just shenanigans. Ignore it for now.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Right arrow.* It''s complicated. We''ll get back to them later.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Do keyword.* Line noise. You can ignore it. (It does give some information,
+    namely that there are side effects below, but you never see this distinction in
+    Python.)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Return.* Line-noise. Also ignore. (You’ll never see it used for control flow.)'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Dot.* `f . g $ a + b` translates to `f(g(a + b))`. Actually, in a Python program
+    you''d probably have been more likely to see:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: But Haskell programmers are allergic to extra variables.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Bind and fish operators.* You might see things like `=<<`, `>>=`, `<=<` and
+    `>=>`. These are basically just more ways of getting rid of intermediate variables:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE5]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Sometimes a Haskell programmer decides that it''s prettier if you do it in
+    the other direction, especially if the variable is getting assigned somewhere:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE6]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'The most important thing to do is to reverse engineer what''s actually happening
+    by looking at the definitions of `doSomething`, `doSomethingElse` and `finishItUp`:
+    it will give you a clue what''s “flowing” across the fish operator. If you do
+    that, you can read `<=<` and `>=>` the same way (they actually do function composition,
+    like the dot operator). Read `>>` like a semicolon (e.g. no assignment involved):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE7]'
+  prefs: []
+  type: TYPE_PRE
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Partial application.* Sometimes, Haskell programmers will call a function,
+    but they *won''t pass enough arguments.* Never fear; they''ve probably arranged
+    for the rest of the arguments to be given to the function somewhere else. Ignore
+    it, or look for functions which take anonymous functions as arguments. Some of
+    the usual culprits include `map`, `fold` (and variants), `filter`, the composition
+    operator `.`, the fish operators (`=<<`, etc). This happens a lot to the numeric
+    operators: `(+3)` translates into `lambda x: x + 3`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Control operators.* Use your instinct on these: they do what you think they
+    do! (Even if you think they shouldn''t act that way.) So if you see: `when (x
+    == y) $ doSomething x`, it reads like “When x equals y, call doSomething with
+    x as an argument.”'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Ignore the fact that you couldn’t actually translate that into `when(x == y,
+    doSomething(x))` (Since, that would result in `doSomething` always being called.)
+    In fact, `when(x == y, lambda: doSomething x)` is more accurate, but it might
+    be more comfortable to just pretend that `when` is also a language construct.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '`if` and `case` are built-in keywords. They work the way you’d expect them
+    to.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Right arrows (for real!)* Right arrows have nothing to do with left arrows.
+    Think of them as colons: they''re always nearby the `case` keyword and the backslash
+    symbol, the latter of which is lambda: `\x -> x` translates into `lambda x: x`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Pattern matching using `case` is a pretty nice feature, but a bit hard to explain
+    in this blog post. Probably the easiest approximation is an `if..elif..else` chain
+    with some variable binding:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE8]'
+  prefs: []
+  type: TYPE_PRE
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Bracketing.* You can tell something is a bracketing function if it starts
+    with `with`. They work like contexts do in Python:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE9]'
+  prefs: []
+  type: TYPE_PRE
+- en: (You may recall the backslash from earlier. Yes, that's a lambda. Yes, `withFile`
+    is a function. Yes, you can define your own.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Exceptions.* `throw`, `catch`, `catches`, `throwIO`, `finally`, `handle` and
+    all the other functions that look like this work essentially the way you expect
+    them to. They may look a little funny, however, because none of these are keywords:
+    they’re all functions, and follow all those rules. So, for example:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE10]'
+  prefs: []
+  type: TYPE_PRE
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Maybe.* If you see Nothing, it can be thought of as `None`. So `isNothing
+    x` tests if `x is None`. What''s the opposite of it? `Just`. For example, `isJust
+    x` tests if `x is not None`.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'You might see a lot of line noise associated with keeping `Just` and `None`
+    in order. Here''s one of the most common ones:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE11]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'Here''s one specific variant, for when a null is an error condition:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE12]'
+  prefs: []
+  type: TYPE_PRE
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Records.* The work they way you''d expect them too, although Haskell lets
+    you create fields that have no names:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE13]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'So `NoNames` would probably be represented as a tuple `(1, 2)` in Python, and
+    `WithNames` a class:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE14]'
+  prefs: []
+  type: TYPE_PRE
+- en: Then creation is pretty simple `NoNames 2 3` translates into `(2, 3)`, and `WithNames
+    2 3` or `WithNames { firstField = 2, secondField = 3 }` translates into `WithNames(2,3)`.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Accessors are a little more different. The most important thing to remember
+    is Haskellers put their accessors before the variable, whereas you might be most
+    familiar with them being after. So `field x` translates to `x.field`. How do you
+    spell `x.field = 2`? Well, you can’t really do that. You can copy one with modifications
+    though:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE15]'
+  prefs: []
+  type: TYPE_PRE
+- en: Or you can make one from scratch if you replace `x` with the name of the data
+    structure (it starts with a capital letter). Why do we only let you copy data
+    structures? This is because Haskell is a *pure* language; but don't let that worry
+    you too much. It's just another one of Haskell’s quirks.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*List comprehensions.* They originally came from the Miranda-Haskell lineage!
+    There are just more symbols.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE16]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'It also turns out Haskellers often prefer list comprehensions written in multi-line
+    form (perhaps they find it easier to read). They look something like:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE17]'
+  prefs: []
+  type: TYPE_PRE
+- en: So if you see a left arrow and it doesn't really look like it's doing side effects,
+    maybe it's a list comprehension.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*More symbols.* Lists work the way you would expect them to in Python; `[1,
+    2, 3]` is in fact a list of three elements. A colon, like `x:xs` means construct
+    a list with `x` at the front and `xs` at the back (`cons`, for you Lisp fans.)
+    `++` is list concatenation. `!!` means indexing. Backslash means lambda. If you
+    see a symbol you don''t understand, try looking for it on [Hoogle](http://haskell.org/hoogle/)
+    (yes, it works on symbols!).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*More line noise.* The following functions are probably line noise, and can
+    probably be ignored. `liftIO`, `lift`, `runX` (e.g. `runState`), `unX` (e.g. `unConstructor`),
+    `fromJust`, `fmap`, `const`, `evaluate`, an exclamation mark before an argument
+    (`f !x`), `seq`, a hash sign (e.g. `I# x`).'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Bringing it all together.* Let’s return to the original code fragment:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE18]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'With some guessing, we can pop out this translation:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE19]'
+  prefs: []
+  type: TYPE_PRE
+- en: This is not bad, for a very superficial understanding of Haskell syntax (there's
+    only one obviously untranslatable bit, which requires knowing what a fold is.
+    Not all Haskell code is folds; I’ll repeat, don’t worry about it too much!)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Most of the things I have called “line noise” actually have very deep reasons
+    behind them, and if you’re curious behind the actual reasons behind these distinctions,
+    I recommend learning how to *write* Haskell. But if you’re just reading Haskell,
+    I think these rules should be more than adequate.
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Thanks* to Keegan McAllister, Mats Ahlgren, Nelson Elhage, Patrick Hurst,
+    Richard Tibbetts, Andrew Farrell and Geoffrey Thomas for comments. Also thanks
+    to two kind denizens of `#python`, `` asdf` `` and `talljosh`, for acting as Python-using
+    guinea pigs.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '*Postscript.* If you''re really curious what `foldl (>>=) (return startOptions)
+    actions` does, it implements the [chain of responsibility](http://en.wikipedia.org/wiki/Chain-of-responsibility_pattern)
+    pattern. Hell yeah.'
+  prefs: []
+  type: TYPE_NORMAL

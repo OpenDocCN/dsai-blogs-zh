@@ -1,0 +1,73 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:17:29'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Applicative functors : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2012/08/applicative-functors/](http://blog.ezyang.com/2012/08/applicative-functors/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: '*On the importance of primary sources.*'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '(Introductory material ahead.) Most readers of this blog should have at least
+    a passing familiarity with [applicative functors](http://hackage.haskell.org/packages/archive/base/latest/doc/html/Control-Applicative.html):'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'This interface is quite convenient for day-to-day programming (in particular,
+    it makes for the nice `f <$> a <*> b <*> c` idiom), but the laws it obeys are
+    quite atrocious:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'So, if you (like me twenty-four hours ago) haven’t seen it already, you should
+    show that this interface is equivalent to Applicative:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: '(By the way, if you haven’t shown that `join :: m (m a) -> m a` for monads
+    is equivalent to `bind :: m a -> (a -> m b) -> m b`, you should do that too.)
+    The laws for this formulation are *much* nicer:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
+- en: Where `f *** g = \(x,y) -> (f x, g y)`. I’ve prettied things up a bit by using
+    “is isomorphic to” in order to suppress the differences between `((), a)` and
+    `a`, as well as `(a,(b,c))` and `((a,b),c)`, for strict equalities you’ll need
+    some extra functions to massage the results into the right types. It seems that
+    there is a general pattern where the API which has nice formulations of laws is
+    not convenient to program with, and the formulation which is nice to program with
+    does not have nice laws. C’est la vie... but at least they’re equivalent!
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'With this formulation, it becomes trivial to state what laws commutative applicative
+    functors obey:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE4]'
+  prefs: []
+  type: TYPE_PRE
+- en: The original paper [Applicative Programming With Effects](http://www.soi.city.ac.uk/~ross/papers/Applicative.html)
+    is well worth a read. Check it out! That concludes this public service announcement.
+  prefs: []
+  type: TYPE_NORMAL

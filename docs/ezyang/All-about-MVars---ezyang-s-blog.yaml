@@ -1,0 +1,126 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:18:00'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'All about MVars : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2011/02/all-about-mvars/](http://blog.ezyang.com/2011/02/all-about-mvars/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: I recently took the time out to rewrite [the MVar documentation](http://www.haskell.org/ghc/docs/latest/html/libraries/base/Control-Concurrent-MVar.html),
+    which as it stands is fairly sparse (the introduction section rather tersely states
+    "synchronising variables"; though to the credit of the original writers the inline
+    documentation for the data type and its fundamental operations is fairly fleshed
+    out.) I've reproduced my new introduction here.
+  prefs: []
+  type: TYPE_NORMAL
+- en: While researching this documentation, I discovered something new about how MVars
+    worked, which is encapsulated in this program. What does it do?
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: '* * *'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'An `MVar t` is mutable location that is either empty or contains a value of
+    type `t`. It has two fundamental operations: `putMVar` which fills an MVar if
+    it is empty and blocks otherwise, and `takeMVar` which empties an MVar if it is
+    full and blocks otherwise. They can be used in multiple different ways:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: As synchronized mutable variables,
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: As channels, with `takeMVar` and `putMVar` as receive and send, and
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: As a binary semaphore `MVar ()`, with `takeMVar` and `putMVar` as wait and signal.
+  prefs:
+  - PREF_OL
+  type: TYPE_NORMAL
+- en: They were introduced in the paper "Concurrent Haskell" by Simon Peyton Jones,
+    Andrew Gordon and Sigbjorn Finne, though some details of their implementation
+    have since then changed (in particular, a put on a full MVar used to error, but
+    now merely blocks.)
+  prefs: []
+  type: TYPE_NORMAL
+- en: Applicability
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'MVars offer more flexibility than IORefs, but less flexibility than STM. They
+    are appropriate for building synchronization primitives and performing simple
+    interthread communication; however they are very simple and susceptible to race
+    conditions, deadlocks or uncaught exceptions. Do not use them if you need perform
+    larger atomic operations such as reading from multiple variables: use ''STM''
+    instead.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: In particular, the "bigger" functions in this module (`readMVar`, `swapMVar`,
+    `withMVar`, `modifyMVar_` and `modifyMVar`) are simply compositions a `takeMVar`
+    followed by a `putMVar` with exception safety. These only have atomicity guarantees
+    if all other threads perform a `takeMVar` before a `putMVar` as well; otherwise,
+    they may block.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Fairness
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: The original paper specified that no thread can be blocked indefinitely on an
+    MVar unless another thread holds that MVar indefinitely. This implementation upholds
+    this fairness property by serving threads blocked on an MVar in a first-in-first-out
+    fashion.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Gotchas
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Like many other Haskell data structures, MVars are lazy. This means that if
+    you place an expensive unevaluated thunk inside an MVar, it will be evaluated
+    by the thread that consumes it, not the thread that produced it. Be sure to `evaluate`
+    values to be placed in an MVar to the appropriate normal form, or utilize a strict
+    MVar provided by the [strict-concurrency package](http://hackage.haskell.org/package/strict-concurrency).
+  prefs: []
+  type: TYPE_NORMAL
+- en: Example
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: Consider the following concurrent data structure, a skip channel. This is a
+    channel for an intermittent source of high bandwidth information (for example,
+    mouse movement events.) Writing to the channel never blocks, and reading from
+    the channel only returns the most recent value, or blocks if there are no new
+    values. Multiple readers are supported with a `dupSkipChan` operation.
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'A skip channel is a pair of MVars: the second MVar is a semaphore for this
+    particular reader: it is full if there is a value in the channel that this reader
+    has not read yet, and empty otherwise.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: This example was adapted from the original Concurrent Haskell paper. For more
+    examples of MVars being used to build higher-level synchronization primitives,
+    see [Control.Concurrent.Chan](http://www.haskell.org/ghc/docs/latest/html/libraries/base/Control-Concurrent-Chan.html)
+    and [Control.Concurrent.QSem](http://www.haskell.org/ghc/docs/latest/html/libraries/base/Control-Concurrent-QSem.html).
+  prefs: []
+  type: TYPE_NORMAL

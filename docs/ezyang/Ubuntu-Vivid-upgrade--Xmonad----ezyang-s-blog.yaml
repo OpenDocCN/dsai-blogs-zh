@@ -1,0 +1,65 @@
+- en: <!--yml
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'category: 未分类'
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'date: 2024-07-01 18:17:10'
+  prefs: []
+  type: TYPE_NORMAL
+- en: -->
+  prefs: []
+  type: TYPE_NORMAL
+- en: 'Ubuntu Vivid upgrade (Xmonad) : ezyang’s blog'
+  prefs:
+  - PREF_H1
+  type: TYPE_NORMAL
+- en: 来源：[http://blog.ezyang.com/2015/05/ubuntu-vivid-upgrade-xmonad/](http://blog.ezyang.com/2015/05/ubuntu-vivid-upgrade-xmonad/)
+  prefs:
+  - PREF_BQ
+  type: TYPE_NORMAL
+- en: Ubuntu Vivid upgrade (Xmonad)
+  prefs:
+  - PREF_H2
+  type: TYPE_NORMAL
+- en: 'Another half year, another Ubuntu upgrade. This upgrade went essentially smoothly:
+    the only things that stopped working were my xbindkeys bindings for volume and
+    suspend, which were easy to fix.'
+  prefs: []
+  type: TYPE_NORMAL
+- en: Volume up and down
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'If you previously had:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE0]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'this syntax no longer works: you must place the double dash earlier in the
+    command, as so:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE1]'
+  prefs: []
+  type: TYPE_PRE
+- en: Do the same for volume down.
+  prefs: []
+  type: TYPE_NORMAL
+- en: Suspend
+  prefs:
+  - PREF_H3
+  type: TYPE_NORMAL
+- en: 'If you previously had:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE2]'
+  prefs: []
+  type: TYPE_PRE
+- en: 'UPower no longer handles suspend; you have to send the command to login:'
+  prefs: []
+  type: TYPE_NORMAL
+- en: '[PRE3]'
+  prefs: []
+  type: TYPE_PRE
