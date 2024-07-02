@@ -1,6 +1,7 @@
 +   [AssemblyAI 博客中文翻译](docs/assemblyai/README.md)
 +   [DataCamp 博客中文翻译](docs/datacamp/README.md)
 +   [DLology 博客中文翻译](docs/dlology/README.md)
++   [EZYang 博客翻译](docs/ezyang/README.md)
 +   [LiLianWeng 博客中文翻译](docs/lilianweng/README.md)
 +   [NeptuneAI 博客中文翻译](docs/neptuneai/README.md)
 +   [PaperSpace 博客中文翻译](docs/paperspace/README.md)
