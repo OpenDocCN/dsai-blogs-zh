@@ -1,27 +1,41 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:08'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:08'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'So long America! : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 美国，再见！：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2010/09/so-long-america/](http://blog.ezyang.com/2010/09/so-long-america/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/09/so-long-america/](http://blog.ezyang.com/2010/09/so-long-america/)
 - en: So long America!
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 美国，再见！
 - en: 'For tomorrow I get on a plane traversing three thousand miles from my home
     to a little place named Cambridge, United Kingdom. I’ll be studying abroad for
     the 2010-2011 academic year at Cambridge University (specifically, I’ll be at
@@ -29,5 +43,8 @@
     days](http://www.reddit.com/r/haskell/comments/diuhx/this_week_in_baltimore_icfp_haskell_symposium/),
     if you’re in the area, drop me a line: I’d love to meet up after I get over my
     jet lag. :-)'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 明天我将乘坐飞机，从我家的三千英里外的地方，飞往一个名叫剑桥的小地方，英国。我将在剑桥大学度过2010-2011学年的留学生活（具体来说，我将在菲茨威廉学院）。尽管我知道巴尔的摩如今是一个时尚之地，如果你在附近，给我来个留言：我很乐意在克服时差后见个面。
+    :-)

@@ -1,23 +1,35 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:17:15'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:17:15
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'The cost of weak pointers and finalizers in GHC : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: GHC中弱指针和终结器的成本：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2014/05/the-cost-of-weak-pointers-and-finalizers-in-ghc/](http://blog.ezyang.com/2014/05/the-cost-of-weak-pointers-and-finalizers-in-ghc/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2014/05/the-cost-of-weak-pointers-and-finalizers-in-ghc/](http://blog.ezyang.com/2014/05/the-cost-of-weak-pointers-and-finalizers-in-ghc/)
 - en: '[Weak pointers and finalizers](http://community.haskell.org/~simonmar/papers/weak.pdf)
     are a very convenient feature for many types of programs. Weak pointers are useful
     for implementing memotables and solving certain classes of memory leaks, while
@@ -28,37 +40,52 @@
     in the GHC runtime system and characterize what extra overheads you incur by using
     them. These post assumes some basic knowledge about how the runtime system and
     copying garbage collection work.'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: '[弱指针和终结器](http://community.haskell.org/~simonmar/papers/weak.pdf)对于许多类型的程序都是一个非常便利的功能。弱指针用于实现记忆表和解决某些类型的内存泄漏问题，而终结器则用于将“分配/释放”内存模型适配到垃圾回收语言中。当然，这些功能并非免费提供，因此人们可能会想知道在GHC中使用这两个（密切相关的）功能的*代价*是什么。在这篇博文中，我想解释一下在GHC运行时系统中如何实现弱指针和终结器，并描述通过使用它们而增加的额外开销。本文假定读者对运行时系统和复制垃圾回收的基本工作原理有一定的了解。'
 - en: The userland API
+  id: totrans-7
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 用户界面API
 - en: The API for weak pointers is in [System.Mem.Weak](http://hackage.haskell.org/package/base-4.7.0.0/docs/System-Mem-Weak.html);
     in its full generality, a weak pointer consists of a key and a value, with the
     property that if the key is alive, then the value is considered alive. (A "simple"
     weak reference is simply one where the key and value are the same.) A weak pointer
     can also optionally be associated with a finalizer, which is run when the object
     is garbage collected. Haskell finalizers are not guaranteed to run.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 弱指针的API在[System.Mem.Weak](http://hackage.haskell.org/package/base-4.7.0.0/docs/System-Mem-Weak.html)中；总体而言，弱指针由一个键和一个值组成，其特性是，如果键存活，则值被视为存活。（"简单"的弱引用只是键和值相同的引用。）弱指针还可以选择地与终结器关联，当对象被垃圾回收时运行。Haskell
+    的终结器不能保证运行。
 - en: Foreign pointers in [Foreign.ForeignPtr](http://hackage.haskell.org/package/base-4.7.0.0/docs/Foreign-ForeignPtr-Safe.html)
     also have a the capability to attach a C finalizer; i.e. a function pointer that
     might get run during garbage collection. As it turns out, these finalizers are
     also implemented using weak pointers, but C finalizers are treated differently
     from Haskell finalizers.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 在[Foreign.ForeignPtr](http://hackage.haskell.org/package/base-4.7.0.0/docs/Foreign-ForeignPtr-Safe.html)中的外部指针也具有附加C终结器的能力；即，可能在垃圾回收期间运行的函数指针。事实证明，这些终结器也是使用弱指针实现的，但是C终结器与Haskell终结器处理方式不同。
 - en: Representation of weak pointers
+  id: totrans-10
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 弱指针的表示
 - en: 'A weak pointer is a special type of object with the following layout:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 弱指针是一种特殊类型的对象，具有以下布局：
 - en: '[PRE0]'
+  id: totrans-12
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: As we can see, we have pointers to the key and value, as well as separate pointers
     for a single Haskell finalizer (just a normal closure) and C finalizers (which
     have the type `StgCFinalizerList`). There is also a link field for linking weak
@@ -66,20 +93,27 @@
     nursery's list of weak pointers (aptly named `weak_ptr_list`). As of GHC 7.8,
     this list is global, so we do have to [take out a global lock](https://ghc.haskell.org/trac/ghc/ticket/9075#ticket)
     when a new weak pointer is allocated; however, the lock has been removed in HEAD.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如我们所见，我们有指向键和值的指针，以及单个Haskell终结器的独立指针（只是一个普通闭包）和C终结器的指针（其类型为`StgCFinalizerList`）。还有一个用于将弱指针链接在一起的链接字段。实际上，当创建弱指针时，它被添加到幼儿园弱指针列表中（恰如其名为`weak_ptr_list`）。截至GHC
+    7.8，此列表是全局的，因此在分配新的弱指针时我们必须[锁定全局锁](https://ghc.haskell.org/trac/ghc/ticket/9075#ticket)，但是在HEAD中已经移除了该锁。
 - en: Garbage collecting weak pointers
+  id: totrans-14
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 垃圾回收弱指针
 - en: 'Pop quiz! When we do a (minor) garbage collection on weak pointers, which of
     the fields in `StgWeak` are considered pointers, and which fields are considered
     non-pointers? The correct answer is: only the first field is considered a “pointer”;
     the rest are treated as non-pointers by normal GC. This is actually what you would
     expect: if we handled the key and value fields as normal pointer fields during
     GC, then they wouldn’t be weak at all.'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 突击测试！当我们对弱引用进行（轻微的）垃圾收集时，`StgWeak` 中的哪些字段被认为是指针，哪些字段被认为是非指针？正确答案是：只有第一个字段被认为是“指针”；其余字段在正常GC中被视为非指针。这其实是可以预料的：如果我们在GC期间将键和值字段处理为正常的指针字段，那它们根本就不是弱引用。
 - en: Once garbage collection has been completed (modulo all of the weak references),
     we then go through the weak pointer list and check if the keys are alive. If they
     are, then the values and finalizers should be considered alive, so we mark them
@@ -89,33 +123,45 @@
     the key must have already been processed by the GC). Live weak pointers are removed
     from the "old" list and placed into the new list of live weak pointers, for the
     next time.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦垃圾收集完成（扣除所有弱引用），我们会遍历弱引用列表并检查键是否存活。如果存活，那么值和终结器应被视为存活，我们将它们标记为存活，并继续执行更多的垃圾收集。只要我们继续发现新的弱引用来处理，此过程将继续进行；然而，这只会发生在键和值不同的情况下（如果它们相同，则键必定已被GC处理）。存活的弱引用将从“旧”列表中移除，并放入下次存活弱引用的新列表中。
 - en: Once there are no more newly discovered live pointers, the list of dead pointers
     is collected together, and the finalizers are scheduled (`scheduleFinalizers`).
     C finalizers are run on the spot during GC, while Haskell finalizers are batched
     together into a list and then shunted off to a freshly created thread to be run.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦没有新发现的存活指针，死指针列表将被收集在一起，并安排终结器（`scheduleFinalizers`）。C终结器在GC期间立即运行，而Haskell终结器则被批量处理并放入新创建的线程中运行。
 - en: That's it! There are some details for how to handle liveness of finalizers (which
     are heap objects too, so even if an object is dead we have to keep the finalizer
     alive for one more GC) and threads (a finalizer for a weak pointer can keep a
     thread alive).
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 还有一些有关如何处理终结器的细节（终结器也是堆对象，因此即使对象已经死亡，我们也必须保留终结器以供下一个GC使用），以及线程（弱引用的终结器可以保持线程的存活）。
 - en: Tallying up the costs
+  id: totrans-19
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 统计成本
 - en: 'To summarize, here are the extra costs of a weak pointer:'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 总结一下，以下是弱引用的额外成本：
 - en: Allocating a weak pointer requires taking a global lock (will be fixed in GHC
     7.10) and costs six words (fairly hefty as far as Haskell heap objects tend to
     go.)
+  id: totrans-21
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 分配弱引用需要获取全局锁（将在 GHC 7.10 中修复），并且消耗六个字（对于Haskell堆对象来说相当可观）。
 - en: During each minor GC, processing weak pointers takes time linear to the size
     of the weak pointer lists for all of the generations being collected. Furthermore,
     this process involves traversing a linked list, so data locality will not be very
@@ -123,9 +169,11 @@
     a weak pointer is live, it is not processed again. The cost of redoing GC when
     a weak pointer is found to be live is simply the cost of synchronizing all parallel
     GC threads together.
+  id: totrans-22
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在每次轻微GC期间，处理弱引用的时间与正在收集的所有代的弱引用列表大小成线性关系。此外，此过程涉及遍历一个链表，因此数据局部性并不好。这个过程可能会多次发生，尽管一旦确定了弱引用是存活的，就不会再次处理。当发现弱引用存活时，重新执行GC的成本仅仅是同步所有并行GC线程的成本。
 - en: 'The number of times you have to switch between GC''ing and processing weak
     pointers depends on the structure of the heap. Take a heap and add a special "weak
     link" from a key to its dependent weak value. Then we can classify objects by
@@ -133,14 +181,18 @@
     call this the "weak distance". Supposing that a given weak pointer''s weak distance
     is n, then we spend O(n) time processing that weak pointer during minor GC. The
     maximum weak distance constitutes how many times we need to redo the GC.'
+  id: totrans-23
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 您必须在GC和处理弱引用之间进行切换的次数取决于堆的结构。从一个根对象到达对象所需的最小弱链接数，并添加一个特殊的“弱链接”，从一个键到其依赖的弱值。然后，我们可以根据从根到对象的最小弱链接数分类对象：将其称为“弱距离”。假设给定的弱引用的弱距离为n，则在轻微GC期间处理该弱引用需要O(n)的时间。最大弱距离决定了我们需要重新执行GC的次数。
 - en: 'In short, weak pointers are reasonably cheap when they are not deeply nested:
     you only pay the cost of traversing a linked list of all of the pointers you have
     allocated once per garbage collection. In the pessimal case (a chain of weak links,
     where the value of each weak pointer was not considered reachable until we discovered
     its key is live in the previous iteration), we can spend quadratic time processing
     weak pointers.'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 简而言之，当弱引用没有深度嵌套时，它们的成本是相当便宜的：你只需在每次垃圾回收时支付一次遍历你分配的所有指针的链表的成本。在最坏的情况下（弱链接的链条，其中每个弱指针的值直到我们在前一个迭代中发现其键是活动的时候才被认为是可达的），我们可能会花费二次时间处理弱指针。

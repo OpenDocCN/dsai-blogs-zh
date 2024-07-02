@@ -1,23 +1,35 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:18:27'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:18:27
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Type manipulation: Tricks of the trade : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 类型操作：*行业诀窍*：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2010/02/type-manipulation-tricks-of-the-trade/](http://blog.ezyang.com/2010/02/type-manipulation-tricks-of-the-trade/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/02/type-manipulation-tricks-of-the-trade/](http://blog.ezyang.com/2010/02/type-manipulation-tricks-of-the-trade/)
 - en: I present here a few pieces of folklore, well known to those practiced in Haskell,
     that I've found to be really useful techniques when analyzing code whose types
     don't seem to make any sense. We'll build practical techniques for reasoning about
@@ -25,8 +37,11 @@
     you *could* just ask GHCI what the type is, but that would spoil the fun! (More
     seriously, working out the example by hand, just like a good problem set, helps
     develop intuition for what might be happening.)
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 我在这里介绍了一些传统的典故，对于那些擅长 Haskell 的人来说，这些技巧在分析类型看似毫无意义的代码时非常有用。我们将建立实用的技巧来推断类型，以便能够自己推导出
+    `fmap fmap fmap` 的类型。请注意，你*可以*只是问 GHCI 它的类型，但那会破坏乐趣！（更严肃地说，通过手动解决问题集中的例子，就像一个良好的问题集一样，有助于培养对可能发生的事情的直觉。）
 - en: '*Currying and types.* Three type signatures that have a superficial similarities
     are `a -> b -> c`, `(a -> b) -> c` and `a -> (b -> c)`. If you don''t have a visceral
     feel for Haskell''s automatic currying, it can be easy to confuse the three. In
@@ -37,8 +52,13 @@
     apply, in these cases, is that parentheses that are flush with the right side
     of the type signature can be freely added or removed, whereas any other parentheses
     cannot be.'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '*柯里化与类型。* 三种具有表面相似性的类型签名分别是 `a -> b -> c`，`(a -> b) -> c` 和 `a -> (b -> c)`。如果你对
+    Haskell 的自动柯里化没有直观的感受，很容易混淆这三种类型。在这种特定情况下，`a -> b -> c` 可以理解为“接受两个参数 `a` 和 `b`
+    并返回 `c`”，等价于 `a -> (b -> c)`，可以理解为“接受 `a` 并返回一个接受 `b` 并返回 `c` 的函数”。这些与 `(a ->
+    b) -> c` 是不同的，它表示“接受一个 `a -> b` 的函数并返回 `c`”。在这些情况下，你可以应用一个视觉规则：类型签名右侧与括号对齐的括号可以自由添加或移除，而其他位置的括号则不能。'
 - en: '*Higher-order functions.* If I pass an `Int` to `id :: a -> a`, it''s reasonably
     obvious that `id` takes the shape of `Int -> Int`. If I pass a function `a ->
     a` to `id :: a -> a`, `id` then takes the shape `(a -> a) -> a -> a`. Personally,
@@ -49,24 +69,37 @@
     going to use those letters for our manipulation: since our expression has two
     instances of `(.)`, we''ll name the first `a` and the second `b`, and we''ll number
     them from one to three. Then:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: '*高阶函数。* 如果我将一个 `Int` 传递给 `id :: a -> a`，很显然 `id` 的类型是 `Int -> Int`。如果我将一个函数
+    `a -> a` 传递给 `id :: a -> a`，那么 `id` 的类型变成了 `(a -> a) -> a -> a`。就我个人而言，我觉得类型参数的重载有点令人困惑，所以如果我有一堆函数，我试图推导它们的类型，我会给它们所有人不同的名称。由于
+    `id id` 有点微不足道，我们将考虑一些更恶劣的东西：`(.) (.)`。回想一下 `(.) :: (b -> c) -> (a -> b) -> a
+    -> c`。我们实际上不会使用这些字母进行操作：因为我们的表达式有两个 `(.)` 的实例，我们将第一个命名为 `a`，第二个命名为 `b`，并从一到三编号。然后：'
 - en: '[PRE0]'
+  id: totrans-9
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'Slightly less aesthetically pleasing, but we don''t have anymore conflicting
     types. Next step is to identify what equivalences are present in the type variables,
     and eliminate redundancy. Since we''re passing the second `(.)` to the first `(.)`
     as an argument:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 稍微不那么美观，但我们没有更多的冲突类型了。下一步是识别类型变量中存在的等价性，并消除冗余。因为我们将第二个 `(.)` 作为第一个 `(.)` 的参数传递：
 - en: '[PRE1]'
+  id: totrans-11
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'to which you might say, "those function signatures don''t look anything alike!"
     which leads us to our next point:'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 至于你可能会说，“这些函数签名看起来一点都不像！”这将引导我们到下一个要点：
 - en: '*Currying and type substitution.* If your function''s type is *n*-ary, and
     the type you''re trying to match it against is *m*-ary, curry so that your function
     is *m*-ary to! So, if you have `a -> b -> c`, and you want to pass it as `d ->
@@ -74,35 +107,57 @@
     c)`. A curious case if it''s in the other direction, in which case `d -> e` is
     actually *restricted* to be `d -> (e1 -> e2)`, where `e == (e1 -> e2)` and the
     obvious equalities hold.'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: '*柯里化和类型替换.* 如果你的函数类型是*n*-元的，而你想要匹配的类型是*m*-元的，请柯里化你的函数使其成为*m*-元的！因此，如果你有`a ->
+    b -> c`，而你想把它当作`d -> e`来传递，那么实际上你有`a -> (b -> c)`，因此`d == a`且`e == (b -> c)`。如果情况反过来，`d
+    -> e`实际上被限制为`d -> (e1 -> e2)`，其中`e == (e1 -> e2)`且显然的相等性成立。'
 - en: 'To go back to our original example, the second `(.)` would be grouped as such:'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 回到我们的原始例子，第二个`(.)`会被分组如下：
 - en: '[PRE2]'
+  id: totrans-15
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'and we achieve the type equalities:'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 并且我们得到了类型相等性：
 - en: '[PRE3]'
+  id: totrans-17
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'Now, let''s substitute in these values for the first `(.)`:'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，让我们将这些值替换为第一个`(.)`：
 - en: '[PRE4]'
+  id: totrans-19
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: 'and drop the first argument, since it''s been applied:'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 并丢弃第一个参数，因为它已经被应用了：
 - en: '[PRE5]'
+  id: totrans-21
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: You might be wondering what that monstrous type signature does...
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 也许你会想知道那个庞大的类型签名是干什么用的...
 - en: '*Interpreting type signatures.* A great thing about polymorphic types is that
     there''s not very much non-pathological behavior that can be specified: because
     the type is fully polymorphic, we can''t actually stick our hand in the box and
@@ -110,69 +165,95 @@
     [Djinn](http://lambda-the-ultimate.org/node/1178), which automatically derive
     a function''s contents given a type signature, possible, and with a little practice,
     you can figure it out too.'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: '*解释类型签名.* 多态类型的一个很棒的特性是，几乎没有非病理行为可以被指定：因为类型是完全多态的，我们实际上不能把手伸进箱子里并利用它实际上是一个整数的事实。这一特性使得像[Djinn](http://lambda-the-ultimate.org/node/1178)这样的程序能够自动推导函数的内容，只要稍加练习，你也能够理解。'
 - en: 'Working backwards: we first take a look at `b3`. There''s no way for our function
     to magically generate a value of type `b3` (excluding `undefined` or bottom, which
     counts as pathological), so there''s got to be something else in our script that
     generates it. And sure enough, it''s the first argument, but we need to pass it
     `a1` and `b2` first:'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 逆向思维：我们首先看一下`b3`。我们的函数没有办法神奇地生成一个类型为`b3`的值（不包括`undefined`或底部，这被认为是病态的），因此我们的脚本中必须有其他东西来生成它。果不其然，它就是第一个参数，但我们需要先传递`a1`和`b2`：
 - en: '[PRE6]'
+  id: totrans-25
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'We repeat the process for each of those types in turn: where is `a1` specified?
     Well, we pass it in as the second argument. Where is `b2` specified? Well, we
     have another function `y :: b1 -> b2`, but we need a `b1` which is `z`. Excellent,
     we now have a full implementation:'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: '我们依次重复这些类型的过程：`a1`在哪里指定？好吧，我们把它作为第二个参数传递进去。`b2`在哪里指定？好吧，我们有另一个函数`y :: b1 ->
+    b2`，但我们需要一个`b1`，它是`z`。太棒了，我们现在有了一个完整的实现：'
 - en: '[PRE7]'
+  id: totrans-27
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: '*Pointfree style as operator composition.* So, we now know what `(.) (.)` does,
     but we don''t really have a good motivation for why this might be the case. (By
     motivation, I mean, look at `(.) (.)` taking function composition at face value,
     and then realizing, "oh yes, it should do that.") So what we''d really like to
     focus on is the semantics of `(.)`, namely function composition, and the fact
     that we''re currying it. One line of thought might be:'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: '*点无关风格作为操作符组合.* 所以，我们现在知道`(.) (.)`做什么了，但我们确实没有一个好的理由为什么会这样。（通过理由，我指的是，看看`(.)
+    (.)`，将函数组合看作面值，并意识到，“哦，是的，它应该这样做。”）因此，我们真正想要关注的是`(.)`的语义，即函数组合，以及我们是如何柯里化它的。可能有一种思路是：'
 - en: Function composition is defined to be `(f . g) x = f (g x)`.
+  id: totrans-29
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 函数组合被定义为`(f . g) x = f (g x)`。
 - en: We're partially applying the composition, so actually we have `(f.) g x`, but
     `g` is missing. (if the `(f.)` looks funny to you, compare it to `(2+)`, which
     is partially applied addition. Note that addition is commutative, so you're more
     likely to see `(+2)`, which becomes `(x+2)` when applied.)
+  id: totrans-30
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 我们部分应用了组合，所以实际上我们有`(f.) g x`，但是缺少`g`。（如果`(f.)`看起来对你来说有点奇怪，可以将它与`(2+)`比较，后者是部分应用的加法。注意加法是可交换的，所以你更有可能看到`(+2)`，当应用时变成`(x+2)`。）
 - en: '`f` is actually another composition operator. Since functional composition
     is single-argument oriented, we want to focused on the curried version of `(.)`,
     which takes a function and returns a function (1) that takes another function
     (2) and a value and returns the first function applied to the result of the second
     function applied to the value.'
+  id: totrans-31
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '`f`实际上是另一个组合运算符。由于函数组合是单参数导向的，我们希望专注于`(.)`的柯里化版本，它接受一个函数并返回一个函数（1），后者接受另一个函数（2）和一个值，并返回第一个函数应用于第二个函数应用于该值的结果。'
 - en: Read out the arguments. Since `(f.)` is on the outside, the first argument completes
     the curry. The next argument is what will actually get passed through the first
     argument, and the result of that will get passed through `f`. The return value
     of that is another function, but (barring the previous discussion) we haven't
     figured out what that would be yet. Still, we've figured out what the first two
     arguments might look like.
+  id: totrans-32
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 读出参数。由于`(f.)`在外面，第一个参数完成了柯里化。接下来的参数是实际将通过第一个参数传递的内容，而其结果将通过`f`传递。该返回值是另一个函数，但是（在之前的讨论除外）我们还没有弄清楚那可能是什么。尽管如此，我们已经弄清楚了前两个参数可能是什么样子。
 - en: 'If we now cheat and look at the type signature, we see our hypotheses are verified:'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们现在作弊并查看类型签名，我们可以看到我们的假设得到了验证：
 - en: '[PRE8]'
+  id: totrans-34
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: 'The first argument `g :: a1 -> b2 -> b3` completes the curry, and then the
     next argument is fed straight into it, so it would have to be `a1`. The resulting
     value `b2 -> b3` is fed into the next composition operator (notice that it''s
@@ -180,62 +261,95 @@
     and is now waiting for another function to complete the curry, which is the next
     argument `b1 -> b2` (i.e. `b1 -> b2 -> b3`). Then it''s a simple matter of supplying
     the remaining arguments.'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: '第一个参数`g :: a1 -> b2 -> b3`完成了柯里化，然后下一个参数直接传递给它，因此它必须是`a1`。得到的值`b2 -> b3`传递给下一个组合运算符（注意它不是单一变量，因为下一个组合强制它是一个一元函数），现在等待另一个函数来完成柯里化，这就是下一个参数`b1
+    -> b2`（即`b1 -> b2 -> b3`）。然后只需提供剩余的参数即可。'
 - en: I find thinking of functions as partially applied and waiting to be "completed"
     leads to a deeper intuitive understanding of what a complex chain of higher order
     functions might do.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 我发现将函数视为部分应用并等待“完成”可以更深入地直观理解复杂的高阶函数链可能会做什么。
 - en: '*Putting it together.* It is now time to work out the types for `fmap fmap
     fmap`. We first write out the types for each `fmap`:'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: '*把这些放在一起。* 现在是时候为`fmap fmap fmap`确定类型了。我们首先写出每个`fmap`的类型：'
 - en: '[PRE9]'
+  id: totrans-38
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: 'Perform application and we see:'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 进行应用后我们看到：
 - en: '[PRE10]'
+  id: totrans-40
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: 'Luckily enough, we have enough arguments to fill up the first `fmap`, so that''s
     one layer less of complexity. We can also further break these down:'
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 幸运的是，我们有足够的参数来填充第一个`fmap`，因此复杂度减少了一层。我们还可以进一步分解这些：
 - en: '[PRE11]'
+  id: totrans-42
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: The last equality stems from the fact that there's only one reasonable functor
     instance for `(c1 -> c2) -> h c1 -> h c2`; the functor for functions i.e. the
     reader monad, taking `(c1 -> c2)` as its "read-in".
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后一个等式源于这样一个事实，即对于`(c1 -> c2) -> h c1 -> h c2`，只有一个合理的函子实例；即函数的函子，即读者单子，以`(c1
+    -> c2)`作为其“读入”。
 - en: 'We can do a few more simplifications:'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以进行更多的简化：
 - en: '[PRE12]'
+  id: totrans-45
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: 'Substitute everything in, and now we see:'
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 把所有东西代入，现在我们看到：
 - en: '[PRE13]'
+  id: totrans-47
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: Interpret the types and we realize that `fmap fmap fmap` does a "double" lift
     of a function `c1 -> c2` to two functors. So we can run `fmap fmap fmap (+2) [Just
     3]` and get back `[Just 5]` (utilizing the functor instance for the outer list
     and the inner maybe).
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 解释这些类型我们意识到，`fmap fmap fmap`将一个函数`c1 -> c2`提升了两次到两个函子。所以我们可以运行`fmap fmap fmap
+    (+2) [Just 3]`并得到`[Just 5]`（利用外部列表和内部maybe的函子实例）。
 - en: 'We also notice that the `f` functor dropped out; this is because it was forced
     to a specific form, so really `fmap fmap fmap == fmap . fmap`. This makes it even
     more obvious that we''re doing a double lift: the function is `fmap`''ed once,
     and then the result is `fmap`''ed again.'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还注意到`f`函子消失了；这是因为它被迫到了一个特定的形式，所以实际上`fmap fmap fmap == fmap . fmap`。这使得我们更清楚我们正在进行双重提升：函数被`fmap`一次，然后结果再次被`fmap`。
 - en: 'We can even use this result to figure out what `(.) (.) (.)` (or `(.) . (.)`)
     might do; in the functions `fmap = (.)`, so a normal function is lifted into one
     reader context by the first fmap, and another reader context with the second fmap.
@@ -243,5 +357,10 @@
     (recall that `f a` if `f = (->) r` becomes `r -> a`) and indeed, that is the case.
     Compose composed with compose is merely a compose that can take a 2-ary function
     as it''s second argument and "do the right thing!"'
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: '我们甚至可以利用这个结果来弄清楚`(.) (.) (.)`（或`(.) . (.)`）可能会做什么；在函数中 `fmap = (.)`，所以通过第一个
+    `fmap` 将一个普通函数提升到一个读取器上下文中，通过第二个 `fmap` 又提升到另一个读取器上下文中。因此，我们期望`(.) . (.) :: (a
+    -> b) -> (r2 -> r1 -> a) -> (r2 -> r1 -> b)`（记住，如果`f = (->) r`，那么`f a` 变成 `r ->
+    a`），而事实上确实如此。复合函数与复合函数组合后，只是一个可以将二元函数作为其第二个参数并“做正确事情”的复合函数而已！'

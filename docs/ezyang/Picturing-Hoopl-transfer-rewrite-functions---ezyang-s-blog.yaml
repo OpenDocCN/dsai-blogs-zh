@@ -1,38 +1,57 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:58'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:17:58
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Picturing Hoopl transfer/rewrite functions : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 描绘 Hoopl 的传输/重写函数：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2011/02/picturing-hoopl-transferrewrite-functions/](http://blog.ezyang.com/2011/02/picturing-hoopl-transferrewrite-functions/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/02/picturing-hoopl-transferrewrite-functions/](http://blog.ezyang.com/2011/02/picturing-hoopl-transferrewrite-functions/)
 - en: Picturing Hoopl transfer/rewrite functions
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 描绘 Hoopl 的传输/重写函数
 - en: '[Hoopl](http://hackage.haskell.org/package/hoopl) is a “higher order optimization
     library.” Why is it called “higher order?” Because all a user of Hoopl needs to
     do is write the various bits and pieces of an optimization, and Hoopl will glue
     it all together, the same way someone using a fold only needs to write the action
     of the function on one element, and the fold will glue it all together.'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Hoopl](http://hackage.haskell.org/package/hoopl) 是一个“高阶优化库”。为什么称之为“高阶”？因为使用
+    Hoopl 的用户只需编写优化的各种片段，而 Hoopl 将把它们组合在一起，就像使用 fold 的人只需编写函数在一个元素上的操作，而 fold 将把它们组合在一起一样。'
 - en: 'Unfortunately, if you’re not familiar with the structure of the problem that
     your higher order functions fit into, code written in this style can be a little
     incomprehensible. Fortunately, Hoopl’s two primary higher-order ingredients: transfer
     functions (which collect data about the program) and rewrite functions (which
     use the data to rewrite the program) are fairly easy to visualize.'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 不幸的是，如果您对问题结构不熟悉，那么以这种风格编写的代码可能有点难以理解。幸运的是，Hoopl 的两个主要高阶组成部分：传输函数（收集程序数据）和重写函数（利用数据重写程序），相对较容易可视化。

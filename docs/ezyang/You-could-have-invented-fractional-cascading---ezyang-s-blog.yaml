@@ -1,59 +1,85 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:17:37'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:37'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'You could have invented fractional cascading : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 你本可以发明分数级联：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2012/03/you-could-have-invented-fractional-cascading/](http://blog.ezyang.com/2012/03/you-could-have-invented-fractional-cascading/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2012/03/you-could-have-invented-fractional-cascading/](http://blog.ezyang.com/2012/03/you-could-have-invented-fractional-cascading/)
 - en: Suppose that you have *k* sorted arrays, each of size *n*. You would like to
     search for single element in each of the *k* arrays (or its predecessor, if it
     doesn't exist).
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设你有*k*个排序数组，每个数组的大小为*n*。你想要在每个*k*个数组中搜索单个元素（或其前一个元素，如果不存在）。
 - en: 'Obviously you can binary search each array individually, resulting in a ![O(k\lg
     n)](img/2eb720762ef6ea22926b0070a6df6d6d.png "O(k\lg n)") runtime. But we might
     think we can do better that: after all, we''re doing the same search *k* times,
     and maybe we can "reuse" the results of the first search for later searches.'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 显然，你可以分别对每个数组进行二分搜索，结果是 ![O(k\lg n)](img/2eb720762ef6ea22926b0070a6df6d6d.png
+    "O(k\lg n") 的运行时间。但我们可能认为我们可以做得更好：毕竟，我们在每次搜索时都做了相同的搜索，也许我们可以“重复使用”第一次搜索的结果。
 - en: 'Here''s another obvious thing we can do: for every element in the first array,
     let''s give it a pointer to the element with the same value in the second array
     (or if the value doesn''t exist, the predecessor.) Then once we''ve found the
     item in the first array, we can just follow these pointers down in order to figure
     out where the item is in all the other arrays.'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面是另一种显而易见的方法：对于第一个数组中的每个元素，让我们给它一个指向第二个数组中具有相同值的元素的指针（或者如果值不存在，则指向前一个元素）。然后，一旦我们在第一个数组中找到了这个元素，我们只需按顺序跟随这些指针就可以找出这个元素在所有其他数组中的位置。
 - en: 'But there''s a problem: sometimes, these pointers won''t help us at all. In
     particular, if a later lists is completely "in between" two elements of the first
     list, we have to redo the entire search, since the pointer gave us no information
     that we didn''t already know.'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 但是有一个问题：有时，这些指针对我们毫无帮助。特别是，如果后面的列表完全“处于”第一个列表的两个元素之间，我们必须重新进行整个搜索，因为指针没有给我们任何我们不已经知道的信息。
 - en: So what do we do? Consider the case where *k = 2*; everything would be better
     if only we could guarantee that the first list contained the right elements to
     give you useful information about the second array. We could just merge the arrays,
     but if we did this in the general case we'd end up with a totally merged array
     of size ![kn](img/b2931d4dac72237e5ab420c094722a83.png "kn"), which is not so
     good if *k* is large.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 那么我们该怎么做呢？考虑*k=2*的情况；如果我们能保证第一个列表包含了能为第二个数组提供有用信息的正确元素，那么一切都会好转。我们可以简单地合并这些数组，但如果我们在一般情况下这样做，我们最终会得到一个大小为![kn](img/b2931d4dac72237e5ab420c094722a83.png
+    "kn")的完全合并数组，如果*k*很大，这并不理想。
 - en: But we don't need all of the elements of the second array; every other item
     will do!
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 但我们并不需要第二个数组的所有元素；每隔一个元素就够了！
 - en: 'Let''s repeatedly do this. Take the last array, take every other element and
     merge it into the second to last array. Now, with the new second to last array,
     do this to the next array. Rinse and repeat. How big does the first array end
@@ -62,12 +88,19 @@
     \ldots = 2n](img/550ef24dffb758e390d735b13c34e555.png "n + n/2 + n/4 + n/8 + \ldots
     = 2n"). Amazingly, the new first list is only twice as large, which is only one
     extra step in the binary search!'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们重复这样做。取最后一个数组，取每隔一个元素并合并到倒数第二个数组中。现在，对于新的倒数第二个数组，对下一个数组执行相同操作。反复这样做。第一个数组最终会有多大？你可以解决这个递归式：![T(k)
+    = n + T(k-1)/2](img/ae7430846af6a2f79ef9b1e4192acce5.png "T(k) = n + T(k-1)/2")，这是等比级数
+    ![n + n/2 + n/4 + n/8 + \ldots = 2n](img/550ef24dffb758e390d735b13c34e555.png
+    "n + n/2 + n/4 + n/8 + \ldots = 2n")。令人惊讶的是，新的第一个列表仅增加了两倍的大小，这只是二分搜索中的一个额外步骤！
 - en: What we have just implemented is **fractional cascading**! A fraction of any
     array cascades up the rest of the arrays.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们刚刚实现的就是**分数级联**！数组中的一部分级联到其他数组中。
 - en: There is one more detail which has to be attended to. When I follow a pointer
     down, I might end up on an element which is not actually a member of the current
     array (it was one that was cascaded up). I need to be able to efficiently find
@@ -75,8 +108,10 @@
     cascaded elements jammed between it and the next member element, so doing a left-scan
     could take a long time); so for every cascaded element I store a pointer to the
     predecessor member element.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 还有一个需要注意的细节。当我沿着指针向下跟随时，我可能会落到一个实际上不是当前数组成员的元素上（它是被级联上来的）。我需要能够有效地找到下一个属于当前数组的元素（可能有许多级联元素挤在它和下一个成员元素之间，因此进行左扫描可能需要很长时间）；因此，对于每个级联元素，我存储一个指向前任成员元素的指针。
 - en: Fractional cascading is a very useful transformation, used in a variety of contexts
     including *layered range trees* and *3D orthogonal range searching*. In fact,
     it can be generalized in several ways. The first is that we can cascade some fixed
@@ -84,13 +119,18 @@
     have to limit ourselves to cascading up a list of arrays; we can cascade up an
     arbitrary graph, merging many lists together as long as we pick α to be less than
     *1/d*, where *d* is the in-degree of the node.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 分数级联是一种非常有用的转换，应用于各种上下文中，包括*分层范围树*和*3D正交范围搜索*。实际上，它可以通过几种方式进行泛化。首先，我们可以级联某个固定的分数α的元素，而不是我们这里所做的1/2。此外，我们不必局限于将数组列表级联起来；我们可以级联任意图形，将许多列表合并在一起，只要我们选择α小于*1/d*，其中*d*是节点的入度。
 - en: '*Exercise.* Previously, we described [range trees](http://blog.ezyang.com/2012/02/visualizing-range-trees/).
     How can fractional cascading be used to reduce the query complexity by a factor
     of ![O(\lg n)](img/0fd0ce085d9f23267b01ffb501477a39.png "O(\lg n)")?'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: '*练习.* 之前，我们描述了[范围树](http://blog.ezyang.com/2012/02/visualizing-range-trees/)。分数级联如何用于将查询复杂度减少一个因子![O(\lg
+    n)](img/0fd0ce085d9f23267b01ffb501477a39.png "O(\lg n)")？'
 - en: '*Exercise.* There is actually another way we can setup the pointers in a fractionally
     cascaded data structure. Rather than have downward pointers for every element,
     we only maintain pointers between elements which are identical (that is to say,
@@ -98,5 +138,7 @@
     the data structure. However, you now need to maintain another set of pointers.
     What are they? (Hint: Consider the case where a search lands on a non-cascaded,
     member element.)'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: '*练习.* 实际上，我们可以通过另一种方式设置分数级联数据结构中的指针。与其为每个元素保留向下指针，不如仅在相同的元素之间维护指针（也就是说，它们被级联上来了）。当构建数据结构时，这种方式更为方便。但是，现在你需要维护另一组指针。它们是什么？（提示：考虑搜索落在非级联成员元素上的情况。）'

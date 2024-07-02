@@ -1,27 +1,41 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 分类：未分类
 - en: 'date: 2024-07-01 18:17:57'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:17:57
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'The creation of a statically-typed functional programmer : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 一个静态类型的函数式程序员的诞生：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2011/03/the-creation-of-a-statically-typed-functional-programmer/](http://blog.ezyang.com/2011/03/the-creation-of-a-statically-typed-functional-programmer/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/03/the-creation-of-a-statically-typed-functional-programmer/](http://blog.ezyang.com/2011/03/the-creation-of-a-statically-typed-functional-programmer/)
 - en: The creation of a statically-typed functional programmer
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 一个静态类型的函数式程序员的诞生
 - en: 'The bug bit me in early 2009, during MIT’s independent activities period; really,
     it was two bugs. The first was [6.184](http://web.mit.edu/alexmv/6.001/), the
     re-animated introductory computer science class taught in Scheme—for obvious reasons.
@@ -35,29 +49,48 @@
     of most bits of text that float around in our applications these days. Haskell
     came up as a way of making your compiler make sure you didn’t mix up HTML with
     plain text.'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 早在 2009 年初，我被 MIT 独立活动期间所影响；实际上，是两个影响。第一个是 [6.184](http://web.mit.edu/alexmv/6.001/)，在
+    Scheme 中重新开设的入门计算机科学课程——出于显而易见的原因。但我觉得这还不够：我记得当时觉得 Scheme 很有趣，但并不是我真正想编程的语言。第二个是
+    Anders Kaseorg 在我结束一个讲座 [Introduction to Web Application Security](http://mit.edu/~ezyang/Public/iap/intro-to-was.html)
+    后的评论（作为 MIT 新生，我认为自己能够讲一些东西）。讲座的重点之一是所有关于*类型*的事情：也就是说，“字符串”并不能充分表达今天我们应用程序中流动的大多数文本的语义内容。Haskell
+    出现是为了让你的编译器确保你不会混淆 HTML 和纯文本。
 - en: 'Something must have clicked. That February, I wrote:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 某些事情一定是触动了什么。那年二月，我写道：
 - en: Wow. Haskell is pretty.
+  id: totrans-9
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 哇，Haskell 真漂亮。
 - en: 'To which someone replied:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 有人回答道：
 - en: Don't look too hard into the sun, your eyes will get burned.
+  id: totrans-11
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 不要盯太久太阳，你的眼睛会被烧伤。
 - en: And thus a statically-typed functional programmer was born.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，一个静态类型的函数式程序员诞生了。
 - en: '*Postscript.* My first application in Haskell was a Laplace solver, with which
     I also learned about monads (because a map lookup returned a `Maybe` value, and
     Anders decided it would be a good idea to talk about do-notation and bind to elucidate
     how to handle it. I probably didn’t understand the explanation the first time
     around, but I did manage to get the program working.)'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: '*后记。* 我在 Haskell 中的第一个应用是一个拉普拉斯求解器，通过它我也学到了单子（因为一个映射查找返回了一个`Maybe`值，安德斯决定谈一谈
+    do-notation 和 bind 如何处理它是个好主意。也许我第一次听解释时并没有理解，但最终我确实让程序运行起来了。）'

@@ -1,39 +1,57 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:17:45'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:17:45
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Measurement, quantification and reduction : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 测量、量化和还原：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2011/06/measurement-quantification-and-reduction/](http://blog.ezyang.com/2011/06/measurement-quantification-and-reduction/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/06/measurement-quantification-and-reduction/](http://blog.ezyang.com/2011/06/measurement-quantification-and-reduction/)
 - en: Today we continue the theme, “What can Philosophy of Science say for Software
     Engineering,” by looking at some topics taken from the Philosophy of Physical
     Sciences.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 今天我们继续讨论主题，“哲学科学对软件工程有何启示”，从物理科学哲学中选取了一些话题进行探讨。
 - en: Measurement and quantification
+  id: totrans-7
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 测量与量化
 - en: Quantification is an activity that is embedded in modern society. We live by
     numbers, whether they are temperature readings, velocity, points of IQ, college
     rankings, safety ratings, etc. Some of these are uncontroversial, others, very
     much so, and a software engineer must always be careful about numbers they deal
     in, for quantification is a very tricky business.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 量化是现代社会中根深蒂固的活动。我们生活在数字中，不管是温度读数、速度、智商点数、大学排名还是安全评级等等。其中一些是无争议的，但有些则完全不同，软件工程师必须始终小心处理他们所处理的数字，因为量化是一门非常棘手的业务。
 - en: Philosophers of science can look to history for some insight into this conundrum,
     for it was not always the case that thermometry was an uncontroversial method
     of generating numbers. While the thermometer itself was invented in the 16th century,
@@ -42,8 +60,10 @@
     to calibrate a thermometer by testing its result at various fixpoints (freezing
     and boiling), and graduating the thermometer accordingly, and for some period
     of times this was deemed adequate for calibrating thermometers.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 科学哲学家可以从历史中寻找一些见解来解决这个难题，因为温度计并非总是一种无争议的生成数字的方法。尽管温度计本身在16世纪就已发明，但要建立起现代的温度测量标准却花费了几个世纪的时间。这是什么让它如此困难？早期的热力学实验者非常清楚，通过在各种固定点（冰点和沸点）测试其结果并相应地分级，可以校准温度计，而在某些时期内，这被认为足以校准温度计。
 - en: But alas, the thermal expansion of liquids is not uniform across liquids, and
     what intrepid experimenters like Herman Boerhaave and Daniel Fahrenheit discovered
     was, in many cases, two thermometers would not agree with each other, even if
@@ -51,8 +71,10 @@
     was more accurate, without appealing to... another thermometer? Most justifications
     involving the nature of the liquid "particles" and their forces appealed to (at
     the time) unjustifiable theoretical principles.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，液体的热膨胀并非各种液体都一致，像赫尔曼·博尔哈弗和丹尼尔·华氏这样的勇敢实验者发现，很多情况下，即使两个用同样方法校准过的温度计，它们的读数也可能不一致。他们如何确定哪一个温度计更准确，而不是再依赖于……另一个温度计？大多数涉及液体“粒子”及其力量性质的理论原则（当时）是无法证明的。
 - en: 'Without the invention of modern thermodynamics, the most compelling case would
     be put forth Henri Victor Regnault. An outstanding experimentalist, Regnault set
     forth to solve this problem by systematically eliminating *all* theoretical assumptions
@@ -61,33 +83,44 @@
     an instrument that gave varying values depending on the situation could not be
     trusted. If the thermometer was sensitive to the proportion of alcohol in it,
     or the way its glass had been blown, it was not to be taken as reflecting reality.'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果没有现代热力学的发明，最引人注目的案例可能是亨利·维克多·雷诺。作为一位杰出的实验家，雷诺试图通过系统地消除其工作中的*所有*理论假设来解决这个问题：比如比热、热量守恒等，这些对他来说都不重要。雷诺关心的是温度计的*可比性*：一个在不同情况下给出不同数值的仪器是不可信的。如果温度计对其中的酒精比例或者玻璃吹制方式敏感，那就不能认为它反映了现实。
 - en: In the face of uncertainty and unsure theoretical basis, even simple criterion
     like *comparability* can be useful in getting a grip on the situation. One should
     not underestimate the power of this technique, due in part to its ability to operate
     without assuming any sort of theoretical knowledge of the task at hand.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 面对不确定性和不确定的理论基础，甚至像*可比性*这样简单的标准在掌握局势时也很有用。人们不应低估这种技术的力量，部分原因是它能够在不假定任何任务的理论知识的情况下运行。
 - en: Reductive explanations
+  id: totrans-13
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 简化解释
 - en: 'The law of leaky abstractions states that all attempts to hide the low-level
     details of a system fail in some way or another. Taken to the extreme, it results
     in something resembling a reductive approach to the understanding of computer
     systems: in order to understand how some system works, it is both desirable and
     necessary to understand all of the layers below it.'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 泄漏抽象法则表明，所有试图隐藏系统低级细节的尝试在某种程度上都会失败。将其推广到极端情况，则类似于对计算机系统理解的还原方法：为了理解某个系统的工作原理，理解其下所有层次既是可取又是必要的。
 - en: Of course, we make fun of this sort of reductivism when we say things like,
     “Real men program with a magnet on their hard drive.” One simply cannot be expected
     to understand a modern piece of software merely by reading all of the assembly
     it is based on. Even systems that are written at a low level have implicit higher
     level structure that enables engineers to ignore irrelevant details (unless, of
     course, those irrelevant details are causing bugs.)
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 当然，当我们说诸如“真正的男人用磁铁在硬盘上编程”之类的话时，我们对这种还原主义进行了嘲笑。仅仅通过阅读其基础上所有的汇编语言，一个人是不可能理解现代软件的。即使是在低级别编写的系统也有隐含的更高层次结构，使工程师能够忽略不相关的细节（当然，除非这些不相关的细节导致了
+    bug）。
 - en: 'This situation is fascinating, because it is in many senses the opposite of
     the reductivism debate in science. For software, many aspects of the end behavior
     of a system can be deductively known from the very lowest level details—we simply
@@ -97,17 +130,23 @@
     physics, physics is applied quantum mechanics, etc. Most scientists hold the attitude
     of ontological reduction: anything we interact with can eventually be smashed
     up into elementary particles.'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种情况非常迷人，因为在许多意义上它与科学中的还原主义辩论相反。对于软件来说，系统最终行为的许多方面可以从最低级别的细节中以演绎方式知道——我们只是知道这种复杂性对于人类来说太过巨大。科学则以相反的方向运作：科学家们在深入研究更基础的现象时寻求简化和统一的原则。生物学是应用化学，化学是应用物理学，物理学是应用量子力学等等。大多数科学家持有本体论还原主义的态度：我们与之互动的任何东西最终都可以被打碎成基本粒子。
 - en: But even if this reduction is possible, it may not mean we can achieve such
     a reduction in our theories. Our theories at different levels may even contradict
     one another (so called Kuhnian incommensurability), and yet these theories approximate
     and effective. So is constantly pursuing a more fundamental explanation a worthwhile
     pursuit in science, or, as a software engineer might think, only necessary in
     the case of a leaky abstraction?
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 但即使这种简化是可能的，这并不意味着我们在理论上可以实现这种简化。我们不同层次的理论甚至可能彼此矛盾（所谓的库恩不可比性），然而这些理论是近似的和有效的。那么，在科学中不断追求更基础的解释是否是值得的追求，或者像软件工程师可能认为的那样，只有在抽象层出现漏洞的情况下才是必要的呢？
 - en: '*Postscript.* My last exam is tomorrow, at which point we will return to our
     regularly scheduled GHC programming.'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: '*后记*。明天是我的最后一次考试，届时我们将恢复我们定期的 GHC 编程计划。'

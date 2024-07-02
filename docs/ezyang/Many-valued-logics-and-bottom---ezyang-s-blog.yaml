@@ -1,47 +1,69 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:56'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:56'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Many-valued logics and bottom : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 多值逻辑与底部：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2011/03/many-valued-logics-and-bottom/](http://blog.ezyang.com/2011/03/many-valued-logics-and-bottom/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/03/many-valued-logics-and-bottom/](http://blog.ezyang.com/2011/03/many-valued-logics-and-bottom/)
 - en: Many-valued logics and bottom
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 多值逻辑与底部
 - en: 'I was flipping through *An Introduction to Non-Classical Logic* by Graham Priest
     and the section on many-valued logics caught my eye. Many-valued logics are logics
     with more than the usual two truth values *true* and *false*. The (strong) Kleene
     3-valued logic, sets up the following truth table with 0, 1 and x (which is thought
     to be some value that is neither true nor false):'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 我翻阅了Graham Priest的《非经典逻辑导论》，其中的多值逻辑部分引起了我的注意。多值逻辑是具有非传统真值*true*和*false*之外的更多真值的逻辑。克里尼三值逻辑（强）建立了以下真值表，包括0、1和x（被认为是既非真也非假的某个值）：
 - en: '[PRE0]'
+  id: totrans-8
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'I’ve always thought many-valued logics were a bit of a “hack” to deal with
     the self-referentiality paradoxes, but in fact, Kleene invented his logic by thinking
     about what happened with partial functions where applied with values that they
     were not defined for: a sort of denotation failure. So it''s not surprising that
     these truth tables correspond to the [parallel-or and and operators predicted
     by denotational semantics](http://blog.ezyang.com/2010/12/gin-and-monotonic/).'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 我一直认为多值逻辑有点像是为了处理自指悖论而“应急”的方式，但实际上，克里尼通过思考部分函数在未定义值上的应用来发明他的逻辑：一种符号失效的情况。因此，这些真值表对应于[表示语义预测的并行或与和运算符](http://blog.ezyang.com/2010/12/gin-and-monotonic/)并不令人意外。
 - en: The reader is invited to consider whether or not one could use this logic for
     a Curry-Howard style correspondence; in particular, the law of the excluded middle
     is not valid in K3.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 读者被邀请考虑是否可以将此逻辑用于柯里-霍华德风格的对应；特别是，在K3中排中律是无效的。

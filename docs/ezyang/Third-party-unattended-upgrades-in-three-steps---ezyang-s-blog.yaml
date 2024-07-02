@@ -1,27 +1,41 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:26'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:18:26
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Third-party unattended upgrades in three steps : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 三步曲的第三方无人值守升级：ezyang’s 博客
 - en: 来源：[http://blog.ezyang.com/2010/03/third-party-unattended-upgrade/](http://blog.ezyang.com/2010/03/third-party-unattended-upgrade/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/03/third-party-unattended-upgrade/](http://blog.ezyang.com/2010/03/third-party-unattended-upgrade/)
 - en: Third-party unattended upgrades in three steps
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 三步曲的第三方无人值守升级
 - en: '[unattended-upgrades](http://packages.ubuntu.com/karmic/unattended-upgrades)
     is a nifty little package that will go ahead and automatically install updates
     for you as they become enabled. No serious system administrator should use this
@@ -30,56 +44,88 @@
     aptitude full-upgrade` and don''t read the changelog, you might as well turn on
     unattended upgrades. You can do this by adding the line `APT::Periodic::Unattended-Upgrade
     "1"` to `/etc/apt/apt.conf.d/10periodic` (thanks Ken!)'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '[无人值守升级](http://packages.ubuntu.com/karmic/unattended-upgrades) 是一个非常方便的小包，它会在启用后自动安装更新。没有严肃的系统管理员会使用这个（你确实在将更新推送到服务器之前进行测试，对吧？），但对于许多个人用途来说，自动更新确实是你想要的；如果你运行
+    `sudo aptitude full-upgrade` 而不阅读变更日志，那么你最好开启无人值守升级。你可以通过向 `/etc/apt/apt.conf.d/10periodic`
+    添加行 `APT::Periodic::Unattended-Upgrade "1"` 来实现这一点（感谢 Ken！）'
 - en: Of course, the default configuration they give you in `/etc/apt/apt.conf.d/50unattended-upgrades`
     only pulls updates from their security repository, and they only give you a commented
     out line for normal updates. People [have asked](http://ubuntuforums.org/showthread.php?t=1401845),
     "well, how do I pull automatic updates from other repositories?" Maybe you have
     installed Chromium dailies; seeing the "you have updates" icon every day can be
     kind of tiresome.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 当然，默认配置是在 `/etc/apt/apt.conf.d/50unattended-upgrades` 中从他们的安全仓库拉取更新，而且他们只为普通更新提供了一行注释掉的配置。人们[已经问过](http://ubuntuforums.org/showthread.php?t=1401845)，“那么，我如何从其他仓库拉取自动更新？”也许你已经安装了
+    Chromium 每日构建版；每天看到“您有更新”的图标可能有点烦人。
 - en: 'Well, here''s how you do it:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 好吧，这就是如何做到的：
 - en: Find out what URL the PPA you're interested in points to. You can dig this up
     by looking at `/etc/apt/sources.list` or `/etc/apt/sources.list.d/` (the former
     is if you manually added a PPA at some point; the latter is likely if you used
     `add-apt-repository`).
+  id: totrans-10
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 找出你感兴趣的 PPA 指向的网址。你可以通过查看 `/etc/apt/sources.list` 或 `/etc/apt/sources.list.d/`
+    来找到这些信息（如果你曾手动添加过一个 PPA，则查看前者；如果你使用了 `add-apt-repository`，则查看后者）。
 - en: Navigate to that URL in your browser. Navigate to `dists`, and then navigate
     to the name of the distribution you're running (for me, it was `karmic`). Finally,
     click `Release`. (For those who want to just enter the whole URL, it's [http://example.com/apt/dists/karmic/Release](http://example.com/apt/dists/karmic/Release)).
+  id: totrans-11
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在浏览器中导航到该网址。导航到 `dists`，然后导航到你正在运行的发行版名称（对我来说是 `karmic`）。最后，点击 `Release`。（对于那些想要直接输入整个网址的人，它是
+    [http://example.com/apt/dists/karmic/Release](http://example.com/apt/dists/karmic/Release)）。
 - en: 'You will see a number of fields `Fieldname: Value`. Find the field `Origin`
     and the field `Suite`. The two values are the ones to put in Allowed-Origins.'
+  id: totrans-12
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '你将会看到一些字段 `Fieldname: Value`。找到 `Origin` 和 `Suite` 字段。这两个值就是放入 Allowed-Origins
+    中的值。'
 - en: 'For example, the [Ksplice repository](http://www.ksplice.com/apt/dists/karmic/Release)
     has the following `Release` file:'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，[Ksplice 仓库](http://www.ksplice.com/apt/dists/karmic/Release) 包含以下的 `Release`
+    文件：
 - en: '[PRE0]'
+  id: totrans-14
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'This translates into the following configuration:'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 这翻译成以下配置：
 - en: '[PRE1]'
+  id: totrans-16
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: And that's it! Go forth and make your systems more secure through more timely
     updates.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 就是这样！前去通过及时更新使你的系统更加安全。
 - en: '*Bonus tip.* You can turn on unattended [kernel updates](http://www.ksplice.com/)
     via Ksplice by editing `/etc/uptrack/uptrack.conf` and setting `autoinstall =
     yes`.'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: '*额外小贴士*。你可以通过编辑 `/etc/uptrack/uptrack.conf` 并设置 `autoinstall = yes` 来开启 Ksplice
+    的无人值守[内核更新](http://www.ksplice.com/)。'

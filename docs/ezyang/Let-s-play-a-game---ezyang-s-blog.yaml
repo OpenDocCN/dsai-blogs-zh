@@ -1,116 +1,177 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:17:40'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:17:40
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Let’s play a game : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 让我们玩一个游戏：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2011/09/lets-play-a-game/](http://blog.ezyang.com/2011/09/lets-play-a-game/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/09/lets-play-a-game/](http://blog.ezyang.com/2011/09/lets-play-a-game/)
 - en: Ever wondered how Haskellers are magically able to figure out the implementation
     of functions just by looking at their type signature? Well, now you can learn
     this ability too. Let’s play a game.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 曾经想过哈斯克尔人是如何神奇地通过查看函数类型签名就能够推断出函数实现的吗？现在，你也可以学会这种能力。让我们来玩一个游戏。
 - en: You are an inventor, world renowned for your ability to make machines that transform
     things into other things. You are a **proposer**.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 你是一个发明家，以能够制造将一种东西转化为另一种东西的机器而闻名于世。你是一个**提议者**。
 - en: But there are many who would doubt your ability to invent such things. They
     are the **verifiers**.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 但是有很多人会怀疑你发明这些东西的能力。他们就是**验证者**。
 - en: The game we play goes as follows. You, the proposer, make a **claim** as to
     some wondrous machine you know how to implement, e.g. `(a -> b) -> a -> b` (which
     says given a machine which turns As into Bs, and an A, it can create a B). The
     verifier doubts your ability to have created such a machine, but being a fair
     minded skeptic, furnishes you with the inputs to your machine (the **assumptions**),
     in hopes that you can produce the **goal**.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们玩的游戏如下。你作为提议者，声明某种你知道如何实现的神奇机器，比如 `(a -> b) -> a -> b`（这表示给定一个将 A 转换为 B 的机器和一个
+    A，它可以创建一个 B）。验证者对你是否能够创造出这样的机器表示怀疑，但作为一个公正的怀疑论者，提供给你你机器的输入（**假设**），希望你能够达到**目标**。
 - en: As a proposer, you can take the inputs and machines the verifier gives you,
     and **apply** them to each other.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 作为提议者，你可以将验证者提供给你的输入和机器**应用**在一起。
 - en: But that's not very interesting. Sometimes, after the verifier gives you some
     machines, you want to make another proposal. Usually, this is because one of the
     machines takes a machine which you don’t have, but you *also* know how to make.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 但这并不是很有趣。有时，在验证者给你一些机器后，你想提出另一个提案。通常，这是因为其中一个机器接受一个你没有的机器，但你也知道如何制造。
 - en: The verifier is obligated to furnish more assumptions for this new proposal,
     but these are placed inside the cloud of **abstraction**.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 验证者有责任为这个新提案提供更多假设，但这些假设被放置在**抽象**的云层中。
 - en: You can use assumptions that the verifier furnished **previously** (below the
     cloud of abstraction),
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可以使用验证者之前提供的假设（在抽象的云层下面），
 - en: but once you’ve finished the proposal, all of the new assumptions **go away**.
     All you’re left with is a shiny new machine (which you ostensibly want to pass
     to another machine) which can be used for the original goal.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 但一旦你完成了提案，所有新的假设都会**消失**。你剩下的只是一台闪亮的新机器（你明显希望传递给另一台机器），可以用于原始目标。
 - en: These are all the rules we need for now. (They constitute the most useful subset
     of what you can do in constructive logic.)
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些就是我们现在所需的所有规则。（它们构成了你在建设性逻辑中所能做的最有用的子集。）
 - en: Let’s play a game.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们来玩一个游戏。
 - en: Our verifier supplies the machines we need to play this game. Our goal is `r`.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的验证者为我们提供了玩这个游戏所需的机器。我们的目标是 `r`。
 - en: That’s a lot of machines, and it doesn't look like we can run any of them. There's
     no way we can fabricate up an `a` from scratch to run the bottom one, so maybe
     we can make a `a -> r`. (It may seem like I’ve waved this proposal up for thin
     air, but if you look carefully it’s the only possible choice that will work in
     this circumstance.) Let’s make a new proposal for `a -> r`.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 这可是一大堆机器，看起来我们无法运行任何一台。我们无法从头开始制造一个 `a` 来运行底下的那个，所以也许我们可以做一个 `a -> r`。（看起来像是我凭空提出了这个建议，但如果你仔细看，这是在这种情况下唯一可能有效的选择。）让我们为
+    `a -> r` 提出一个新建议。
 - en: 'Our new goal for this sub-proposal is also `r`, but unlike in our original
     case, we can create an `r` with our extra ingredient: an `a`: just take two of
     the original machines and the newly furnished `a`. Voila, an `r`!'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们这个子提案的新目标也是 `r`，但与我们原来的情况不同，我们可以利用额外的成分 `a` 来创造 `r`：只需取两台原始的机器和新提供的 `a`。哇，一个
+    `r` 出来啦！
 - en: This discharges the cloud of abstraction, leaving us with a shiny new `a ->
     r` to pass to the remaining machine, and fulfill the original goal with.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 这样就解除了抽象的云层，留下了一个闪亮的新 `a -> r`，可以传递给剩下的机器，并且实现原始的目标。
 - en: Let's give these machines some names. I’ll pick some suggestive ones for you.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们给这些机器起些名字。我会为你挑一些富有启发性的名字。
 - en: Oh hey, you just implemented **bind** for the **continuation monad**.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 哦，嘿，你刚刚为**延续单子**实现了**绑定**。
 - en: 'Here is the transformation step by step:'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是逐步的转换步骤：
 - en: '[PRE0]'
+  id: totrans-24
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: The last step is perhaps the most subtle, but can be done because arrows right
     associate.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后一步可能是最微妙的，但是可以完成，因为箭头右关联。
 - en: 'As an exercise, do `return :: a -> (a -> r) -> r` (wait, that looks kind of
     familiar...), `fmap :: (a -> b) -> ((a -> r) -> r) -> (b -> r) -> r` and `callCC
     :: ((a -> (b -> r) -> r) -> (a -> r) -> r) -> (a -> r) -> r` (important: that’s
     a `b` inside the first argument, not an `a` !).'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: '作为练习，执行`return :: a -> (a -> r) -> r`（等等，这看起来有点熟悉……），`fmap :: (a -> b) -> ((a
+    -> r) -> r) -> (b -> r) -> r`和`callCC :: ((a -> (b -> r) -> r) -> (a -> r) ->
+    r) -> (a -> r) -> r`（重要提示：第一个参数里是`b`，不是`a`！）。'
 - en: This presentation is the **game semantic** account of intuitionistic logic,
     though I have elided treatment of **negation** and **quantifiers**, which are
     more advanced topics than the continuation monad, at least in this setting.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个展示是直觉逻辑的**游戏语义**描述，尽管我省略了**否定**和**量词**的处理，这些比延续单子更为高级，在这种情况下至少是这样。

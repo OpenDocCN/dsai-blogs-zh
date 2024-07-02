@@ -1,27 +1,41 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:29'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:29'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Is Haskell liberal or conservative? : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 'Is Haskell liberal or conservative? : ezyang’s blog'
 - en: 来源：[http://blog.ezyang.com/2012/08/is-haskell-liberal-or-conservative/](http://blog.ezyang.com/2012/08/is-haskell-liberal-or-conservative/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2012/08/is-haskell-liberal-or-conservative/](http://blog.ezyang.com/2012/08/is-haskell-liberal-or-conservative/)
 - en: Is Haskell liberal or conservative?
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Haskell是自由派还是保守派？
 - en: Steve Yegge has posted a [fun article](https://plus.google.com/u/0/110981030061712822816/posts/KaSKeg4vQtz)
     attempting to apply the liberal and conservative labels to software engineering.
     It is, of course, a gross oversimplification (which Yegge admits). For example,
@@ -29,18 +43,24 @@
     extreme emphasis on safety. This completely misses one of the best things about
     Haskell, which is that *we do crazy shit that no one in their right mind would
     do without Haskell’s safety features.*
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: Steve Yegge发表了一篇[有趣的文章](https://plus.google.com/u/0/110981030061712822816/posts/KaSKeg4vQtz)试图将自由派和保守派标签应用于软件工程。当然，这是一个极端简化（Yegge自己承认）。例如，他得出结论说Haskell必须是“极端保守”的，主要是因为它极力强调安全性。这完全忽略了Haskell最好的一点，即*我们做一些疯狂的事情，正常情况下没有人会在没有Haskell安全功能的情况下这样做*。
 - en: 'So I thought I’d channel some Yegge and take a walk through the criteria proposed
     for assessing how conservative a user of a language is, and try to answer them
     to the best of my ability with my ”Haskell hat” on:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以我想我会借鉴一些Yegge的思路，通过提出的标准来评估一个语言用户的保守程度，并尽量穿上我“Haskell帽子”来回答：
 - en: '*Software should aim to be bug free before it launches.* Yes. Though, “Beware
     of bugs in the above code; I have only proved it correct, not tried it.”'
+  id: totrans-9
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*软件在发布之前应该目标是无缺陷的。* 是的。尽管，“小心以上代码中的错误；我只是证明了它的正确性，而没有尝试它。”'
 - en: '*Programmers should be protected from errors.* Yes. **But**, Yegge then adds
     the sentence: “Many language features are inherently error-prone and dangerous,
     and should be disallowed for all the code we write.” This is not the approach
@@ -48,9 +68,11 @@
     give them to you. (Try doing that in Python.) It doesn’t *disallow* language features,
     just make them more wordy (`unsafePerformIO`) or harder to use. Haskell has a
     healthy belief in escape hatches.'
+  id: totrans-10
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*程序员应该免受错误的影响。* 是的。**但是**，Yegge接着补充道：“许多语言特性本质上容易出错和危险，应禁止我们编写的所有代码使用。” 这并不是Haskell的做法：如果你想要带有可变状态的延续，Haskell会提供给你。（试试在Python中做到这一点。）它并不*禁止*语言特性，只是使它们更啰嗦（`unsafePerformIO`）或更难使用。Haskell对于逃生口的信念很健康。'
 - en: '*Programmers have difficulty learning new syntax.* **No.** Haskell is completely
     on the wrong side of the fence here, with arbitrary infix operators; and even
     more extremist languages (e.g. Coq) go even further with arbitrary grammar productions.
@@ -60,120 +82,170 @@
     algebraic laws. We allow metaprogramming, though I suspect it’s currently used
     sparingly only because it’s so unwieldy (but *culturally*, I think the Haskell
     community is very open to the idea of metaprogramming).'
+  id: totrans-11
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*程序员学习新语法有困难。* **不。** Haskell完全站在了这个围栏的错误一侧，拥有任意的中缀操作符；甚至更极端的语言（例如Coq）在语法制定上走得更远。当然，这并不是为了语法本身，而是为了紧密模拟数学家和其他从业者已经使用的现有语法。因此，我们允许操作符重载，但只有在支持代数法则的情况下。我们允许元编程，尽管我怀疑它目前很少使用，只因为它非常笨重（但在*文化上*，我认为Haskell社区非常愿意接受元编程的概念）。'
 - en: '*Production code must be safety-checked by a compiler.* Yes. **But,** anyone
     who has used a dependently typed language has a much higher standard of what “safety-checked”
     means, and we regularly play fast and loose with invariants that we decided would
     be too annoying to statically encode. Note that Yegge claims the opposite of compiler
     safety-checking is *succinctness*, which is a completely false myth perpetuated
     by non-Hindley Milner type systems with their lack of type inference.'
+  id: totrans-12
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*生产代码必须经过编译器的安全检查。* 是的。**但是**，任何使用依赖类型语言的人对于“安全检查”的标准要求更高，而我们经常在决定静态编码会非常烦人的不变量时玩得很随意。请注意，Yegge声称编译器安全检查的对立面是*简洁性*，这是一个完全错误的神话，由于非Hindley
+    Milner类型系统缺乏类型推断而流传开来。'
 - en: '*Data stores must adhere to a well-defined, published schema.* Well-defined?
     Yes. Published? No. The emphasis that Haskell has on static checking mean that
     people writing data types are a lot more willing to update them as the needs of
     the application change, and don’t really mind global refactoring of the database
     because it’s so damn easy to get right.'
+  id: totrans-13
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*数据存储必须遵循一个明确定义的、公开的架构。* 明确定义的？是的。公开的？不是。Haskell 对静态检查的重视意味着编写数据类型的人更愿意在应用需求变化时更新它们，而且并不介意全局地重构数据库，因为这样做非常容易做到正确。'
 - en: '*Public interfaces should be rigorously modeled.* Yes. (though *cough* “ideally
     object oriented” *cough*)'
+  id: totrans-14
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*公共接口应该严格建模。* 是的。（尽管 *咳咳* “理想情况下应该面向对象” *咳咳*）'
 - en: '*Production systems should never have dangerous or risky back-doors.* **Accidental.**
     The lack of tooling here means that it’s pretty difficult to snoop into a running
     compiled executable and fiddle around with internal data: this is a big sore point
     for the current Haskell ecosystem. But in the abstract, we’re pretty flexible:
     XMonad, for example, can be restarted to run arbitrary new code *while preserving
     the entirety of your working state*.'
+  id: totrans-15
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*生产系统绝不能有危险或者有风险的后门。* **意外的。** 这里工具的匮乏意味着很难窥视正在运行的编译后可执行文件并且操纵内部数据：这是目前 Haskell
+    生态系统的一个大问题。但抽象来说，我们非常灵活：例如，XMonad 可以重新启动以运行任意的新代码 *同时保留你的全部工作状态*。'
 - en: '*If there is ANY doubt as to the safety of a component, it cannot be allowed
     in production.* This is something of a personal question, and really depends on
     your project, and not so much on the language itself. Haskell is great for safety
     critical projects, but I also use it for one-off scripts.'
+  id: totrans-16
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*如果对某个组件的安全性有任何疑问，它不能被允许在生产环境中使用。* 这有点个人问题，实际上取决于你的项目，而不是语言本身。Haskell 对于安全关键项目非常合适，但我也用它写一些临时脚本。'
 - en: '*Fast is better than slow.* **No.** Haskell code has the opportunity to be
     really fast, and it tends to be quite zippy from the get go. But we’ve emphasized
     features (laziness and abstraction) which are known to cause performance problems,
     and most Haskellers take the approach of only optimizing when our (very awesome)
     profiler yells at us. Some Haskellers reflexively add `! {-# UNPACK #-}` to their
     data types, but I don’t—at least, not until I decide my code is too slow.'
+  id: totrans-17
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*快速胜于慢速。* **不。** Haskell 代码有机会非常快，而且通常从一开始就很快。但我们强调的特性（惰性和抽象）已知会导致性能问题，大多数
+    Haskell 程序员的做法是只有在我们（非常棒的）性能分析工具提醒我们时才进行优化。一些 Haskell 程序员本能地在他们的数据类型中加入 `! {-#
+    UNPACK #-}`，但我不会 —— 至少在我认为我的代码太慢之前不会加。'
 - en: 'Haskell has a lot of features which show up in Yegge’s “Liberal Stuff”. Here
     are some of them:'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: Haskell 有很多功能都出现在 Yegge 的 “Liberal Stuff” 中。这里是其中一些：
 - en: 'Eval: We love coding up interpreters, which are like type-safe evals.'
+  id: totrans-19
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 'Eval: 我们喜欢编写解释器，这有点像类型安全的 eval。'
 - en: 'Metaprogramming: Template Haskell.'
+  id: totrans-20
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 'Metaprogramming: Template Haskell。'
 - en: 'Dynamic scoping: Reader monad.'
+  id: totrans-21
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 'Dynamic scoping: Reader monad。'
 - en: 'all-errors-are-warnings: We can [delay type errors to runtime!](http://hackage.haskell.org/trac/ghc/ticket/5624).'
+  id: totrans-22
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 'all-errors-are-warnings: 我们可以[将类型错误延迟到运行时！](http://hackage.haskell.org/trac/ghc/ticket/5624)。'
 - en: 'Reflection and dynamic invocation: `class Data`.'
+  id: totrans-23
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 'Reflection and dynamic invocation: `class Data`。'
 - en: 'RTTI: I hear it’s called a “dictionary”.'
+  id: totrans-24
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 'RTTI: 我听说这被称为“字典”。'
 - en: 'The C preprocessor: Indispensable, begrudgingly.'
+  id: totrans-25
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 'The C preprocessor: 不情愿地不可或缺。'
 - en: 'Lisp macros: Why use macros when you can do it properly in Template Haskell!'
+  id: totrans-26
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 'Lisp macros: 为什么要使用宏，当你可以在 Template Haskell 中正确地做！'
 - en: 'Domain-specific languages: Haskell eats EDSLs for lunch.'
+  id: totrans-27
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 'Domain-specific languages: Haskell 对 EDSLs 简直游刃有余。'
 - en: 'Optional parameters: It’s called combinator libraries.'
+  id: totrans-28
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 'Optional parameters: 这被称为组合器库。'
 - en: 'Extensible syntax: Fuck yeah infix!'
+  id: totrans-29
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 'Extensible syntax: 当然啦中缀表达式！'
 - en: 'Auto-casting: Numeric literals, anyone?'
+  id: totrans-30
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 'Auto-casting: 数字字面量，有谁不会？'
 - en: 'Automatic stringification: `class Show` and deriving.'
+  id: totrans-31
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 'Automatic stringification: `class Show` 和 deriving。'
 - en: 'Sixty-pass compilers: GHC does *a lot* of passes.'
+  id: totrans-32
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 'Sixty-pass compilers: GHC 运行 *非常多* 的编译步骤。'
 - en: 'Whole-namespace imports: Yep (and it''s both convenient and kind of annoying).'
+  id: totrans-33
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 'Whole-namespace imports: 是的（虽然既方便又有点烦人）。'
 - en: The feeling I get from this conversation is that most people think “Haskell”
     and “static typing” and while thinking about how horrible it is to write traditional
     dynamically typed code in Haskell, forget that Haskell is actually a surprisingly
@@ -181,5 +253,7 @@
     liberal or conservative? I think of it as an interesting point in the design space
     which treats some conservative viewpoints as foundational, and then sees how far
     it can run from there. *It’s folded so far right, it came around left again.*
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 我从这次对话中得到的感觉是，大多数人认为“Haskell”和“静态类型”，同时想着在Haskell中编写传统动态类型代码有多糟糕，却忘了Haskell实际上是一种令人惊讶的自由语言，重视可理解性、简洁性和冒险精神。Haskell是自由派还是保守派？我认为它是设计空间中的一个有趣点，将一些保守观点视为基础，然后看它能走多远。*它折向了极右，结果绕到了极左。*

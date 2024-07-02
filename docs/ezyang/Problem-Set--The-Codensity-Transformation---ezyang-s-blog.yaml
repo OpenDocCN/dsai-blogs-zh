@@ -1,54 +1,84 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:38'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:38'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Problem Set: The Codensity Transformation : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 问题集：[Codensity 变换](http://blog.ezyang.com/2012/01/problem-set-the-codensity-transformation/)：ezyang's
+    博客
 - en: 来源：[http://blog.ezyang.com/2012/01/problem-set-the-codensity-transformation/](http://blog.ezyang.com/2012/01/problem-set-the-codensity-transformation/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2012/01/problem-set-the-codensity-transformation/](http://blog.ezyang.com/2012/01/problem-set-the-codensity-transformation/)
 - en: Have you ever wondered how the *codensity transformation*, a surprisingly general
     trick for speeding up the execution of certain types of monads, worked, but never
     could understand the paper or Edward Kmett's blog posts on the subject?
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 你是否曾经想过*codensity 变换*，这是一种惊人通用的技巧，可以加速某些类型的单子执行，但始终无法理解论文或 Edward Kmett 在这个主题上的博文？
 - en: 'Look no further: below is a *problem set* for learning how this transformation
     works.'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 不用再找了：以下是学习这个变换如何工作的*问题集*。
 - en: 'The idea behind these exercises is to get you comfortable with the types involved
     in the codensity transformation, achieved by using the types to guide yourself
     to the only possible implementation. We warm up with the classic concrete instance
     for leafy trees, and then generalize over all free monads (don''t worry if you
     don''t know what that is: we''ll define it and give some warmup exercises).'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些练习的理念是让你熟悉与 codensity 变换相关的类型，通过使用这些类型来指导你自己找到唯一可能的实现方式。我们从经典的叶树具体实例开始热身，然后泛化到所有自由单子上（如果你不知道是什么也别担心：我们会定义它并给出一些热身练习）。
 - en: Experience writing in continuation-passing style may be useful, although in
     practice this amounts to "listen to the types!"
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 有经验在延续传递风格中编写可能会很有用，尽管在实践中这归结为“听从类型！”
 - en: Solutions and more commentary may be found in Janis Voigtlander's paper "[Asymptotic
     Improvement of Computations over Free Monads.](http://www.iai.uni-bonn.de/~jv/mpc08.pdf)"
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 更多解答和评论可在 Janis Voigtlander 的论文 "[计算在自由单子上的渐近改进](http://www.iai.uni-bonn.de/~jv/mpc08.pdf)"
+    中找到。
 - en: 'To read more, see Edward Kmett''s excellent article which further generalizes
     this concept:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 要了解更多，请参阅 Edward Kmett 的优秀文章，进一步概括了这个概念：
 - en: If there is a demand, I can add a hints section for the exercises.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果有需求，我可以为练习添加提示部分。
 - en: '[PRE0]'
+  id: totrans-13
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'

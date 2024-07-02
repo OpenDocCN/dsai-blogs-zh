@@ -1,41 +1,59 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:17:27'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:17:27
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'OfflineIMAP sucks : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: OfflineIMAP很糟糕：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2012/08/offlineimap-sucks/](http://blog.ezyang.com/2012/08/offlineimap-sucks/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2012/08/offlineimap-sucks/](http://blog.ezyang.com/2012/08/offlineimap-sucks/)
 - en: 'I am going to share a dirty little secret with you, a secret that only someone
     who uses and hacks on OfflineIMAP could reasonably know: OfflineIMAP sucks. Of
     course, you can still use software that sucks (I do all the time), but it’s useful
     to know what some of its deficiencies are, so that you can decide if you’re willing
     to put up with the suckage. So why does OfflineIMAP suck?'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 我将向你分享一个小秘密，只有使用和改进OfflineIMAP的人才能合理地了解：OfflineIMAP很糟糕。当然，你仍然可以使用糟糕的软件（我经常这样做），但了解它的一些缺陷是很有用的，这样你可以决定是否愿意忍受它的糟糕表现。那么为什么OfflineIMAP糟糕呢？
 - en: This is not really a constructive post. If I were actually trying to be constructive,
     I would go and fix all of these problems. But all of these are big problems that
     require substantial amounts of effort to fix... and unfortunately I don’t care
     about this software enough.
+  id: totrans-7
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 这并不是一个真正有建设性的帖子。如果我真的想要有建设性，我会去修复所有这些问题。但所有这些都是需要大量精力才能解决的大问题... 不幸的是，我并不够在意这个软件。
 - en: Project health is anemic
+  id: totrans-8
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 项目健康状况不佳
 - en: The original author, [John Goerzen](http://www.complete.org/JohnGoerzen), has
     moved on to greener, more Haskell-like pastures, and the current maintainership
     is having difficulty finding the time and expertise to do proper upkeep on the
@@ -46,12 +64,16 @@
     bitrot that the project should continue to keep working for the foreseeable future,
     but one should not expect any dramatic new features or intensive work to be carried
     out on the codebase.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 最初的作者，[John Goerzen](http://www.complete.org/JohnGoerzen)，已经转向更“绿色”的、更像Haskell的牧场，而当前的维护团队在找到足够时间和专业知识来进行适当的软件维护方面有困难。这里是[最近一次维护者招募的通知](http://comments.gmane.org/gmane.mail.imap.offlineimap.general/5754)，因为两位共同维护者在正确跟踪所有提交的补丁方面都没有足够的空闲时间。似乎仍有足够多的人对让OfflineIMAP不陷入过时感兴趣，所以这个项目在可预见的未来应该会继续运作，但不应期望在代码库上进行任何重大新功能或密集工作。
 - en: Nearly no tests
+  id: totrans-10
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 几乎没有测试
 - en: For most of OfflineIMAP’s history, there were no tests. While there is now a
     dinky little test suite, it has nowhere near the coverage that you would want
     out of such a data-critical program. Developers are not in the habit of adding
@@ -59,12 +81,16 @@
     there is no infrastructure for testing OfflineIMAP against as wide a range of
     IMAP servers as possible. Here are where the really *bad* bugs can show up, and
     the project has none of the relevant infrastructure.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: OfflineIMAP大部分历史上都没有测试。尽管现在有一个小小的测试套件，但它远远不够覆盖这样一个数据关键性程序所需的范围。开发者修复OfflineIMAP中的错误时，并不习惯添加新的回归测试。但或许更为恶劣的是，没有基础设施能够测试OfflineIMAP与尽可能多的IMAP服务器进行兼容性测试。这里才是真正会出现*严重*错误的地方，但这个项目却没有相关的基础设施。
 - en: Over-reliance on UIDs
+  id: totrans-12
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 对UID的过度依赖
 - en: OfflineIMAP uses UIDs as its sole basis for determining whether or not two messages
     correspond to each other. This works almost most of the time, except when it doesn’t.
     When it doesn’t, you’re in for a world of hurt. OfflineIMAP does not support doing
@@ -73,12 +99,16 @@
     taken out back and shot. To it’s credit, however, it has accreted most of the
     special casing that makes it work properly in all of the weird cases that show
     up when you have UIDs.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: OfflineIMAP将UID作为确定两个消息是否对应的唯一依据。这在大多数情况下工作得很好，但也有例外。一旦出现问题，你将面临严重的后果。OfflineIMAP不支持使用`Message-Id`头部或文件的校验和进行一致性检查，并且针对不支持`UIDPLUS`的服务器的`X-OfflineIMAP`补丁应该被淘汰。但它确实通过积累了大多数特例来使其在所有出现UID问题的怪异情况下正常工作。
 - en: Poor space complexity
+  id: totrans-14
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 空间复杂度差
 - en: The memory usage of OfflineIMAP is linear with the number of messages in your
     inbox. For large mailboxes, this effectively means loading hundreds of thousands
     of elements into a set and doing expensive operations on it (OfflineIMAP consistently
@@ -88,12 +118,18 @@
     100MB to disk for *every single file you upload*), though you can fix that fairly
     easily by setting `status_backend = sqlite`. Why is it not default? Because it’s
     still experimental. Hm...
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: OfflineIMAP 的内存使用量与收件箱中消息的数量成正比。对于大邮箱来说，这实际上意味着将数十万个元素加载到集合中并对其进行昂贵的操作（当我运行它时，OfflineIMAP
+    始终占用我的 CPU）。OfflineIMAP 应该能够在常量空间内运行，但在这个问题空间中没有考虑算法思想。它还有一个极其愚蠢的默认状态文件夹实现（认为每次上传文件时都重复写入
+    100MB 到磁盘），尽管通过设置 `status_backend = sqlite` 可以相对容易地解决这个问题。为什么它不是默认的？因为它仍然是实验性的。嗯...
 - en: Unoptimized critical path
+  id: totrans-16
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 未优化的关键路径
 - en: 'OfflineIMAP was never really designed for speed. This shows up in the synchronization
     time it takes, even in the common cases of no changes or just downloading a few
     messages. If one’s goal is to download your new messages as quickly as possible,
@@ -104,12 +140,19 @@
     understand what data it is allowed to lose, and what data it must fsync before
     carrying on to the next operation: “safety” operations are merely sprinkled through
     the code without any well-defined discipline. Oh, and how about some inotify?'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: OfflineIMAP 从来没有真正被设计成为速度快的工具。即使在没有任何更改或只下载少量消息的普通情况下，同步所需的时间也很长。如果一个人的目标是尽快下载新消息，可以做很多调整，包括减少
+    IMAP 命令的数量（特别是冗余的选择和清除），减少对文件系统的访问次数，异步文件系统访问，不将下载的消息完整加载到内存中等等。一个推论是，OfflineIMAP
+    似乎并不真正了解它可以丢失哪些数据，以及在继续下一个操作之前必须执行 fsync 的数据："安全"操作只是随意地散布在代码中，没有明确定义的纪律。哦，还有
+    inotify 怎么样？
 - en: Brain-dead IMAP library
+  id: totrans-18
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 脑残的 IMAP 库
 - en: 'OK, this one is not really OfflineIMAP’s fault, but `imaplib2` really doesn’t
     protect you from the pointy-edged bits of the IMAP protocol (and how it is implemented
     in the real-world) at all. You have to do it all yourself. This is dumb, and a
@@ -119,23 +162,32 @@
     safety would really come in handy: it would help force people to think about all
     of the error cases and all of the data that could occur when handling any given
     command.'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 好吧，这个问题并不完全是 OfflineIMAP 的错，但是 `imaplib2` 实际上根本没有保护你免受 IMAP 协议（以及实际实现中如何实现）的尖锐边缘。你必须自己做所有的事情。这很愚蠢，当你忘记在写新的
+    IMAP 代码时检查 UIDVALIDITY 时，这将是一场灾难的食谱。此外，它几乎没有对 IMAP RFC 中关于命令响应的知识进行编码。在这里，更多的类型安全性确实会很有用：它将有助于强制人们考虑处理任何给定命令时的所有错误情况和所有可能发生的数据。
 - en: Algorithmica obscura
+  id: totrans-20
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 算法黑暗
 - en: OfflineIMAP has a fair bit of debugging output and UI updating code interspersed
     throughout its core algorithms, and the overall effect is that it’s really hard
     to tell what the overall shape of the algorithm being employed is. This is not
     good if the algorithm is kind of subtle, and relies on some global properties
     of the entire execution to ensure its correctness. There is far too much boilerplate.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: OfflineIMAP 在其核心算法中有大量的调试输出和 UI 更新代码交织在一起，总体效果是很难判断所使用的算法的整体形状。如果算法比较微妙，并依赖于整个执行过程的一些全局属性来确保其正确性，这是不好的。有太多样板代码。
 - en: Conclusion
+  id: totrans-22
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 结论
 - en: In conclusion, if you would like to use OfflineIMAP on a well-behaved, popular,
     open-source IMAP server which a maintainer also happens to use with a relatively
     small number of messages in your INBOX and are willing to put up with OfflineIMAP
@@ -143,5 +195,7 @@
     in a wholly mysterious way, and never want to hack on OfflineIMAP, there is no
     finer choice. For everyone else, well, good luck! Maybe it will work out for you!
     (It mostly does for me.)
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 总结来说，如果你想在一个表现良好、流行的、开源的IMAP服务器上使用OfflineIMAP，其中一个维护者也偶尔使用它，并且你的收件箱中的消息数量相对较少，并且愿意接受OfflineIMAP作为一个不可修改的黑匣子，以一种完全神秘的方式同步，而且永远不想对OfflineIMAP进行修改，那么没有比这更好的选择了。对于其他所有人，嗯，祝你好运！也许对你来说会有所帮助！（对我来说大部分情况下都是如此。）

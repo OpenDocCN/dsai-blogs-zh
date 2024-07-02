@@ -1,23 +1,35 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 分类：未分类
 - en: 'date: 2024-07-01 18:17:29'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:17:29
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Two ways of representing perfect binary trees : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 表示完美二叉树的两种方式：ezyang’s 博客
 - en: 来源：[http://blog.ezyang.com/2012/08/statically-checked-perfect-binary-trees/](http://blog.ezyang.com/2012/08/statically-checked-perfect-binary-trees/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2012/08/statically-checked-perfect-binary-trees/](http://blog.ezyang.com/2012/08/statically-checked-perfect-binary-trees/)
 - en: 'A common simplification when discussing many divide and conquer algorithms
     is the assumption that the input list has a size which is a power of two. As such,
     one might wonder: *how do we encode lists that have power of two sizes*, in a
@@ -26,106 +38,159 @@
     binary trees, we also have an encoding for power of two lists. Here are two well-known
     ways to do such an encoding in Haskell: one using GADTs and one using nested data-types.
     We claim that the nested data-types solution is superior.'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 讨论许多分治算法时的一个常见简化假设是输入列表的大小是二的幂。因此，人们可能会想：*我们如何对具有二次幂大小的列表进行编码*，以一种不可表示其他属性的方式呢？一个观察是这样的列表是
+    *完美二叉树*，因此如果我们有一个完美二叉树的编码，我们也有一个二次幂列表的编码。以下是在 Haskell 中实现此类编码的两种众所周知的方法：一种使用 GADTs，另一种使用嵌套数据类型。我们声称嵌套数据类型的解决方案更为优越。
 - en: 'This post is literate, but you will need some type system features:'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 这篇文章是文学的，但你需要一些类型系统的特性：
 - en: '[PRE0]'
+  id: totrans-8
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: GADTs
+  id: totrans-9
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: GADTs
 - en: 'One approach is to encode the size of the tree into the type, and then assert
     that the sizes of two trees are the same. This is pretty easy to do with GADTs:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 一种方法是将树的大小编码到类型中，然后断言两棵树的大小相同。这在 GADTs 中相当容易实现：
 - en: '[PRE1]'
+  id: totrans-11
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'By reusing the type variable `i`, the constructor of `N` ensures that we any
     two trees we combine must have the same size. These trees can be destructed like
     normal binary trees:'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过重用类型变量 `i`，`N` 的构造函数确保我们组合的任意两棵树必须具有相同的大小。这些树可以像普通的二叉树一样解构：
 - en: '[PRE2]'
+  id: totrans-13
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'Creating these trees from ordinary lists is a little delicate, since the `i`
     type variable needs to be handled with care. Existentials over lists work fairly
     well:'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 从普通列表创建这些树有点微妙，因为 `i` 类型变量需要小心处理。对列表的存在性也相当有效：
 - en: '[PRE3]'
+  id: totrans-15
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: Nested data-types
+  id: totrans-16
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 嵌套数据类型
 - en: 'Another approach is to literally build up a type isomorphic to a 2^n size tuple
     (modulo laziness). For example, in the case of a 4-tuple, we’d like to just say
     `((1, 2), (3, 4))`. There is still, however, the pesky question of how one does
     recursion over such a structure. The technique to use here is bootstrapping, described
     in Adam Buchsbaum in his thesis and popularized by Chris Okasaki:'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一种方法是直接构建一个等同于 2^n 大小元组的类型（考虑惰性）。例如，在 4-元组的情况下，我们只需写成 `((1, 2), (3, 4))`。然而，还有一个棘手的问题，即如何对这样的结构进行递归。这里使用的技术是引导，由
+    Adam Buchsbaum 在他的论文中描述，并由 Chris Okasaki 推广：
 - en: '[PRE4]'
+  id: totrans-18
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: 'Notice how the recursive mention of `B` does not hold `a`, but `(a, a)`: this
     is so-called “non-uniform” recursion. Every time we apply a `Two` constructor,
     the size of our tuple doubles, until we top it off:'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意递归提到 `B` 的情况并不持有 `a`，而是 `(a, a)`：这就是所谓的“非均匀”递归。
 - en: '[PRE5]'
+  id: totrans-20
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: Which is better?
+  id: totrans-21
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 哪个更好？
 - en: 'At first glance, the GADT approach seems more appealing, since when destructing
     it, the data type looks and feels a lot like an ordinary binary tree. However,
     it is much easier to parse user data into nested data types than GADTs (due to
     the fact that Haskell is not a dependently typed language). Ralf Hinze, in his
     paper [Perfect Trees and Bit-reversal Permutations](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.46.1095),
     gives another argument in favor of nested datatypes:'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 乍一看，GADT 方法似乎更有吸引力，因为在解构时，数据类型看起来和感觉上很像普通的二叉树。然而，将用户数据解析成嵌套数据类型比解析成 GADTs 要容易得多（由于
+    Haskell 不是依赖类型语言）。Ralf Hinze 在他的论文 [Perfect Trees and Bit-reversal Permutations](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.46.1095)
+    中，提出了另一个支持嵌套数据类型的论点：
 - en: Comparing [perfect trees and the usual definition of binary trees] it is fairly
     obvious that the first representation is more concise than the second one. If
     we estimate the space usage of an *k*-ary constructor at *k+1* cells, we have
     that a perfect tree of rank *n* consumes *(2^n-1)3+(n+1)2* cells with the first
     and *(2^n-1)3+2*2^n* with the second. [The difference coming from all of the extra
     leaf nodes.]
+  id: totrans-23
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 比较[完美树和二叉树的通常定义]，很明显第一个表示比第二个更为简洁。如果我们估计一个*k*-ary构造器的空间使用量为*k+1*个单元，我们可以看到，第一个完美树的排名*n*消耗了*(2^n-1)3+(n+1)2*个单元，而第二个则消耗了*(2^n-1)3+2*2^n*个单元。
+    [这一差异源于所有额外的叶节点。]
 - en: 'Nevertheless, destructing the nested data type tree is very weird, and we might
     feel better about the “exotic” nested data type if there was an efficient transformation
     from the catamorphism `(n :: t a -> t a -> t a , z :: a -> t a)` on traditional
     trees:'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: '尽管如此，解构嵌套数据类型树非常奇怪，如果有一个从传统树上的卡范略图`(n :: t a -> t a -> t a , z :: a -> t a)`到嵌套数据类型的有效转换，我们可能会对“异国情调”的嵌套数据类型感到更满意：'
 - en: '[PRE6]'
+  id: totrans-25
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'to a catamorphism `(f :: a -> t a, g :: t (a, a) -> t a)` on our nested data-type
     tree:'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: '对于我们的嵌套数据类型树进行一个卡范略图`(f :: a -> t a, g :: t (a, a) -> t a)`：'
 - en: '[PRE7]'
+  id: totrans-27
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: 'This conversion is possible, though, alas, it is not a catamorphism:'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管如此，这种转换是可能的，但遗憾的是，它不是一个卡范略图：
 - en: '[PRE8]'
+  id: totrans-29
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: The idea is to create a function `(a -> t a) -> t a`, which we then pass `z`
     in order to get the final result. This is the time honored difference list/continuation
     passing trick, where we build up a chain of function invocations rather than attempt
@@ -135,9 +200,15 @@
     any lingering concerns we may have had. Nested data types are superior... from
     a representation size perspective, in any case. (See Jeremy's comment for another
     take on the issue, though.)
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 思路是创建一个函数`(a -> t a) -> t a`，然后我们传入`z`以获取最终结果。这是一种历时已久的差异列表/延续传递技巧，我们在其中建立一系列函数调用链，而不是直接尝试建立结果，因为通常嵌套数据类型树上的卡范略图是朝错误的方向进行的。但现在，我们可以轻松地对我们的嵌套数据类型树执行任何我们在普通树上做过的折叠操作，这解决了我们可能有的任何未解决的问题。无论如何，从表示大小的角度来看，嵌套数据类型是优越的。
+    （有关该问题的另一种看法，请参阅Jeremy的评论。）
 - en: For further reading, check out [Generalised folds for nested datatypes](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.42.1517)
     (Richard Bird, Ross Paterson).
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 欲了解更多信息，请查看[嵌套数据类型的广义折叠](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.42.1517)（Richard
+    Bird，Ross Paterson）。

@@ -1,27 +1,41 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:24'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:24'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Metro Maps of the News : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 'Metro Maps of the News : ezyang’s blog'
 - en: 来源：[http://blog.ezyang.com/2012/12/metro-maps-of-the-news/](http://blog.ezyang.com/2012/12/metro-maps-of-the-news/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2012/12/metro-maps-of-the-news/](http://blog.ezyang.com/2012/12/metro-maps-of-the-news/)
 - en: Metro Maps of the News
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Metro Maps of the News
 - en: Metro maps are a visual metaphor for complex, interdependent story lines developed
     by [Dafna Shahaf](http://www.cs.cmu.edu/~dshahaf/). Dafna’s thesis involved techniques
     for automatically taking a corpus of news articles and extracting a coherent narratives
@@ -29,13 +43,19 @@
     project, we took one of the narratives Dafna had generated and created [a system
     for displaying the maps.](http://metro.ezyang.com) (The demo is best viewed on
     a large monitor.)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 地铁地图是由[Dafna Shahaf](http://www.cs.cmu.edu/~dshahaf/)开发的复杂、相互依赖的故事线的视觉隐喻。达芙娜的论文涉及自动处理新闻文章语料库并提取涵盖整体空间的连贯叙述技术。在我们的最终[CS448b](https://graphics.stanford.edu/wikis/cs448b-12-fall/)项目中，我们选取了达芙娜生成的叙述之一，并创建了[一个显示地图的系统。](http://metro.ezyang.com)（最好在大屏幕上观看演示。）
 - en: We only had enough time to get the viewer aspect polished, but we think that
     it would not be too difficult to extend this framework for the *construction*
     of metro maps (in case you don’t have access to Dafna’s algorithm).
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们只有足够的时间去完善查看者方面，但我们认为扩展这个框架以便*构建*地铁地图并不会太困难（以防您无法访问达芙娜的算法）。
 - en: This is joint work with Russell Chou and Jacob Jensen.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是与Russell Chou和Jacob Jensen的联合工作。

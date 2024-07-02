@@ -1,34 +1,51 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:53'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:53'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'How the Grinch stole the Haskell Heap : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Grinch 如何窃取 Haskell 堆：ezyang’s 博客
 - en: 来源：[http://blog.ezyang.com/2011/04/how-the-grinch-stole-the-haskell-heap/](http://blog.ezyang.com/2011/04/how-the-grinch-stole-the-haskell-heap/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/04/how-the-grinch-stole-the-haskell-heap/](http://blog.ezyang.com/2011/04/how-the-grinch-stole-the-haskell-heap/)
 - en: Today, we introduce the Grinch.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 今天，我们来介绍一下 Grinch。
 - en: 'A formerly foul and unpleasant character, the Grinch has reformed his ways.
     He still has a penchant for stealing presents, but these days he does it ethically:
     he only takes a present if no one cares about it anymore. He is the *garbage collector*
     of the Haskell Heap, and he plays a very important role in keeping the Haskell
     Heap small (and thus our memory usage low)—especially since functional programs
     generate *a lot* of garbage. We’re not a particularly eco-friendly bunch.'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 曾经是个糟糕而令人讨厌的角色，Grinch 已经改过自新。他仍然喜欢偷礼物，但现在他是道德的：只有当没有人再关心一个礼物时，他才会拿走。他是 Haskell
+    堆的*垃圾收集器*，在保持 Haskell 堆小（从而使我们的内存使用低）方面扮演着非常重要的角色——特别是因为函数式程序会生成*大量*垃圾。我们不是特别环保的一群人。
 - en: The Grinch also collects garbage in traditional imperative languages, since
     the process is fundamentally the same. (We describe copying collection using Cheney’s
     algorithm here.) The Grinch first asks us what objects in the heap we care about
@@ -38,21 +55,29 @@
     do, he moves those presents over too (scavenging). Eventually, he’s checked all
     of the presents in the new heap, which means everything left-over is garbage,
     and he drags it away.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: Grinch 在传统的命令式语言中也收集垃圾，因为这一过程基本上是相同的。（我们在此描述了使用 Cheney's 算法的复制收集。）Grinch 首先询问我们在堆中关心哪些对象（根）。他将这些对象移到新堆（疏散），其中将包含要保存的对象。然后，他逐个检查新堆中的对象，确保它们不指向旧堆中的其他对象。如果有的话，他也将这些礼物搬到新堆中（搜刮）。最终，他检查了新堆中的所有礼物，这意味着剩下的一切都是垃圾，他会把它拖走。
 - en: But there are differences between the Haskell Heap and a traditional heap.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 但 Haskell 堆和传统堆之间存在差异。
 - en: 'A traditional heap is one in which all of the presents have been opened: there
     will only be unwrapped boxes and gift-cards, so the Grinch only needs to check
     what gifts the gift-cards refer to in order to decide what else to scavenge.'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 传统堆是所有礼物都已经打开的堆：只有未拆封的盒子和礼品卡，所以 Grinch 只需检查礼品卡引用的礼物，以决定还能搜刮什么其他东西。
 - en: However, the Haskell Heap has unopened presents, and the ghosts that haunt these
     presents are also pretty touchy when it comes to presents they know about. So
     the Grinch has to consult with them and scavenge any presents they point to.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，Haskell 堆中有未打开的礼物，并且困扰这些礼物的幽灵在关于它们知道的礼物时也非常敏感。所以 Grinch 必须与它们协商，并清除它们指向的任何礼物。
 - en: 'How do presents become garbage? In both the Haskell Heap and a traditional
     heap, a present obviously becomes garbage if we tell the Grinch we don’t care
     about it anymore (the root set changes). Furthermore, if a gift-card is edited
@@ -61,37 +86,52 @@
     we open a present (evaluate a thunk), the ghost disappears into the ether, its
     job done. The Grinch may now be able to garbage collect the presents the ghost
     previously cared about.'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 怎么会有礼物变成垃圾呢？在 Haskell 堆和传统堆中，如果我们告诉 Grinch 我们不再关心一个礼物（根集发生变化），那么这个礼物显然就成了垃圾。此外，如果编辑礼品卡使其指向不同的礼物，它曾指向的礼物也可能变得多余（突变）。但
+    Haskell 堆的独特之处在于：我们打开一个礼物（评估一个 thunk）后，幽灵就消失在虚空中，它的使命完成了。现在 Grinch 可能可以垃圾回收幽灵之前关心的那些礼物。
 - en: Let’s review the life-cycle of a present on the Haskell Heap, in particular
     emphasizing the present’s relationship to other presents on the heap. (The phase
     names are actually used by GHC’s heap profiling.)
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们回顾一下 Haskell 堆上一个礼物的生命周期，特别强调这个礼物与堆上其他礼物的关系。（这些阶段名称实际上是 GHC 堆分析中使用的。）
 - en: 'Suppose we want to minimize our memory usage by keeping the number of presents
     in our heap low. There are two ways to do this: we can reduce the number of presents
     we care about or we can reduce the number of presents we create. The former corresponds
     to making presents go dead, usually by opening a present and releasing any presents
     the now absent ghost cared about. The latter corresponds to avoiding function
     application, usually by not opening presents when unnecessary.'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设我们想通过保持堆中的礼物数量低来最小化内存使用。有两种方法可以做到这一点：我们可以减少我们关心的礼物数量，或者我们可以减少我们创建的礼物数量。前者对应于使礼物变得死掉，通常是通过打开礼物并释放任何现在不存在的幽灵关心的礼物来完成。后者对应于避免函数应用，通常是在不必要时不打开礼物。
 - en: So, which one results in a smaller heap? It depends!
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 那么，哪一种方法会导致较小的堆？这取决于情况！
 - en: 'It is not true that only laziness causes space leaks on the heap. Excessive
     strictness can cause space leaks too. The key to fixing an identified space leak
     is figuring out which is the case. Nota bene: I’ve said a lot about space leaks,
     but I haven’t touched on a common space leak that plagues many people: space leaks
     on the stack. Stick around.'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 并不是只有惰性导致堆上的空间泄漏。过度严格性也可能导致空间泄漏。修复已识别的空间泄漏的关键在于弄清楚情况是哪种情况。请注意：我已经说了很多关于堆上的空间泄漏，但我还没有触及一个困扰许多人的常见堆上的空间泄漏：堆栈上的空间泄漏。敬请关注。
 - en: 'Last time: [Functions produce the Haskell Heap](http://blog.ezyang.com/2011/04/functions-produce-the-haskell-heap/)'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 上次：[函数生成 Haskell 堆](http://blog.ezyang.com/2011/04/functions-produce-the-haskell-heap/)
 - en: 'Next time: [Bindings and CAFs on the Haskell Heap](http://blog.ezyang.com/2011/05/bindings-and-cafs-on-the-haskell-heap/)'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 下次：[绑定和 Haskell 堆上的 CAFs](http://blog.ezyang.com/2011/05/bindings-and-cafs-on-the-haskell-heap/)
 - en: '*Technical notes.* The metaphor of the Grinch moving presents from one pile
     to another is only accurate if we assume copying garbage collections (GHC also
     has a compacting garbage collector, which operates differently), and some details
@@ -102,8 +142,10 @@
     doesn’t only have one heap: we have a generational garbage collector, which effectively
     means there are multiple heaps (and the Grinch visits the young heap more frequently
     than the old heaps.)'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: '*技术注释.* 格林奇从一个堆到另一个堆移动礼物的比喻只有在我们假设有复制垃圾收集（GHC也有紧凑型垃圾收集器，其运行方式不同）时才准确，还有一些细节被省略了（尤其是格林奇如何知道礼物已经移动到新堆中，以及格林奇如何跟踪他在新堆中的位置）。此外，“格林奇拖走垃圾礼物”的形象有些误导：我们只是覆盖旧的内存！此外，GHC并不只有一个堆：我们有分代垃圾收集器，这实际上意味着有多个堆（格林奇频繁访问年轻堆而不是老堆）。'
 - en: 'Presents and gift cards look exactly the same to a real garbage collector:
     a gift card is simply a pointer to a constructor info table and some pointer fields,
     whereas a present (thunk) is simply a pointer to the info table for the executable
@@ -112,9 +154,15 @@
     a language without them built-in might manually represent them as a data structure
     pointing to the static function code and extra space for its arguments. After
     all, evaluation of a lazy value is just a controlled form of mutation!'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于真正的垃圾收集器来说，礼品和礼品卡看起来完全相同：礼品卡只是指向构造信息表和一些指针字段的指针，而礼品（thunk）只是指向可执行代码信息表和其闭包变量字段的指针。对于将数据视为代码的
+    Haskell 来说，它们是一样的。在没有内置匿名函数的语言中，对于匿名函数的实现可能手动将其表示为指向静态函数代码和其参数附加空间的数据结构。毕竟，惰性值的评估只是一种受控的变异形式！
 - en: This work is licensed under a [Creative Commons Attribution-ShareAlike 3.0 Unported
     License](http://creativecommons.org/licenses/by-sa/3.0/).
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 本作品根据 [知识共享署名-相同方式共享 3.0 未本地化版本许可协议](http://creativecommons.org/licenses/by-sa/3.0/)
+    授权。

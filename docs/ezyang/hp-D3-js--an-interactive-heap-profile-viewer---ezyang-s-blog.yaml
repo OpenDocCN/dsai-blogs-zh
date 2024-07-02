@@ -1,34 +1,50 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: '类别: 未分类'
 - en: 'date: 2024-07-01 18:17:25'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: '日期: 2024-07-01 18:17:25'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'hp/D3.js: an interactive heap profile viewer : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 'hp/D3.js: 一个交互式堆视图查看器：ezyang的博客'
 - en: 来源：[http://blog.ezyang.com/2012/11/hpd3-js-an-interactive-heap-profile-viewer/](http://blog.ezyang.com/2012/11/hpd3-js-an-interactive-heap-profile-viewer/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2012/11/hpd3-js-an-interactive-heap-profile-viewer/](http://blog.ezyang.com/2012/11/hpd3-js-an-interactive-heap-profile-viewer/)
 - en: 'hp/D3.js: an interactive heap profile viewer'
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 'hp/D3.js: 一个交互式堆视图查看器'
 - en: I'm taking a [Data Visualization](https://graphics.stanford.edu/wikis/cs448b-12-fall/)
     course this fall, and one of our assignments was to create an interactive visualization.
     So I thought about the problem for a little bit, and realized, “Hey, wouldn’t
     it be nice if we had a version of hp2ps that was both interactive and accessible
     from your browser?” (`hp2any` fulfills this niche partially, but as a GTK application).
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 我正在秋季学习[数据可视化](https://graphics.stanford.edu/wikis/cs448b-12-fall/)课程，我们的一个作业是创建一个交互式可视化。所以我考虑了一下这个问题，意识到，“嘿，如果我们有一个版本的hp2ps既交互式又可以从浏览器访问，那不是很好吗？”（`hp2any`部分填补了这一空白，但作为一个GTK应用程序）。
 - en: 'A week of hacking later: [hp/D3.js](http://heap.ezyang.com/), the interactive
     heap profile viewer for GHC heaps. Upload your `hp` files, share them with friends!
     Our hope is that the next time you need to share a heap profile with someone,
@@ -36,31 +52,44 @@
     just upload the `hp` file here and send a colleague your link. We’ve tested it
     on recent Firefox and Chrome, it probably will work on any sufficiently modern
     browser, it definitely won’t work with Internet Explorer.'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个星期的黑客后：[hp/D3.js](http://heap.ezyang.com/)，GHC堆的交互式堆视图查看器。上传你的`hp`文件，与朋友分享！我们希望下次你需要与他人分享堆文件时，不要再运行`hp2ps`并发送同事`ps`文件，而只需在这里上传`hp`文件并发送同事你的链接。我们已在最新的Firefox和Chrome上进行了测试，它可能在任何足够现代的浏览器上运行，但绝对不会在Internet
+    Explorer上运行。
 - en: 'Some features:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 一些特点：
 - en: You can annotate data points by clicking on the graph and filling in the text
     box that appears. These annotations are saved and will appear for anyone viewing
     the graph.
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 您可以通过单击图形并填写出现的文本框来注释数据点。这些注释将被保存，并且将显示给任何查看图形的人。
 - en: You can filter heap elements based on substring match by typing in the “filter”
     field.
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 您可以通过在“过滤”字段中输入子字符串来筛选堆元素。
 - en: You can drill down into more detail by clicking on one of the legend elements.
     If you click `OTHER`, it will expand to show you more information about the heap
     elements in that band. You can then revert your view by pressing the Back button.
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 通过单击图例元素之一，您可以深入了解更多细节。如果单击`OTHER`，它将展开以显示该带中堆元素的更多信息。然后，您可以通过按“返回”按钮来恢复视图。
 - en: 'Give it a spin, and let me know about any bugs or feature suggestions! (Some
     known bugs: sometimes Yesod 500s, just refresh until it comes up. Also, we lack
     backwards animations, axis changing is a little choppy and you can’t save annotations
     on the OTHER band.)'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 尝试一下，并告诉我任何错误或功能建议！（一些已知的问题：有时Yesod 500s，请刷新直到它正常启动。此外，我们缺乏后退动画，轴变更有些卡顿，您无法保存关于OTHER带的注释。）

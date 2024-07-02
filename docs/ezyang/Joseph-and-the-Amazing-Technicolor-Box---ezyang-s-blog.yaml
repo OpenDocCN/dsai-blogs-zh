@@ -1,81 +1,124 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:41'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:41'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Joseph and the Amazing Technicolor Box : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 约瑟夫与令人惊叹的彩色箱子：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2011/08/joseph-and-the-amazing-technicolor-box/](http://blog.ezyang.com/2011/08/joseph-and-the-amazing-technicolor-box/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/08/joseph-and-the-amazing-technicolor-box/](http://blog.ezyang.com/2011/08/joseph-and-the-amazing-technicolor-box/)
 - en: Joseph and the Amazing Technicolor Box
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 约瑟夫与令人惊叹的彩色箱子
 - en: 'Consider the following data type in Haskell:'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 在Haskell中考虑以下数据类型：
 - en: '[PRE0]'
+  id: totrans-8
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'How many computable functions of type `Box a -> Box a` are there? If we strictly
     use denotational semantics, there are seven:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 有多少类型为 `Box a -> Box a` 的可计算函数？如果我们严格使用表义语义，有七个：
 - en: But if we furthermore distinguish the *source* of the bottom (a very operational
     notion), some functions with the same denotation have more implementations...
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 但如果我们进一步区分底部的*源头*（一个非常操作性的概念），一些具有相同表达的函数有更多的实现方式……
 - en: '*Irrefutable pattern match:* `f ~(B x) = B x`. No extras.'
+  id: totrans-11
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*不可反驳的模式匹配:* `f ~(B x) = B x`。无多余内容。'
 - en: '*Identity:* `f b = b`. No extras.'
+  id: totrans-12
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*身份:* `f b = b`。无多余内容。'
 - en: '*Strict:* `f (B !x) = B x`. No extras.'
+  id: totrans-13
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*严格:* `f (B !x) = B x`。无多余内容。'
 - en: '*Constant boxed bottom:* Three possibilities: `f _ = B (error "1")`; `f b =
     B (case b of B _ -> error "2")`; and `f b = B (case b of B !x -> error "3")`.'
+  id: totrans-14
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*常数箱底:* 有三种可能性：`f _ = B (error "1")`；`f b = B (case b of B _ -> error "2")`；以及
+    `f b = B (case b of B !x -> error "3")`。'
 - en: '*Absent:* Two possibilities: `f (B _) = B (error "4")`; and ``f (B x) = B (x
     `seq` error "5")``.'
+  id: totrans-15
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*不存在:* 有两种可能性：`f (B _) = B (error "4")`；以及 ``f (B x) = B (x `seq` error "5")``。'
 - en: '*Strict constant boxed bottom:* `f (B !x) = B (error "6")`.'
+  id: totrans-16
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*严格的常数箱底:* `f (B !x) = B (error "6")`.'
 - en: '*Bottom:* Three possibilities: `f _ = error "7"`; `f (B _) = error "8"`; and
     `f (B !x) = error "9"`.'
+  id: totrans-17
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*底部:* 有三种可能性：`f _ = error "7"`；`f (B _) = error "8"`；以及 `f (B !x) = error "9"`。'
 - en: List was ordered by colors of the rainbow. If this was hieroglyphics to you,
     may I interest you in [this blog post?](http://blog.ezyang.com/2010/12/gin-and-monotonic/)
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 列表按彩虹颜色排序。如果这对你来说像象形文字一样难懂，我可以向你介绍[这篇博文？](http://blog.ezyang.com/2010/12/gin-and-monotonic/)
 - en: '*Postscript.* GHC can and will optimize `f b = B (case b of B !x -> error "3")`,
     ``f (B x) = B (x `seq` error "5")`` and `f (B !x) = error "9"` into alternative
     forms, because in general we don''t say if `seq (error "1") (error "2")` is semantically
     equivalent `error "1"` or `error "2"`: any one is possible due to imprecise exceptions.
     But if you really care, you can use `pseq`. However, even with exception set semantics,
     there are more functions in this "refined" view of the normal denotational semantics.'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: '*附录.* GHC 可以且将优化 `f b = B (case b of B !x -> error "3")`，``f (B x) = B (x `seq`
+    error "5")`` 和 `f (B !x) = error "9"` 到替代形式，因为一般来说我们不会说 `seq (error "1") (error
+    "2")` 在语义上等同于 `error "1"` 或 `error "2"`：由于不精确的异常，任何一个都有可能。但是如果你真的在乎，你可以使用 `pseq`。然而，即使使用异常集语义，这个“精炼”视图中仍有更多函数的正常表示语义。'

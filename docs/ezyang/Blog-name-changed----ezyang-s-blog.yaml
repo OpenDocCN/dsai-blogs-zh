@@ -1,35 +1,55 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:04'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:04'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Blog name changed… : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 'Blog name changed… : ezyang的博客'
 - en: 来源：[http://blog.ezyang.com/2010/10/blog-name-changed/](http://blog.ezyang.com/2010/10/blog-name-changed/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/10/blog-name-changed/](http://blog.ezyang.com/2010/10/blog-name-changed/)
 - en: Blog name changed…
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 博客名称已更改…
 - en: '...because I don’t live in a room numbered 245s anymore. Yep. :-)'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: …因为我不再住在245s号的房间了。是的。 :-)
 - en: This is a cow. They munch grass next to the River Cam.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是一头牛。它们在卡姆河旁边啃草。
 - en: '*Pop quiz*. What do matrix-chain multiplication, longest common subsequence,
     construction of optimal binary search trees, bitonic euclidean traveling-salesman,
     edit distance and the Viterbi algorithm have in common?'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: '*小测验*。矩阵链乘法、最长公共子序列、最优二叉搜索树的构造、双峰欧几里德旅行推销员问题、编辑距离和维特比算法有什么共同之处？'

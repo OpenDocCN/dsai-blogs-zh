@@ -1,43 +1,61 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:16'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:16'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Principles of FFI API design : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: FFI API设计原则：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2010/06/principles-of-ffi-api-design/](http://blog.ezyang.com/2010/06/principles-of-ffi-api-design/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/06/principles-of-ffi-api-design/](http://blog.ezyang.com/2010/06/principles-of-ffi-api-design/)
 - en: This is part three of [a six part tutorial series on c2hs](http://blog.ezyang.com/2010/06/the-haskell-preprocessor-hierarchy/).
     Today, we take a step back from the nitty gritty details of FFI bindings and talk
     about more general design principles for your library.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文是关于[c2hs的六部分教程系列中的第三部分](http://blog.ezyang.com/2010/06/the-haskell-preprocessor-hierarchy/)。今天，我们从FFI绑定的细节回顾中退后一步，讨论您的库的更一般设计原则。
 - en: On the one hand, writing an FFI binding can little more than churning out the
     glue code to let you write “C in Haskell,” the API of your library left at the
     whimsy of the original library author. On the other hand, you can aspire to make
     your interface indistinguishable from what someone might have written in pure
     Haskell, introducing modest innovation of your own to encode informally documented
     invariants from the C code into the type system.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 一方面，编写FFI绑定可能只不过是生成胶水代码，让您能够在“Haskell中使用C”，而您的库的API则完全取决于原始库的作者的心血。另一方面，您可以立志使您的接口与纯Haskell编写的内容无异，引入自己的适度创新，以将C代码中非正式记录的不变量编码到类型系统中。
 - en: '*Overall design.* Larger bindings benefit from being divided into two layers:
     a low-level binding and a higher-level user-friendly binding. There is a large
     amount of code necessary to make C functions available to call by Haskell, and
     the obvious thing to do with it is to stow it away in its own namespace, frequently
     with `Internal` somewhere in the name.'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: '*整体设计.* 更大的绑定从分为两个层面中受益：低级绑定和更高级的用户友好绑定。使C函数可供Haskell调用需要大量的代码，将其存储在自己的命名空间中是显而易见的，通常名称中包含`Internal`。'
 - en: '*Low-level design.* In the low-level binding, you should organize your foreign
     imports the way the C header files were organized. Keep the names similar. While
     it won''t be possible to have identical C function names and Haskell function
@@ -46,50 +64,66 @@
     still adopt a consistent transformation. c2hs, by default, converts `Foo_BarBaz`
     in C to `fooBarBaz`; that is, words after underscores are capitalized, the first
     letter is uncapitalized, and underscores are removed.'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: '*低级设计.* 在低级绑定中，应按照C头文件的方式组织您的外部导入项。保持名称相似。虽然不可能拥有相同的C函数名称和Haskell函数名称——C函数允许以大写字母开头，而Haskell函数不允许（类型和数据构造函数相反），但仍可以采用一致的转换。默认情况下，c2hs将C中的`Foo_BarBaz`转换为`fooBarBaz`；即在下划线后的单词大写，第一个字母不大写，并移除下划线。'
 - en: 'There is room to improve upon the original API, however. The rule of thumb
     is, if you can make a non-invasive/local change that improves safety or usability,
     do it. These include:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，原始API还有改进的空间。经验法则是，如果可以进行改进安全性或可用性的非侵入/局部更改，则应该这样做。这些包括：
 - en: Marshalling vanilla C values (e.g. `int`, `float` and even `char*`, if it's
     a null terminated string) into their natural Haskell forms (`Int`, `Float` and
     `String`). Care should be taken, as the native Haskell types lose precision to
     their C counterparts, and thus should ensure that the application doesn't need
     to squeeze out every last higher bit (e.g. with a bit field). 80% of the time,
     a lossy transformation is acceptable,
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 将普通C值（如`int`、`float`甚至`char*`，如果它是以空字符结尾的字符串）转换为它们自然的Haskell形式（`Int`、`Float`和`String`）。需要小心，因为本地Haskell类型会损失其C对应类型的精度，因此应确保应用程序不需要挤出每一个更高的位（例如通过位字段）。80%的时间，可以接受有损转换，
 - en: Converting `int` into `Bool` from some naming convention (perhaps boolean values
     are prefixed with `f` for `flag`),
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 将`int`从某种命名约定转换为`Bool`（也许布尔值以`f`作为`flag`的前缀），
 - en: 'Putting `malloc`''d pointers into memory management with foreign pointers.
     This advice is worth repeating: Haskell has memory management, and it would be
     criminal not to use it *as soon as possible*. Plus, you don''t have to write an
     explicit Haskell deallocation function.'
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 将`malloc`分配的指针放入外部指针的内存管理中。这个建议值得重复强调：Haskell有内存管理，而且尽快使用它*是非常重要的*。此外，您不必编写显式的Haskell释放函数。
 - en: Converting functions that initialize some memory space (`set_struct_default`)
     into pure versions (`structDefault`) with `unsafePerformIO`, `alloca` and `peek`.
     Note that you should do this in conjunction with the appropriate `Storable` instance
     to marshal the C struct into a persistent Haskell datatype.
+  id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 将一些初始化某些内存空间的函数（`set_struct_default`）转化为使用`unsafePerformIO`、`alloca`和`peek`的纯版本（`structDefault`）。请注意，你应该与适当的`Storable`实例一起执行此操作，以将C结构体转换为持久的Haskell数据类型。
 - en: Marshalling more complex C values (arrays, mostly) into Haskell lists, assuming
     that bounds information is consistent and available locally.
+  id: totrans-15
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 将更复杂的C值（主要是数组）转换为Haskell列表，假设边界信息一致且本地可用。
 - en: We will discuss these techniques in more detail in the coming posts, since this
     is precisely where c2hs is used the most.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将在接下来的帖子中更详细地讨论这些技术，因为这正是c2hs最常用的地方。
 - en: 'It''s useful to know when not to simplify: certain types of libraries may have
     highly efficient in-memory representations for large structures; marshalling them
     to and from Haskell is wasteful. Poorly written C code may also you hand you arrays
@@ -98,14 +132,18 @@
     explicitly *not* going to marshal and enforce this across the board. My preference
     is to marshal flat structs that contain no pointers, and leave everything else
     be.'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 知道何时不进行简化是有用的：某些类型的库可能对大型结构有高效的内存表示；将它们从Haskell中逐出和入驻是浪费的。编写不好的C代码也可能会给你传递数组，你很难找到它们的长度；推迟它们的逐出和入驻到更高级别的接口可能是一个更好的选择。决定哪些结构明确地*不*逐出和跨越整个委员会。我的偏好是逐出不包含指针的扁平结构，其他的什么都不做。
 - en: '*High-level design.* While there are certainly exotic computational strcutures
     like arrows, applicative functors and comonads which can be useful in certain
     domains, we will restrict our discussion to the go-to tools of the Haskell programmer:
     pure functions and monads.'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: '*高级设计*。虽然肯定有像箭头、应用函子和余函子这样的异国情调的计算结构，在某些领域可能很有用，但我们将限制讨论到Haskell程序员常用的工具：纯函数和单子。'
 - en: '*Pure functions.* Transforming the mutable substrate that C is built upon into
     the more precious stuff of pure functions and persistent data structures is a
     tricky task, rife with `unsafePerformIO`. In particular, just because a C function
@@ -113,9 +151,11 @@
     shared state change or rebalance the input datastructure or `printf` on failure,
     and you have to account for it. Unless your documentation is *extremely* good,
     you will need to do source diving to manually verify invariants.'
+  id: totrans-19
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*纯函数*。将C语言构建的可变底层转化为更为宝贵的纯函数和持久数据结构是一个棘手的任务，充满了`unsafePerformIO`。特别是，仅仅因为一个C函数表面上看起来不涉及任何变异，它可能执行一些共享状态改变或重新平衡输入数据结构，或者在失败时进行`printf`，你必须考虑到这一点。除非你的文档非常好，否则你需要进行源代码深入挖掘来手动验证不变量。'
 - en: There will be some number of functions that are referentially transparent; these
     are a precious commodity and can be transformed into pure functions with ease.
     From there, you will need to make decisions about how a library can and cannot
@@ -124,33 +164,43 @@
     no shared state. Data structures that were intended to be mutated can be translated
     into immutable Haskell versions, or frozen by your API, which exposes no method
     of mutating them (well, no method not prefixed by `unsafe`) to the end user.
+  id: totrans-20
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 将一些可参考透明的函数变成纯函数是一个珍贵的商品，可以轻松转换。从这里开始，你需要做出关于库如何使用和不使用的决定。一组内部状态变换函数可能不适合纯处理，但也许一个将它们一起编排的函数不会泄露共享状态。本来打算被改变的数据结构可以转换为不可变的Haskell版本，或者通过你的API冻结，不向最终用户公开它们的变异方法（好吧，除了带有`unsafe`前缀的方法）。
 - en: '*Monads.* First an obvious choice: are you going to chuck all of your functions
     into the IO monad, or give the user a more restrictive monad stack that performs
     IO under the hood, but only lets the user perform operations relevant to your
     library. (This is not difficult to do: you `newtype` your monad stack and simply
     fail to export the constructor and omit the `MonadIO` instance.)'
+  id: totrans-21
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*单子*。首先是一个显而易见的选择：你是将所有函数都扔进IO单子中，还是给用户一个更为受限的单子堆栈，这个堆栈在底层执行IO操作，但只允许用户执行与你的库相关的操作。（这并不难做到：你可以使用`newtype`定义你的单子堆栈，然后简单地不导出构造函数并省略`MonadIO`实例。）'
 - en: '[PRE0]'
+  id: totrans-22
   prefs:
   - PREF_IND
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: You will be frequently passing around hidden state in the form of pointers.
     These should be wrapped in newtypes and not exposed to the end-user. Sometimes,
     these will be pointers to pointers, in the case of libraries that have parameters
     `**ppFoo`, which take your pointer and rewrite it to point somewhere else, subsuming
     the original object.
+  id: totrans-23
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 您将经常传递隐藏状态，以指针的形式。这些应该用新类型封装起来，而不暴露给最终用户。有时，这些将是指针的指针，例如具有参数`**ppFoo`的库的情况，它接受您的指针并将其重写以指向其他地方，吞并原始对象。
 - en: '[PRE1]'
+  id: totrans-24
   prefs:
   - PREF_IND
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: Shared state means that thread safety also comes into play. Haskell is an incredibly
     thread friendly language, and it's easy, as a user of a library, to assume that
     any given library is thread-safe. This is an admirable goal for any library writer
@@ -162,13 +212,17 @@
     shared state, there isn't a pointer squirreled away elsewhere that some other
     C code will just use. And of course, if you have persistent structures, maintaining
     consistency is trivial.
+  id: totrans-25
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 共享状态意味着线程安全也成为重要问题。Haskell是一种非常友好的多线程语言，作为库的用户，很容易假设任何给定的库都是线程安全的。这是任何库作者值得追求的一个令人钦佩的目标，但这一目标因您依赖于基于C的库而变得更加困难。幸运的是，Haskell提供了使线程安全变得更加容易的原语，特别是MVar、TVar和TMVar；只需将您的指针存储在这个共享变量中，并且不让任何其他人使用这个指针。对于复杂的指针图形，需要额外的注意确保，如果您有一个表示某些共享状态锁的MVar，那么没有其他C代码会随意使用别处隐藏的指针。当然，如果您有持久化结构，维护一致性就变得微不足道。
 - en: '[PRE2]'
+  id: totrans-26
   prefs:
   - PREF_IND
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: One particularly good technique for preventing end-users from smuggling pointers
     out of your beautiful thread-safe sections is the application of a rank-2 type,
     akin to the `ST` monad. The basic premise is that you write a function with the
@@ -180,18 +234,27 @@
     `s`). Thus, you simply add a phantom type variable `s` to any datatype you don't
     want smuggled out of your monad, and the type system will do the rest. Monadic
     regions builds on this basic concept, giving it *composability* (region polymorphism).
+  id: totrans-27
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 一种特别好的技术，用于防止最终用户从您的美丽线程安全部分中走私指针，是应用类似于`ST`单子的二阶类型。基本假设是，您编写一个类型为`(forall s.
+    m s a) -> a`的函数。对该函数参数的`forall`约束要求结果`a`在其类型中不包含`s`（对于技术上更倾向的人来说，`forall`是一个声明，我应该能够将任何`s`放在声明中，并且它是有效的。如果某个特定的`s'`在`a`中，那么只有当我将我的`s`设置为那个`s'`时，它才有效，而且没有其他`s`）。因此，您只需将幻影类型变量`s`添加到任何您不希望从单子中走私出去的数据类型中，类型系统将会处理其余的事情。单子区域在此基本概念上构建，赋予其*组合性*（区域多态性）。
 - en: '[PRE3]'
+  id: totrans-28
   prefs:
   - PREF_IND
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: We will not be discussing these ideas as part of c2hs; use of the preprocessor
     is mostly distinct from this part of the design process. However, it is quite
     an interesting topic in its own right!
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们不会讨论这些想法作为c2hs的一部分；预处理器的使用在设计过程的大部分时间内是独立的。但是，这确实是一个非常有趣的主题！
 - en: '*Next time.* [First steps in c2hs](http://blog.ezyang.com/2010/06/first-steps-in-c2hs/)'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: '*下次再讲.* [c2hs的第一步](http://blog.ezyang.com/2010/06/first-steps-in-c2hs/)'

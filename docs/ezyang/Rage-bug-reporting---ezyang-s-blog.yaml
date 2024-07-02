@@ -1,68 +1,98 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:16:50'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:16:50'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Rage bug reporting : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Rage bug reporting：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2021/04/rage-bug-reporting/](http://blog.ezyang.com/2021/04/rage-bug-reporting/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2021/04/rage-bug-reporting/](http://blog.ezyang.com/2021/04/rage-bug-reporting/)
 - en: Rage bug reporting
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Rage bug reporting
 - en: At Facebook, we have an internal convention for tooling called "rage". When
     something goes wrong and you want to report a bug, the tool developer will typically
     ask you to give them a rage. For a command line tool, this can be done by running
     a rage subcommand, which will ask about which previous CLI invocation you'd like
     to report, and then giving you a bundle of logs to send to the developer.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 Facebook，我们有一个名为 "rage" 的内部工具约定。当出现问题并且你想要报告 bug 时，工具开发人员通常会要求你提供一个 rage。对于命令行工具，可以通过运行
+    rage 子命令来完成，该子命令将询问你想要报告的先前 CLI 调用，并为你提供一组日志以发送给开发人员。
 - en: 'A rage has an important property, compared to a conventional log level flag
     like `-v`: **rage recording is always on**. In other words, it is like traditional
     server application logs, but applied to client software. Logging is always turned
     on, and the rage subcommand makes it easy for a user to send only the relevant
     portion of logs (e.g., the logs associated with the command line invocation that
     is on).'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: '**rage** 有一个重要的特性，与传统的日志级别标志如 `-v` 相比：**rage 记录总是开启的**。换句话说，这就像是应用于客户端软件的传统服务器应用程序日志一样。日志记录总是开启的，而
+    rage 子命令使用户能够轻松地只发送与命令行调用相关的日志部分（例如，正在运行的日志）。'
 - en: 'For some reason, rage functionality is not that common in open source tools.
     I can imagine any number of reasons why this might be the case:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 出于某种原因，在开源工具中，rage 功能并不那么常见。我可以想象很多原因为什么会是这种情况：
 - en: Adding proper logging is like flossing--annoying to do at the time even when
     it can save you a lot of pain later.
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 添加适当的日志记录就像使用牙线一样——在当时可能很烦人，但即使后来可以节省很多痛苦。
 - en: Even if you have logging, you still need to add infrastructure to save the logs
     somewhere and let users retrieve them afterwards.
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 即使有了日志记录，你仍然需要添加基础设施将日志保存在某个地方，并允许用户随后检索它们。
 - en: It's something of an art to write logs that are useful enough so that developer
     can diagnose the problem simply by "reading the tea leaves", but not so detailed
     that they slow down normal execution of the program. And don't forget, you better
     not expose private information!
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 编写足够有用的日志，以便开发人员可以简单地通过“阅读茶叶”来诊断问题，这本身就是一门艺术，但不要详细到会减慢程序正常执行的速度。并且不要忘记，最好不要暴露私人信息！
 - en: Most programs are simple, and you can just fall back on the old standby of asking
     the user to submit reproduction instructions in their bug report.
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 大多数程序都很简单，你可以依赖于老旧的方法，在错误报告中要求用户提交复制操作的说明。
 - en: 'Still, in the same way most sysadmins view logging as an invaluable tool for
     debugging server issues, I think rage reporting is an invaluable tool for debugging
     client issues. In ghstack, it didn''t take very many lines of code to implement
@@ -71,5 +101,10 @@
     (for reading it out). But it has greatly reduced my support load for the project;
     given a rage, I can typically figure out the root cause of a bug without setting
     up a reproducer first.'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管如此，就像大多数系统管理员视日志记录为调试服务器问题的宝贵工具一样，我认为 rage 报告对调试客户端问题同样是一种宝贵的工具。在 ghstack
+    中，实现 rage 报告并没有多少行代码：[ghstack.logs](https://github.com/ezyang/ghstack/blob/master/ghstack/logs.py)（用于将日志写入
+    rage 目录）和 [ghstack.rage](https://github.com/ezyang/ghstack/blob/master/ghstack/rage.py)（用于读取日志）。但这大大减少了我在项目支持上的负担；有了一个
+    rage，我通常可以在设置复制器之前找出 bug 的根本原因。

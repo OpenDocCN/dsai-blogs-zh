@@ -1,30 +1,44 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:04'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:04'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Medieval medicine and computers : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 中世纪医学和计算机：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2010/11/medieval-medicine-and-computers/](http://blog.ezyang.com/2010/11/medieval-medicine-and-computers/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/11/medieval-medicine-and-computers/](http://blog.ezyang.com/2010/11/medieval-medicine-and-computers/)
 - en: This is a bit of a provocative post, and its impressions (I dare not promote
     them to the level of *conclusions*) should be taken with the amount of salt found
     in a McDonald’s Happy Meal. Essentially, I was doing some reading about medieval
     medicine and was struck by some of the similarities between it and computer engineering,
     which I attempt to describe below.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 这篇文章有些挑衅性，并且它的印象（我不敢将它们提升到*结论*的层面）应该像麦当劳快乐餐中发现的盐一样保留。基本上，我正在阅读一些关于中世纪医学的文章，并被其中一些与计算机工程的相似之处所震撼，我尝试在下面描述。
 - en: '*Division between computer scientists and software engineers.* The division
     between those who studied medicine, the *physics* (a name derived from physica
     or natural science) and those who practiced medicine, the *empirics*, was extremely
@@ -35,8 +49,12 @@
     others being theology and law), and tended to be among the upper strata of society.
     In fact, the actual art of medicine was not considered “worthy of study,” though
     the study of natural science was. (Cook 407).'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '*计算机科学家和软件工程师之间的分隔*。在那些研究医学的人和那些实际从事医学的人之间的分隔——这些称为物理学（一种源自物理或自然科学的名称）和实验医学——是非常明显的。存在相互不信任——彼特拉克写道，“我从不相信医生，也永远不会”（Porter
+    169）——这在一定程度上源于物理学和实验医学之间的社会分隔。物理学家可能从大学获得博士学位，他们研究了可能是最高三个学科之一的学科（其他两个是神学和法律），并且倾向于属于社会的上层阶层。事实上，实际的医学艺术并未被视为“值得研究”，尽管自然科学的研究是如此。（Cook
+    407）。'
 - en: The division between computer scientists and software engineers is not as bad
     as the corresponding division in the 1500s, but there is a definite social separation
     (computer scientists work in academia, software engineers work in industry) and
@@ -45,8 +63,10 @@
     students starting up software companies (occasionally successfully) all the time,
     and if programming Reddit is any indication, there is a certain distaste for purely
     theoretical computer scientists.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 计算机科学家和软件工程师之间的分隔并没有在16世纪时那么严重，但确实存在明显的社会分隔（计算机科学家在学术界工作，软件工程师在工业界工作），以及这两个社区之间的沟通隔阂。在许多其他领域，要被考虑进入本专业工作，通常需要获得博士学位；而在这里，我们经常看到高中生开设软件公司（偶尔取得成功），如果编程Reddit是任何指示，对纯理论计算机科学家存在一定的厌恶。
 - en: '*The unsuitability of pure computer science for the real world.* Though the
     study of pure medicine was highly regarded during this time, its theories and
     knowledge were tremendously off the mark. At the start of the 1500s the four humors
@@ -61,15 +81,21 @@
     heart as a pump. (Cook 426) If the circulatory system was true, what did the other
     organs do? Harvey’s theory completely overturned the existing understanding of
     how the human body worked, and his theory was quite controversial.'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: '*纯计算机科学在现实世界中的不适用性*。尽管在此期间，纯医学的研究备受推崇，但其理论和知识却大大脱离了实际。在16世纪初期，希波克拉底医学的四种体液仍被广泛认为是真理：患病就是体液不平衡，包括黑胆汁、黄胆汁、痰和血液，因此治愈方法是应用对立的体液，这解释了血让疗法的技术实践（故意让一个人出血）。甚至对人体基本运作原理的理解也很不透彻：直到威廉·哈维（William
+    Harvey）及其《论心脏与血液的运动》（1628年）提出心脏是一个泵的概念，挑战了早期的观点，即食物在器官中被调和，然后通过静脉、动脉和神经流向身体其他部位。（Cook
+    426）如果循环系统是正确的，那么其他器官的功能是什么？哈维的理论彻底颠覆了人体运作的现有理解，他的理论曾引起很大争议。'
 - en: I have enough faith in computer science that I don’t think most of our existing
     knowledge is fundamentally wrong. But I also think we know tremendously little
     about the actual nature of computation even at middling sizes, and this is a quite
     humbling fact. But I am also fundamentally optimistic about the future of computer
     science in dealing with large systems—more on this at the end.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 我对计算机科学有足够的信心，认为我们现有的大部分知识并不 fundamentally wrong。但我也认为，即使在中等规模的情况下，我们对计算的实际本质了解甚少，这是一个令人谦卑的事实。但我对计算机科学在处理大型系统方面的未来持乐观态度—更多内容请见最后章节。
 - en: '*Testing instead of formal methods.* The lack of knowledge, however, did stop
     the *physicians* (as distinct from *physics*) from practicing their medicine.
     Even the academics recognized the importance of “medieval *practica*; handbooks
@@ -80,16 +106,22 @@
     for anatomy, my butcher can dissect a joint full and well; now, young man, all
     that is stuff; you must go to the bedside, it is there alone you can learn disease.”
     (Porter 229)'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: '*测试而非正式方法*。然而，知识的缺乏并没有阻止*医生*（与*物理学*有所不同）从事他们的医学实践。即使学术界也承认“中世纪*实践*”的重要性；这些手册从头到脚列出了各种疾病的症状和治疗方法。（Porter
+    172）观察（希波克拉底哲学）继续占主导地位：当被问及解剖时，托马斯·西德南（Thomas Sydenham）说道：“解剖学—植物学—废话！先生，我知道一位住在科文特花园的老妇人比你更懂植物学，至于解剖学，我的屠夫能够精心解剖一整块肉，现在，年轻人，这些全都是胡说八道；你必须去床边，只有在那里你才能学到疾病。”（Porter
+    229）'
 - en: In the absence of a convincing theoretical framework, empiricism rules. The
     way to gain knowledge is to craft experiments, conduct observations, and act accordingly.
     If a piece of code is buggy, how do you fix it? You add debug statements and observe
     the output, not construct a formal semantics and then prove the relevant properties.
     The day the latter is the preferred method of choice is a day when practitioners
     of formal methods across the world will rejoice.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 在没有令人信服的理论框架的情况下，经验主义占主导地位。获取知识的方法是制定实验、进行观察并据此行动。如果一段代码有问题，你会如何修复它？你会添加调试语句并观察输出，而不是构建形式化语义然后证明相关属性。如果后者成为首选方法的那一天，全世界的形式化方法从业者都会感到欢欣鼓舞。
 - en: '*No silver bullet.* In the absence of reliable medical theories from the physics,
     quackery flourished in the eighteenth century, a century often dubbed the “Golden
     Age of Quackery.” (Porter 284) There was no need to explain *why* your wares worked:
@@ -99,33 +131,48 @@
     would claim to do anything from cure cancer to restore youth. While some of the
     quacks were merely charlatans, others earnestly believed in the efficacy of their
     treatments, and occasionally a quack remedy was actually effective.'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: '*没有银弹。* 在缺乏可靠的医学理论的情况下，江湖医术在18世纪蓬勃发展，这个世纪通常被称为“江湖医术的黄金时代”（Porter 284）。不需要解释你的商品为什么有效：你只需要做一场精彩的表演（“先吸引人群，然后也许是一些牙齿，两者伴随鼓声和喇叭声”（Porter
+    285）），卖几十瓶你的疗法，然后转移到下一个城镇。这些“药物”声称可以治愈癌症，恢复青春等等。尽管一些江湖医师纯粹是江湖骗子，但其他人却真诚地相信他们治疗的功效，偶尔也会有江湖医法真正有效的情况发生。'
 - en: I think the modern analogue to quackery are software methodology in all shapes
     in sizes. Like quack medicines, some of these may be effective, but in the absence
     of scientific explanations we can only watch the show, buy in, and see if it works.
     And we can’t hope for any better until our underlying theories are better developed.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 我认为现代对应于江湖医术的是各种软件方法论。就像江湖药物一样，其中一些可能是有效的，但在没有科学解释的情况下，我们只能看戏，投资，看看它是否奏效。在我们的基础理论更为完善之前，我们不能抱太大希望。
 - en: '*The future.* Modern medical science was eventually saved, though not before
     years of inadequate theories and quackery had brought it to a state of tremendous
     disrepute. The *complexity* of the craft had to be *legitimized*, but this would
     not happen until a powerful scientific revolution built the foundations of modern
     medical practice.'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: '*未来。* 现代医学科学最终得以拯救，尽管在多年不足的理论和江湖医术之后，它陷入了极大的声誉危机。这门学科的*复杂性*必须得到*合法化*，但这要等到一场强大的科学革命建立现代医疗实践的基础之后才会发生。'
 - en: '* * *'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'Works referenced:'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 引用的作品：
 - en: 'Porter, Roy. *The Greatest Benefit To Mankind.* Fontana Press: 1999.'
+  id: totrans-18
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 'Porter, Roy. *造福人类的最大好处。* Fontana Press: 1999.'
 - en: 'Park, Katherine; Daston, Lorraine. *The Cambridge History of Science: Volume
     3, Early Modern Science.*'
+  id: totrans-19
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Park, Katherine; Daston, Lorraine. *科学的剑桥历史：第3卷，早期现代科学。*

@@ -1,73 +1,118 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:54'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:17:54
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Evaluation on the Haskell Heap : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 'Evaluation on the Haskell Heap : ezyang’s blog'
 - en: 来源：[http://blog.ezyang.com/2011/04/evaluation-on-the-haskell-heap/](http://blog.ezyang.com/2011/04/evaluation-on-the-haskell-heap/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/04/evaluation-on-the-haskell-heap/](http://blog.ezyang.com/2011/04/evaluation-on-the-haskell-heap/)
 - en: '*The Ghost of the Christmas Present*'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: '*The Ghost of the Christmas Present*'
 - en: In today’s post, we’ll do a brief survey of the various things that can happen
     when you open haunted presents in the Haskell heap. Asides from constants and
     things that have already been evaluated, mostly everything on the Haskell heap
     is haunted. The real question is what the ghost haunting the present does.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: In today’s post, we’ll do a brief survey of the various things that can happen
+    when you open haunted presents in the Haskell heap. Asides from constants and
+    things that have already been evaluated, mostly everything on the Haskell heap
+    is haunted. The real question is what the ghost haunting the present does.
 - en: In the simplest case, almost nothing!
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 在最简单的情况下，几乎什么也不会发生！
 - en: Unlike gift-cards, you have to open the next present (Haskell doesn’t let you
     evaluate a thunk, and then decide not to follow the indirection...)
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 与礼品卡不同，你必须打开下一个礼物（Haskell 不允许你评估一个thunk，然后决定不跟随间接引用...）
 - en: More commonly, the ghost was *lazy* and, when woken up, has to open other presents
     to figure out what was in your present in the first place!
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: More commonly, the ghost was *lazy* and, when woken up, has to open other presents
+    to figure out what was in your present in the first place!
 - en: Simple primitive operations need to open all of the presents involved.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 简单的原始操作需要打开所有涉及的礼物。
 - en: But the ghost may also open another present for no particular reason...
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 但是鬼魂也可能会无故地打开另一个礼物...
 - en: or execute some IO...
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 或者执行一些 IO 操作...
 - en: 'Note that any presents he opens may trigger more ghosts:'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Note that any presents he opens may trigger more ghosts:'
 - en: Resulting in a veritable ghost jamboree, all to open one present!
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 结果是一场真正的鬼魂盛会，全都是为了打开一个礼物！
 - en: The fact that opening a present (thunk) can cause such a cascading effect is
     precisely what makes the timing of lazy evaluation surprising to people who are
     used to all of the objects in their heap being unwrapped (evaluated) already.
     So the key to getting rid of this surprise is understanding when a ghost will
     decide it needs to unwrap a present (strictness analysis) and whether or not your
     presents are unwrapped already (amortized analysis).
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 打开一个礼物（thunk）可能会引起这样的级联效应，这正是让惯于认为堆中所有对象都已解包（评估）的人感到惊讶的原因。因此，摆脱这种惊讶的关键在于了解鬼魂何时决定需要打开一个礼物（严格性分析），以及你的礼物是否已经被解包（摊销分析）。
 - en: 'Last time: [The Haskell Heap](http://blog.ezyang.com/2011/04/the-haskell-heap/)'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Last time: [The Haskell Heap](http://blog.ezyang.com/2011/04/the-haskell-heap/)'
 - en: 'Next time: [IO evaluates the Haskell Heap](http://blog.ezyang.com/2011/04/io-evaluates-the-haskell-heap/)'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Next time: [IO evaluates the Haskell Heap](http://blog.ezyang.com/2011/04/io-evaluates-the-haskell-heap/)'
 - en: This work is licensed under a [Creative Commons Attribution-ShareAlike 3.0 Unported
     License](http://creativecommons.org/licenses/by-sa/3.0/).
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: This work is licensed under a [Creative Commons Attribution-ShareAlike 3.0 Unported
+    License](http://creativecommons.org/licenses/by-sa/3.0/).

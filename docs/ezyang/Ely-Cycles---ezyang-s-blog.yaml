@@ -1,36 +1,54 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 分类：未分类
 - en: 'date: 2024-07-01 18:17:56'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:17:56
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Ely Cycles : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Ely 自行车：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2011/03/ely-cycles/](http://blog.ezyang.com/2011/03/ely-cycles/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/03/ely-cycles/](http://blog.ezyang.com/2011/03/ely-cycles/)
 - en: Ely Cycles
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Ely 自行车
 - en: Yesterday I cycled from Cambridge to Ely, and back again. The route is a glorious
     38 miles (round trip) of British towns and countryside. The cycling around Cambridge
     is quite good, because there aren’t very many hills, and in the farmland areas
     you get to see the tractors rolling by. The longest I’d ever cycled before was
     the Springwater Corridor in Portland, the segment of which I did was only about
     10 miles.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 昨天我从剑桥骑车到了 Ely，然后又回来了。这条路线是英国城镇和乡村壮丽的38英里（往返）。剑桥周围的骑车非常好，因为那里没有太多的山坡，在农田地区你可以看到拖拉机经过。我之前骑过的最长的距离是波特兰的春水走廊，我骑的部分只有大约10英里。
 - en: '*Non sequitur.* ICFP submission deadline is today! Functional programmers around
     the world have reported a sharp increase in draft paper sightings.'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: '*不合逻辑。* ICFP 提交截止日期是今天！全球的函数式程序员报告称草稿论文的目击次数显著增加。'

@@ -1,44 +1,67 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:06'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:06'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Hindley-Milner with top-level existentials : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Hindley-Milner with top-level existentials：ezyang's 博客
 - en: 来源：[http://blog.ezyang.com/2016/04/hindley-milner-with-top-level-existentials/](http://blog.ezyang.com/2016/04/hindley-milner-with-top-level-existentials/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2016/04/hindley-milner-with-top-level-existentials/](http://blog.ezyang.com/2016/04/hindley-milner-with-top-level-existentials/)
 - en: '*Content advisory: This is a half-baked research post.*'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: '*内容警示：这是一篇半成品的研究文章。*'
 - en: '**Abstract.** Top-level unpacking of existentials are easy to integrate into
     Hindley-Milner type inference. Haskell should support them. It''s possible this
     idea can work for internal bindings of existentials as well (ala F-ing modules)
     but I have not worked out how to do it.'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '**摘要.** 存在类型的顶层解包很容易集成到 Hindley-Milner 类型推断中。Haskell 应该支持它们。这个想法也可能适用于存在的内部绑定（例如
+    F-ing 模块），但我还没有想出如何实现。'
 - en: '**Update.** And UHC did it first!'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: '**更新.** 而 UHC 是第一个做到这一点的！'
 - en: '**Update 2.** And rank-2 type inference is decidable (and rank-1 existentials
     are an even weaker system), although the algorithm for rank-2 inference requires
     semiunification.'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: '**更新 2.** 并且 rank-2 类型推断是可判定的（而 rank-1 的存在类型是一个更弱的系统），尽管 rank-2 推断的算法需要半一致化。'
 - en: Background
+  id: totrans-10
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 背景
 - en: '**The difference between Hindley-Milner and System F.** Although in informal
     discussion, Hindley-Milner is commonly described as a “type inference algorithm”,
     it should properly be described as a type system which is more restrictive than
@@ -48,106 +71,158 @@
     the “top level” (in a so-called “polytype” or “type scheme.”) This restriction
     of polymorphism is the key which makes inference (via Algorithm W) for Hindley-Milner
     decidable (and practical), whereas inference for System F undecidable.'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: '**Hindley-Milner 与 System F 的区别。** 尽管在非正式讨论中，Hindley-Milner 常被描述为“类型推断算法”，但其实它应该被正确地描述为比
+    System F 更为限制的类型系统。两种类型系统都通过变量的全称量化来实现多态性，但在 System F 中，这种多态性是显式的，并且可以出现在任何地方；而在
+    Hindley-Milner 中，多态性是隐式的，只能发生在“顶层”（在所谓的“多态类型”或“类型方案”中）。这种多态性的限制是使得 Hindley-Milner
+    的推断（通过算法 W）成为可判定（和实际可行）的关键，而 System F 的推断则是不可判定的。'
 - en: '[PRE0]'
+  id: totrans-12
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: '**Existential types in System F.** A common generalization of System F is to
     equip it with existential types:'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: '**System F 中的存在类型。** System F 的一个常见泛化是配备存在类型：'
 - en: '[PRE1]'
+  id: totrans-14
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: In System F, it is technically not necessary to add existentials as a primitive
     concept, as they can be encoded using universal quantifiers by saying `∃a. τ =
     ∀r. (∀a. τ → r) → r`.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 System F 中，从技术上讲，不需要将存在类型作为原始概念添加进来，因为它们可以通过使用全称量词编码来实现，比如说 `∃a. τ = ∀r. (∀a.
+    τ → r) → r`。
 - en: '**Existential types in Hindley-Milner?** This strategy will not work for Hindley-Milner:
     the encoding requires a higher-rank type, which is precisely what Hindley-Milner
     rules out for the sake of inference.'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: '**Hindley-Milner 中的存在类型？** 这种策略对 Hindley-Milner 不起作用：编码需要更高阶的类型，而这恰恰是 Hindley-Milner
+    为了推断而排除的。'
 - en: 'In any case, it is a fool''s game to try to infer existential types: there''s
     no best type! HM always infers the *most* general type for an expression: e.g.,
     we will infer `f :: a -> a` for the function `f = \x -> x`, and not `Int -> Int`.
     But the whole point of data abstraction is to pick a more abstract type, which
     is not going to be the most general type and, consequently, is not going to be
     unique. What should be abstract, what should be concrete? Only the user knows.'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: '无论如何，试图推断存在类型是一个愚蠢的游戏：没有最佳类型！HM 总是为表达式推断出*最*一般的类型：例如，我们会推断 `f :: a -> a` 对于函数
+    `f = \x -> x`，而不是 `Int -> Int`。但数据抽象的整个点是选择一个更抽象的类型，这不会是最一般的类型，因此不会是唯一的。什么应该是抽象的，什么应该是具体的？只有用户知道。'
 - en: '**Existential types in Haskell.** Suppose that we are willing to write down
     explicit types when existentials are *packed*, can Hindley-Milner do the rest
     of the work: that is to say, do we have complete and decidable inference for the
     rest of the types in our program?'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: '**Haskell 中的存在类型。** 假设我们愿意在打包存在类型时写下显式类型，Hindley-Milner 是否能完成程序中其余类型的完整且可判定的推断呢？'
 - en: 'Haskell is an existence (cough cough) proof that this can be made to work.
     In fact, there are two ways to go about doing it. The first is what you will see
     if you Google for “Haskell existential type”:'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: Haskell 是一个存在（咳咳）证明，这是可行的。实际上，有两种方法可以实现它。第一种是当你搜索“Haskell 存在类型”时会看到的内容。
 - en: '[PRE2]'
+  id: totrans-20
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: '`Ex f` is isomorphic to `∃a. f a`, and similar to the System F syntax, they
     can be packed with the `Ex` constructor and unpacked by pattern-matching on them.'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: '`Ex f` 等同于 `∃a. f a`，类似于 System F 语法，它们可以通过`Ex`构造函数打包，并通过模式匹配解包。'
 - en: 'The second way is to directly use the System F encoding using Haskell''s support
     for rank-n types:'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 第二种方法是直接使用 Haskell 对于秩-n类型的支持使用 System F 编码：
 - en: '[PRE3]'
+  id: totrans-23
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: The [boxy types paper](http://research.microsoft.com/pubs/67445/boxy-icfp.pdf)
     demonstrated that you *can* do inference, so long as all of your higher rank types
     are annotated. Although, perhaps it was not as simple as hoped, since impredicative
     types are a source of constant bugs in GHC's type checker.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: '[盒子类型论文](http://research.microsoft.com/pubs/67445/boxy-icfp.pdf)展示了你*可以*进行推断，只要你的所有高阶类型都有注解。尽管如此，或许事情并不像希望的那样简单，因为不可预测的类型是
+    GHC 类型检查器中常见的 bug 源。'
 - en: The problem
+  id: totrans-25
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 问题
 - en: '**Explicit unpacks suck.** As anyone who has tried programming with existentials
     in Haskell can attest, the use of existentials can still be quite clumsy due to
     the necessity of *unpacking* an existential (casing on it) before it can be used.
     That is to say, the syntax `let Ex x = ... in ...` is not allowed, and it is an
     easy way to get GHC to tell you its brain exploded.'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: '**显式解包很糟糕。** 正如任何试图在 Haskell 中使用存在类型编程的人所能证明的那样，由于需要在使用之前对存在类型进行*解包*（即对其进行模式匹配），使用存在类型仍然可能相当笨拙。也就是说，语法`let
+    Ex x = ... in ...`是不允许的，这是让 GHC 告诉你它的大脑爆炸的简单方法。'
 - en: '[Leijen](http://research.microsoft.com/en-us/um/people/daan/download/papers/existentials.pdf)
     investigated the problem of handling existentials *without* explicit unpacks.'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Leijen](http://research.microsoft.com/en-us/um/people/daan/download/papers/existentials.pdf)研究了如何处理存在类型*无需*显式解包。'
 - en: '**Loss of principal types without explicit unpacks, and Leijen''s solution.**
     Unfortunately, the naive type system does not have principal types. Leijen gives
     an example where there is no principal type:'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: '**没有显式解包会导致主类型的丢失，以及 Leijen 的解决方案。** 不幸的是，天真的类型系统没有主类型。Leijen给出了一个没有主类型的例子：'
 - en: '[PRE4]'
+  id: totrans-29
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: Neither type is a subtype of the other. In his paper, Leijen suggests that the
     existential should be unwrapped as late as possible (since you can go from the
     first type to the second, but not vice versa), and thus, the first type should
     be preferred.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 两种类型都不是对方的子类型。在他的论文中，Leijen建议应尽可能晚地解包存在类型（因为你可以从第一种类型到第二种类型，但反之则不行），因此应优先选择第一种类型。
 - en: The solution
+  id: totrans-31
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 解决方案
 - en: '**A different approach.** What if we always lift the existential to the top
     level? This is really easy to do if you limit unpacks to the top-level of a program,
     and it turns out this works *really well*. (The downside is that dynamic use of
     existentials is not supported.)'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: '**另一种方法。** 如果我们总是将存在类型提升到顶层会怎样？如果你将解包限制在程序的顶层，这实际上是非常容易做到的，并且结果非常好。'
 - en: '**There''s an existential in every top-level Haskell algebraic data type.**
     First, I want to convince you that this is not all that strange of an idea. To
     do this, we look at Haskell''s support for algebraic data types. Algebraic data
@@ -157,8 +232,13 @@
     achieve data abstraction in Haskell. Although there is not actually an existential
     lurking about—generativity is *not* data abstraction—generativity is an essential
     part of data abstraction, and HM has no problem with this.'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: '**每个顶层的 Haskell 代数数据类型中都有一个存在类型。** 首先，我想说服你这并不是一个那么奇怪的想法。为了做到这一点，我们看一下 Haskell
+    对代数数据类型的支持。Haskell 中的代数数据类型是*生成的*：每个数据类型必须有一个顶层声明，并且被认为是与任何其他数据类型不同的独立类型。事实上，Haskell
+    用户利用这种生成性与隐藏构造子的能力来实现数据抽象。尽管实际上并没有存在类型潜藏其中——生成性并不是数据抽象——生成性是数据抽象的一个重要部分，并且 HM
+    对此没有任何问题。'
 - en: '**Top-level generativity corresponds to existentials that are unpacked at the
     top-level of a program (ala F-ing modules).** We don''t need existentials embedded
     inside our Haskell expressions to support the generativity of algebraic data types:
@@ -168,38 +248,56 @@
     of the program. Modular programming with applicative functors (the ML kind) can
     be *encoded* using top-level existentials which are immediately unpacked as they
     are defined.'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: '**顶层生成性对应于在程序的顶层解包的存在量词（类似于F-ing模块）。** 我们不需要存在于Haskell表达式内部来支持代数数据类型的生成性：我们所需要的只是在顶层包装一个存在类型，然后立即将其解包到顶层上下文中。事实上，F-ing模块甚至走得更远：存在量词可以始终被提升，直到它们达到程序的顶层。使用适用函子（ML类型）进行模块化编程可以通过立即解包作为其定义的顶层存在来*编码*。'
 - en: '**The proposal.** So let us suggest the following type system, Hindley-Milner
     with top-level existentials (where `a*` denotes zero to many type variables):'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: '**建议。** 因此，让我们建议以下类型系统，带有顶层存在量词（其中`a*`表示零到多个类型变量）：'
 - en: '[PRE5]'
+  id: totrans-36
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 'There is one new top-level binding form, `seal`. We can give it the following
     typing rule:'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 有一个新的顶层绑定形式，`seal`。我们可以给出以下类型规则：
 - en: '[PRE6]'
+  id: totrans-38
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'It also elaborates directly to System F with existentials:'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 它还可以直接展开为带有存在量词的System F：
 - en: '[PRE7]'
+  id: totrans-40
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: 'A few observations:'
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 几点观察：
 - en: In conventional presentations of HM, let-bindings are allowed to be nested inside
     expressions (and are generalized to polytypes before being added to the context).
     Can we do something similar with `seal`? This should be possible, but the bound
     existential type variables must be propagated up.
+  id: totrans-42
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在HM的传统呈现中，let绑定允许嵌套在表达式内部（并且在添加到上下文之前被泛化为多态类型）。我们是否可以类似地处理`seal`？这应该是可能的，但绑定的存在量词类型变量必须向上传播。
 - en: 'This leads to a second problem: naively, the order of quantifiers must be `∃b.
     ∀a. τ` and not `∀a. ∃b. τ`, because otherwise we cannot add the existential to
     the top-level context. However, there is a "skolemization" trick (c.f. Shao and
@@ -207,16 +305,23 @@
     takes `a` as an argument, e.g., `∀a. ∃b. b` is equivalent to `∃b''. ∀a. b'' a`.
     This trick could serve as the way to support inner `seal` bindings, but the encoding
     tends to be quite involved (as you must close over the entire environment.)'
+  id: totrans-43
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 这导致了第二个问题：天真地，量词的顺序必须是`∃b. ∀a. τ`而不是`∀a. ∃b. τ`，否则我们无法将存在量词添加到顶层上下文。然而，存在“斯克莱姆化”技巧（参见Shao和F-ing模块），通过这种方式你可以将`b`作为一个高阶类型变量，以`a`作为参数，例如，`∀a.
+    ∃b. b`等价于`∃b'. ∀a. b' a`。这个技巧可以作为支持内部`seal`绑定的方式，但编码往往相当复杂（因为你必须闭合整个环境）。
 - en: This rule is not very useful for directly modeling ML modules, as a “module”
     is usually thought of as a record of polymorphic functions. Maybe you could generalize
     this rule to bind multiple polymorphic functions?
+  id: totrans-44
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 这条规则并不适用于直接建模机器学习模块，因为“模块”通常被认为是多态函数的记录。也许你可以将这条规则概括为绑定多个多态函数？
 - en: '**Conclusion.** And that''s as far as I''ve worked it out. I am hoping someone
     can tell me (1) who came up with this idea already, and (2) why it doesn''t work.'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: '**结论。** 到此为止，这就是我所想出来的。我希望有人能告诉我（1）谁已经提出了这个想法，以及（2）为什么它不起作用。'

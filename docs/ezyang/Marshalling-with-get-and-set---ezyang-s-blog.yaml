@@ -1,32 +1,49 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:18:15'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:18:15
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Marshalling with get and set : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用get和set进行数据编组：ezyang’s博客
 - en: 来源：[http://blog.ezyang.com/2010/06/marshalling-with-get-and-set/](http://blog.ezyang.com/2010/06/marshalling-with-get-and-set/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/06/marshalling-with-get-and-set/](http://blog.ezyang.com/2010/06/marshalling-with-get-and-set/)
 - en: This part five of a [six part introduction to c2hs](http://blog.ezyang.com/2010/06/the-haskell-preprocessor-hierarchy/).
     Today, we explain how to marshal data to and from C structures.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是[六部分介绍c2hs的第五部分](http://blog.ezyang.com/2010/06/the-haskell-preprocessor-hierarchy/)。今天，我们解释如何对C结构体进行数据编组。
 - en: '*An important note.* There is a difference between `struct foo` and `foo`;
     c2hs only considers the latter a type, so you may need to add some typedefs of
     the form `typedef struct foo foo` in order to get c2hs to recognize these structs.'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '*重要提示。* `struct foo`和`foo`之间有区别；c2hs仅认为后者是类型，因此您可能需要添加一些形式为`typedef struct
+    foo foo`的typedef以便c2hs识别这些结构体。'
 - en: '*Get.* The Haskell FFI has no knowledge of C structs; Haskell''s idea of reading
     a member of a struct is to peek at some byte offset of a memory location, which
     you calculated manually. This is horrid, and `hsc2hs` has `#peek` to relieve you
@@ -34,58 +51,85 @@
     `{#get StructName->struct_field #}` and c2hs will replace this with a lambda that
     does the correct peek with the correct type: `(\ptr -> do {peekByteOff ptr 12
     ::IO CInt})` (in the IO monad!) Note the following gotchas:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: '*Get.* Haskell FFI对C结构体一无所知；Haskell读取结构体成员的想法是查看某个内存位置的字节偏移量，这是您手动计算的。这很可怕，而`hsc2hs`有`#peek`可以让您摆脱这种非可移植的枯燥工作。`c2hs`更简单：您可以指定`{#get
+    StructName->struct_field #}`，c2hs将其替换为正确类型的lambda，执行正确类型的peek操作：`(\ptr -> do {peekByteOff
+    ptr 12 ::IO CInt})`（在IO单子中！）请注意以下陷阱：'
 - en: You will need to manually convert the resulting primitive C type into a more
     friendly Haskell type, and
+  id: totrans-9
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 您需要手动将生成的原始C类型转换为更友好的Haskell类型，
 - en: The left hand side of the expression is a *type* or a *struct name*, not the
     Haskell variable containing the pointer/struct you want to peek at. That will
     usually go to the right of the lambda.
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 表达式的左侧是*类型*或*结构名*，而不是包含您想要peek的指针/结构的Haskell变量。通常这将放在lambda的右侧。
 - en: 'The `get` directive is actually more general than just struct access: it can
     dereference pointers (`*StructName`) or access a member without dereferencing
     (`StructName.struct_field`).'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: '`get`指令实际上比仅仅结构体访问更通用：它可以解引用指针（`*StructName`）或访问成员而不解引用（`StructName.struct_field`）。'
 - en: '*Set.* The opposite of `get`, `set` lets you poke values into arbitrary memory
     locations. Unlike `get`, the value passed in is required to be a pointer (and
     the syntax uses periods). `{#set StructName.struct_field #}` expands to `(\ptr
     val -> do {pokeByteOff ptr 12 (val::CInt)})`; the pointer is the first argument
     and the value is the second. You also need to marshal the input value manually.'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: '*Set.* 与`get`相反，`set`允许您将值填充到任意内存位置。与`get`不同，传入的值需要是指针（语法使用点号）。`{#set StructName.struct_field
+    #}`扩展为`(\ptr val -> do {pokeByteOff ptr 12 (val::CInt)})`；指针是第一个参数，值是第二个。您还需要手动转换输入值。'
 - en: '*Defining Storable.* If you''re not individually getting and setting fields
     in the struct in an opaque pointer, creating a `Storable` instance is a good thing
     to do. However, since all of the lambdas that `get` and `set` create are in the
     IO monad, composing them can be slightly tricky. Judicious use of monadic lifting
     and applicative instances can make the code a lot simpler, however:'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: '*定义可存储性。* 如果您不是在不透明指针中单独获取和设置结构体中的字段，创建`Storable`实例是一个好方法。然而，由于`get`和`set`创建的所有lambda都在IO单子中，组合它们可能会稍微复杂一些。审慎使用单子提升和适用实例可以使代码变得更简单，但是：'
 - en: '[PRE0]'
+  id: totrans-14
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: The odd naming convention in `StructName` is to account for the fact that different
     structures can share field names, while Haskell field names may not.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: '`StructName`中的奇怪命名约定是为了考虑不同结构体可能共享字段名，而Haskell字段名可能不行。'
 - en: '*Note.* c2hs recently got support added for an `alignment` directive, which
     computes the alignment for a C datastructure. Unfortunately, as of 0.6.12, this
     has not yet been released to the general public.'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: '*注意。* 最近为`alignment`指令增加了c2hs支持，用于计算C数据结构的对齐。然而，截至0.6.12，这尚未对一般公众发布。'
 - en: '*Request.* The paper describing c2hs states the following: “[Marshaling of
     compound C values to Haskell values] is more generally useful; however, often
     we do not really want to marshal entire C structures to Haskell.” Unfortunately,
     current incarnations of c2hs do not offer any optional functionality to reduce
     the drudgery of writing the “straightforward” Storable instance, which would be
     absolutely lovely. bindings-dsl and GreenCard appear to fare better in this respect.'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: '*请求。* 描述c2hs的论文陈述如下：“[将复合C值马歇尔化为Haskell值] 更普遍地有用；然而，我们通常并不真正希望将整个C结构体马歇尔化为Haskell。”
+    不幸的是，当前的c2hs版本没有提供任何可选功能来减少编写“直接” Storable 实例的繁琐性，这将是非常可爱的。bindings-dsl 和 GreenCard
+    在这方面似乎表现更好。'
 - en: '*Next time.* [Call and fun: marshalling redux](http://blog.ezyang.com/2010/06/call-and-fun-marshalling-redux/)'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: '*下次见。* [调用和乐趣：调用重置](http://blog.ezyang.com/2010/06/call-and-fun-marshalling-redux/)'

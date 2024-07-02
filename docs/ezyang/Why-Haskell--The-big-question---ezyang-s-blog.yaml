@@ -1,27 +1,41 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: '类别: 未分类'
 - en: 'date: 2024-07-01 18:18:33'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: '日期: 2024-07-01 18:18:33'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Why Haskell? The big question : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 为什么选择 Haskell？重要问题：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2010/01/why-haskell/](http://blog.ezyang.com/2010/01/why-haskell/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/01/why-haskell/](http://blog.ezyang.com/2010/01/why-haskell/)
 - en: Why Haskell? The big question
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 为什么选择 Haskell？重要问题
 - en: Language selection is a contentious thing, and often a compromise between "pick
     the right language for the job" and "use as few languages as possible to increase
     mindshare." Google, for example, [limits the programming languages](http://steve-yegge.blogspot.com/2007/06/rhino-on-rails.html)
@@ -32,13 +46,19 @@
     been quite culpable of this myself; I wrote the member dues tracking system for
     the Assassins' Guild in Haskell, and unless a miracle happens I am kind of doubtful
     future maintainers will be able to deal with it.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 语言选择是一个有争议的事情，通常是在“选择适合工作的语言”和“尽可能少地使用语言以增加思维共享”之间做出妥协。例如，谷歌限制了他们的员工可以使用的编程语言；我已经开始认为，为自己的项目选择任何想要的语言是不负责任的，曾经有人告诉我，“是的...
+    那个项目是用 X 语言写的，除了写它的人以外没有人知道 X 语言... 也许把时间花在它身上并不是一个好主意。” 当然，我自己也很有过失；我曾用 Haskell
+    编写了刺客公会的会员会费跟踪系统，除非发生奇迹，我对未来的维护者能否处理它有些怀疑。
 - en: When I am not being irresponsible, Python is my favored language for most of
     my scripting needs, and as such I am painfully aware of quirks in the language
     that Haskell would smooth away.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我不负责任的时候，Python 是我大多数脚本需求的首选语言，因此我对 Haskell 能够消除的语言中的怪癖痛苦地有所了解。
 - en: Python code is dynamically typed and variables have no scoping. Brain-o typing
     errors, variable misnamings and plain ole broken code isn't caught unless a code
     path is exercised. *What makes it better:* `pylint -e` catches large classes of
@@ -47,9 +67,13 @@
     to be ignored by the people who need it most), as is full code coverage on whatever
     automated tests you have. *Why Haskell rocks:* the static analysis is complete
     enough that if it compiles, it runs correctly.
+  id: totrans-9
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Python 代码是动态类型的，变量没有作用域。除非执行了代码路径，否则不会捕捉到脑残类型错误、变量错误命名和纯粹的破损代码。 *它变得更好的地方:*
+    `pylint -e` 可以捕捉到大类错误（但你通常必须在递归限制错误中寻找它，我坚信任何不在编译器内置的错误检查最终都会被最需要它的人忽视），以及无论你有什么自动化测试，都可以完全覆盖代码。
+    *Haskell 的优点:* 静态分析足够完整，如果编译通过，那么运行就是正确的。
 - en: 'Python is slow. If you don''t believe it: ask yourself why the runtime can''t
     be loaded quickly enough to make running Python as CGI tenable, or why Google
     has banned it from living in public facing code, or why engineers treat rewriting
@@ -57,9 +81,13 @@
     out anymore speed. *What makes it better:* Not everything has to be blazing fast.
     *Why Haskell rocks:* Insane people writing insane compilers like GHC which compile
     into native binaries and have absolutely epic speed.'
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Python 运行速度慢。如果你不相信：问问自己为什么运行时不能快速加载以使 Python 作为 CGI 可行，或者为什么 Google 已经禁止在公共面向代码中使用它，或者为什么工程师们在无法再挤出更多速度时，会认为将
+    Python 守护程序重写为 C++ 是不可避免的结论。 *它变得更好的地方:* 并不是所有东西都必须运行得飞快。 *Haskell 的优点:* 疯狂的人们编写疯狂的编译器，如
+    GHC，可以编译成本地二进制文件，并具有绝对史诗般的速度。
 - en: Python has an limit to comprehensible code golfing. While duplication of high-level
     code structure is no where as bad in Python as it might be for Java or C++, attempts
     to purify code even further often lead to highly incomprehensible higher order
@@ -68,9 +96,12 @@
     the documentation of the code, it also serves as a framework by which a user can
     "snap" together combinators and data like legoblocks, leading to a much higher
     tolerance of complexity.
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Python 对于可理解的代码高尔夫有其局限性。虽然在 Python 中高级代码结构的重复程度不像在 Java 或 C++ 中那样严重，但是试图进一步净化代码往往会导致需要大量文档的高度难以理解的高阶函数。正如人们所说，“不要用
+    Python 写 Haskell。” *Haskell 的优点:* 类型系统不仅成为代码文档的重要部分，还作为一个框架，用户可以像拼乐高积木一样“捻”合子和数据，大大提高了对复杂性的容忍度。
 - en: 'Python has inherited an aging object-oriented paradigm. However, I am increasingly
     convinced that typeclass based systems ([Go](http://golang.org/) is one decidedly
     imperative language that has picked them up) are the way to go. In combination
@@ -78,33 +109,45 @@
     organization of functionality and polymorphism, without all of the complicated
     gunk that is multiple inheritance, mix-ins, metaclasses, etc. *Why Haskell rocks:*
     First-class support for type-classes.'
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Python 继承了一种老旧的面向对象范式。然而，我越来越确信基于类型类的系统（[Go](http://golang.org/) 是其中一种明确采纳的命令式语言）是未来的发展方向。结合类型签名，它们提供了面向对象编程的两个主要优点：功能的逻辑组织和多态性，而避免了多重继承、混入、元类等复杂的问题。*Haskell
+    之所以优秀：* 对类型类的一流支持。
 - en: Python has abysmal threading support. It has the global interpreter lock. *Why
     Haskell rocks:* It not only has fast, green threads and the notion of purity to
     make splitting computations feasible, it has made it extremely simple to experiment
     with scheduling algorithms with the computation. I can't say much more in this
     field, because I have very little experience writing parallel Haskell code.
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Python 的线程支持极差。它有全局解释器锁。*Haskell 之所以优秀：* 它不仅拥有快速、绿色线程和纯洁性的概念，使得分割计算变得可行，还极大地简化了用于计算的调度算法的实验。在这个领域我说不了更多，因为我几乎没有编写并行
+    Haskell 代码的经验。
 - en: 'But I would cringe to attempt to write in Haskell one of the large projects
     that I have done in imperative languages like PHP or Python (I mention these two
     particular languages, because within them I have built [two](http://htmlpurifier.org)
     [systems](http://scripts.mit.edu/wizard) that are actually large), for these very
     important reasons:'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 但是，如果我尝试在 Haskell 中编写我在像 PHP 或 Python 这样的命令式语言中完成的大型项目之一（我提到这两种特定语言，因为我在它们之中构建了
+    [两个](http://htmlpurifier.org) [系统](http://scripts.mit.edu/wizard) ，而这些系统实际上非常大），我会感到不安，原因如下：
 - en: Haskell has not grown sufficient library support to become fully multiparadigm.
     I am highly skeptical that a straight-forward port of any given piece of Python
     code would be possible; despite great advances in shepherding the more dynamic
     features of Python into Haskell's type system with packages such as Text.Printf,
     action at a distance intrinsic of an imperative program would require heavy IO
     wizardry in Haskell.
+  id: totrans-15
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Haskell 的库支持尚不足以成为完全多范式。我对于任何给定的 Python 代码的直接移植是否可能持高度怀疑；尽管通过像 Text.Printf 这样的包将
+    Python 的更动态特性引入 Haskell 的类型系统取得了巨大进展，但命令式程序固有的远距离操作要求在 Haskell 中进行大量的 IO 巧妙操作。
 - en: It's not obvious which problems in the imperative domain truly are better kept
     in the imperative domain, as [James Hague](http://prog21.dadgum.com/54.html) has
     mused recently. The Haskell community is fairly unified in its stance that as
@@ -115,9 +158,13 @@
     and one of the favorite pastimes of academics is to figure these things out. But
     this is hard even for those used to thinking functionally, and the answers often
     need to be discovered, let alone implemented.
+  id: totrans-16
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在命令式领域中，很难确定哪些问题确实更适合保留在命令式领域，正如 [James Hague](http://prog21.dadgum.com/54.html)
+    最近所思索的。 Haskell 社区普遍认为，尽可能少地将代码放在 IO 单子中是合理的，但是当我们引入命令式世界的小部分来帮助我们，例如状态单子，我们承认命令式范式是有用的……
+    或者至少是一种轻松的出路。也许如果我们更加努力，我们可以找到一个更加优雅、可维护的纯函数解决方案；而学术界喜欢做的事情之一就是弄清楚这些事情。但是即使对于那些习惯于功能性思维的人来说，这也是困难的，答案通常需要发现，更不用说实现了。
 - en: All of the engineering folklore, wisdom and best practices that have been accumulated
     from years of hacking on large, imperative codebases may or may not apply to functional
     codebases anymore. If functional libraries are encouraged to be as decoupled as
@@ -126,9 +173,12 @@
     do we need, and how much trust do we put in the types? How does API documentation
     and cross-referencing need to evolve for functional codebases? How the heck do
     you go ahead and debug a logic error in a section of pure Haskell code?
+  id: totrans-17
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 所有从多年对大型命令式代码库的开发中积累的工程传说、智慧和最佳实践，可能不再适用于函数式代码库。如果函数式库鼓励尽可能解耦，我们是否需要在 API 中进一步解耦？纯代码是否需要记录日志，或者其确定性使其易于调试？我们需要进行哪些测试，我们对类型有多少信任？函数式代码库的
+    API 文档和交叉引用需要如何发展？在纯 Haskell 代码的逻辑错误调试中应该如何进行？
 - en: Yet, there are [companies](http://www.galois.com/) that are putting out production
     size codebases in Haskell, which makes me optimistic that answers to these questions
     will soon become public knowledge; if not for Haskell, for some other purely functional
@@ -137,5 +187,9 @@
     we *must not* settle for "good enough." Software sucks, but purely functional
     systems with strong, flexible types have the promise to eliminate large swaths
     of this suckage. And *that* is why I Haskell.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，有[一些公司](http://www.galois.com/)正在使用 Haskell 编写生产规模的代码库，这让我对这些问题的答案很乐观；即使不是对于
+    Haskell，对于其他纯函数式语言也是如此。而在命令式世界中的“经典”解决方案往往导致潜在的错误，特别是在多线程应用程序的世界中，我们*决不能*满足于“够好”的状态。软件糟糕透了，但具有强大、灵活类型的纯函数式系统有望消除大部分这种问题。这就是为什么我选择
+    Haskell。

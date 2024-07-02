@@ -1,75 +1,115 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:11'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:11'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Type kata: Controlled sharing of references : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 'Type kata: Controlled sharing of references : ezyang’s blog'
 - en: 来源：[http://blog.ezyang.com/2010/08/type-kata-controlled-sharing-of-references/](http://blog.ezyang.com/2010/08/type-kata-controlled-sharing-of-references/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/08/type-kata-controlled-sharing-of-references/](http://blog.ezyang.com/2010/08/type-kata-controlled-sharing-of-references/)
 - en: '*The imperative.* Mutable data structures with many children frequently force
     any given child to be associated with one given parent data structure:'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: '*命令式.* 具有许多子对象的可变数据结构经常迫使任何给定的子对象与一个给定的父数据结构相关联：'
 - en: '[PRE0]'
+  id: totrans-7
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: Client code must be careful not to mix up children that belong to different
     owners. An object can be copied from one owner to another via a special function.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 客户端代码必须小心，不要混淆属于不同所有者的子对象。对象可以通过特殊函数从一个所有者复制到另一个所有者。
 - en: '[PRE1]'
+  id: totrans-9
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: Sometimes, a function of this style can only be called in special circumstances.
     If a mutable data structure is copied, and you would like to reference to a child
     in the new structure but you only have a reference to its original, an implementation
     may let you forward such a pointer, but only if the destination structure was
     the most recent copy.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 有时，这种风格的函数只能在特定情况下调用。如果复制了可变数据结构，并且你想引用新结构中的一个子对象，但你只有对原始结构的引用，实现可以让你转发这样的指针，但前提是目标结构是最新的副本。
 - en: '[PRE2]'
+  id: totrans-11
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: '*The kata.* Phantom types in the style of the [ST monad](http://www.haskell.org/ghc/docs/6.12.2/html/libraries/base-4.2.0.1/Control-Monad-ST.html)
     permit statically enforced separation of children from different monadic owners.'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: '*技巧.* [ST单子](http://www.haskell.org/ghc/docs/6.12.2/html/libraries/base-4.2.0.1/Control-Monad-ST.html)风格的幻影类型允许静态强制将不同单子所有者的子对象分离开来。'
 - en: '[PRE3]'
+  id: totrans-13
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'To permit a value of any monad to be used in another monad, implement a function
     that is polymorphic in both phantom types:'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 要允许任何单子的值在另一个单子中使用，请实现一个在两个幻影类型中都是多态的函数：
 - en: '[PRE4]'
+  id: totrans-15
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: The function will probably be monadic, because the implementation will need
     to know what owner the `Node` is being converted to.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 函数可能是单子的，因为实现需要知道`Node`被转换为什么所有者。
 - en: 'To only permit translation under certain circumstances, use a type constructor
     (you can get these using empty data declarations) on the phantom type:'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 仅在特定情况下允许翻译，使用类型构造函数（可以使用空数据声明来获取这些）在幻影类型上：
 - en: '[PRE5]'
+  id: totrans-18
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: '*Applicability.* Practitioners of Haskell are encouraged to implement and use
     pure data structures, where sharing renders this careful book-keeping of ownership
     unnecessary. Nevertheless, this technique can be useful when you are interfacing
     via the FFI with a library that requires these invariants.'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: '*适用性.* Haskell的从业者被鼓励实现和使用纯数据结构，其中共享使得这种关于所有权的细致管理变得不必要。尽管如此，当你通过FFI与需要这些不变式的库进行接口时，这种技术仍然是有用的。'

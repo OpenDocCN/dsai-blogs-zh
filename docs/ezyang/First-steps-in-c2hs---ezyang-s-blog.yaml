@@ -1,215 +1,329 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:17'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:17'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'First steps in c2hs : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: c2hs 的第一步：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2010/06/first-steps-in-c2hs/](http://blog.ezyang.com/2010/06/first-steps-in-c2hs/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[ezyang博客](http://blog.ezyang.com/2010/06/first-steps-in-c2hs/)
 - en: This is part four of a [six part tutorial series on c2hs](http://blog.ezyang.com/2010/06/the-haskell-preprocessor-hierarchy/).
     Today we discuss the simple things in c2hs, namely the type, enum, pointer, import
     and context directives.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是 [关于 c2hs 的六部分教程系列中的第四部分](http://blog.ezyang.com/2010/06/the-haskell-preprocessor-hierarchy/)。今天我们讨论
+    c2hs 中的简单事物，即类型、枚举、指针、导入和上下文指令。
 - en: '*Prior art.* All of the directives c2hs supports are tersely described in [the
     “tutorial” page](http://www.cse.unsw.edu.au/~chak/haskell/c2hs/docu/implementing.html)
     (which would perhaps be more accurately described as a “reference manual”, not
     tutorial.) There is also (paradoxically) a much more informal introduction for
     most of the directives in c2hs''s [research paper](http://www.cse.unsw.edu.au/~chak/papers/Cha99b.html).'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '*Prior art.* c2hs 支持的所有指令都在 [“tutorial”页面](http://www.cse.unsw.edu.au/~chak/haskell/c2hs/docu/implementing.html)
+    中简要描述（也许更准确地说是“参考手册”，而非教程）。此外，在 c2hs 的 [研究论文](http://www.cse.unsw.edu.au/~chak/papers/Cha99b.html)
+    中，对大多数指令也有更为非正式的介绍。'
 - en: '*Type.* C code will occasionally contain macro conditionals redefining a type
     depending on some build condition (the following is real code):'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: '*Type.* C 代码偶尔包含宏条件重新定义类型的情况，具体取决于某些构建条件（以下是真实代码）：'
 - en: '[PRE0]'
+  id: totrans-9
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'If you wanted to refer to write FFI code that referenced functions that used
     `ABC_PTRUINT_T`, you might have to have performed some guess on what the value
     truly is in Haskell or used the C preprocessor to reimplement the conditions.
     With c2hs you can retrieve the true value of a typedef with `type`:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你想要编写引用使用 `ABC_PTRUINT_T` 函数的 FFI 代码，你可能需要对 Haskell 中值的真实情况进行猜测或使用 C 预处理器重新实现条件。使用
+    c2hs，你可以通过 `type` 获取 typedef 的真实值：
 - en: '[PRE1]'
+  id: totrans-11
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'Consider the case of a 64-bit Linux system (such that `__ccdoc__` is undefined
     and `LIN64` is defined), then the result is:'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 考虑一个64位Linux系统的情况（`__ccdoc__`未定义，`LIN64`已定义），则结果是：
 - en: '[PRE2]'
+  id: totrans-13
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: '*Enum.* Enums show up frequently in well-written (i.e. eschewing magic numbers)
     C code:'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: '*Enum.* 枚举在编写良好的（即避免魔术数字）C 代码中经常出现：'
 - en: '[PRE3]'
+  id: totrans-15
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'However, underneath the hood, these are really just ints, so Haskell code that
     wants to pass an enum value to a function has to:'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，在底层，这些实际上只是整数（ints），因此希望在 Haskell 代码中将枚举值传递给函数的代码必须：
 - en: Create a new datatype to represent the enumeration, and
+  id: totrans-17
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 创建一个新的数据类型来表示枚举，并
 - en: Write a function that maps from that datatype to the C integer and back again
     for the `Enum` instance.
+  id: totrans-18
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 编写一个函数，将该数据类型映射到 C 整数，然后再次映射回来，以便创建 `Enum` 实例。
 - en: 'We can have c2hs do all the work for us:'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以让 c2hs 为我们完成所有工作：
 - en: '[PRE4]'
+  id: totrans-20
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: 'which becomes:'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 变成了：
 - en: '[PRE5]'
+  id: totrans-22
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 'Note that, as `ABC_PROMPT` is a very unsightly constructor in Haskell, we transform
     the names using the `underscoreToCase` algorithm as mentioned before. You can
     also explicitly list out the renamings:'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意，由于 `ABC_PROMPT` 在 Haskell 中是一个非常难看的构造函数，我们使用如上述的 `underscoreToCase` 算法转换名称。您也可以明确列出这些重命名：
 - en: '[PRE6]'
+  id: totrans-24
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'or change the name of the datatype:'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 或者更改数据类型的名称：
 - en: '[PRE7]'
+  id: totrans-26
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: 'There are two other transforms (which can combine with `underscoreToCase`:
     `upcaseFirstLetter` and `downcaseFirstLetter`, though I''m not sure when the latter
     would result in working Haskell code.'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 还有另外两种变换（可以与 `underscoreToCase` 结合使用：`upcaseFirstLetter` 和 `downcaseFirstLetter`，尽管我不确定后者何时会导致有效的
+    Haskell 代码。
 - en: '*Pointer.* Unlike C primitives, which are specified in `Foreign.C.Types`, Haskell
     needs to be told how to map pointer types (`foo*`) into Haskell types. Consider
     some struct:'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: '*Pointer.* 与指定在 `Foreign.C.Types` 中的 C 原语不同，Haskell 需要告知如何将指针类型（`foo*`）映射到
+    Haskell 类型。考虑某些结构体：'
 - en: '[PRE8]'
+  id: totrans-29
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: 'It is quite conceivable that there exists a `data Foobar = Foobar Int Int`
     in the Haskell codebase, in which case we would like `Ptr Foobar` to represent
     a `struct foobar*` in the original C code. c2hs has no way of deriving this information
     directly, so we give it this information:'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 完全有可能在 Haskell 代码库中存在 `data Foobar = Foobar Int Int`，在这种情况下，我们希望 `Ptr Foobar`
+    表示原始 C 代码中的 `struct foobar*`。c2hs 无法直接推导出这些信息，因此我们向其提供这些信息：
 - en: '[PRE9]'
+  id: totrans-31
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: 'This generates the code:'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 这生成了以下代码：
 - en: '[PRE10]'
+  id: totrans-33
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: But more importantly, allows c2hs to place more specific types in the signatures
     it writes for FFI bindings (which we will see in the next post in the series.)
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 但更重要的是，允许 c2hs 在为 FFI 绑定编写的签名中放置更具体的类型（我们将在本系列的下一篇文章中看到）。
 - en: 'Some variations on the theme:'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 一些主题的变种：
 - en: 'If you want to represent an opaque pointer whose contents will not be marshalled,
     you can either do empty data declarations:'
+  id: totrans-36
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如果你想表示一个不会进行马歇尔处理的不透明指针，你可以选择空数据声明：
 - en: '[PRE11]'
+  id: totrans-37
   prefs:
   - PREF_IND
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: 'or you can have c2hs generate code using the newtype trick:'
+  id: totrans-38
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 或者你可以让 c2hs 使用新类型技巧生成代码：
 - en: '[PRE12]'
+  id: totrans-39
   prefs:
   - PREF_IND
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: 'I prefer empty data declarations, since there’s no need to wrap and unwrap
     a newtype in that case: the newtype will generate:'
+  id: totrans-40
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 我更喜欢空数据声明，因为在这种情况下不需要包装和解包新类型：新类型将生成：
 - en: '[PRE13]'
+  id: totrans-41
   prefs:
   - PREF_IND
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: which, for any code expecting `Ptr a`, needs to be unwrapped.
+  id: totrans-42
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 如果代码期望 `Ptr a`，则需要将其解包。
 - en: 'If you do not care for the name `FoobarPtr` and would just like to explicitly
     say `Ptr Foobar`, you can tell c2hs not to emit the type definition with `nocode`:'
+  id: totrans-43
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如果你不喜欢 `FoobarPtr` 这个名称，而只想显式地说 `Ptr Foobar`，你可以告诉 c2hs 不要发出类型定义，使用 `nocode`：
 - en: '[PRE14]'
+  id: totrans-44
   prefs:
   - PREF_IND
   type: TYPE_PRE
+  zh: '[PRE14]'
 - en: 'If no Haskell name mapping is specified, it will simply use the C name:'
+  id: totrans-45
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如果没有指定 Haskell 名称映射，它将简单地使用 C 名称：
 - en: '[PRE15]'
+  id: totrans-46
   prefs:
   - PREF_IND
   type: TYPE_PRE
+  zh: '[PRE15]'
 - en: 'If you would like to refer to a typedef in C which is already a pointer, just
     omit the asterisk:'
+  id: totrans-47
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如果你想引用 C 中已经是指针的 typedef，只需省略星号：
 - en: '[PRE16]'
+  id: totrans-48
   prefs:
   - PREF_IND
   type: TYPE_PRE
+  zh: '[PRE16]'
 - en: c2hs also has limited support for declaring pointers as foreign or stable, and
     generating code accordingly. I've not used this, except in one case where I found
     the generated bindings for the pointer were not flexible enough. Your mileage
     may vary.
+  id: totrans-49
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: c2hs 也支持有限的声明指针为 foreign 或 stable，并相应地生成代码。我没有在这方面使用过，除了一个情况，发现指针的生成绑定不够灵活。效果可能有所不同。
 - en: '*Import.* A C library that contains multiple header files will probably have
     some headers including others to get vital type definitions. If you organize your
     Haskell modules similarly, you need to mimic these includes: this can be done
     with import.'
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: '*导入.* 包含多个头文件的 C 库可能会有一些头文件包含其他头文件以获取重要的类型定义。如果你组织你的 Haskell 模块类似地，你需要模仿这些包含：这可以通过
+    import 来实现。'
 - en: '[PRE17]'
+  id: totrans-51
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE17]'
 - en: In particular, this sets up the `pointer` mappings from the other module, as
     well as generating the usual `import` statement.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 特别是，这会设置来自其他模块的 `pointer` 映射，并生成通常的 `import` 语句。
 - en: '*Context (optional).* Context has two purported purposes. The first is to specify
     what library the FFI declarations in the file should be linked against; however,
     in Cabal, this doesn’t actually do anything—so you need to still add the library
@@ -219,8 +333,14 @@
     my imports to the lower level API and like the visual distinction of C prefixes,
     so I tend to omit this. Some directives let you change the prefix locally, in
     particular `enum`.'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: '*上下文（可选）.* 上下文有两个所谓的目的。第一个是指定文件中 FFI 声明应链接的库；然而，在 Cabal 中，这实际上没有任何作用——所以你仍然需要将库添加到
+    `Extra-libraries`。第二个是通过为你引用的每个 C 标识符添加隐式前缀来节省击键次数，假设原始的 C 代码被命名空间为 `gtk_` 或类似的。我个人喜欢不需要将我的导入限定到更低级别的
+    API，并喜欢 C 前缀的视觉区分，所以我倾向于省略这一点。一些指令允许你在局部改变前缀，特别是 `enum`。'
 - en: '*Next time.* [Marshalling with get and set](http://blog.ezyang.com/2010/06/marshalling-with-get-and-set/).'
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: '*下次.* [使用 get 和 set 进行马歇尔处理](http://blog.ezyang.com/2010/06/marshalling-with-get-and-set/)。'

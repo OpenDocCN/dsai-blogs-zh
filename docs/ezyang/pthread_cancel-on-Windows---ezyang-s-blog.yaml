@@ -1,42 +1,65 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:09'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:09'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'pthread_cancel on Windows : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 'pthread_cancel on Windows : ezyang’s blog'
 - en: 来源：[http://blog.ezyang.com/2010/09/pthread-cancel-on-window/](http://blog.ezyang.com/2010/09/pthread-cancel-on-window/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/09/pthread-cancel-on-window/](http://blog.ezyang.com/2010/09/pthread-cancel-on-window/)
 - en: 'Edward, I’m afraid I have some bad news. Your [interruptible GHC patch](http://blog.ezyang.com/2010/08/interrupting-ghc/);
     it was involved in a terrible accident on the way to Windows portability. I hope
     you understand: we’re doing our best to patch it up, but there have been some
     complications...'
+  id: totrans-6
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: Edward，很抱歉，我有些坏消息。你的 [可中断 GHC 补丁](http://blog.ezyang.com/2010/08/interrupting-ghc/)；在移植到
+    Windows 途中遇到了一场可怕的事故。希望你理解：我们正在尽力修复它，但出现了一些复杂情况...
 - en: Pop quiz! What does this pthreads code do?
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 小测验！这段 pthreads 代码做什么？
 - en: '[PRE0]'
+  id: totrans-8
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: It never manages to terminate the second thread...
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 它从未成功终止第二个线程...
 - en: '[PRE1]'
+  id: totrans-10
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'If you just had the `pthread_cancel` and the `pthread_setcancelstate` manpages,
     this might seem a little mysterious. The `pthreads` page, however, makes things
     clear: `sleep` is among one-hundred and two “cancellable” functions, which `pthread_cancel`
@@ -47,61 +70,94 @@
     whether or not cancellation should take place upon entry to the system call, or
     while the system call was running, but the [2008 spec](http://www.opengroup.org/onlinepubs/9699919799/functions/V2_chap02.html#tag_15_09_05_02)
     is fairly clear:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你只有 `pthread_cancel` 和 `pthread_setcancelstate` 的手册页，这可能有点神秘。但 `pthreads`
+    页面很清楚：`sleep` 是一百零二个“可取消”函数之一，如果线程的取消状态为 `PTHREAD_CANCEL_DEFERRED`，则必须在其中显式允许延迟取消，使用
+    `pthread_testcancel`。早期的 POSIX 规范版本在系统调用入口或系统调用运行期间是否应进行取消有些不清楚，但 [2008 规范](http://www.opengroup.org/onlinepubs/9699919799/functions/V2_chap02.html#tag_15_09_05_02)
+    比较明确：
 - en: Cancellation points shall occur when a thread is executing the following functions...
+  id: totrans-12
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 当线程执行以下函数时应发生取消点...
 - en: '* * *'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'The million-dollar question is: “Can we implement the same semantics on Windows?”
     Actually, since it seems that a lot of people would have wanted pthreads functionality
     on Windows, you would think that this has been already been implemented by [pthreads-win32](http://sourceware.org/pthreads-win32/).
     We turn to the source!'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 百万美元问题是：“我们能在 Windows 上实现相同的语义吗？”实际上，因为看起来很多人都希望在 Windows 上拥有 pthreads 的功能，你会认为这已经由
+    [pthreads-win32](http://sourceware.org/pthreads-win32/) 实现了。我们去看看源代码！
 - en: '[PRE2]'
+  id: totrans-15
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'Interestingly enough, pthreads-win32 doesn’t seem to do anything special: when
     we translate our test program and run it with pthreads-win32, it gets stuck on
     the `Sleep` call as well:'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 有趣的是，pthreads-win32 似乎并没有做任何特殊处理：当我们将我们的测试程序翻译并在 pthreads-win32 上运行时，它也在 `Sleep`
+    调用上卡住了：
 - en: '[PRE3]'
+  id: totrans-17
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: '* * *'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: At this point, it’s worth stepping back for a moment and asking, “What are we
     really trying to do here?” If you were to ask how to terminate threads on, say,
     Stack Overflow, you’d get a bunch of responses telling you, “Stop that and do
     it the right way”; namely, by explicitly handling thread termination on the thread
     itself via another message passing mechanism.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 此时，值得稍作停顿，问一问：“我们到底想做什么？”如果你问如何在 Stack Overflow 上终止线程，你会得到一大堆回复告诉你：“停止那样做，用正确的方式来做”；也就是说，通过另一种消息传递机制在线程本身上显式处理线程终止。
 - en: 'So there are number of different needs for interruptible calls:'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，中断调用有许多不同的需求：
 - en: GHC would like to be able to put blocking IO calls on a worker thread but cancel
     them later; it can currently do this on Linux but not on Windows,
+  id: totrans-21
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: GHC 希望能够将阻塞的 IO 调用放在工作线程上，但稍后取消它们；目前它可以在 Linux 上做到这一点，但在 Windows 上不行，
 - en: Users would like to write interrupt friendly C libraries and have them integrate
     seamlessly with Haskell’s exception mechanism, and
+  id: totrans-22
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 用户希望编写友好的中断 C 库，并让它们与 Haskell 的异常机制无缝集成，
 - en: We’d like to have the golden touch of the IO world, instantly turning blocking
     IO code into nice, well-behaved non-blocking code.
+  id: totrans-23
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 我们希望拥有 IO 世界的黄金触摸，即将阻塞 IO 代码即时转换为良好行为的非阻塞代码。
 - en: Next time I’ll talk about what different approaches might be needed for each
     of these goals.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 下次我将讨论针对每个目标可能需要的不同方法。

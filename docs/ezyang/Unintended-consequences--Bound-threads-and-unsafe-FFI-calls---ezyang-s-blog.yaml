@@ -1,42 +1,64 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:11'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:11'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Unintended consequences: Bound threads and unsafe FFI calls : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 意外后果：绑定线程和不安全的FFI调用：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2014/12/unintended-consequences-bound-threads-and-unsafe-ffi-calls/](http://blog.ezyang.com/2014/12/unintended-consequences-bound-threads-and-unsafe-ffi-calls/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2014/12/unintended-consequences-bound-threads-and-unsafe-ffi-calls/](http://blog.ezyang.com/2014/12/unintended-consequences-bound-threads-and-unsafe-ffi-calls/)
 - en: 'A while ago, I wrote a post describing how [unsafe FFI calls could block your
     entire system](http://blog.ezyang.com/2010/07/safety-first-ffi-and-threading/),
     and gave the following example of this behavior:'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 不久前，我写了一篇文章描述了[不安全的FFI调用如何可能阻塞整个系统](http://blog.ezyang.com/2010/07/safety-first-ffi-and-threading/)，并且给出了以下这种行为的例子：
 - en: '[PRE0]'
+  id: totrans-7
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: '[PRE1]'
+  id: totrans-8
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: '[PRE2]'
+  id: totrans-9
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: In the post, I explained that the reason this occurs is that unsafe FFI calls
     are not preemptible, so when unsafeBottom loops forever, the Haskell thread can't
     proceed.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这篇文章中，我解释了发生这种情况的原因是因为不安全的FFI调用是不可抢占的，所以当`unsafeBottom`无限循环时，Haskell线程无法继续。
 - en: 'This explanation would make perfect sense except for one problem: the code
     also hangs even when you run with the multi-threaded runtime system, with multiple
     operating system threads. David Barbour wrote in wondering if my claim that unsafe
@@ -44,24 +66,34 @@
     does hang on versions of GHC as recent as 7.8.3\. Based on the title of this post,
     can you guess the reason? If you think you know, what do these variants of the
     program do?'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个解释看起来很合理，但有一个问题：即使在多线程运行时系统中，代码也会挂起。David Barbour曾经写信询问我关于不安全调用会阻塞整个系统的说法是否过时。但是，根据这篇文章的标题，你能猜到原因吗？如果你认为你知道，请问这些程序的变体会做什么？
 - en: Change `main =` to `main = runInUnboundThread`
+  id: totrans-12
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将`main =`改为`main = runInUnboundThread`
 - en: Change the second `forkIO` to `forkOn 2`
+  id: totrans-13
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将第二个`forkIO`改为`forkOn 2`
 - en: Add a `yield` before `unsafeBottom`, and another `yield` before `print "Pass
     (not expected)"`
+  id: totrans-14
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在`unsafeBottom`之前加上一个`yield`，在`print "Pass (not expected)"`之前再加一个`yield`
 - en: '* * *'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: The reason why the code blocks, or, more specifically, why the main thread blocks,
     is because the unsafe FFI call is unpreemptibly running on the operating system
     thread which the main thread is bound to. Recall, by default, the main thread
@@ -69,30 +101,42 @@
     system thread which must be used to run code in main. If that thread is blocked
     by an FFI call, the main thread cannot run, even if there are other worker threads
     available.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 代码阻塞的原因，或者更具体地说，主线程阻塞的原因是因为不安全的FFI调用不可抢占地在操作系统线程上运行，而主线程绑定到该线程上。回想一下，默认情况下，主线程在一个绑定的操作系统线程中运行。这意味着必须使用特定的操作系统线程来运行主线程中的代码。如果该线程被FFI调用阻塞，即使有其他工作线程可用，主线程也无法运行。
 - en: 'We can thus explain the variants:'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，我们可以解释这些变体：
 - en: '`main` is run in an unbound thread, no blocking occurs, and thus the second
     print runs.'
+  id: totrans-18
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '`main`在一个未绑定的线程中运行，不会发生阻塞，因此第二个打印语句会运行。'
 - en: By default, a forked thread is run on the same capability as the thread that
     spawned it (this is good, because it means no synchronization is necessary) so
     forcing the bad FFI call to run on a different worker prevents it from blocking
     main.
+  id: totrans-19
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 默认情况下，一个分支线程在与生成它的线程相同的能力上运行（这很好，因为这意味着不需要同步），因此强制糟糕的FFI调用在不同的工作线程上运行可以防止它阻塞主线程。
 - en: Alternately, if a thread yields, it might get rescheduled on a different worker
     thread, which also prevents main from getting blocked.
+  id: totrans-20
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 或者，如果一个线程让出，它可能会被重新调度到另一个工作线程上，这也可以防止主线程被阻塞。
 - en: 'So, perhaps the real moral of the story is this: be careful about unsafe FFI
     calls if you have bound threads. And note: every Haskell program has a bound thread:
     main!'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以，也许这个故事的真正教训是：如果你有绑定的线程，请小心处理不安全的FFI调用。请注意：每个Haskell程序都有一个绑定的线程：主线程！

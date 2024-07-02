@@ -1,85 +1,124 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:17:53'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:17:53
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Functions produce the Haskell Heap : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 函数产生 Haskell 堆：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2011/04/functions-produce-the-haskell-heap/](http://blog.ezyang.com/2011/04/functions-produce-the-haskell-heap/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/04/functions-produce-the-haskell-heap/](http://blog.ezyang.com/2011/04/functions-produce-the-haskell-heap/)
 - en: 'We’ve talked about how we open (evaluate) presents (thunks) in the Haskell
     Heap: we use IO. But where do all of these presents come from? Today we introduce
     where all these presents come from, the Ghost-o-matic machine (a function in a
     Haskell program).'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们已经讨论过如何在 Haskell 堆中打开（评估）礼物（thunk）：我们使用 IO。但是所有这些礼物都是从哪里来的呢？今天我们介绍的是所有这些礼物来自哪里，那就是
+    Ghost-o-matic 机器（一个 Haskell 程序中的函数）。
 - en: Using a function involves three steps.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用一个函数涉及三个步骤。
 - en: 'We can treat the machine as a black box that takes present labels and pops
     out presents, but you can imagine the inside as having an unlimited supply of
     identical ghosts and empty present boxes: when you run the machine, it puts a
     copy of the ghost in the box.'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以把这台机器看作是一个黑匣子，它接受礼物标签并产出礼物，但你可以想象其内部有无限多的相同幽灵和空的礼品盒：当你运行这台机器时，它会把一个幽灵的副本放入盒子中。
 - en: 'If the ghosts we put into the presents are identical, do they all behave the
     same way? Yes, but with one caveat: the actions of the ghost are determined by
     a script (the original source code), but inside the script there are holes that
     are filled in by the labels you inserted into the machine.'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们放入礼物中的幽灵是相同的，它们是否会表现得一样？是的，但有一个注意事项：幽灵的行为由脚本（原始源代码）决定，但在脚本内部有空洞，这些空洞由您插入到机器中的标签填充。
 - en: Since there’s not actually anything in the boxes, we can precisely characterize
     a present by the ghost that haunts it.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于盒子里实际上什么也没有，我们可以通过困扰它的幽灵精确地描述一个礼物。
 - en: 'A frequent problem that people who use the Ghost-o-matic run into is that they
     expect it to work the same way as the Strict-o-matic (a function in a traditional,
     strictly evaluated language.) They don’t even take the same inputs: the Strict-o-matic
     takes unwrapped, unhaunted (unlifted) objects and gift cards, and outputs other
     unhaunted presents and gift cards.'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用 Ghost-o-matic 的人经常遇到的问题是他们期望它像 Strict-o-matic（传统严格求值语言中的函数）一样工作。它们甚至不接受相同的输入：Strict-o-matic
+    接受未包装的、未幽灵化（未解除提升）的对象和礼品卡，并输出其他未幽灵化的礼物和礼品卡。
 - en: But it’s really easy to forget, because the source-level syntax for strict function
     application and lazy function application are very similar.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 但是很容易忘记，因为严格函数应用和惰性函数应用的源代码语法非常相似。
 - en: This is a point that must be thoroughly emphasized. In fact, in order to emphasize
     it, I’ve drawn two more pictures to reiterate what the permitted inputs and outputs
     for a Ghost-o-matic machine are.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是一个必须非常强调的重点。事实上，为了强调这一点，我画了另外两幅图来重申 Ghost-o-matic 机器允许的输入和输出是什么。
 - en: 'Ghost-o-matics take labels of presents, not the actual presents themselves.
     This importantly means that the Ghost-o-matic doesn’t open any presents: after
     all, it only has labels, not the actual present. This stands in contrast to a
     Strict-o-matic machine which takes presents as inputs and opens them: one might
     call this machine the `force` function, of type `Thunk a -> a`. In Haskell, there
     is no such thing.'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: Ghost-o-matic 机器只接受礼物的标签，而不是实际的礼物本身。这意味着 Ghost-o-matic 并不会打开任何礼物：毕竟，它只有标签，而没有实际的礼物。这与
+    Strict-o-matic 机器形成对比，后者接受实际礼物作为输入并打开它们：有人可能称这种机器为`force`函数，类型为`Thunk a -> a`。在
+    Haskell 中，并没有这样的东西。
 - en: The Ghost-o-matic always creates a wrapped present. It will never produce an
     unwrapped present, even if there is no ghost haunting the present (the function
     was a constant).
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: Ghost-o-matic 总是会创建一个包装好的礼物。即使没有幽灵在礼物中（函数是常量），它也永远不会产生未包装的礼物。
 - en: We state previously that there is no `force` function in Haskell. But the function
     `seq` seems to do something very like forcing a thunk. A present haunted by a
     seq ghost, when opened, will cause two other presents to be opened (even if the
     first one is unnecessary). It seems like the first argument is forced; and so
     `seq x x` might be some reasonable approximation of `force` in an imperative language.
     But what happens when we actually open up a present haunted by the `seq` ghost?
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们先前说过在 Haskell 中没有`force`函数。但是函数`seq`似乎做了与强制求值 thunk 类似的事情。一个被`seq`幽灵所困扰的礼物，在被打开时会导致另外两个礼物被打开（即使第一个是不必要的）。看起来第一个参数被强制执行；因此`seq
+    x x`可能是对命令式语言中`force`的一个合理近似。但当我们打开一个被`seq`幽灵所困扰的礼物时会发生什么呢？
 - en: 'Although the ghost ends up opening the present rather than us, it’s too late
     for it to do any good: immediately after the ghost opens the present, we would
     have gone to open it (which it already is). The key observation is that the `seq
@@ -87,51 +126,73 @@
     immediately after `seq x x` is opened we have to go open `x` by means of an indirection.
     The strictness of the seq ghost is defeated by the fact that it’s put in a present,
     not to be opened until `x` is desired.'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然鬼魂最终会打开礼物而不是我们，但对于它来说已经为时已晚：在鬼魂打开礼物之后立即，我们将要打开它（它已经是）。关键观察是`seq x x`鬼魂只在打开`seq
+    x x`礼物时打开`x`礼物，并且在`seq x x`打开后，我们必须通过间接方式去打开`x`。seq 鬼魂的严格性被放入一个礼物中，直到需要`x`时才打开，这一事实所击败。
 - en: One interesting observation is that the Strict-o-matic machine does things when
     its run. It can open presents, fire missiles or do other side effects.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个有趣的观察是 Strict-o-matic 机器在运行时做一些事情。它可以打开礼物，发射导弹或执行其他副作用。
 - en: But the Ghost-o-matic machine doesn’t do any of that. It’s completely pure.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 但是 Ghost-o-matic 机器完全是纯的。
 - en: To prevent confusion, users of the Strict-o-matic and Ghost-o-matic machines
     may find it useful to compare the the present creation life-cycle for each of
     the machines.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了避免混淆，Strict-o-matic 和 Ghost-o-matic 机器的用户可能会发现比较每台机器的礼物创建生命周期有用。
 - en: 'The lazy Ghost-o-matic machine is split into two discrete phases: the function
     application, which doesn’t actually do anything, just creates the present, and
     the actual opening of the present. The Strict-o-matic does it all in one bang—although
     it could output a present (that’s what happens when you implement laziness inside
     a strict language). But in a strict language, you have to do it all yourself.'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 惰性 Ghost-o-matic 机器分为两个离散阶段：函数应用，实际上什么也不做，只是创建礼物，并且实际打开礼物。Strict-o-matic 在一个瞬间完成所有操作——尽管它可以输出一个礼物（这就是在严格语言中实现惰性时发生的事情）。但在严格语言中，你必须自己做所有事情。
 - en: The Ghost-o-matic is approved for use by both humans and ghosts.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: Ghost-o-matic 被人类和鬼魂批准使用。
 - en: This does mean that opening a haunted present may produces more presents. For
     example, if the present produces a gift card for presents that don’t already live
     on the heap.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 这确实意味着打开一个鬼魂礼物可能会产生更多的礼物。例如，如果礼物是给那些还没有在堆上存在的礼物的礼物卡。
 - en: For a spine-strict data structure, it can produce a *lot* more presents.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于一个脊柱严格的数据结构，它可以产生*很多*礼物。
 - en: 'Oh, and one more thing: the Ghost-o-matic makes a great gift for ghosts and
     family. They can be gift-wrapped in presents too. After all, everything in Haskell
     is a present.'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 哦，还有一件事：Ghost-o-matic 机器是给鬼魂和家人的绝佳礼物。它们也可以用礼物包装起来。毕竟，在 Haskell 中的一切都是礼物。
 - en: '*Technical notes.* With optimizations, a function may not necessarily allocate
     on the heap. The only way to be sure is to check out what optimized Core the program
     produces. It’s also not actually true that traditional, strict functions don’t
     exist in Haskell: unboxed primitives can be used to write traditional imperative
     code. It may look scary, but it’s not much different than writing your program
     in ML.'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: '*技术注释*。通过优化，函数可能不一定在堆上分配。确保的唯一方法是查看程序生成的优化核心。事实上，传统严格的函数在 Haskell 中并不不存在：非装箱原语可以用来编写传统的命令式代码。这看起来可能有点吓人，但实际上和在
+    ML 中编写程序没什么不同。'
 - en: 'I’ve completely ignored partial application, which ought to be the topic of
     a later post, but I will note that, internally speaking, GHC does try its very
     best to pass all of the arguments a function wants at application time; if all
@@ -140,15 +201,24 @@
     has some (but not all) of its arguments. Gifted ghost-o-matics (functions in the
     heap) can also be viewed this way: but rather than pre-emptively giving the ghost
     some arguments, the ghost is instead given its free variables (closure).'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 我完全忽略了部分应用，这应该是以后帖子的主题，但我会注意到，从内部来看，GHC 确实尽其所能在应用时传递函数想要的所有参数；如果所有参数都可用，它将不会麻烦地创建部分应用（PAP）。但这些可以被认为是修改过的
+    Ghost-o-matics，其鬼魂已经具有一些（但不是全部）参数。天赋的 Ghost-o-matics（堆中的函数）也可以这样看待：但不是预先给鬼魂一些参数，而是给鬼魂其自由变量（闭包）。
 - en: 'Last time: [Implementing the Haskell Heap in Python, v1](http://blog.ezyang.com/2011/04/implementing-the-haskell-heap-in-python-v1/)'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 上次：[在 Python 中实现 Haskell 堆，v1](http://blog.ezyang.com/2011/04/implementing-the-haskell-heap-in-python-v1/)
 - en: 'Next time: [How the Grinch stole the Haskell Heap](http://blog.ezyang.com/2011/04/how-the-grinch-stole-the-haskell-heap/)'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 下一篇文章：[Grinch是如何窃取Haskell堆的](http://blog.ezyang.com/2011/04/how-the-grinch-stole-the-haskell-heap/)
 - en: This work is licensed under a [Creative Commons Attribution-ShareAlike 3.0 Unported
     License](http://creativecommons.org/licenses/by-sa/3.0/).
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 本作品采用[知识共享署名-相同方式共享 3.0 未本地化许可协议](http://creativecommons.org/licenses/by-sa/3.0/)授权。

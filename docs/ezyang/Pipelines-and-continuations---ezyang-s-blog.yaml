@@ -1,184 +1,279 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:13'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:13'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Pipelines and continuations : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 管道和延续：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2010/07/pipelines-and-continuation/](http://blog.ezyang.com/2010/07/pipelines-and-continuation/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/07/pipelines-and-continuation/](http://blog.ezyang.com/2010/07/pipelines-and-continuation/)
 - en: '*Attention conservation notice.* Function pipelines offer an intuitive way
     to think about continuations: continuation-passing style merely *reifies* the
     pipeline. If you know continuations, this post probably won’t give you much; otherwise,
     I hope this is an interesting new way to look at them. Why do you care about continuations?
     They are frequently an extremely fast way to implement algorithms, since they
     are essentially pure (pipeline) flow control.'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: '*注意保守提醒。* 函数管道提供了一种直观的方法来思考延续：延续传递风格仅仅*实现*了管道。如果你了解延续，这篇文章可能不会给你太多新东西；否则，我希望这是一个有趣的新视角。为什么你要关心延续？它们通常是实现算法的极快方法，因为它们本质上是纯粹的（管道）流控制。'
 - en: 'In [Real World Haskell](http://book.realworldhaskell.org/read/io-case-study-a-library-for-searching-the-filesystem.html),
     an interesting pattern that recurs in functional programs that use function composition
     `(.)` is named: pipelining. It comes in several guises: Lispers may know it as
     the “how many closing parentheses did I need?” syndrome:'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 [Real World Haskell](http://book.realworldhaskell.org/read/io-case-study-a-library-for-searching-the-filesystem.html)
+    中，一种有趣的模式在使用函数组合 `(.)` 的函数式程序中反复出现，称为：管道。它有几种形式：Lisper 可能将其知为“我需要多少个闭括号？”综合症：
 - en: '[PRE0]'
+  id: totrans-8
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'Haskellers may see it in many forms: the parenthesized:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: Haskeller 可以看到它以多种形式出现：带括号的形式：
 - en: '[PRE1]'
+  id: totrans-10
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'or the march of dollar signs:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 或者是 `$` 符号的行军：
 - en: '[PRE2]'
+  id: totrans-12
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'or perhaps the higher-order composition operator (as is suggested good style
     by several denizens of `#haskell`):'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 或者更高阶的组合操作符（正如几位 `#haskell` 的居民建议的良好风格）：
 - en: '[PRE3]'
+  id: totrans-14
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'There is something lexically interesting about this final form: the `$` has
     divided it into two tokens, a function and an input argument. I can copy paste
     the left side and insert it into another pipeline effortlessly (compare with the
     parentheses, where after the paste occurs I have to manually insert the missing
     closing parentheses). The function is also a first class value, and I can write
     it in point-free style and assign it to a variable.'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种最终形式在词法上有一些有趣之处：`$`符号将其分为两个标记，一个是函数，一个是输入参数。我可以轻松地复制左侧并将其插入到另一个管道中（与括号相比，插入后我必须手动插入缺失的右括号）。这个函数也是一流的值，我可以以点无关的风格编写它并将其赋给一个变量。
 - en: Of course, if I want to move it around, I have to cut and paste it. If I want
     to split it up into little parts, I have to pull a part the dots with my keyboard.
     If I want to use one pipeline in one situation, and another pipeline in a different
     one, I’d have to decide which situation I was in at the time of writing the program.
     Wouldn’t it be nice if a program could do it for me at runtime? *Wink.*
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 当然，如果我想要移动它，我必须剪切和粘贴它。如果我想把它分成几个小部分，我必须用键盘拉开点。如果我想在一个情况中使用一个管道，在另一个情况中使用另一个管道，我必须决定在编写程序时处于哪种情况下。如果一个程序能在运行时为我做这件事，那岂不是很好？*眨眼*。
 - en: 'Consider the following pipeline in a Lisp-like language:'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 考虑一个类似 Lisp 的语言中的以下管道：
 - en: '[PRE4]'
+  id: totrans-18
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: 'When we refer to the “continuation” of `expr` there is frequently some attempt
     of visualizing the entire pipeline with `expr` removed, a hole in its place. This
     is the continuation:'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我们提到`expr`的“延续”时，通常会尝试将整个管道可视化，移除`expr`后，其位置留下一个空洞。这就是延续的概念：
 - en: '[PRE5]'
+  id: totrans-20
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 'As far as visuals go, it could be worse. Since a continuation is actually a
     function, to be truly accurate we should write something horribly uninstructive
     along these lines:'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 就视觉效果而言，它可能更糟。因为延续实际上是一个函数，为了真正准确，我们应该写一些极端无教育意义的东西，如下所示：
 - en: '[PRE6]'
+  id: totrans-22
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'But this is good: it precisely captures what the continuation is, and is amenable
     to a more concise form. Namely, this can be written in Haskell point-free as:'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 但这是好的：它准确地捕捉了延续的概念，并且适合更简洁的形式。也就是说，这可以在 Haskell 中以点无关的形式写成：
 - en: '[PRE7]'
+  id: totrans-24
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: So the continuation is just the pipeline to the left of the expression!
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以延续就是表达式左侧的管道！
 - en: '*A little more detail, a lot more plumbing.* There are two confounding factors
     in most treatments of continuations:'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: '*稍微详细一点，涉及更多的管道。* 在大多数延续的处理中有两个混合因素：'
 - en: They’re not written in a pure language, and a sequential series of actions is
     not immediately amenable to pipelining (although, with the power of monads, we
     can make it so), and
+  id: totrans-27
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 它们并不是用纯语言编写的，一系列连续的操作并不立即适合进行管道化（尽管通过monad的力量，我们可以这样做），而且
 - en: 'The examples I have given still involve copy-paste: by copy-pasting, I have
     glossed over some details. How does the program know that the current continuation
     is `h . g . f`? In callCC, how does it know when the current continuation got
     called?'
+  id: totrans-28
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我所给出的例子仍然涉及复制粘贴：通过复制粘贴，我已经忽略了一些细节。程序如何知道当前continuation是`h . g . f`？在callCC中，它如何知道当前continuation何时被调用？
 - en: 'For reference, here is an implementation of the `Cont` monad:'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 供参考，这里是`Cont`单子的一个实现：
 - en: '[PRE8]'
+  id: totrans-30
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: 'Where’d my nice pipelines go? I see a lot of lambdas... perhaps the `Functor`
     instance will give more clues:'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 我的好管道去哪儿了？我看到了很多lambda函数...也许`Functor`实例会提供更多线索：
 - en: '[PRE9]'
+  id: totrans-32
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: 'That little composition operator should stand out: it states the essence of
     this Functor definition. The rest is just plumbing. Namely, when we lift some
     regular function (or pipeline) into the continuation monad, we have added the
     ability to *compose arbitrary functions to the left end of it.* That is, `k .
     g . f`, where `k` is my added function (the continuation). In more detail, from:'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 那个小的组合操作符应该显眼：它阐述了这个Functor定义的本质。其余的只是管道工作。也就是说，当我们将一些常规函数（或管道）提升到continuation单子中时，我们增加了将任意函数*组合到其左端*的能力。也就是说，`k
+    . g . f`，其中`k`是我添加的函数（continuation）。更详细地说，从：
 - en: '[PRE10]'
+  id: totrans-34
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: 'to:'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 到：
 - en: '[PRE11]'
+  id: totrans-36
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: 'or, with points:'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 或者，用点：
 - en: '[PRE12]'
+  id: totrans-38
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: 'Now there is a puzzle: suppose I have a function `h`. If I were not in continuation
     land, I could combine that with `g . f` as `h . g . f`. But if both are in continuation
     land: `\k1 -> k1 . (g . f)` and `k2 -> k2 . h`, how do I compose them now?'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在有一个谜题：假设我有一个函数`h`。如果我不在continuation land中，我可以将它与`g . f`组合为`h . g . f`。但如果两者都在continuation
+    land中：`\k1 -> k1 . (g . f)`和`\k2 -> k2 . h`，现在我如何组合它们呢？
 - en: '`k1` is in the spot where I normally would have placed h, so a first would
     be to apply the first lifted function with the second lifted function as it’s
     argument:'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: '`k1`处于我通常会放置h的位置，所以第一步是将第一个提升的函数应用于第二个提升的函数作为它的参数：'
 - en: '[PRE13]'
+  id: totrans-41
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: 'That doesn’t quite do it; the lambda closes its parentheses too early. We wanted:'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 那不太对；lambda函数太早地关闭了它的括号。我们想要的是：
 - en: '[PRE14]'
+  id: totrans-43
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE14]'
 - en: 'With a little more head-scratching (left as an exercise to the reader), we
     find the correct form is:'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过稍微多想一下（留给读者作为练习），我们找到了正确的形式：
 - en: '[PRE15]'
+  id: totrans-45
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE15]'
 - en: This is the essential mind-twisting flavor of continuation passing style, and
     the reader will notice that we had to introduce two new lambdas to make the kit
     and kaboodle run (reminiscent of our Monad instance). This is the ugly/elegant
@@ -186,8 +281,11 @@
     of newtype wrapping and unwrapping, and the fact that this implements Kleisli
     arrow composition (`(a -> m b) -> (b -> m c) -> a -> m c`, not bind `m a -> (a
     -> m b) -> m b`. All left as an exercise to the reader! (Don’t you feel lucky.)
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是continuation passing style的基本扭曲思维风格，读者会注意到，我们必须引入两个新的lambda函数来使整个过程运行（类似于我们的Monad实例）。这是Continuation单子的丑陋/优雅内部。此后，还有newtype包装和解包的重要问题，以及这实现了Kleisli箭头组合（`(a
+    -> m b) -> (b -> m c) -> a -> m c`，而不是绑定`m a -> (a -> m b) -> m b`）。一切留给读者作为练习！（你觉得幸运吗。）
 - en: 'Our final topic is callCC, the traditional method of generating interesting
     instances of continuations. The essential character of plain old functions in
     the `Cont` monad are that they “don’t know where they are going.” Notice in all
@@ -198,44 +296,65 @@
     might write in the `Cont` monad is complicit in determining these implicit continuations,
     and when you run a continuation monad to get a result, you have to tell it where
     to go at the very end.'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的最后一个话题是callCC，生成有趣continuation实例的传统方法。在`Cont`单子中普通旧函数的基本特征是它们“不知道自己将去何处”。请注意，在我们所有的例子中，我们假设能够在左侧组合一个函数`k`，但实际上并没有指定那个函数是什么：它只是我们lambda中的一个参数。这引出了默认隐含continuation的概念：如果你不知道自己将去何处，这里有一个地方可以去。你可能会在`Cont`单子中编写的monadic代码，都在确定这些隐含continuation中发挥作用，当你运行continuation单子以获得结果时，你必须告诉它在最后要去何处。
 - en: 'callCC makes available a spicy function (the current continuation), which *knows
     where it’s going.* We still pass it a value for `k` (the implicit continuation),
     in case it was a plain old function, but the current continuation ignores it.
     Functions in the continuation monad no longer have to follow the prim and proper
     `\k -> k . f` recipe. callCC’s definition is as follows:'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: '`callCC`提供了一个“辣”的函数（当前延续），它*知道它要去哪里*。我们仍然向它传递一个值作为`k`（隐式延续），以防它是一个普通的旧函数，但当前延续会忽略它。延续单子中的函数不再必须遵循严谨的`\k
+    -> k . f`公式。`callCC`的定义如下：'
 - en: '[PRE16]'
+  id: totrans-49
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE16]'
 - en: The spicy function is `\x -> Cont (\_ -> k x)` (without the wrapping, it’s `\x
     _ -> k x`), which, as we can see, ignores the local current continuation (which
     corresponds to wherever this function was called) and uses `k` from the outer
     context instead. `k` was the current continuation at the time of `callCC`.
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个“辣”的函数是`\x -> Cont (\_ -> k x)`（去掉封装后是`\x _ -> k x`），正如我们所见，它忽略了局部当前延续（对应于调用此函数的位置），而是使用了外部上下文中的`k`。`k`是在`callCC`调用时的当前延续。
 - en: 'A parallel (though imperfect) can be made with pipelines: consider a pipeline
     where I would like the last function in the pipeline to be one type of function
     on a success, and another on failure:'
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 与管道类似（尽管不完美）：考虑一个管道，其中我希望管道中的最后一个函数在成功时是一种类型的函数，在失败时是另一种类型的函数：
 - en: '[PRE17]'
+  id: totrans-52
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE17]'
 - en: 'This pipeline has two outcomes, success:'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个管道有两种结果，成功：
 - en: '[PRE18]'
+  id: totrans-54
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE18]'
 - en: 'or failure:'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 或者失败：
 - en: '[PRE19]'
+  id: totrans-56
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE19]'
 - en: 'In each case, the other continuation is ignored. The key for `callCC` is that,
     while it’s obvious how to ignore explicit continuations, it requires a little
     bit of thought to figure out how to ignore an *implicit* continuation. But `callCC`
@@ -243,13 +362,17 @@
     monad (you just have to figure out how to get them there: returning it from the
     callCC or using the `ContT` transformer on a monad with state are all ways of
     doing so).'
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 在每种情况下，另一种延续被忽略。对于`callCC`来说，关键在于，虽然显而易见如何忽略显式延续，但需要一点思考才能弄清如何忽略*隐式*延续。但是`callCC`生成的延续正是做到了这一点，并且可以在延续单子中的任何地方使用（你只需想出如何将它们放在那里：从`callCC`返回它或在带有状态的单子上使用`ContT`变换器都是可行的方式）。
 - en: '*Note.* The Logic monad [uses success (SK) and failure (FK) continuations](http://hackage.haskell.org/packages/archive/logict/0.2.3/doc/html/src/Control-Monad-Logic.html)
     without the `Cont` monad to implement backtracking search, demonstrating that
     continuation passing style can exist without the `Cont` monad, and can frequently
     be clearer that way if you derive no benefits from having a default implicit continuation.
     It is no coincidence that `Cont` and `callCC` are particularly well suited for
     escape operations.'
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: '*注意*。逻辑单子[使用成功（SK）和失败（FK）延续](http://hackage.haskell.org/packages/archive/logict/0.2.3/doc/html/src/Control-Monad-Logic.html)，而不使用`Cont`单子来实现回溯搜索，这表明延续传递风格可以在没有`Cont`单子的情况下存在，并且如果从默认隐式延续中不获益，则通常更清晰。`Cont`和`callCC`特别适合逃逸操作，这并非巧合。'

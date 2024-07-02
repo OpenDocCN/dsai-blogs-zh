@@ -1,57 +1,83 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:16'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:16'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Two bugs in the borrow checker every Rust developer should know about : ezyang’s
     blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Rust 开发者都应该了解的借用检查器中的两个 bug：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2013/12/two-bugs-in-the-borrow-checker-every-rust-developer-should-know-about/](http://blog.ezyang.com/2013/12/two-bugs-in-the-borrow-checker-every-rust-developer-should-know-about/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2013/12/two-bugs-in-the-borrow-checker-every-rust-developer-should-know-about/](http://blog.ezyang.com/2013/12/two-bugs-in-the-borrow-checker-every-rust-developer-should-know-about/)
 - en: If that’s the case, you may have run into one of the two (in)famous bugs in
     the borrow-checker. In this post, I want to describe these two bugs, give situations
     where they show up and describe some workarounds. This is the kind of post which
     I hope becomes obsolete quickly, but the fixes for them are pretty nontrivial,
     and you are inevitably going to run into these bugs if you try to program in Rust
     today.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果是这样的话，你可能已经遇到了借用检查器中两个臭名昭著的 bug 之一。在这篇文章中，我想描述这两个 bug，给出它们可能出现的情况，并描述一些解决方法。希望这类文章很快就会过时，但它们的修复方法相当复杂，如果你今天尝试在
+    Rust 中编程，不可避免地会遇到这些 bug。
 - en: Mutable borrows are too eager (#6268)
+  id: totrans-7
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 可变借用过于急切（#6268）
 - en: '*Summary.* When you use `&mut` (either explicitly or implicitly), Rust immediately
     treats the lvalue as borrowed and imposes its restrictions (e.g. the lvalue can’t
     be borrowed again). However, in many cases, the borrowed pointer is not used until
     later, so imposing the restrictions immediately results in spurious errors. This
     situation is most likely to occur when there is an *implicit* use of `&mut`. ([Bug
     #6268](https://github.com/mozilla/rust/issues/6268))'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: '*总结。* 当你使用 `&mut`（无论是显式还是隐式）时，Rust 会立即将 lvalue 视为借用，并强加其限制（例如，lvalue 不能再次借用）。然而，在许多情况下，借用指针直到后来才会被使用，因此立即强加限制可能会导致错误。当存在
+    *隐式* 使用 `&mut` 时，这种情况最有可能发生。（[Bug #6268](https://github.com/mozilla/rust/issues/6268)）'
 - en: '*Symptoms.* You are getting the error “cannot borrow `foo` as immutable because
     it is also borrowed as mutable”, but the reported second borrow is an object dispatching
     a method call, or doesn’t seem like it should have been borrowed at the time the
     flagged borrow occured.'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: '*症状。* 你会收到错误消息“因为它也作为不可变借用，所以无法借用 `foo`”，但报告的第二次借用是对象调度方法调用，或者在标记的借用发生时看起来不应该被借用。'
 - en: '*Examples.* The original bug report describes the situation for nested method
     calls, where the outer method call has `&mut self` in its signature:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: '*示例。* 原始的 bug 报告描述了嵌套方法调用的情况，其中外部方法调用在其签名中有 `&mut self`：'
 - en: '[PRE0]'
+  id: totrans-11
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'This code would like to retrieve the value at key `1` and store it in key `2`.
     Why does it fail? Consider the signature `fn insert(&mut self, key: K, value:
     V) -> bool`: the `insert` method invocation immediately takes out a `&mut` borrow
@@ -59,71 +85,106 @@
     invocation, the order becomes clear: `HashMap::insert(&mut map, 2, *map.get(&1))`
     (NB: this syntax is not implemented yet). Because Rust evaluates arguments left
     to right, this is equivalent to:'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: '这段代码希望获取键为 `1` 的值并存储在键为 `2` 的位置。为什么会失败呢？考虑签名 `fn insert(&mut self, key: K,
+    value: V) -> bool`：在尝试评估其参数之前，`insert` 方法调用会立即对 `map` 获取一个 `&mut` 借用。如果我们展开方法调用，顺序就变得清楚了：`HashMap::insert(&mut
+    map, 2, *map.get(&1))`（注意：此语法尚未实现）。因为 Rust 会从左到右评估参数，这等效于：'
 - en: '[PRE1]'
+  id: totrans-13
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'meaning there is an active borrow by the time we call `map.get`. A minor rewrite
     resolves the problem:'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 意味着在调用 `map.get` 时存在活跃的借用。通过进行轻微的重写可以解决该问题：
 - en: '[PRE2]'
+  id: totrans-15
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'Sensitivity to order of arguments even when no method invocation is involved.
     Here is another example in which there is no method invocation:'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 敏感到参数顺序的问题，即使没有涉及方法调用。下面是另一个例子，其中没有方法调用：
 - en: '[PRE3]'
+  id: totrans-17
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: '*Discussion.* Fortunately, this bug is pretty easy to work around, if a little
     annoying: move all of your sub-expressions to let-bindings before the ill-fated
     mutable borrow (see examples for a worked example). Note: the borrows that occur
     in these sub-expressions really do have to be temporary; otherwise, you have a
     legitimate “cannot borrow mutable twice” error on your hands.'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: '*讨论。* 幸运的是，这个 bug 很容易解决，虽然有点恼人：在不幸的可变借用之前将所有子表达式移动到 let 绑定中（请参见示例以获取详细操作）。注意：这些子表达式中发生的借用确实必须是临时的；否则，你会遇到合法的“无法两次借用可变”的错误。'
 - en: Borrow scopes should not always be lexical (#6393)
+  id: totrans-19
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 借用范围不应总是按词法作用域处理（#6393）
 - en: '*Summary.* When you borrow a pointer, Rust assigns it a lexical scope that
     constitutes its lifetime. This scope can be as small as a single statement, or
     as big as an entire function body. However, Rust is unable to calculate lifetimes
     that are not lexical, e.g. a borrowed pointer is only live until halfway through
     a function. As a result, borrows may live longer than users might expect, causing
     the borrow checker to reject some statements. ([Bug #6393](https://github.com/mozilla/rust/issues/6393))'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: '*摘要.* 当您借用一个指针时，Rust为其分配一个构成其生命周期的词法范围。这个范围可以小到一个语句，也可以大到整个函数体。然而，Rust无法计算非词法的生命周期，例如，一个借用的指针仅在函数的一半之前有效。因此，借用可能比用户预期的时间更长，导致借用检查器拒绝某些语句。([Bug
+    #6393](https://github.com/mozilla/rust/issues/6393))'
 - en: '*Symptoms.* You are getting a “cannot borrow foo as immutable/mutable because
     it is also borrowed as immutable/mutable”, but you think the previous borrow should
     have already expired.'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: '*症状.* 您收到“因为它也作为不可变/可变的借用而无法将foo借用为不可变/可变”的错误，但您认为先前的借用应该已经过期了。'
 - en: '*Examples.* This problem shows up in a variety of situations. The very simplest
     example which tickles this bug can be seen here:'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: '*例子.* 这个问题在各种情况下都会出现。引发此错误的最简单的示例如下所示：'
 - en: '[PRE4]'
+  id: totrans-23
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: 'Clearly `y` is dead after `*y = 1`, but the borrow checker can’t see that.
     Fortunately, in this case it is very easy to add a new lexical scope to solve
     the problem:'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 显然，在`*y = 1`之后，`y`已经无效了，但是借用检查器无法看到这一点。幸运的是，在这种情况下，很容易添加一个新的词法范围来解决这个问题：
 - en: '[PRE5]'
+  id: totrans-25
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 'So, when does this actually become a problem? The usual culprit is `match`
     statements. Here is some common code involving maps that you might want to write:'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 那么，这实际上何时成为问题呢？通常的罪魁祸首是`match`语句。这里是涉及映射的一些常见代码，您可能希望编写：
 - en: '[PRE6]'
+  id: totrans-27
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: '`table` is a map of integer keys to vectors. The code performs an insert at
     `key`: if the map has no entry, then we create a new singleton vector and insert
     it in that location; otherwise, it just pushes the value `1` onto the existing
@@ -135,16 +196,22 @@
     Unfortunately, it’s not possible to insert a new lexical scope, as was possible
     in the previous example. (At press time, I wasn’t able to find a small example
     that only used `if`.)'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: '`table`是整数键到向量的映射。代码在`key`处进行插入：如果映射中没有条目，则创建一个新的单元素向量并将其插入该位置；否则，只需将值`1`推送到现有向量中。为什么`table`在`None`分支中被借用？直觉上，对于`table.find_mut`的借用应该是无效的，因为我们不再使用任何结果；然而对于Rust来说，它只能将借用指针分配给整个`match`语句的词法范围，因为借用指针在`Some`分支中继续使用（请注意，如果删除`Some`分支，则此借用检查）。不幸的是，无法像前面的示例那样插入新的词法范围。（在发布时，我找不到仅使用`if`的小示例。）'
 - en: 'Sometimes, the *lifetime* associated with a variable can force it to be assigned
     to a lexical scope that is larger than you would expect. [Issue #9113](https://github.com/mozilla/rust/issues/9113)
     offers a good example of this (code excerpted below):'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: '有时，与变量相关的*生命周期*可能会强制将其分配给比您预期的更大的词法范围。[Issue #9113](https://github.com/mozilla/rust/issues/9113)提供了一个很好的例子（以下是代码摘录）：'
 - en: '[PRE7]'
+  id: totrans-30
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: 'This code is attempting to perform a database lookup; it first consults the
     cache and returns a cached entry if available. Otherwise, it looks for the value
     in the database, caching the value in the process. Ordinarily, you would expect
@@ -153,30 +220,42 @@
     of `data` to be `''a`, which encompasses the entire function body. The borrow
     checker then concludes that there is a borrow everywhere in the function, even
     though the function immediately returns if it takes out this borrow.'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 这段代码试图执行数据库查找；它首先查看缓存并返回缓存的条目（如果有）。否则，它在数据库中查找该值，并在此过程中缓存该值。通常情况下，您希望在第一个匹配中对`self.cache`的借用仅扩展到第一个表达式。然而，`return`语句却对此产生了影响：它强制`data`的生命周期为`'a`，包含整个函数体。借用检查器因此得出结论，在函数的任何地方都存在借用，即使函数在获取此借用后立即返回。
 - en: '*Discussion.* The workaround depends on the nature of the scope that is causing
     trouble. When `match` is involved, you can usually arrange for the misbehaving
     borrow to be performed outside of the match statement, in a new, non-overlapping
     lexical scope. This is easy when the relevant branch does not rely on any variables
     from the pattern-match by using short-circuiting control operators:'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: '*讨论.* 解决方法取决于导致问题的范围的性质。当涉及`match`时，通常可以安排执行不良借用操作，该操作位于`match`语句之外，位于一个新的、非重叠的词法范围内。当相关分支不依赖于模式匹配中的任何变量时，可以使用短路控制运算符：'
 - en: '[PRE8]'
+  id: totrans-33
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: 'Alternately, instead of directly returning, the match can assign a boolean
     to indicate whether or not the None-case should be run:'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 或者，与其直接返回，`match`语句可以分配一个布尔值，以指示是否应运行`None`情况：
 - en: '[PRE9]'
+  id: totrans-35
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: The boolean can be elaborated into an `enum` that holds any non-references from
     the pattern-match you might need. Note that this will not work for borrowed references;
     but in that case, the borrow truly was still live!
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 可以将布尔值详细说明为一个`enum`，其中包含可能需要的模式匹配中的任何非引用。请注意，对于借用引用，这种方法不起作用；但在这种情况下，借用确实仍然活跃！
 - en: 'It is a bit more difficult to workaround problems regarding lifetimes, since
     there is nowhere in the function the pointer is not “borrowed”. One trick which
     can work in some situations is to convert the function to continuation passing
@@ -184,11 +263,15 @@
     which gets invoked with the function. [pnkfelix](https://github.com/mozilla/rust/issues/9113#issuecomment-24407530)
     describes how you might go about fixing the third example. This removes the lifetime
     constraint on the variable and resolves the problem.'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 关于生命周期问题的解决方法要困难一些，因为在函数中没有指针不“被借用”的地方。在某些情况下可以起作用的一个技巧是将函数转换为延续传递风格：即，不是返回借用的指针，而是接受一个函数参数，并在函数中调用它。[pnkfelix](https://github.com/mozilla/rust/issues/9113#issuecomment-24407530)描述了如何修复第三个例子。这消除了变量的生命周期约束并解决了问题。
 - en: The lexical scope assigned to a borrow can be quite sensitive to code pertubation,
     since removing a use of a borrow can result in Rust assigning a (much) smaller
     lexical scope to the borrow, which can eliminate the error. Sometimes, you can
     avoid the problem altogether by just avoiding a borrow.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 分配给借用的词法范围可能对代码扰动非常敏感，因为删除对借用的使用可能会导致Rust分配（更）小的词法范围给借用，这可能会消除错误。有时，可以通过避免借用来完全避免问题。

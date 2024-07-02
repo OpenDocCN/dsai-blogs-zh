@@ -1,41 +1,59 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:30'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:30'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'An Interactive Tutorial of the Sequent Calculus : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Sequent Calculus交互式教程：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2012/05/an-interactive-tutorial-of-the-sequent-calculus/](http://blog.ezyang.com/2012/05/an-interactive-tutorial-of-the-sequent-calculus/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2012/05/an-interactive-tutorial-of-the-sequent-calculus/](http://blog.ezyang.com/2012/05/an-interactive-tutorial-of-the-sequent-calculus/)
 - en: An Interactive Tutorial of the Sequent Calculus
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Sequent Calculus交互式教程
 - en: 'You can view it here: [An Interactive Tutorial of the Sequent Calculus](http://logitext.ezyang.scripts.mit.edu/logitext.fcgi/tutorial).
     This is the "system in three languages" that I was referring to in [this blog
     post](http://blog.ezyang.com/2012/05/what-happens-when-you-mix-three-research-programming-languages-together/).
     You can also use the system in a more open ended fashion from [this page](http://logitext.ezyang.scripts.mit.edu/logitext.fcgi/main).
     Here''s the blurb:'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可以在这里查看：[Sequent Calculus交互式教程](http://logitext.ezyang.scripts.mit.edu/logitext.fcgi/tutorial)。这是我在[这篇博客文章](http://blog.ezyang.com/2012/05/what-happens-when-you-mix-three-research-programming-languages-together/)中提到的“三语系统”。你还可以从[这个页面](http://logitext.ezyang.scripts.mit.edu/logitext.fcgi/main)更加开放地使用这个系统。以下是简介：
 - en: '*This interactive tutorial will teach you how to use the sequent calculus,
     a simple set of rules with which you can use to show the truth of statements in
     first order logic. It is geared towards anyone with some background in writing
     software for computers, with knowledge of basic boolean logic.*'
+  id: totrans-8
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '*这个交互式教程将教你如何使用序推理，这是一组简单的规则，你可以用来展示一阶逻辑中陈述的真实性。它面向那些具有一些计算机软件编写背景和基本布尔逻辑知识的人。*'
 - en: 'Developing this system has been quite a fascinating foray into user interface
     and game design. While similar systems have been built in the past, my goal was
     a little different: I wanted something simple enough and accessible enough that
@@ -46,8 +64,10 @@
     thing. I must have incorporated dozens of comments from my many friends at MIT
     who put up with my repeated badgering about the system. The first version looked
     very different. I give my superlative thanks to my beta testers.'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 开发这个系统是一次非常迷人的探索，涉及用户界面和游戏设计。虽然过去已经构建了类似的系统，但我的目标有些不同：我希望它足够简单和易于访问，以至于任何对这个主题感兴趣的人都可以在一个小时内掌握它，并学到一些关于形式逻辑的有趣内容。我认为这个演示对于数学恐惧症来说可能不会特别成功，但也许对那些对这类事物有固有兴趣的人来说会更成功。我一定是在系统上烦了我的许多麻省理工学院的朋友，他们一直忍受着我对系统反复纠缠的评论。第一个版本看起来非常不同。我非常感谢我的测试用户们。
 - en: 'There is a lot of hubbub about the next generation of online teaching systems
     (edX), and this demo (because, really, that''s what it is) is intended to explore
     how to blur the line between textbooks and video games. It doesn''t really go
@@ -58,12 +78,16 @@
     are a lot of little touches which I think do enhance the experience. I am embarrassed
     to admit that there are some features which are not included because they were
     technically too annoying to implement.'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 下一代在线教学系统（edX）引起了很多关注，而这个演示（因为实际上就是这样）旨在探索如何模糊教科书和视频游戏之间的界限。但它确实没有走得太远：它仍然太像一本教科书，早期练习的创造性空间不够。我觉得我没有把一个逐步层层叠加概念的视频游戏的正确感觉。另一方面，我确实做了一些让文本可以快速浏览的工作，并且有很多小细节我认为增强了体验。我很尴尬地承认，有一些功能由于技术上的麻烦而没有包含在内。
 - en: If there is one important design principle behind this demo, it is that there
     is a difference between giving a person a map and letting a person wander around
     in a city for a few hours. But, fair reader, you probably don't have a few hours,
     and I am probably demanding too much of your attention. Nevertheless, forgive
     my impoliteness and please, [take it out for a spin.](http://logitext.ezyang.scripts.mit.edu/logitext.fcgi/tutorial)
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果这个演示背后有一个重要的设计原则，那就是给一个人一张地图和让一个人在城市中闲逛几个小时之间是有区别的。但是，亲爱的读者，你可能没有几个小时，我可能也要求你太多的注意力。尽管如此，请原谅我的无礼，还是，请[试一试吧。](http://logitext.ezyang.scripts.mit.edu/logitext.fcgi/tutorial)

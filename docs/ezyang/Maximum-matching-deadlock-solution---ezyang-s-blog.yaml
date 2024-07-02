@@ -1,48 +1,72 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:14'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:14'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Maximum matching deadlock solution : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 最大匹配死锁解决方案：ezyang’s 博客
 - en: 来源：[http://blog.ezyang.com/2010/07/maximum-matching-deadlock-solution/](http://blog.ezyang.com/2010/07/maximum-matching-deadlock-solution/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/07/maximum-matching-deadlock-solution/](http://blog.ezyang.com/2010/07/maximum-matching-deadlock-solution/)
 - en: Maximum matching deadlock solution
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 最大匹配死锁解决方案
 - en: '[Last Monday](http://blog.ezyang.com/2010/07/graphs-not-grids/), I presented
     a parallel algorithm for computing maximum weighted matching, and noted that on
     real hardware, a naive implementation would deadlock.'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '[上周一](http://blog.ezyang.com/2010/07/graphs-not-grids/)，我介绍了一种计算最大加权匹配的并行算法，并指出在实际硬件上，一个天真的实现会导致死锁。'
 - en: 'Several readers correctly identified that sorting the nodes on their most weighted
     vertex only once was insufficient: when a node becomes paired as is removed from
     the pool of unpaired nodes, it could drastically affect the sort. Keeping the
     nodes in a priority queue was suggested as an answer, which is certainly a good
     answer, though not the one that Feo ended up using.'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 有几位读者正确指出，仅对节点按其最加权顶点排序一次是不够的：当一个节点成对出现并从未成对节点池中移除时，它可能会显著影响排序。建议使用优先队列来解决这个问题，这当然是一个很好的答案，尽管不是
+    Feo 最终采用的答案。
 - en: '*Feo’s solution.* Assign every node an “is being processed bit.” When a node
     attempts to read its neighbor’s full/empty bit and finds the bit empty, check
     if the node is being processed. If it is not, atomically check and set the “is
     being processed bit” to 1 and process the node recursively. Fizzle threads that
     are scheduled but whose nodes are already being processed. The overhead is one
     bit per node.'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: '*Feo 的解决方案。* 为每个节点分配一个“正在处理位”。当一个节点试图读取其邻居的完整/空位并发现该位为空时，检查该节点是否正在被处理。如果没有，原子地将“正在处理位”设置为
+    1 并递归处理该节点。淘汰已计划但其节点已在处理中的线程。开销是每个节点一个位。'
 - en: I think this is a particularly elegant solution, because it shows how recursion
     lets work easily allocate itself to threads that would otherwise be idle.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 我认为这是一个特别优雅的解决方案，因为它展示了递归如何使工作能够轻松地分配给原本会处于空闲状态的线程。

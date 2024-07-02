@@ -1,23 +1,35 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:44'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:44'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Debugging compilers with optimization fuel : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用优化燃料调试编译器：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2011/06/debugging-compilers-with-optimization-fuel/](http://blog.ezyang.com/2011/06/debugging-compilers-with-optimization-fuel/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/06/debugging-compilers-with-optimization-fuel/](http://blog.ezyang.com/2011/06/debugging-compilers-with-optimization-fuel/)
 - en: Today I would like to describe how I pin down compiler bugs, specifically, bugs
     tickled by optimizations, using a neat feature that Hoopl has called *optimization
     fuel.* Unfortunately, this isn’t a particularly Googleable term, so hopefully
@@ -29,110 +41,168 @@
     it introduces the bug. We can then inspect the offending optimization and fix
     the bug. Optimization fuel is a feature of the new code generator, and is only
     available if you pass `-fuse-new-codegen` to GHC.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 今天我想描述一下我如何精确定位编译器错误，具体来说，是被优化触发的错误，使用了一个叫做*优化燃料*的巧妙功能，这个功能是由Hoopl引入的。不幸的是，这不是一个特别容易在Google上找到的术语，所以希望这篇文章也能帮助到一些人。优化燃料最初是由David
+    Whalley在1994年的一篇论文*自动隔离编译器错误*中提出的。基本思想是编译器执行的所有优化可以被限制（例如通过限制燃料），所以当我们怀疑优化器行为异常时，我们进行二分搜索，找到在引入错误之前能够给予编译器的最大燃料量。然后我们可以检查有问题的优化并修复错误。优化燃料是新代码生成器的一个特性，只有当你向GHC传递`-fuse-new-codegen`参数时才可用。
 - en: The bug
+  id: totrans-7
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 缺陷
 - en: 'The bug shows up when I attempt to build GHC itself with the new code generator.
     Building GHC is a great way to ferret out bugs, since it has so much code in it,
     it manages to cover a lot of cases:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我尝试使用新代码生成器构建GHC本身时，bug就出现了。构建GHC是发现bug的一个好方法，因为它有这么多代码，它成功覆盖了很多情况：
 - en: '[PRE0]'
+  id: totrans-9
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'We quickly grep the codebase to find the relevant error, which is in `compiler/nativeGen/RegAlloc/Linear/JoinToTargets.hs`:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们迅速地在代码库中使用grep命令来找到相关错误，它位于`compiler/nativeGen/RegAlloc/Linear/JoinToTargets.hs`文件中：
 - en: '[PRE1]'
+  id: totrans-11
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: But the source code doesn’t particularly suggest what the problem might be.
     Time to start using optimization fuel!
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 但是源代码并没有特别指出问题可能在哪里。现在是开始使用优化燃料的时候了！
 - en: Binary search
+  id: totrans-13
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 二分搜索
 - en: 'We can modify the amount of optimization fuel GHC has, for running optimizations,
     by changing the value of `-dopt-fuel`. The first thing we do if see the bug is
     present with zero optimization fuel:'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以通过改变`-dopt-fuel`的值来修改GHC用于运行优化的优化燃料数量。如果我们发现bug在没有优化燃料的情况下出现，我们首先要做的是：
 - en: '[PRE2]'
+  id: totrans-15
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: Great, it worked! We pick some large number to start our binary search at (and
     pass `-fforce-recomp`, so GHC actually compiles the program.)
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 太棒了，成功了！我们选择一个较大的数字作为我们二分搜索的起点（并传递`-fforce-recomp`，这样GHC实际上会编译程序）。
 - en: '[PRE3]'
+  id: totrans-17
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: I then binary search (test 500, if that fails test 750, etc), until I find the
     point at which adding one to the fuel causes the failure.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后我进行二分搜索（测试500，如果失败则测试750等），直到找到添加一个燃料单元导致失败的点。
 - en: '[PRE4]'
+  id: totrans-19
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: Viewing the culprit
+  id: totrans-20
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 查看罪魁祸首
 - en: 'How do we convince GHC to tell us what optimization it did with the 710st bit
     of fuel? My favorite method is to dump out the optimized C-- from both runs, and
     then do a diff. We can dump the C-- to a file using `-ddump-opt-cmm -ddump-to-file`,
     and then diff reveals:'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 如何说服GHC告诉我们它在第710个燃料单位时做了什么优化呢？我最喜欢的方法是从两次运行中输出优化后的C--代码，然后进行比较。我们可以使用`-ddump-opt-cmm
+    -ddump-to-file`将C--代码输出到文件，然后进行比较：
 - en: '[PRE5]'
+  id: totrans-22
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 'The optimization is deleting an assignment. Is this valid? Here is the full
     code, with some annotations:'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 优化正在删除一个赋值。这有效吗？这是完整的代码，带有一些注释：
 - en: '[PRE6]'
+  id: totrans-24
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'Seems not: the variable is used in `MO_S_Rem_W32`: that’s no good. We conclude
     that the bug is in an optimization pass, and it is not the case that the register
     allocator failed to handle a case that our optimization is now tickling.'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 似乎不是：变量在`MO_S_Rem_W32`中被使用：这不好。我们得出结论，bug在一个优化过程中，并且不是寄存器分配器未能处理我们的优化现在正在触发的情况。
 - en: Fixing the bug
+  id: totrans-26
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 修复bug
 - en: 'With this information, we can also extract the program fragment that caused
     this bug:'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 有了这些信息，我们还可以提取导致此bug的程序片段：
 - en: '[PRE7]'
+  id: totrans-28
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: 'We can also see how our pipeline is processing the program, and observe precisely
     where in the process the bad optimization was made:'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还可以看到我们的流水线如何处理程序，并准确观察在过程中坏优化发生的确切位置：
 - en: '[PRE8]'
+  id: totrans-30
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: 'Since this is a spurious instance of code removal, we look for all mentions
     of `emptyGraph` in the rewrite assignments optimization pass:'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于这是代码移除的一个虚假实例，我们在重写赋值优化步骤中寻找所有对`emptyGraph`的提及：
 - en: '[PRE9]'
+  id: totrans-32
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: This looks like it should be an unobjectionable case of dead assignment elimination
     coupled with liveness analysis, but for some reason, the backwards facts are not
     being propagated properly. In fact, the problem is that I attempted to optimize
     the Hoopl dataflow function, and got it wrong. (Fixpoint analysis is tricky!)
     After reverting my changes, the unsound optimization goes away. *Phew.*
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 看起来这应该是无可非议的死赋值消除案例，结合存活性分析，但出于某种原因，向后事实未能正确传播。事实上，问题在于我试图优化Hoopl数据流函数，结果搞错了。（不动点分析很棘手！）在恢复我的更改后，不合理的优化问题消失了。*呼~*

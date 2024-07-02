@@ -1,33 +1,51 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 分类：未分类
 - en: 'date: 2024-07-01 18:17:39'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024年7月1日18:17:39
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Transparent xmobar : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 透明的xmobar：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2011/11/transparent-xmobar/](http://blog.ezyang.com/2011/11/transparent-xmobar/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/11/transparent-xmobar/](http://blog.ezyang.com/2011/11/transparent-xmobar/)
 - en: Transparent xmobar
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 透明的xmobar
 - en: 'Things I should be working on: *graduate school personal statements.*'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 我应该在做的事情：*研究生院个人陈述。*
 - en: 'What I actually spent the last five hours working on: *transparent xmobar.*'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 我过去五个小时实际上在做的事情：*透明的xmobar。*
 - en: It uses the horrible “grab Pixmap from root X window” hack. You can grab the
     [patch here](https://github.com/ezyang/xmobar/) but I haven’t put in enough effort
     to actually make this a configurable option; if you just compile that branch,
@@ -35,18 +53,26 @@
     needs a bit of work to generalize over different tints properly; suggestions solicted!)
     Maybe someone else will cook up a more polished patch. (Someone should also drum
     up a more complete set of XRender bindings!)
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 它使用了可怕的“从根X窗口获取像素图”的hack。你可以在这里[获取补丁](https://github.com/ezyang/xmobar/)，但我还没有投入足够的精力来使其成为一个可配置的选项；如果你只是编译了那个分支，你会得到一个alpha值为100/255、着色为黑色的xmobar。（该算法需要一些工作来正确地泛化到不同的着色；欢迎提出建议！）也许其他人会提供一个更完善的补丁。（也应该鼓动更完整的XRender绑定集！）
 - en: This works rather nicely with trayer, which support near identical tint and
     transparency behavior. Trayer also is nice on Oneiric, because it sizes the new
     battery icon sensibly, whereas stalonetray doesn’t. If you’re wondering why the
     fonts look antialiased, that’s because I [compiled with XFT support](http://projects.haskell.org/xmobar/#optional-features).
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 这在与支持几乎相同的着色和透明行为的trayer非常配合得不错。Trayer在Oneiric上也很好，因为它合理地调整了新的电池图标的大小，而stalonetray则没有。如果你想知道为什么字体看起来是抗锯齿的，那是因为我[编译时启用了XFT支持](http://projects.haskell.org/xmobar/#optional-features)。
 - en: (And yes, apparently I have 101% battery capacity. Go me!)
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: （而且是的，显然我的电池容量是101%。加油！）
 - en: '*Update.* Feature has been prettified and made configurable. Adjust `alpha`
     in your config file: 0 is transparent, 255 is opaque. I’ve submitted a pull request.'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: '*更新。* 功能已经美化并且可以配置。在你的配置文件中调整`alpha`值：0表示完全透明，255表示不透明。我已经提交了一个拉取请求。'

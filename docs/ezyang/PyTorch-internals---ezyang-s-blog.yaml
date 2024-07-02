@@ -1,30 +1,46 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category:   分类：未分类'
 - en: 'date: 2024-07-01 18:16:52'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:16:52
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'PyTorch internals : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: PyTorch 内部：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2019/05/pytorch-internals/](http://blog.ezyang.com/2019/05/pytorch-internals/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2019/05/pytorch-internals/](http://blog.ezyang.com/2019/05/pytorch-internals/)
 - en: This post is a long form essay version of a talk about PyTorch internals, that
     I gave at the PyTorch NYC meetup on May 14, 2019.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 这篇文章是我在2019年5月14日PyTorch NYC meetup上关于PyTorch内部的讲座的长篇论文版本。
 - en: Hi everyone! Today I want to talk about the internals of [PyTorch](https://pytorch.org/).
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 大家好！今天我想谈谈[PyTorch](https://pytorch.org/)的内部。
 - en: 'This talk is for those of you who have used PyTorch, and thought to yourself,
     "It would be great if I could contribute to PyTorch," but were scared by PyTorch''s
     behemoth of a C++ codebase. I''m not going to lie: the PyTorch codebase can be
@@ -34,8 +50,10 @@
     your way around the codebase. I''m going to assume that you''ve written some PyTorch
     before, but haven''t necessarily delved deeper into how a machine learning library
     is written.'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个讲座是为了那些使用过PyTorch的人，曾经想过，“如果我能为PyTorch做出贡献就好了”，但又被PyTorch庞大的C++代码库吓到的人。我不骗你：PyTorch的代码库有时候确实会让人感到有些压倒性。这次讲座的目的是给你一张地图：告诉你一个“支持自动求导的张量库”的基本概念结构，并给你一些在代码库中寻找方向的工具和技巧。我假设你之前写过一些PyTorch的代码，但不一定深入了解机器学习库是如何编写的。
 - en: 'The talk is in two parts: in the first part, I''m going to first introduce
     you to the conceptual universe of a tensor library. I''ll start by talking about
     the tensor data type you know and love, and give a more detailed discussion about
@@ -46,30 +64,41 @@
     think about extensions to the tensor class. In the live talk at PyTorch NYC, I
     skipped the slides about autograd, but I''ll talk a little bit about them in these
     notes as well.'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 讲座分为两部分：第一部分，我将首先向你介绍张量库的概念宇宙。我将从谈论你所熟知和喜爱的张量数据类型开始，更详细地讨论这个数据类型到底提供了什么，这将引导我们更好地理解它在内部是如何实现的。如果你是PyTorch的高级用户，你会熟悉大部分内容。我们还将讨论“扩展点”的三位一体：布局、设备和数据类型（dtype），这些概念指导着我们如何思考张量类的扩展。在PyTorch
+    NYC的现场讲座中，我跳过了关于autograd的幻灯片，但我在这些笔记中也会稍微谈一下。
 - en: The second part grapples with the actual nitty gritty details involved with
     actually coding in PyTorch. I'll tell you how to cut your way through swaths of
     autograd code, what code actually matters and what is legacy, and also all of
     the cool tools that PyTorch gives you for writing kernels.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 第二部分将处理在PyTorch中编码时实际涉及的细节。我会告诉你如何穿越大量的autograd代码，什么代码是真正重要的，什么是遗留的，以及PyTorch为编写内核提供的所有酷工具。
 - en: '* * *'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'The tensor is the central data structure in PyTorch. You probably have a pretty
     good idea about what a tensor intuitively represents: its an n-dimensional data
     structure containing some sort of scalar type, e.g., floats, ints, et cetera.
     We can think of a tensor as consisting of some data, and then some metadata describing
     the size of the tensor, the type of the elements in contains (dtype), what device
     the tensor lives on (CPU memory? CUDA memory?)'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 张量是PyTorch中的核心数据结构。你可能对张量直观上代表的内容有一个很好的理解：它是一个n维数据结构，包含某种标量类型，例如浮点数、整数等。我们可以将张量看作是由一些数据和一些元数据组成的，元数据描述了张量的大小、包含元素的类型（dtype）、张量所在的设备（CPU内存？CUDA内存？）。
 - en: 'There''s also a little piece of metadata you might be less familiar with: the
     stride. Strides are actually one of the distinctive features of PyTorch, so it''s
     worth discussing them a little more.'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 还有一个你可能不太熟悉的小元数据：步幅。步幅实际上是PyTorch的一个显著特征，所以值得再多讨论一下。
 - en: A tensor is a mathematical concept. But to represent it on our computers, we
     have to define some sort of physical representation for them. The most common
     representation is to lay out each element of the tensor contiguously in memory
@@ -78,11 +107,16 @@
     32-bit integers, so you can see that each integer lies in a physical address,
     each offset four bytes from each other. To remember what the actual dimensions
     of the tensor are, we have to also record what the sizes are as extra metadata.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 张量是一个数学概念。但要在我们的计算机上表示它们，我们必须为它们定义某种物理表示。最常见的表示方法是在内存中连续地布置张量的每个元素（这就是连续这个术语的来源），按照上面所示，将每一行写入内存。在上面的示例中，我指定张量包含
+    32 位整数，因此您可以看到每个整数位于一个物理地址，每个偏移量相距四个字节。为了记住张量的实际维度，我们还必须记录额外的元数据来记录大小是多少。
 - en: So, what do strides have to do with this picture?
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 那么，步幅与这个图有什么关系？
 - en: 'Suppose that I want to access the element at position `tensor[1, 0]` in my
     logical representation. How do I translate this logical position into a location
     in physical memory? Strides tell me how to do this: to find out where any element
@@ -91,18 +125,24 @@
     the first dimension blue and the second dimension red, so you can follow the index
     and stride in the stride calculation. Doing this sum, I get two (zero-indexed),
     and indeed, the number three lives two below the beginning of the contiguous array.'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设我想要访问我的逻辑表示中位置 `tensor[1, 0]` 处的元素。如何将这个逻辑位置转换为物理内存中的位置？步幅告诉我如何做到这一点：为了找出张量中任意元素的位置，我将每个索引乘以该维度的相应步幅，然后将它们全部相加。在上面的图片中，我已经用蓝色标记了第一维度，用红色标记了第二维度，因此您可以按照步幅计算中的索引和步幅。通过这个求和，我得到了两个（从零开始计数），确实，数字三位于连续数组的起始位置以下两个位置。
 - en: (Later in the talk, I'll talk about TensorAccessor, a convenience class that
     handles the indexing calculation. When you use TensorAccessor, rather than raw
     pointers, this calculation is handled under the covers for you.)
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: （谈话后面，我会讲述 TensorAccessor，一个处理索引计算的便利类。当你使用 TensorAccessor 而不是原始指针时，这个计算会在幕后为你处理。）
 - en: 'Strides are the fundamental basis of how we provide views to PyTorch users.
     For example, suppose that I want to extract out a tensor that represents the second
     row of the tensor above:'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 步幅是我们向 PyTorch 用户提供视图的基础基础。例如，假设我想提取出表示上述张量第二行的张量：
 - en: 'Using advanced indexing support, I can just write `tensor[1, :]` to get this
     row. Here''s the important thing: when I do this, I don''t create a new tensor;
     instead, I just return a tensor which is a different view on the underlying data.
@@ -112,14 +152,20 @@
     saying that the data of this (logical) tensor lives two down from the top. (Every
     tensor records an offset, but most of the time it''s zero, and I''ll omit it from
     my diagrams when that''s the case.)'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用高级索引支持，我可以简单地写 `tensor[1, :]` 来获取这一行。这里的重要一点是：当我这样做时，我不会创建一个新的张量；相反，我只是返回一个在底层数据上的不同视图。这意味着，例如，如果我在该视图中编辑数据，它将反映在原始张量中。在这种情况下，看到如何做到这一点并不太难：三和四存储在连续的内存中，我们需要做的只是记录一个偏移量，指示这个（逻辑）张量的数据位于距离顶部两个位置。
+    （每个张量都记录一个偏移量，但大多数情况下是零，当情况如此时，我会从我的图表中省略它。）
 - en: 'Question from the talk: If I take a view on a tensor, how do I free the memory
     of the underlying tensor?'
+  id: totrans-20
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 在谈话中的问题：如果我对一个张量进行视图操作，如何释放底层张量的内存？
 - en: ''
+  id: totrans-21
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
@@ -128,12 +174,17 @@
     if you have written Java in the old days, taking substrings of strings has a similar
     problem, because by default no copy is made, so the substring retains the (possibly
     very large string). Apparently, they [fixed this in Java 7u6](https://stackoverflow.com/questions/14161050/java-string-substring-method-potential-memory-leak).'
+  id: totrans-22
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 答案：你必须复制视图，从而将其与原始物理内存断开连接。实际上，你没有太多其他选择。顺便说一句，如果你以前用过 Java，在旧版本中获取字符串的子串存在类似问题，因为默认情况下不会进行复制，因此子串会保留（可能非常大的字符串）。显然，他们在
+    [Java 7u6 中修复了这个问题](https://stackoverflow.com/questions/14161050/java-string-substring-method-potential-memory-leak)。
 - en: 'A more interesting case is if I want to take the first column:'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 更有趣的情况是，如果我想取第一列：
 - en: 'When we look at the physical memory, we see that the elements of the column
     are not contiguous: there''s a gap of one element between each one. Here, strides
     come to the rescue: instead of specifying a stride of one, we specify a stride
@@ -141,48 +192,64 @@
     (By the way, this is why it''s called a "stride": if we think of an index as walking
     across the layout, the stride says how many locations we stride forward every
     time we take a step.)'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我们查看物理内存时，我们会看到列的元素不是连续的：每个元素之间有一个间隔。在这里，步幅可以帮助解决问题：我们不再指定步幅为一，而是指定步幅为二，表示在一个元素和下一个元素之间，需要跳过两个插槽。（顺便说一句，这就是为什么称之为“步幅”的原因：如果我们将索引视为跨越布局，步幅指定每次迈出步伐时前进的位置数。）
 - en: The stride representation can actually let you represent all sorts of interesting
     views on tensors; if you want to play around with the possibilities, check out
     the [Stride Visualizer](https://ezyang.github.io/stride-visualizer/index.html).
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用步幅表示法实际上可以让您在张量上表示各种有趣的视图；如果您想尝试一下可能性，请查看[步幅可视化工具](https://ezyang.github.io/stride-visualizer/index.html)。
 - en: 'Let''s step back for a moment, and think about how we would actually implement
     this functionality (after all, this is an internals talk.) If we can have views
     on tensor, this means we have to decouple the notion of the tensor (the user-visible
     concept that you know and love), and the actual physical data that stores the
     data of the tensor (called storage):'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们退后一步，思考我们实际上如何实现这个功能（毕竟，这是一个内部讨论）。如果我们可以在张量上有视图，这意味着我们必须解耦张量的概念（用户可见的您所熟悉和喜爱的概念）和实际存储张量数据的物理数据（称为存储）：
 - en: There may be multiple tensors which share the same storage. Storage defines
     the dtype and physical size of the tensor, while each tensor records the sizes,
     strides and offset, defining the logical interpretation of the physical memory.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 可能有多个张量共享同一存储。存储定义了张量的数据类型和物理大小，而每个张量记录了大小、步幅和偏移，定义了对物理内存的逻辑解释。
 - en: One thing to realize is that there is always a pair of Tensor-Storage, even
     for "simple" cases where you don't really need a storage (e.g., you just allocated
     a contiguous tensor with `torch.zeros(2, 2)`).
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 有一件事需要意识到的是，即使在“简单”情况下也始终存在张量-存储的配对，即使您不真正需要存储（例如，只是用`torch.zeros(2, 2)`分配了一个连续张量）。
 - en: By the way, we're interested in making this picture not true; instead of having
     a separate concept of storage, just define a view to be a tensor that is backed
     by a base tensor. This is a little more complicated, but it has the benefit that
     contiguous tensors get a much more direct representation without the Storage indirection.
     A change like this would make PyTorch's internal representation a bit more like
     Numpy's.
+  id: totrans-29
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 顺便说一句，我们有兴趣让这个观点不再成立；而是不再有存储的单独概念，只需定义视图为由基本张量支持的张量。这有点复杂，但它的好处是连续张量可以更直接地表示，而不需要存储的间接性。这样的改变会使PyTorch的内部表示更像NumPy。
 - en: '* * *'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'We''ve talked quite a bit about the data layout of tensor (some might say,
     if you get the data representation right, everything else falls in place). But
     it''s also worth briefly talking about how operations on the tensor are implemented.
     At the very most abstract level, when you call `torch.mm`, two dispatches happen:'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们已经详细讨论了张量的数据布局（有些人可能会说，如果数据表示正确，一切都会就位）。但是简要谈谈如何实现张量上的操作也是值得的。在最抽象的层面上，当您调用`torch.mm`时，会发生两次分派：
 - en: 'The first dispatch is based on the device type and layout of a tensor: e.g.,
     whether or not it is a CPU tensor or a CUDA tensor (and also, e.g., whether or
     not it is a strided tensor or a sparse one). This is a dynamic dispatch: it''s
@@ -193,56 +260,74 @@
     kernels may live in separate libraries (e.g., `libcaffe2.so` versus `libcaffe2_gpu.so`),
     and so you have no choice: if you want to get into a library that you don''t have
     a direct dependency on, you have to dynamic dispatch your way there.'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 第一次分派基于张量的设备类型和布局：例如，它是CPU张量还是CUDA张量（以及例如它是步幅张量还是稀疏张量）。这是一个动态分派：它是一个虚函数调用（确切地说，这个虚函数调用发生在这次谈话的后半段）。这应该是有道理的，你需要在这里进行分派：CPU矩阵乘法的实现与CUDA实现有很大不同。它是一个*动态*分派，因为这些内核可能存在于不同的库中（例如`libcaffe2.so`与`libcaffe2_gpu.so`），因此你别无选择：如果你想进入一个你没有直接依赖的库，你必须通过动态分派的方式。
 - en: 'The second dispatch is a dispatch on the dtype in question. This dispatch is
     just a simple switch-statement for whatever dtypes a kernel chooses to support.
     Upon reflection, it should also make sense that we need to a dispatch here: the
     CPU code (or CUDA code, as it may) that implements multiplication on `float` is
     different from the code for `int`. It stands to reason you need separate kernels
     for each dtype.'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 第二次分派是对特定dtype的分派。这个分派只是一个简单的开关语句，用于支持内核选择的任何dtype。反思之后，这也应该是有道理的，我们需要在这里进行分派：实现在`float`上的CPU代码（或许CUDA代码也是如此）与在`int`上的代码是不同的。理所当然的是，你需要为每种dtype编写单独的内核。
 - en: This is probably the most important mental picture to have in your head, if
     you're trying to understand the way operators in PyTorch are invoked. We'll return
     to this picture when it's time to look more at code.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你试图理解PyTorch中操作符的调用方式，这可能是你头脑中最重要的思维模型。在查看代码时，我们将返回到这个思维模型。
 - en: '* * *'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: Since we have been talking about Tensor, I also want to take a little time to
     the world of tensor extensions. After all, there's more to life than dense, CPU
     float tensors. There's all sorts of interesting extensions going on, like XLA
     tensors, or quantized tensors, or MKL-DNN tensors, and one of the things we have
     to think about, as a tensor library, is how to accommodate these extensions.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 既然我们已经讨论了张量，我还想花点时间介绍张量扩展的世界。毕竟，生活不仅仅是关于稠密的CPU浮点张量。还有各种有趣的扩展，如XLA张量，量化张量，MKL-DNN张量，作为张量库的一部分，我们需要考虑如何适应这些扩展。
 - en: 'Our current model for extensions offers four extension points on tensors. First,
     there is the trinity three parameters which uniquely determine what a tensor is:'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们当前的扩展模型为张量提供了四个扩展点。首先，有三个参数的三位一体可以唯一确定张量是什么：
 - en: The **device**, the description of where the tensor's physical memory is actually
     stored, e.g., on a CPU, on an NVIDIA GPU (cuda), or perhaps on an AMD GPU (hip)
     or a TPU (xla). The distinguishing characteristic of a device is that it has its
     own allocator, that doesn't work with any other device.
+  id: totrans-38
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**设备**描述了张量物理内存实际存储位置，例如在CPU上，在NVIDIA GPU（cuda）上，或者可能在AMD GPU（hip）或TPU（xla）上。设备的显著特征是它有自己的分配器，不与任何其他设备兼容。'
 - en: The **layout**, which describes how we logically interpret this physical memory.
     The most common layout is a strided tensor, but sparse tensors have a different
     layout involving a pair of tensors, one for indices, and one for data; MKL-DNN
     tensors may have even more exotic layout, like blocked layout, which can't be
     represented using merely strides.
+  id: totrans-39
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**布局**描述了我们如何逻辑解释这个物理内存。最常见的布局是步幅张量，但稀疏张量有不同的布局，涉及一对张量，一个用于索引，一个用于数据；MKL-DNN张量可能有更奇特的布局，如块布局，仅用步幅无法表示。'
 - en: The **dtype**, which describes what it is that is actually stored in each element
     of the tensor. This could be floats or integers, or it could be, for example,
     quantized integers.
+  id: totrans-40
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**dtype**描述了张量每个元素实际存储的内容是什么。这可以是浮点数或整数，或者例如量化整数。'
 - en: If you want to add an extension to PyTorch tensors (by the way, if that's what
     you want to do, please talk to us! None of these things can be done out-of-tree
     at the moment), you should think about which of these parameters you would extend.
@@ -250,24 +335,32 @@
     can make. Now, not all of these combinations may actually have kernels (who's
     got kernels for sparse, quantized tensors on FPGA?) but in *principle* the combination
     could make sense, and thus we support expressing it, at the very least.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你想要对 PyTorch 张量进行扩展（顺便说一句，如果这正是你想做的，请与我们联系！目前这些事情都不能在树外完成），你应该考虑扩展这些参数中的哪一个。这些参数的笛卡尔积定义了你可以生成的所有可能的张量。现在，并非所有这些组合实际上都可能有核心（谁会为
+    FPGA 上的稀疏、量化张量编写核心呢？），但*原则上*这些组合可能是有意义的，因此我们支持表达它，至少。
 - en: There's one last way you can make an "extension" to Tensor functionality, and
     that's write a wrapper class around PyTorch tensors that implements your object
     type. This perhaps sounds obvious, but sometimes people reach for extending one
     of the three parameters when they should have just made a wrapper class instead.
     One notable merit of wrapper classes is they can be developed entirely out of
     tree.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 还有一种方法可以对 Tensor 功能进行“扩展”，那就是编写一个包装类，将你的对象类型实现在 PyTorch 张量周围。这听起来或许很明显，但有时人们在应该使用包装类而不是扩展这三个参数之一时，却会做出错误的选择。包装类的一个显著优点是它们可以完全在树外开发。
 - en: 'When should you write a tensor wrapper, versus extending PyTorch itself? The
     key test is whether or not you need to pass this tensor along during the autograd
     backwards pass. This test, for example, tells us that sparse tensor should be
     a true tensor extension, and not just a Python object that contains an indices
     and values tensor: when doing optimization on networks involving embeddings, we
     want the gradient generated by the embedding to be sparse.'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 你何时应该编写一个张量包装类，而不是直接扩展 PyTorch 本身？关键测试是你是否需要在自动梯度反向传播过程中传递这个张量。例如，这个测试告诉我们，稀疏张量应该是一个真正的张量扩展，而不仅仅是一个包含索引和值张量的
+    Python 对象：在涉及嵌入的网络优化时，我们希望由嵌入生成的梯度是稀疏的。
 - en: 'Our philosophy on extensions also has an impact of the data layout of tensor
     itself. One thing we really want out of our tensor struct is for it to have a
     fixed layout: we don''t want fundamental (and very frequently called) operations
@@ -278,30 +371,44 @@
     for strided tensors, but are *so* important that we''ve kept them in the main
     struct, and then a suffix of custom fields that can be done on a per-Tensor basis.
     Sparse tensors, for example, store their indices and values in this suffix.'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们对扩展的哲学也影响了张量本身的数据布局。我们真正希望我们的张量结构有一个固定的布局：我们不希望基本的（并且非常频繁调用的）操作像“张量的尺寸是多少？”需要虚拟分派。因此，当你查看张量的实际布局时（在[TensorImpl
+    结构](https://github.com/pytorch/pytorch/blob/master/c10/core/TensorImpl.h)中定义），我们看到的是所有“张量”样式的共同前缀，我们认为所有这些东西都普遍具有，加上一些只对分步张量真正适用的字段，但它们*如此*重要，我们已经将它们保留在主结构中，然后是可以在每个张量基础上自定义字段的后缀。例如，稀疏张量在这个后缀中存储它们的索引和值。
 - en: '* * *'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: I told you all about tensors, but if that was the only thing PyTorch provided,
     we'd basically just be a Numpy clone. The distinguishing characteristic of PyTorch
     when it was originally released was that it provided automatic differentiation
     on tensors (these days, we have other cool features like TorchScript; but back
     then, this was it!)
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们已经讨论了张量的所有内容，但如果这是 PyTorch 提供的唯一功能，那它基本上只是一个 Numpy 的克隆。PyTorch 最初发布时的显著特点是提供了张量的自动微分（如今，我们有其他很酷的功能，比如
+    TorchScript；但在当时，这就是它的全部！）
 - en: 'What does automatic differentiation do? It''s the machinery that''s responsible
     for taking a neural network:'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 自动微分的作用是什么？它是负责对神经网络进行梯度计算的机制：
 - en: '...and fill in the missing code that actually computes the gradients of your
     network:'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: '...并填写实际计算网络梯度的缺失代码：'
 - en: 'Take a moment to study this diagram. There''s a lot to unpack; here''s what
     to look at:'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 请花点时间研究这个图表。有很多需要解读的内容；以下是你需要关注的内容：
 - en: 'First, rest your eyes on the variables in red and blue. PyTorch implements
     [reverse-mode automatic differentiation](https://en.wikipedia.org/wiki/Automatic_differentiation#Reverse_accumulation),
     which means that we effectively walk the forward computations "backward" to compute
@@ -311,9 +418,11 @@
     compute `grad_next_h2`. Technically, these variables which we call `grad_` are
     not really gradients; they''re really Jacobians left-multiplied by a vector, but
     in PyTorch we just call them `grad` and mostly everyone knows what we mean.'
+  id: totrans-50
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 首先，把你的注意力放在红色和蓝色变量上。PyTorch 实现了[反向模式自动微分](https://en.wikipedia.org/wiki/Automatic_differentiation#Reverse_accumulation)，这意味着我们实际上是“反向”进行前向计算来计算梯度。如果你查看变量名，你会看到这一点：在红色部分的底部，我们计算了`loss`；然后，在程序的蓝色部分中，我们首先计算`grad_loss`。`loss`是从`next_h2`计算出来的，所以我们计算`grad_next_h2`。技术上讲，我们称之为`grad_`的这些变量并不是真正的梯度；它们实际上是雅可比矩阵左乘以一个向量，但在PyTorch中，我们只是称之为`grad`，大多数人都知道我们的意思。
 - en: 'If the structure of the code stays the same, the behavior doesn''t: each line
     from forwards is replaced with a different computation, that represents the derivative
     of the forward operation. For example, the `tanh` operation is translated into
@@ -321,77 +430,107 @@
     the left hand side of the diagram). The inputs and outputs of the forward and
     backward operations are swapped: if the forward operation produced `next_h2`,
     the backward operation takes `grad_next_h2` as an input.'
+  id: totrans-51
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 如果代码结构保持不变，行为则不同：从前向传递的每一行都被替换为代表前向操作导数的不同计算。例如，`tanh`操作被转换为`tanh_backward`操作（这两行通过图表左侧的灰色线连接）。前向和反向操作的输入和输出被交换：如果前向操作产生了`next_h2`，那么反向操作将以`grad_next_h2`作为输入。
 - en: The whole point of autograd is to do the computation that is described by this
     diagram, but without actually ever generating this source. PyTorch autograd doesn't
     do a source-to-source transformation (though PyTorch JIT does know how to do symbolic
     differentiation).
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 自动求导的整个目的是执行由此图表描述的计算，但实际上并不会生成此源代码。PyTorch的自动求导不进行源到源的转换（尽管PyTorch JIT确实知道如何进行符号微分）。
 - en: 'To do this, we need to store more metadata when we carry out operations on
     tensors. Let''s adjust our picture of the tensor data structure: now instead of
     just a tensor which points to a storage, we now have a variable which wraps this
     tensor, and also stores more information (AutogradMeta), which is needed for performing
     autograd when a user calls `loss.backward()` in their PyTorch script.'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了做到这一点，我们需要在对张量进行操作时存储更多元数据。让我们调整我们对张量数据结构的看法：现在不仅仅是一个指向存储的张量，我们现在有一个包装了这个张量的变量，并且还存储更多信息（AutogradMeta），这些信息在用户在他们的PyTorch脚本中调用`loss.backward()`时需要用来执行自动求导。
 - en: This is yet another slide which will hopefully be out of date in the near future.
     Will Feng is working on a [Variable-Tensor merge in C++](https://github.com/pytorch/pytorch/issues/13638),
     following a simple merge which happened to PyTorch's frontend interface.
+  id: totrans-54
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 这是另一张幻灯片，希望很快会过时。Will Feng正在处理一个[在C++中的变量张量合并](https://github.com/pytorch/pytorch/issues/13638)，跟随发生在PyTorch前端接口的简单合并。
 - en: 'We also have to update our picture about dispatch:'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们也必须更新我们关于调度的看法：
 - en: Before we dispatch to CPU or CUDA implementations, there is another dispatch
     on variables, which is responsible for unwrapping variables, calling the underlying
     implementation (in green), and then rewrapping the results into variables and
     recording the necessary autograd metadata for backwards.
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们调度到CPU或CUDA实现之前，还有一个关于变量的调度，负责展开变量，调用底层实现（以绿色表示），然后重新包装结果为变量，并记录必要的反向自动求导元数据。
 - en: Some implementations don't unwrap; they just call into other variable implementations.
     So you might spend a while in the Variable universe. However, once you unwrap
     and go into the non-Variable Tensor universe, that's it; you never go back to
     Variable (except by returning from your function.)
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 一些实现不进行展开；它们只是调用其他变量实现。因此，你可能会在变量的宇宙中花费一些时间。然而，一旦你展开并进入非变量张量的宇宙，那就是它；你永远不会回到变量（除非从函数返回）。
 - en: '* * *'
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: In my NY meetup talk, I skipped the following seven slides. I'm also going to
     delay writeup for them; you'll have to wait for the sequel for some text.
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我的纽约聚会演讲中，我跳过了以下七张幻灯片。我也将延迟为它们撰写文稿；你们得等到续集才能看到一些文字。
 - en: '* * *'
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: Enough about concepts, let's look at some code.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 关于概念的讨论就到此为止，让我们来看看一些代码。
 - en: 'PyTorch has a lot of folders, and there is a very detailed description of what
     they are in the [CONTRIBUTING](https://github.com/pytorch/pytorch/blob/master/CONTRIBUTING.md#codebase-structure)
     document, but really, there are only four directories you really need to know
     about:'
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: PyTorch 有很多文件夹，在 [CONTRIBUTING](https://github.com/pytorch/pytorch/blob/master/CONTRIBUTING.md#codebase-structure)
+    文档中对它们进行了详细描述，但实际上，你只需要了解四个目录：
 - en: 'First, `torch/` contains what you are most familiar with: the actual Python
     modules that you import and use. This stuff is Python code and easy to hack on
     (just make a change and see what happens). However, lurking not too deep below
     the surface is...'
+  id: totrans-63
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 首先，`torch/` 包含了你最熟悉的内容：你导入和使用的实际 Python 模块。这些都是 Python 代码，很容易进行修改和查看结果。然而，在表面之下并不太深的地方...
 - en: '`torch/csrc/`, the C++ code that implements what you might call the frontend
     of PyTorch. In more descriptive terms, it implements the binding code that translates
     between the Python and C++ universe, and also some pretty important pieces of
     PyTorch, like the autograd engine and the JIT compiler. It also contains the C++
     frontend code.'
+  id: totrans-64
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`torch/csrc/`，这是实现你可能称为 PyTorch 前端的 C++ 代码。更详细地说，它实现了在 Python 和 C++ 之间转换的绑定代码，以及
+    PyTorch 的一些重要组成部分，如自动求导引擎和 JIT 编译器。它还包含了 C++ 前端代码。'
 - en: '`aten/`, short for "A Tensor Library" (coined by Zachary DeVito), is a C++
     library that implements the operations of Tensors. If you''re looking for where
     some kernel code lives, chances are it''s in ATen. ATen itself bifurcates into
@@ -399,56 +538,81 @@
     implementations of operators, and the "legacy" operators (TH, THC, THNN, THCUNN),
     which are legacy, C implementations. The legacy operators are the bad part of
     town; try not to spend too much time there if you can.'
+  id: totrans-65
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`aten/`，简称为 "A Tensor Library"（由 Zachary DeVito 创造），是一个实现张量操作的 C++ 库。如果你在寻找某些核心代码所在地，很可能就在
+    ATen 中。ATen 本身分为两个操作符的区域：现代的 C++ 实现的 "native" 操作符，以及传统的 C 实现的 "legacy" 操作符（TH、THC、THNN、THCUNN）。传统操作符是糟糕的地方；如果可能的话，尽量不要花太多时间在那里。'
 - en: '`c10/`, which is a pun on Caffe2 and A"Ten" (get it? Caffe 10) contains the
     core abstractions of PyTorch, including the actual implementations of the Tensor
     and Storage data structures.'
+  id: totrans-66
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`c10/`，这是一个关于 Caffe2 和 A"Ten"（明白了吗？Caffe 10）的双关语，包含了 PyTorch 的核心抽象，包括 Tensor
+    和 Storage 数据结构的实际实现。'
 - en: That's a lot of places to look for code; we should probably simplify the directory
     structure, but that's how it is. If you're trying to work on operators, you'll
     spend most of your time in `aten`.
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 那里有很多地方可以寻找代码；我们可能应该简化目录结构，但目前情况就是这样。如果你想要处理运算符，你将大部分时间都花在 `aten` 目录下。
 - en: 'Let''s see how this separation of code breaks down in practice:'
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们看看这种代码分离在实践中是如何展开的：
 - en: 'When you call a function like `torch.add`, what actually happens? If you remember
     the discussion we had about dispatching, you already have the basic picture in
     your head:'
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 当你调用像 `torch.add` 这样的函数时，实际上发生了什么？如果你记得我们讨论过的分发方式，你已经在脑海中有了基本的概念：
 - en: We have to translate from Python realm to the C++ realm (Python argument parsing)
+  id: totrans-70
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 我们需要从 Python 领域翻译到 C++ 领域（Python 参数解析）。
 - en: We handle **variable** dispatch (VariableType--Type, by the way, doesn't really
     have anything to do programming language types, and is just a gadget for doing
     dispatch.)
+  id: totrans-71
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 我们处理**变量**分发（VariableType--顺便说一句，Type 实际上与编程语言类型没有关系，只是用于执行分发的一个工具）。
 - en: We handle **device type / layout** dispatch (Type)
+  id: totrans-72
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 我们处理**设备类型 / 布局**分发（Type）。
 - en: We have the actual kernel, which is either a modern native function, or a legacy
     TH function.
+  id: totrans-73
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 我们有实际的核心代码，它可以是现代的本地函数，也可以是传统的 TH 函数。
 - en: Each of these steps corresponds concretely to some code. Let's cut our way through
     the jungle.
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些步骤中的每一步都对应于一些具体的代码。让我们穿越这片丛林。
 - en: Our initial landing point in the C++ code is the C implementation of a Python
     function, which we've exposed to the Python side as something like `torch._C.VariableFunctions.add`.
     `THPVariable_add` is the implementation of one such implementation.
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们在 C++ 代码中的初始着陆点是 Python 函数的 C 实现，我们已经将其作为类似 `torch._C.VariableFunctions.add`
+    的东西暴露给了 Python 端。`THPVariable_add` 是这样一种实现的实现。
 - en: 'One important thing to know about this code is that it is auto-generated. If
     you search in the GitHub repository, you won''t find it, because you have to actually
     build PyTorch to see it. Another important thing is, you don''t have to really
@@ -459,13 +623,20 @@
     a `dispatch_add` function (which I''ve inlined in red); this releases the global
     interpreter lock and then calls a plain old method on the C++ Tensor `self`. On
     its way back, we rewrap the returned `Tensor` back into a `PyObject`.'
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 关于这段代码的一件重要事情是，它是自动生成的。如果你在 GitHub 仓库中搜索，你找不到它，因为你必须实际构建 PyTorch 才能看到它。另一件重要的事情是，你不必深入理解这段代码在做什么；你只需略过它，了解它在做什么即可。上面，我用蓝色注释了一些最重要的部分：你可以看到在这里使用了一个
+    `PythonArgParser` 类来从 Python 的 `args` 和 `kwargs` 中实际提取 C++ 对象；然后我们调用了一个 `dispatch_add`
+    函数（我已经用红色内联了它）；这会释放全局解释器锁，然后在 C++ Tensor `self` 上调用一个普通的方法。在返回时，我们将返回的 `Tensor`
+    重新包装成一个 `PyObject`。
 - en: '(At this point, there''s an error in the slides: I''m supposed to tell you
     about the Variable dispatch code. I haven''t fixed it here yet. Some magic happens,
     then...)'
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: （在这一点上，幻灯片上有一个错误：我应该告诉你关于变量分派代码的事情。我还没有在这里修复它。然后一些魔法发生了...）
 - en: When we call the `add` method on the `Tensor` class, no virtual dispatch happens
     yet. Instead, we have an inline method which calls a virtual method on a "Type"
     object. This method is the actual virtual method (this is why I say Type is just
@@ -476,72 +647,102 @@
     implementations, we might have instead landed on something like `CPUFloatType::add`.
     It is this implementation of the virtual method that finally gets us to the actual
     kernel code.
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我们在 `Tensor` 类上调用 `add` 方法时，还没有发生虚拟分派。相反，我们有一个内联方法，它调用一个 "Type" 对象上的虚拟方法。这个方法是实际的虚拟方法（这就是为什么我说
+    Type 只是一个 "小工具"，让你进行动态分派）。在这个例子的特定情况下，这个虚拟调用会分派给 `TypeDefault` 类上的 `add` 实现。这是因为我们有一个对于每种设备类型（CPU
+    和 CUDA）都相同的 `add` 实现；如果我们有不同的实现，我们可能会得到类似 `CPUFloatType::add` 的东西。正是这个虚拟方法的实现最终将我们带到实际的内核代码。
 - en: Hopefully, this slide will be out-of-date very soon too; Roy Li is working on
     replacing `Type` dispatch with another mechanism which will help us better support
     PyTorch on mobile.
+  id: totrans-79
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 希望这张幻灯片也很快就过时了；Roy Li 正在致力于用另一种机制替换 `Type` 分发，这将帮助我们更好地支持移动端的 PyTorch。
 - en: It's worth reemphasizing that all of the code, until we got to the kernel, is
     automatically generated.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 值得再次强调的是，直到我们到了内核，所有的代码都是自动生成的。
 - en: It's a bit twisty and turny, so once you have some basic orientation about what's
     going on, I recommend just jumping straight to the kernels.
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 这有点扭曲，所以一旦你对正在发生的事情有了基本的了解，我建议直接跳到内核。
 - en: '* * *'
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: PyTorch offers a lot of useful tools for prospective kernel writers. In this
     section, we'll walk through a few of them. But first of all, what do you need
     to write a kernel?
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: PyTorch 为潜在的内核编写者提供了许多有用的工具。在本节中，我们将简要介绍其中一些。但首先，你需要写一个内核的时候，需要什么？
 - en: 'We generally think of a kernel in PyTorch consisting of the following parts:'
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们通常认为 PyTorch 中的内核由以下部分组成：
 - en: First, there's some metadata which we write about the kernel, which powers the
     code generation and lets you get all the bindings to Python, without having to
     write a single line of code.
+  id: totrans-85
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 首先，有一些关于内核的元数据，我们写在这些元数据中，这些数据驱动着代码生成，并让你在不写一行代码的情况下就可以把所有绑定到 Python。
 - en: Once you've gotten to the kernel, you're past the device type / layout dispatch.
     The first thing you need to write is error checking, to make sure the input tensors
     are the correct dimensions. (Error checking is really important! Don't skimp on
     it!)
+  id: totrans-86
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 一旦你到了内核，你已经过了设备类型/布局调度。首先要做的事情是错误检查，确保输入张量的尺寸是正确的。（错误检查非常重要！不要马虎！）
 - en: Next, we generally have to allocate the result tensor which we are going to
     write the output into.
+  id: totrans-87
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 接下来，我们通常需要分配结果张量，我们将把输出写入其中。
 - en: Time for the kernel proper. At this point, you now should do the second, dtype
     dispatch, to jump into a kernel which is specialized per dtype it operates on.
     (You don't want to do this too early, because then you will be uselessly duplicating
     code that looks the same in any case.)
+  id: totrans-88
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 现在是核心适当的时间。在这一点上，您现在应该进行第二次dtype分发，以跳转到专门针对它操作的核心。 （您不希望太早这样做，因为那样您将无用地复制在任何情况下看起来相同的代码。）
 - en: Most performant kernels need some sort of parallelization, so that you can take
     advantage of multi-CPU systems. (CUDA kernels are "implicitly" parallelized, since
     their programming model is built on top of massive parallelization).
+  id: totrans-89
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 大多数性能良好的核心需要某种并行化，以便您可以利用多CPU系统。 （CUDA核心是“隐式”并行化的，因为它们的编程模型建立在大规模并行化之上）。
 - en: Finally, you need to access the data and do the computation you wanted to do!
+  id: totrans-90
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 最后，您需要访问数据并执行您想要的计算！
 - en: In the subsequent slides, we'll walk through some of the tools PyTorch has for
     helping you implementing these steps.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: 在随后的幻灯片中，我们将介绍PyTorch为帮助您执行这些步骤提供的一些工具。
 - en: To take advantage of all of the code generation which PyTorch brings, you need
     to write a *schema* for your operator. The schema gives a mypy-esque type of your
     function, and also controls whether or not we generate bindings for methods or
@@ -549,19 +750,25 @@
     should be called for given device-layout combinations. Check out the [README in
     native](https://github.com/pytorch/pytorch/blob/master/aten/src/ATen/native/README.md)
     is for more information about this format.
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 要利用PyTorch带来的所有代码生成功能，您需要为您的运算符编写一个*模式*。该模式提供了函数的类似于mypy的类型，并控制我们是否为Tensor上的方法或函数生成绑定。您还告诉模式为给定的设备布局组合调用您的运算符的实现。查看[native中的README](https://github.com/pytorch/pytorch/blob/master/aten/src/ATen/native/README.md)获取有关此格式的更多信息。
 - en: You also may need to define a derivative for your operation in [derivatives.yaml](https://github.com/pytorch/pytorch/blob/master/tools/autograd/derivatives.yaml).
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 您还可能需要在[derivatives.yaml](https://github.com/pytorch/pytorch/blob/master/tools/autograd/derivatives.yaml)中为您的操作定义一个导数。
 - en: Error checking can be done by way of either a low level or a high level API.
     The low level API is just a macro, `TORCH_CHECK`, which takes a boolean, and then
     any number of arguments to make up the error string to render if the boolean is
     not true. One nice thing about this macro is that you can intermix strings with
     non-string data; everything is formatted using their implementation of `operator<<`,
     and most important data types in PyTorch have `operator<<` implementations.
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: 错误检查可以通过低级或高级API方式完成。低级API只是一个宏，`TORCH_CHECK`，它接受一个布尔值，然后任意数量的参数来组成错误字符串以在布尔值不为真时渲染。这个宏的一个好处是，您可以混合字符串和非字符串数据；一切都是使用他们的`operator<<`实现格式化的，而PyTorch中大多数重要的数据类型都有`operator<<`的实现。
 - en: The high level API saves you from having to write up repetitive error messages
     over and over again. The way it works is you first wrap each `Tensor` into a `TensorArg`,
     which contains information about where the tensor came from (e.g., its argument
@@ -569,26 +776,34 @@
     properties; e.g., `checkDim()` tests if the tensor's dimensionality is a fixed
     number. If it's not, the function provides a user-friendly error message based
     on the `TensorArg` metadata.
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: 高级API可以避免您反复编写重复的错误消息。它的工作方式是，您首先将每个`Tensor`包装成一个`TensorArg`，其中包含关于张量来源的信息（例如，它的参数名）。然后它提供了许多预定义的函数来检查各种属性；例如，`checkDim()`测试张量的维度是否为固定数量。如果不是，该函数根据`TensorArg`元数据提供一个用户友好的错误消息。
 - en: 'One important thing to be aware about when writing operators in PyTorch, is
     that you are often signing up to write *three* operators: `abs_out`, which operates
     on a preallocated output (this implements the `out=` keyword argument), `abs_`,
     which operates inplace, and `abs`, which is the plain old functional version of
     an operator.'
+  id: totrans-96
   prefs: []
   type: TYPE_NORMAL
+  zh: 在编写PyTorch操作符时要注意的一件重要事情是，您通常要签署编写*三个*操作符：`abs_out`，它在预分配的输出上操作（这实现了`out=`关键字参数），`abs_`，它是原地操作，以及`abs`，它是操作符的普通旧版功能版本。
 - en: Most of the time, `abs_out` is the real workhorse, and `abs` and `abs_` are
     just thin wrappers around `abs_out`; but sometimes writing specialized implementations
     for each case are warranted.
+  id: totrans-97
   prefs: []
   type: TYPE_NORMAL
+  zh: 大多数情况下，`abs_out`是真正的工作马，而`abs`和`abs_`只是围绕`abs_out`的薄包装；但有时为每种情况编写专门的实现是有必要的。
 - en: To do dtype dispatch, you should use the `AT_DISPATCH_ALL_TYPES` macro. This
     takes in the dtype of the tensor you want to dispatch over, and a lambda which
     will be specialized for each dtype that is dispatchable from the macro. Usually,
     this lambda just calls a templated helper function.
+  id: totrans-98
   prefs: []
   type: TYPE_NORMAL
+  zh: 要进行数据类型分发，你应该使用 `AT_DISPATCH_ALL_TYPES` 宏。这个宏接受你想要分发的张量的数据类型，以及一个lambda表达式，该lambda表达式将针对从宏中可分派的每种数据类型进行特化。通常，这个lambda只是调用一个模板化的辅助函数。
 - en: This macro doesn't just "do dispatch", it also decides what dtypes your kernel
     will support. As such, there are actually quite a few versions of this macro,
     which let you pick different subsets of dtypes to generate specializations for.
@@ -596,16 +811,24 @@
     for situations when you might want to dispatch to some more types. There's guidance
     in [Dispatch.h](https://github.com/pytorch/pytorch/blob/21ef4cc615a7d9d772ade52a5023900718b09e92/aten/src/ATen/Dispatch.h#L62)
     for how to select the correct one for your use-case.
+  id: totrans-99
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个宏不仅仅是“进行分派”，它还决定了你的内核将支持哪些数据类型。因此，实际上有很多版本的这个宏，让你选择生成特定数据类型的特化。大多数情况下，你只需要
+    `AT_DISPATCH_ALL_TYPES`，但要注意在某些情况下，你可能需要分派到更多类型。在 [Dispatch.h](https://github.com/pytorch/pytorch/blob/21ef4cc615a7d9d772ade52a5023900718b09e92/aten/src/ATen/Dispatch.h#L62)
+    中有关于如何为你的用例选择正确版本的指导。
 - en: On CPU, you frequently want to parallelize your code. In the past, this was
     usually done by directly sprinkling OpenMP pragmas in your code.
+  id: totrans-100
   prefs: []
   type: TYPE_NORMAL
+  zh: 在CPU上，你经常希望并行化你的代码。过去，这通常是通过直接在代码中撒入OpenMP pragma来完成的。
 - en: At some point, we have to actually access the data. PyTorch offers quite a few
     options for doing this.
+  id: totrans-101
   prefs: []
   type: TYPE_NORMAL
+  zh: 在某个时候，我们必须实际访问数据。PyTorch为此提供了相当多的选项。
 - en: 'If you just want to get a value at some specific location, you should use `TensorAccessor`.
     A tensor accessor is like a tensor, but it hard codes the dimensionality and dtype
     of the tensor as template parameters. When you retrieve an accessor like `x.accessor<float,
@@ -616,16 +839,23 @@
     useful for sending an accessor over a CUDA launch, so that you can get accessors
     from inside your CUDA kernel. (One notable gotcha: `TensorAccessor` defaults to
     64-bit indexing, which is much slower than 32-bit indexing in CUDA!)'
+  id: totrans-102
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 如果你只是想在某个特定位置获取一个值，你应该使用`TensorAccessor`。一个张量访问器就像一个张量，但它将张量的维度和数据类型硬编码为模板参数。当你像这样检索一个访问器
+    `x.accessor<float, 3>();`时，我们会进行运行时测试以确保张量确实是这种格式；但在此之后，每次访问都是无检查的。张量访问器正确处理步幅，因此你应该优先使用它们而不是原始指针访问（不幸的是，一些遗留内核确实会这样做）。还有一个
+    `PackedTensorAccessor`，专门用于通过CUDA启动发送访问器，这样你可以从CUDA内核中获取访问器。（一个值得注意的问题：`TensorAccessor`
+    默认为64位索引，这在CUDA中比32位索引要慢得多！）
 - en: If you're writing some sort of operator with very regular element access, for
     example, a pointwise operation, you are much better off using a higher level of
     abstraction, the `TensorIterator`. This helper class automatically handles broadcasting
     and type promotion for you, and is quite handy.
+  id: totrans-103
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 如果你正在编写某种具有非常规则元素访问的操作符，例如逐点操作，最好使用更高级的抽象，即 `TensorIterator`。这个辅助类会自动处理广播和类型提升，并且非常方便。
 - en: For true speed on CPU, you may need to write your kernel using vectorized CPU
     instructions. We've got helpers for that too! The `Vec256` class represents a
     vector of scalars and provides a number of methods which perform vectorized operations
@@ -635,87 +865,121 @@
     manages compiling your kernel multiple times under different instruction sets,
     and then testing at runtime what instructions your CPU supports, and using the
     best kernel in those situations.
+  id: totrans-104
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 对于CPU上真正的速度，你可能需要使用矢量化的CPU指令来编写你的内核。我们也有一些辅助工具！`Vec256` 类表示标量的向量，并提供了一些方法，可以一次性对它们执行矢量化操作。像
+    `binary_kernel_vec` 这样的辅助工具然后让你轻松地运行矢量化操作，然后使用普通的指令完成那些无法完全适配到矢量指令的操作。这里的基础设施还会在不同的指令集下多次编译你的内核，然后在运行时测试你的CPU支持什么指令，并在这些情况下使用最佳内核。
 - en: A lot of kernels in PyTorch are still written in the legacy TH style. (By the
     way, TH stands for TorcH. It's a pretty nice acronym, but unfortunately it is
     a bit poisoned; if you see TH in the name, assume that it's legacy.) What do I
     mean by the legacy TH style?
+  id: totrans-105
   prefs: []
   type: TYPE_NORMAL
+  zh: PyTorch 中许多核心仍然采用传统的 TH 风格编写。（顺便说一下，TH 代表 TorcH。这是一个相当不错的首字母缩写，但不幸的是它有些负面影响；如果在名称中看到
+    TH，就假定它是传统的。）什么是传统的 TH 风格呢？
 - en: It's written in C style, no (or very little) use of C++.
+  id: totrans-106
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 它是以 C 风格编写的，几乎不使用 C++。
 - en: It's manually refcounted (with manual calls to `THTensor_free` to decrease refcounts
     when you're done using tensors), and
+  id: totrans-107
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 它是手动引用计数的（使用 `THTensor_free` 手动调用来减少在使用张量后的引用计数），并且
 - en: It lives in `generic/` directory, which means that we are actually going to
     compile the file multiple times, but with different `#define scalar_t`.
+  id: totrans-108
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 它位于 `generic/` 目录中，这意味着我们实际上会多次编译该文件，但使用不同的 `#define scalar_t`。
 - en: This code is pretty crazy, and we hate reviewing it, so please don't add to
     it. One of the more useful tasks that you can do, if you like to code but don't
     know too much about kernel writing, is to port some of these TH functions to ATen.
+  id: totrans-109
   prefs: []
   type: TYPE_NORMAL
+  zh: 这段代码相当复杂，我们很讨厌审查它，所以请不要再增加内容。如果你喜欢编码但对内核编写了解不多，可以做的一项更有用的任务是将其中一些 TH 函数移植到 ATen。
 - en: '* * *'
+  id: totrans-110
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'To wrap up, I want to talk a little bit about working efficiently on PyTorch.
     If the largeness of PyTorch''s C++ codebase is the first gatekeeper that stops
     people from contributing to PyTorch, the efficiency of your workflow is the second
     gatekeeper. If you try to work on C++ with Python habits, **you will have a bad
     time**: it will take forever to recompile PyTorch, and it will take you forever
     to tell if your changes worked or not.'
+  id: totrans-111
   prefs: []
   type: TYPE_NORMAL
+  zh: 总结一下，我想谈谈在 PyTorch 上高效工作的一些技巧。如果 PyTorch 的庞大的 C++ 代码库是阻止人们贡献到 PyTorch 的第一个关卡，那么您的工作流程的效率就是第二个关卡。如果您试图用
+    Python 的习惯来处理 C++，**您将会感到很痛苦**：重新编译 PyTorch 需要很长时间，而要确定您的更改是否有效也将需要很长时间。
 - en: 'How to work efficiently could probably be a talk in and of itself, but this
     slide calls out some of the most common anti-patterns I''ve seen when someone
     complains: "It''s hard to work on PyTorch."'
+  id: totrans-112
   prefs: []
   type: TYPE_NORMAL
+  zh: 如何高效工作可能可以单独讲一讲，但这张幻灯片指出了一些常见的反模式，我经常听到有人抱怨说：“在 PyTorch 上工作很难。”
 - en: If you edit a header, especially one that is included by many source files (and
     especially if it is included by CUDA files), expect a very long rebuild. Try to
     stick to editing cpp files, and edit headers sparingly!
+  id: totrans-113
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 如果您编辑的是一个头文件，尤其是被许多源文件包含的头文件（特别是被 CUDA 文件包含的），请预计会有非常长的重建时间。尽量只编辑 cpp 文件，并节制地编辑头文件！
 - en: Our CI is a very wonderful, zero-setup way to test if your changes worked or
     not. But expect to wait an hour or two before you get back signal. If you are
     working on a change that will require lots of experimentation, spend the time
     setting up a local development environment. Similarly, if you run into a hard
     to debug problem on a specific CI configuration, set it up locally. You can [download
     and run the Docker images locally](https://github.com/pytorch/ossci-job-dsl)
+  id: totrans-114
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 我们的 CI 是一个非常棒的、零配置的测试工具，可以测试您的更改是否有效。但是请预计需要等待一到两个小时才能收到反馈信号。如果您正在进行需要大量试验的更改工作，请花些时间设置本地开发环境。同样，如果在特定的
+    CI 配置上遇到难以调试的问题，请在本地设置它。您可以[下载并在本地运行 Docker 镜像](https://github.com/pytorch/ossci-job-dsl)。
 - en: The [CONTRIBUTING guide explains how to setup ccache](https://github.com/pytorch/pytorch/blob/master/CONTRIBUTING.md#use-ccache);
     this is highly recommended, because sometimes it will help you get lucky and avoid
     a massive recompile when you edit a header. It also helps cover up bugs in our
     build system, when we recompile files when we shouldn't.
+  id: totrans-115
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[贡献指南解释了如何设置 ccache](https://github.com/pytorch/pytorch/blob/master/CONTRIBUTING.md#use-ccache)；这是非常推荐的，因为有时它会帮助您幸运地避免在编辑头文件时进行大规模重新编译。它还有助于掩盖我们的构建系统中的错误，使我们在不应该重新编译文件时重新编译它们。'
 - en: At the end of the day, we have a lot of C++ code, and you will have a much more
     pleasant experience if you build on a beefy server with CPUs and RAM. In particular,
     I don't recommend doing CUDA builds on a laptop; building CUDA is sloooooow and
     laptops tend to not have enough juice to turnaround quickly enough.
+  id: totrans-116
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 最终，我们有大量的 C++ 代码，如果在配置强大的服务器上构建，您将会有更愉快的体验，因为这样做 CUDA 构建会非常慢，而笔记本电脑往往没有足够的处理能力来快速完成。
 - en: '* * *'
+  id: totrans-117
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: So that's it for a whirlwind tour of PyTorch's internals! Many, many things
     have been omitted; but hopefully the descriptions and explanations here can help
     you get a grip on at least a substantial portion of the codebase.
+  id: totrans-118
   prefs: []
   type: TYPE_NORMAL
+  zh: 这就是对PyTorch内部的一个风速游览！很多很多东西都被省略了；但希望这里的描述和解释能帮助您至少掌握代码库的一个重要部分。
 - en: 'Where should you go from here? What kinds of contributions can you make? A
     good place to start is our issue tracker. Starting earlier this year, we have
     been triaging issues; issues labeled **triaged** mean that at least one PyTorch
@@ -724,12 +988,17 @@
     or look up issues specific to some module, e.g., [autograd](https://github.com/pytorch/pytorch/issues?q=is%3Aopen+is%3Aissue+label%3Atriaged+label%3A%22module%3A+autograd%22)
     or find issues which we think are [small](https://github.com/pytorch/pytorch/issues?q=is%3Aopen+is%3Aissue+label%3Atriaged+label%3Asmall)
     (word of warning: we''re sometimes wrong!)'
+  id: totrans-119
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来该怎么做？您可以做哪些贡献？一个好的起点是我们的问题跟踪器。从今年年初开始，我们一直在分类问题；标记为**triaged**的问题意味着至少有一个PyTorch开发人员已经看过它并对问题做了初步评估。您可以使用这些标签查找我们认为是[高优先级](https://github.com/pytorch/pytorch/issues?q=is%3Aopen+is%3Aissue+label%3A%22high+priority%22+label%3Atriaged)的问题，或者查找特定模块的问题，例如[autograd](https://github.com/pytorch/pytorch/issues?q=is%3Aopen+is%3Aissue+label%3Atriaged+label%3A%22module%3A+autograd%22)，或者找到我们认为是[小问题](https://github.com/pytorch/pytorch/issues?q=is%3Aopen+is%3Aissue+label%3Atriaged+label%3Asmall)的问题（警告：有时我们也会犯错！）
 - en: Even if you don't want to get started with coding right away, there are many
     other useful activities like improving documentation (I *love* merging documentation
     PRs, they are so great), helping us reproduce bug reports from other users, and
     also just helping us discuss RFCs on the issue tracker. PyTorch would not be where
     it is today without our open source contributors; we hope you can join us too!
+  id: totrans-120
   prefs: []
   type: TYPE_NORMAL
+  zh: 即使您现在不想开始编码，也有许多其他有用的活动，比如改进文档（我*喜欢*合并文档的 PR，它们非常棒），帮助我们重现其他用户的 bug 报告，以及帮助我们在问题跟踪器上讨论
+    RFC。没有开源贡献者，PyTorch就不会走到今天这一步；我们希望您也能加入我们！

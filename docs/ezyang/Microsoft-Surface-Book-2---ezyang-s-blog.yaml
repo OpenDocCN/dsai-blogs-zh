@@ -1,27 +1,41 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:16:53'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:16:53'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Microsoft Surface Book 2 : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '[Surface Book 2](https://blog.ezyang.com/2019/03/microsoft-surface-book-2/)：ezyang的博客'
 - en: 来源：[http://blog.ezyang.com/2019/03/microsoft-surface-book-2/](http://blog.ezyang.com/2019/03/microsoft-surface-book-2/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2019/03/microsoft-surface-book-2/](http://blog.ezyang.com/2019/03/microsoft-surface-book-2/)
 - en: Microsoft Surface Book 2
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Surface Book 2
 - en: 'Long time readers of mine may be aware that I used a ThinkPad X61T for the
     past decade. After the hinge on my second instance of the machine, I decided it
     was finally time to get a new laptop. And I had one particular model on my eye,
@@ -35,122 +49,171 @@
     Linux to work. So a few weeks ago, I took the plunge, and laid down three grand
     for my own copy. It has worked out well, but in the classic Linux style, not without
     a little bit of elbow grease.'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 长期阅读我的人可能知道，过去十年我一直在使用ThinkPad X61T。在我的第二台机器的铰链出现问题后，我决定终于是时候换一台新的笔记本了。我对一款特定的型号情有独钟，这源自上次Haskell实现者工作坊上Simon
+    Peyton Jones向我展示他的新笔记本：Microsoft Surface Book 2。它符合我对笔记本的主要要求：它是可转换为平板模式的笔记本，并配备数字笔。这支笔虽然不是Wacom品牌的，但有一个橡皮擦端，并可以磁性吸附在笔记本上（没有笔的外壳，但我认为对于现代硬件来说，这种限制是无法满足的）。此外，还有一个[Linux爱好者社区](https://github.com/jakeday/linux-surface/)关注这款设备，这让我觉得我更有可能让Linux正常工作。所以几周前，我决定尝试一下，花了三千美元买了一台自己的Surface
+    Book 2。事实证明效果不错，但典型的Linux风格，没有少费一点功夫。
 - en: A quick review
+  id: totrans-8
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 快速评估
 - en: 'The good:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 'The good:'
 - en: I've managed to get all of the "important" functionality to work. That's Xournal
     with XInput pen and hibernate (though with some caveats.)
+  id: totrans-10
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 我已经成功使所有“重要”功能正常工作。这包括Xournal与XInput笔以及休眠功能（尽管存在一些注意事项）。
 - en: 'Linux support for other random features has pleasantly surprised me: I managed
     to get a working CUDA install and drivers (for PyTorch development), ability to
     boot my Linux partition bare metal as well as from a VM in Windows and I can even
     detach the screen while booted into Linux.'
+  id: totrans-11
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 对于其他随机功能的Linux支持令我惊喜不小：我成功安装了CUDA和驱动（用于PyTorch开发），能够裸机启动我的Linux分区以及在Windows的VM中启动，甚至可以在进入Linux时拆卸屏幕。
 - en: The keyboard is nice; not as good as a classic Thinkpad keyboard but having
     actual function keys, but it has real function keys (unlike the Macbook Pro I
     use at work.)
+  id: totrans-12
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 键盘很好用；虽然不及经典Thinkpad键盘那么好，但它有真正的功能键（不像我在工作中使用的Macbook Pro）。
 - en: Two standard USB ports as well as a USB-C port means I don't need dongles for
     most usage (unlike my Macbook Pro, which only has USB-C ports.)
+  id: totrans-13
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 两个标准USB端口和一个USB-C端口意味着我在大多数情况下不需要转接头（不像我的Macbook Pro，它只有USB-C端口）。
 - en: 'The bad:'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 'The bad:'
 - en: (Updated on March 19, 2019) Suspend is really slow. Although jakeday's setup.sh
     suggests that suspend is not working, *something* is working, in the sense that
     if I close my laptop lid, the laptop goes into a low power state of some sort.
     But it takes quite a long time to suspend, an even longer time to restart, and
     you still have to click past the bootloader (which makes me seriously wonder if
     we are actually suspending).
+  id: totrans-15
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: （更新于2019年3月19日）暂停功能非常慢。尽管jakeday的setup.sh建议暂停功能不起作用，*某种*功能正在运行，如果我关闭笔记本盖子，笔记本会进入某种低功耗状态。但进入暂停状态的时间相当长，重新启动时间更长，你仍然需要点击过引导加载程序（这让我严重怀疑我们是否真的在暂停）。
 - en: The laptop un-hibernates itself sometimes when I put it in my backpack. My current
     hypothesis is that the power button is getting pushed (unlike most laptops, the
     power button is unprotected on the top of the screen). Probably some fucking around
     with my ACPI settings might help but I haven't looked closely into it yet.
+  id: totrans-16
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 当我把它放进背包时，笔记本有时会自动解除休眠状态。我目前的假设是电源按钮被按下了（不像大多数笔记本电脑，电源按钮位于屏幕顶部且无保护）。也许通过一些ACPI设置的调整可能会有所帮助，但我还没有仔细研究过。
 - en: It's a high DPI screen. There's nothing wrong with this per se (and you basically
     can't buy a non-high DPI laptop these days), but any software that doesn't understand
     how to do high DPI (VMWare and Xournal, I'm looking at you) looks bad. The support
     of Ubuntu Unity for high DPI has gotten much better since the last time I've attempted
     anything like it, however; if I stick to the terminal and browser, things look
     reasonable.
+  id: totrans-17
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 这是一个高 DPI 屏幕。本质上这并没有问题（而且现在基本上买不到非高 DPI 的笔记本电脑了），但是任何不懂如何处理高 DPI 的软件（VMWare
+    和 Xournal，我在看你们）看起来都很糟糕。然而，Ubuntu Unity 对高 DPI 的支持自从我上次尝试以来已经好多了；如果我只使用终端和浏览器，一切看起来都还可以。
 - en: The function key is hardwired to toggle fn-lock. This is somewhat irritating
     because you have to remember which setting it's on to decide if you should hold
     it to get the other toggle. I'm also feeling the loss of dedicated page-up/page-down
     key.
+  id: totrans-18
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 功能键被硬编码为切换 fn 锁定。这有点让人恼火，因为你必须记住它处于哪个设置，决定是否按住它来获取另一个切换。我也感到失去了专门的页面向上/向下键有些遗憾。
 - en: Apparently, the NVIDIA GPU downthrottles itself due to thermal sensor shenanigans
     (something something the fan is on the motherboard and not the GPU so the driver
     thinks the fan is broken and throttles? Mumble.)
+  id: totrans-19
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 显然，NVIDIA GPU 由于热传感器问题自行降频（大概是因为风扇在主板上而不是 GPU 上，所以驱动程序认为风扇坏了并且进行了降频？模模糊糊的）。
 - en: The speakers are... OK. Not great, just OK.
+  id: totrans-20
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 扬声器…还行。不是很好，只是还行。
 - en: It's too bad Microsoft opted for some custom charger for the Surface Book 2.
+  id: totrans-21
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 微软选择了一些定制的 Surface Book 2 充电器，有点可惜。
 - en: Linux setup
+  id: totrans-22
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: Linux 设置
 - en: 'I did a stock install of the latest Ubuntu LTS (18.04) dual boot with Windows
     (1TB hard drive helps!), and then installed jakeday''s [custom Linux kernel and
     drivers.](https://github.com/jakeday/linux-surface) Some notes about the process:'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 我进行了最新的 Ubuntu LTS（18.04）的标准安装，与 Windows 双启动（1TB 硬盘真心好用！），然后安装了 jakeday 的 [自定义
+    Linux 内核和驱动程序。](https://github.com/jakeday/linux-surface) 关于这个过程的一些说明：
 - en: I spent a while scratching my head as to why I couldn't install Linux dual-boot.
     Some Googling suggested that the problem was that Windows hadn't really shutdown;
     it had just hibernated (for quick startup). I didn't manage to disable this, so
     I just resized the Windows partition from inside Windows and then installed Linux
     on that partition.
+  id: totrans-24
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我花了一段时间琢磨为什么我不能安装 Linux 双启动。一些搜索建议问题是因为 Windows 没有真正关机；它只是休眠了（为了快速启动）。我没能禁用这个功能，所以我只是在
+    Windows 内部调整了分区大小，然后在那个分区上安装了 Linux。
 - en: Don't forget to allocate a dedicated swap partition for Linux; you won't be
     able to hibernate without it.
+  id: totrans-25
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 不要忘记为 Linux 分配一个专用的交换分区；如果没有它，你将无法休眠。
 - en: The Surface Book 2 has secure boot enabled. You must follow the instructions
     in [SIGNING.md](https://github.com/jakeday/linux-surface/blob/master/SIGNING.md)
     to get signed kernels.
+  id: totrans-26
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Surface Book 2 启用了安全启动。你必须按照 [SIGNING.md](https://github.com/jakeday/linux-surface/blob/master/SIGNING.md)
+    中的说明来获取已签名的内核。
 - en: One consequence of generating signed kernels, is that if you have both the unsigned
     and signed kernels installed `update-initramfs -u` will update the initrd for
     your *unsigned* kernel, meaning that you won't see your changes unless you copy
     the initrd over! This flummoxed me a lot about the next step...
+  id: totrans-27
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 生成带有签名的内核的一个后果是，如果你同时安装了未签名和签名的内核，`update-initramfs -u` 将为你的 *未签名* 内核更新 initrd，这意味着你不会看到你的更改，除非你复制
+    initrd！这让我对下一步感到非常困惑…
 - en: If you want to use the NVIDIA drivers for your shiny NVIDIA GPU, you need to
     blacklist nouveau. There are plenty of instructions on the internet but I can
     personally vouch for [remingtonlang's instructions](https://github.com/jakeday/linux-surface/issues/264#issuecomment-427452156).
@@ -159,9 +222,14 @@
     Note that I manually signed the NVIDIA using the [instructions here](https://askubuntu.com/questions/1023036/how-to-install-nvidia-driver-with-secure-boot-enabled)
     since I already had generated a private key, and it seemed silly to generate another
     one because NVIDIA's installer asked me to.
+  id: totrans-28
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如果你想为你闪亮的 NVIDIA GPU 使用 NVIDIA 驱动程序，你需要拉黑 nouveau。网上有很多指导，但我可以亲自保证 [remingtonlang
+    的指导](https://github.com/jakeday/linux-surface/issues/264#issuecomment-427452156)。确保你在更新正确的
+    initrd；参见我上面的要点。修复了这个问题后，CUDA 安装程序的标准调用让我开始运行 `nvidia-smi`。请注意，我手动使用了 [这里的指南](https://askubuntu.com/questions/1023036/how-to-install-nvidia-driver-with-secure-boot-enabled)，因为我已经生成了一个私钥，所以看起来很蠢再生成另一个，因为
+    NVIDIA 的安装程序要求我这样做。
 - en: 'Once you install the NVIDIA drivers, you have to be careful about the opposite
     problem: Xorg deciding it wants to do all its rendering on the NVIDIA card! The
     usual symptom when this occurs is that your mouse input to Linux is very laggy.
@@ -169,50 +237,72 @@
     process on your GPU. In any case, this is bad: you do NOT want to use the dGPU
     for plain old desktop rendering; you want the integrated one. I found that uncommenting
     the sample Intel config in `/etc/X11/xorg.conf.d` fixes the problem:'
+  id: totrans-29
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 安装 NVIDIA 驱动程序后，你必须小心相反的问题：Xorg 决定在 NVIDIA 卡上进行所有渲染！当这种情况发生时的常见症状是 Linux 的鼠标输入非常卡顿。如果你有工作的
+    `nvidia-smi`，你也可以看到 Xorg 在你的 GPU 上作为一个正在运行的进程。无论如何，这是不好的：你不想使用独立显卡来进行普通的桌面渲染；你需要集成的。我发现取消注释
+    `/etc/X11/xorg.conf.d` 中的 Intel 配置示例可以解决这个问题：
 - en: '[PRE0]'
+  id: totrans-30
   prefs:
   - PREF_IND
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: But this doesn't play too nicely with VMWare; more on this below.
+  id: totrans-31
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 但这在 VMWare 上并不太友好；后面会详细讨论。
 - en: Sound did not work (it was too soft, or the right speaker wasn't working) until
     I upgraded to Linux 5.0.1.
+  id: totrans-32
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 声音在我升级到 Linux 5.0.1 之前无法正常工作（声音太小，或者右侧扬声器不工作）。
 - en: After enabling XInput on [my fork of Xournal](https://github.com/ezyang/xournal),
     it did not start working until I restarted Xournal. Eraser worked right out of
     the box.
+  id: totrans-33
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在[我的 Xournal 分支](https://github.com/ezyang/xournal)上启用 XInput 后，它在我重新启动 Xournal
+    后才开始起作用。橡皮擦在开箱即用时就可以使用。
 - en: Don't forget to make a swap partition (Ubuntu default installer didn't prompt
     me to make one, probably because I was installing as dual-boot); otherwise, hibernate
     will not work.
+  id: totrans-34
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 别忘了创建交换分区（Ubuntu 默认安装程序没有提示我创建交换分区，可能是因为我是作为双引导安装的）；否则，休眠功能将无法使用。
 - en: 'Sometimes, when waking up from hibernate, networking doesn''t work. Mercifully,
     this can be fixed by manually reloading the WiFi kernel module: `modprobe mwifiex_pcie`
     and `systemctl restart NetworkManager.service`. More discussion on [this issue.](https://github.com/jakeday/linux-surface/issues/431)'
+  id: totrans-35
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 有时候，从休眠状态唤醒后，网络无法正常工作。幸运的是，可以通过手动重新加载 WiFi 内核模块来解决这个问题：`modprobe mwifiex_pcie`
+    和 `systemctl restart NetworkManager.service`。关于[此问题的更多讨论。](https://github.com/jakeday/linux-surface/issues/431)
 - en: Sometimes, when waking up from hibernate/suspend, I get a big thermometer icon.
     When I reboot again it goes away but I have lost my hibernate/suspend. Perplexing!
     I don't know why this happens.
+  id: totrans-36
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 有时候，从休眠/挂起状态唤醒时，我会看到一个大的温度计图标。重新启动后，它会消失，但我的休眠/挂起功能却消失了。令人困惑！我不知道为什么会这样发生。
 - en: Boot via VM
+  id: totrans-37
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 通过虚拟机引导
 - en: 'The sad truth of life is that the Windows tablet experience is much better
     than the Linux experience--to the point where many would just install Windows
     and then boot Linux from a virtual machine (or Windows Subsystem for Linux). This
@@ -221,16 +311,24 @@
     Linux partition from VMWare running on Windows? This setup is [explicitly supported
     by VMWare](https://www.vmware.com/support/ws5/doc/disks_dualmult_ws.html), but
     it took a few days of fiddling to get it to actually work.'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 生活的悲哀之处在于，Windows 平板的体验要比 Linux 的体验好得多——以至于许多人只会安装 Windows，然后从虚拟机（或 Windows
+    Subsystem for Linux）中引导 Linux。对我来说这是行不通的：必须从裸金属引导 Linux 才能获得最佳的笔输入体验。不过，为什么不也让从运行在
+    Windows 上的 VMWare 引导 Linux 分区成为可能呢？这种设置是被[VMWare 明确支持的](https://www.vmware.com/support/ws5/doc/disks_dualmult_ws.html)，但实际上需要几天的折腾才能让它真正起作用。
 - en: First, you need VMWare Workstation Pro to actually configure a VM that accesses
     raw disk (although the resulting VM image can be run from the free VMWare Player).
     You can sign up for the thirty-day trial to get it configured, and then use Player
     from then on, if you like. VMWare will offer the raw disk as an option when setting
     up disk; pick that and select the Linux partitions on your machine.
+  id: totrans-39
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 首先，你需要 VMWare Workstation Pro 来配置一个能够访问原始磁盘的虚拟机（尽管生成的虚拟机映像可以在免费的 VMWare Player
+    中运行）。你可以注册获取 30 天的试用期来配置它，然后从此使用 Player，如果你喜欢的话。在设置磁盘时，VMWare 将提供原始磁盘作为选项；选择它并选择你的机器上的
+    Linux 分区。
 - en: The primary challenge of setting up this system is that a standard install of
     Linux on the Surface Book 2 doesn't have a traditional Linux boot partition; instead,
     it has an EFI partition. Most notably, this partition is *permanently mounted*
@@ -246,19 +344,30 @@
     but re-running this command when booted into Linux bare-metal fixed the problem
     (because the real `/boot/efi` will mount and thus Grub will find the Windows boot
     option.)
+  id: totrans-40
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 设置这个系统的主要挑战在于，Surface Book 2 上的标准 Linux 安装没有传统的 Linux 引导分区；相反，它有一个 EFI 分区。最显著的是，这个分区在
+    Windows 启动时被永久挂载，因此你无法重新挂载它用于你的虚拟机。你的常规分区没有引导加载程序，这就是为什么当你启动虚拟机时，你被强制进入通过 PXE
+    进行网络启动的原因。我最终采取的解决方法是制作一个新的虚拟磁盘（支持 vmdk 格式），并在上面安装引导分区（你实际上不需要任何内核或 initrd，因为它们存在于你的根文件系统中；只有
+    `/boot/efi` 是从 EFI 分区挂载的）。当然，你必须实际设置这个引导分区；我做的方法是在救援 CD 中 chroot 到我的分区，然后运行 `grub-install
+    /dev/sda1`。在折腾过程中，我还不小心运行了 `update-grub`，导致我的 Windows 引导选项消失了，但在裸机 Linux 启动时重新运行此命令修复了问题（因为真正的
+    `/boot/efi` 将被挂载，因此 Grub 将找到 Windows 引导选项）。
 - en: Some documentation about dual-boot is specific to VMWare Fusion. This is OS
     X specific, so not relevant to the Microsoft Surface Book 2.
+  id: totrans-41
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一些关于双启动的文档是针对 VMWare Fusion 的。这是特定于 OS X 的，因此与微软 Surface Book 2 无关。
 - en: Get yourself a bootable Linux CD (I personally use [SystemRescueCd](http://www.system-rescue-cd.org/))
     to help debug problems in the installation process.
+  id: totrans-42
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 获取一个可启动的 Linux CD（我个人使用[SystemRescueCd](http://www.system-rescue-cd.org/)）来帮助调试安装过程中的问题。
 - en: Make sure all of your `/etc/fstab` entries correspond to real disks, or your
     Ubuntu startup process will spend a while waiting for a disk that is never going
     to show up. I had this problem with the `/boot/efi` mount, because the mount was
@@ -268,56 +377,80 @@
     on Windows). Note that the volume doesn't actually have to successfully mount
     (mine doesn't, because I forgot to format it vfat); it just has to exist so system
     doesn't wait to see if it connects at some later point in time.
+  id: totrans-43
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 确保你的 `/etc/fstab` 中的所有条目对应于真实的磁盘，否则你的 Ubuntu 启动过程将花费一段时间等待永远不会显示的磁盘。我在 `/boot/efi`
+    挂载上遇到了这个问题，因为挂载是基于 UUID 的；我通过将挂载改为基于 LABEL 并相应地为我的 vmdk 标记标签来“修复”它（我想也可以尝试更改我的
+    vmdk 的 UUID，但我找不到在 Windows 上合理的操作说明）。注意，卷实际上不必成功挂载（我的没有，因为我忘记将其格式化为 vfat）；它只需存在，以便系统不会等待查看它是否在稍后的时间点连接。
 - en: I don't really understand how Unity decides to provide scaling options, but
     although it offers magnification on a bare metal boot, those options are not available
     when run under a VM. I get something tolerably sized (with only slight blurriness)
     by setting the resolution to 1680 x 1050; play around a bit with it. I have "Stretch
     Mode" enabled in VMWare.
+  id: totrans-44
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我真的不明白 Unity 如何决定提供缩放选项，但尽管在裸机启动时提供放大选项，但在虚拟机下运行时却不可用。通过将分辨率设置为 1680 x 1050，我得到了一个相对合适大小的显示（只有轻微模糊）。在
+    VMWare 中我启用了“拉伸模式”。
 - en: Whether or not you can log into your account depends on your X11 configuration;
     so if you're like me and uncommented the Intel configuration, I found this bricks
     my login (and you can unbrick it by commenting out again.) How do make both work?
     Don't ask me; I'm still figuring it out.
+  id: totrans-45
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 你能否登录你的账户取决于你的 X11 配置；如果你像我一样取消了 Intel 的配置，我发现这会导致我的登录失败（你可以通过再次注释掉来解决）。如何使两者都正常工作？别问我，我还在摸索中。
 - en: Window manager
+  id: totrans-46
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 窗口管理器
 - en: 'I haven''t gotten around to setting up xmonad; this is no small part due to
     the fact that Unity appears to support a very rudimentary form of tiling: Windows-left
     and Windows-right will move Windows to fill the left/right half of the display,
     while Windows-up will full screen a Window. I might still try to get xmonad setup
     on 18.04, but for now it is nice not having to fight with trayer to get the standard
     icons.'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 我还没有开始设置xmonad；这在很大程度上是因为Unity似乎只支持一种非常基础的平铺方式：Windows-left和Windows-right会将窗口移动到显示器的左侧或右侧的一半，而Windows-up则会使窗口全屏。也许我还会尝试在18.04上设置xmonad，但现在不用与trayer为标准图标而斗争的感觉很好。
 - en: What's next
+  id: totrans-48
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 接下来做什么
 - en: 'My two top priorities for improving the state of Linux on the Surface Book
     2:'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 我改善Surface Book 2上Linux状态的两个主要优先事项：
 - en: Rewrite Xournal with support for hDPI (how hard could it be lol)
+  id: totrans-50
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 重写Xournal以支持hDPI（这有多难呢，哈哈）
 - en: Figure out how to make suspend/hibernate work more reliably
+  id: totrans-51
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 弄清楚如何让挂起/休眠更可靠
 - en: Otherwise, I am very happy with this new laptop. One thing in particular is
     how much faster my mail client (still sup) runs; previously, scanning for new
     mail would be a crawl, but on this laptop they stream in like a flash. Just goes
     to show how much an upgrade going from a 1.6GHz processor to a 4.2GHz processor
     is :3
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 除此之外，我对这台新笔记本非常满意。特别是我的邮件客户端（仍然是sup）运行得快得多；以前搜索新邮件会很慢，但在这台笔记本上它们像闪电般流入。这只是说明从1.6GHz处理器升级到4.2GHz处理器有多大的提升啊
+    :3

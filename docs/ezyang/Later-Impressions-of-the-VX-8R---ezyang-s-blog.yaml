@@ -1,64 +1,93 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:23'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:23'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Later Impressions of the VX-8R : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: VX-8R的后期印象：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2010/04/later-impressions-of-the-vx-8r/](http://blog.ezyang.com/2010/04/later-impressions-of-the-vx-8r/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/04/later-impressions-of-the-vx-8r/](http://blog.ezyang.com/2010/04/later-impressions-of-the-vx-8r/)
 - en: Later Impressions of the VX-8R
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: VX-8R的后期印象
 - en: 'Earlier in January, I blogged some [first impressions about the VX-8R](http://blog.ezyang.com/2010/01/vx-8r-review/).
     It''s now three months later, and I''ve used my radio on some more extensive field
     tests. I''m considering selling my VX-8R for a 7R, for the following reasons:'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 一月初，我发表了一些有关VX-8R的[第一印象](http://blog.ezyang.com/2010/01/vx-8r-review/)。现在已经三个月过去了，我在更多的实地测试中使用了我的无线电。考虑到以下原因，我正在考虑将我的VX-8R出售给7R：
 - en: I generally need five hours of receive with medium transmission. I only get
     about 3.5 hours worth of receive with the standard VX-8R battery. This is not
     really acceptable. (At risk of being "get off my lawn", [Karl Ramm](http://www.1ts.org/~kcr/)
     comments that his old Icom W32 from the 90s got 12 hours of receive.)
+  id: totrans-8
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我通常需要五小时的接收和中等传输。我只能用标准的VX-8R电池接收大约3.5小时，这实在是不可接受。（有可能会被“别在我草坪上”笑话，[卡尔·拉姆](http://www.1ts.org/~kcr/)评论说，他90年代的旧Icom
+    W32电台接收时间长达12小时。）
 - en: The AA battery adapter is laughable, giving maybe 20min of receive time before
     flagging. The ability to run digital cameras on AA batteries had given me the
     false impression that I'd be able to do the same for a radio, really this adapter
     is only fit for emergency receive situations.
+  id: totrans-9
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: AA电池适配器令人发笑，可能在接收前只能持续20分钟。AA电池可以用于数码相机使我误以为我可以在无线电上做同样的事情，但这个适配器只适合紧急接收情况。
 - en: The remaining battery indicator unreliable, going from 8.5V to 7.5V, and then
     dropping straight to zero. This is the defect I sent mine back in for last time,
     but I saw this problem in the replacement, and a friend confirmed that he saw
     the same on his.
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 剩余电池指示器不可靠，从8.5V下降到7.5V，然后直接降至零。这是我上次寄回去的缺陷，但我在替换机上也看到了这个问题，一个朋友确认他的设备也有同样的问题。
 - en: The radio gets quite hot during operation. I'd never noticed the temperature
     with the 7R.
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 电台在运行时会变得非常热。我在7R上从未注意到温度。
 - en: Everyone else around here owns a 7R, which severely limits the swappability
     of various components (in particular, batteries).
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 这里的其他人都拥有7R，这严重限制了各种组件（特别是电池）的互换性。
 - en: I really am going to miss the dedicated stereo jack and slimmer (and, in my
     opinion, better) interface, but these really are deal breakers. *C'ést la vie.*
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 我确实会想念专用的立体声插孔和更轻更薄（而且，在我看来，更好的）接口，但这些确实是无法容忍的问题。 *C'ést la vie.*

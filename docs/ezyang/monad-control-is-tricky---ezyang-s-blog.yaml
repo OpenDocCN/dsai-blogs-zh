@@ -1,66 +1,100 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:39'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:39'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'monad-control is tricky : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: monad-control 很棘手：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2012/01/monadbasecontrol-is-unsound/](http://blog.ezyang.com/2012/01/monadbasecontrol-is-unsound/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2012/01/monadbasecontrol-is-unsound/](http://blog.ezyang.com/2012/01/monadbasecontrol-is-unsound/)
 - en: '*Editor''s note.* I''ve toned down some of the rhetoric in this post. The original
     title was "monad-control is unsound".'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: '*编辑注*。我已经减少了这篇文章中一些修辞。原标题是“monad-control 是不稳定的”。'
 - en: 'MonadBaseControl and MonadTransControl, from the [monad-control](http://hackage.haskell.org/package/monad-control)
     package, specify an appealing way to automatically lift functions in IO that take
     "callbacks" to arbitrary monad stacks based on IO. Their appeal comes from the
     fact that they seem to offer a more general mechanism than the alternative: picking
     some functions, lifting them, and then manually reimplementing generic versions
     of all the functions built on top of them.'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 来自 [monad-control](http://hackage.haskell.org/package/monad-control) 包的 MonadBaseControl
+    和 MonadTransControl 指定了一种吸引人的方式，自动提升在 IO 中采用“回调”函数的函数到基于 IO 的任意单子栈。它们的吸引力在于，它们似乎提供了比替代方案更通用的机制：选择一些函数，提升它们，然后手动重新实现所有在其上构建的函数的通用版本。
 - en: Unfortunately, monad-control has rather surprising behavior for many functions
     you might lift.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 不幸的是，monad-control 对于您可能提升的许多函数具有相当令人惊讶的行为。
 - en: 'For example, it doesn''t work on functions which invoke the callback multiple
     times:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，它不能在多次调用回调函数的函数上工作：
 - en: '[PRE0]'
+  id: totrans-10
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'The result is `1`, rather than `2` that we would expect. If you are unconvinced,
     suppose that the signature of double was `Identity a -> Identity a`, e.g. `a ->
     a`. There is only one possible implementation of this signature: `id`. It should
     be obvious what happens, in this case.'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 结果是`1`，而不是我们预期的`2`。如果你还不信，请假设 double 的签名是 `Identity a -> Identity a`，比如 `a ->
+    a`。在这种情况下，这个签名只有一个可能的实现：`id`。这种情况下会发生什么应该是显而易见的。
 - en: 'If you look closely at the types involved in MonadBaseControl, the reason behind
     this should become obvious: we rely on the polymorphism of a function we would
     like to lift in order to pass `StM m` around, which is the encapsulated “state”
     of the monad transformers. If this return value is discarded by `IO`, as it is
     in our function `double`, there is no way to recover that state. (This is even
     alluded to in the `liftBaseDiscard` function!)'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你仔细查看 MonadBaseControl 中涉及的类型，其中的原因应该变得显而易见：我们依赖于要提升的函数的多态性，以便在单子变换器中传递 `StM
+    m`，这是封装的单子变换器的“状态”。如果这个返回值被 `IO` 丢弃，就像我们的函数 `double` 中那样，那么恢复这个状态的方式就不存在了。（甚至在
+    `liftBaseDiscard` 函数中也提到了这一点！）
 - en: My conclusion is that, while monad-control may be a convenient implementation
     mechanism for lifted versions of functions, the functions it exports suffer from
     serious semantic incoherency. End-users, take heed!
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 我的结论是，尽管 monad-control 可能是提升函数的方便实现机制，但它导出的函数存在严重的语义不一致性。最终用户，请注意！
 - en: '*Postscript.* A similar injunction holds for the previous versions of MonadBaseControl/MonadTransControl,
     which went by the names MonadPeel and MonadMorphIO.'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: '*附言*。对于之前的 MonadBaseControl/MonadTransControl 的版本，其名称分别为 MonadPeel 和 MonadMorphIO，也有类似的限制。'

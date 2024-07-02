@@ -1,140 +1,214 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:17:55'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:17:55
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Bugs from using the wrong variable : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 使用错误变量导致的错误：ezyang's博客
 - en: 来源：[http://blog.ezyang.com/2011/04/bugs-from-using-the-wrong-variable/](http://blog.ezyang.com/2011/04/bugs-from-using-the-wrong-variable/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/04/bugs-from-using-the-wrong-variable/](http://blog.ezyang.com/2011/04/bugs-from-using-the-wrong-variable/)
 - en: 'I was supposed to have another post about Hoopl today, but it got scuttled
     when an example program I had written triggered what I think is a bug in Hoopl
     (if it’s not a bug, then my mental model of how Hoopl works internally is seriously
     wrong, and I ought not write about it anyway.) So today’s post will be about the
     alleged bug Hoopl was a victim of: bugs from using the wrong variable.'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 我原本应该在今天发布关于Hoopl的另一篇文章，但当我写的一个示例程序触发了我认为是Hoopl的一个bug时（如果这不是一个bug，那么我的关于Hoopl内部工作方式的心理模型严重错误，我也不应该写这个），所以今天的文章将是关于所谓的Hoopl遇到的bug：使用错误变量导致的bug。
 - en: 'The wrong variable, if I’m right, is that of the missing apostrophe:'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我没记错，使用了错误的变量就是缺少撇号：
 - en: '[PRE0]'
+  id: totrans-8
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'Actually, this bug tends to happen a lot in functional code. Here is one bug
     in the native code generation backend in GHC that I recently fixed with Simon
     Marlow:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 实际上，这种bug在函数式代码中经常发生。这里是最近我与Simon Marlow一起修复的GHC本地代码生成后端中的一个bug：
 - en: '[PRE1]'
+  id: totrans-10
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'And a while back, when I was working on abcBridge, I got an infinite loop because
     of something along the lines of:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 几周前，当我在处理abcBridge时，由于类似以下原因导致无限循环：
 - en: '[PRE2]'
+  id: totrans-12
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'How does one defend against these bugs? There are various choices:'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 如何防范这些错误？有多种选择：
 - en: Mutate/shadow the old variable away
+  id: totrans-14
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 将旧变量变异/遮蔽掉
 - en: 'This is the classic solution for any imperative programmer: if some value is
     not going to be used again, overwrite it with the new value. You thus get code
     like this:'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于任何命令式程序员来说，这是经典的解决方案：如果某个值不再使用，用新值覆盖它。因此，您会得到这样的代码：
 - en: '[PRE3]'
+  id: totrans-16
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'You can do something similar in spirit in functional programming languages
     by reusing the name for a new binding, which *shadows* the old binding. But this
     is something of a discouraged practice, as `-Wall` might suggest:'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 在函数式编程语言中，您可以通过重新使用名称来创建新的绑定，这将*遮蔽*旧的绑定。但是这种做法有些不鼓励，因为`-Wall`可能会建议：
 - en: '[PRE4]'
+  id: totrans-18
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: Eliminate the variable with point-free style
+  id: totrans-19
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 使用点无关风格消除变量
 - en: 'In the particular case that the variable is used in only one place, in this
     pipeline style, it’s fairly straightforward to eliminate it by writing a pipeline
     of functions, moving the code to point-free style (the “point” in “point-free”
     is the name for variable):'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 特定情况下，如果变量只在一个地方使用，在这种管道样式中通过一系列函数可以相对直接地消除它，将代码移至点无关风格（“点”在“点无关”中指的是变量名）：
 - en: '[PRE5]'
+  id: totrans-21
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: But this tends to work less well when an intermediate value needs to be used
     multiple times. There’s usually a way to arrange it, but “multiple uses” is a
     fairly good indicator of when pointfree style will become incomprehensible.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 但是当中间值需要多次使用时，这种方式通常效果不佳。通常可以安排一种方法，但是“多次使用”通常是点无关风格变得难以理解的一个很好的指标。
 - en: View patterns
+  id: totrans-23
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 视图模式
 - en: 'View patterns are a pretty neat language extension that allow you to avoid
     having to write code that looks like this:'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 视图模式是一种相当巧妙的语言扩展，允许您避免编写类似这样的代码：
 - en: '[PRE6]'
+  id: totrans-25
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'With `{-# LANGUAGE ViewPatterns #-}`, you can instead write:'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: '使用 `{-# LANGUAGE ViewPatterns #-}`，您可以改写为：'
 - en: '[PRE7]'
+  id: totrans-27
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: Thus avoiding the need to create a temporary name that may be accidentally used,
     while allowing yourself to use names.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此避免了创建可能会意外使用的临时名称的需要，同时允许您使用名称。
 - en: Turn on warnings
+  id: totrans-29
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 打开警告
 - en: 'It only took a few seconds of staring to see what was wrong with this code:'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 只需要几秒钟的凝视就能看出这段代码有什么问题：
 - en: '[PRE8]'
+  id: totrans-31
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: 'That’s right: `size` is never used in the function body. GHC will warn you
     about that:'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 是的，`size`在函数体中从未被使用。 GHC会提醒您这一点：
 - en: '[PRE9]'
+  id: totrans-33
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: 'Unfortunately, someone turned it off (glare):'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 不幸的是，有人把它关闭了（眩光）：
 - en: '[PRE10]'
+  id: totrans-35
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: Use descriptive variable names and types
+  id: totrans-36
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 使用描述性的变量名和类型
 - en: 'Haskell programmers tend to have a penchant for short, mathematical style names
     like `f, g, h, x, y, z`, when the scope a variable is used isn’t very large. Imperative
     programmers tend to find this a bit strange and unmaintainable. The reason why
@@ -148,5 +222,9 @@
     to use a teensy bit more description. Conversely, if you refine your types so
     that the two variables have different types again, the possibility of error goes
     away again.'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Haskell 程序员倾向于使用像`f, g, h, x, y, z`这样的短、数学风格的名称，当变量的作用域不是很大时。命令式编程者倾向于觉得这有些奇怪和难以维护。在
+    Haskell 中，这种风格能够被维护的原因在于静态类型系统：如果我写的函数是`compose f g`，其中`f :: a -> b`，`g :: b ->
+    c`，我可以确定不会意外地在`f`的位置使用`g`：它会导致类型错误！如果所有关于变量内容的语义信息都包含在类型中，重复说明似乎没有多大意义。当然，不要在这个方向上走得太远是好的：当有两个变量都具有`Int`类型时，类型检查器将无法帮助你很多。在这种情况下，最好稍微多加一点描述。相反，如果你调整类型使得这两个变量再次具有不同的类型，错误的可能性再次消失。'

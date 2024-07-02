@@ -1,44 +1,67 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:38'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:38'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'How to build i686 glibc on Ubuntu : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 如何在 Ubuntu 上构建 i686 glibc：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2011/12/how-to-build-i686-glibc-on-ubuntu/](http://blog.ezyang.com/2011/12/how-to-build-i686-glibc-on-ubuntu/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/12/how-to-build-i686-glibc-on-ubuntu/](http://blog.ezyang.com/2011/12/how-to-build-i686-glibc-on-ubuntu/)
 - en: How to build i686 glibc on Ubuntu
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 如何在 Ubuntu 上构建 i686 glibc
 - en: 'An “easy”, two-step process:'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个“简单”的两步过程：
 - en: '[Apply this patch for i686](http://www.eglibc.org/archives/patches/msg00073.html).
     (Why they haven''t fixed this in the trunk, I have no idea.)'
+  id: totrans-8
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[为 i686 应用此补丁](http://www.eglibc.org/archives/patches/msg00073.html)。（为什么他们还没有在主干中修复这个问题，我不知道。）'
 - en: Configure with `CFLAGS="-U_FORTIFY_SOURCE -fno-stack-protector -O2"` (this disables
     fortify source and stack protection which Ubuntu enables by default but interferes
     with glibc. You need to keep optimizations on, because glibc won't build without
     it.) You’ll need to do the usual extra dance of creating a separate build directory
     and specifying a prefix.
+  id: totrans-9
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用 `CFLAGS="-U_FORTIFY_SOURCE -fno-stack-protector -O2"` 进行配置（这会禁用 Ubuntu 默认启用的
+    fortify source 和 stack protection，这些干扰了 glibc。你需要保持优化开启，因为没有优化 glibc 将无法构建。）你需要做一些额外的步骤，比如创建一个单独的构建目录并指定一个前缀。
 - en: 'Hope this helps someone else. In case you were wondering why I was building
     glibc, it''s because I was reporting these two bugs in iconv:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 希望这对其他人有所帮助。如果你想知道为什么我要构建 glibc，那是因为我在 iconv 中报告了这两个 bug：

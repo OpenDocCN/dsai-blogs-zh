@@ -1,103 +1,154 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:17:54'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:17:54
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Hoopl: Dataflow analysis : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Hoopl：数据流分析：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2011/04/hoopl-dataflow-analysis/](http://blog.ezyang.com/2011/04/hoopl-dataflow-analysis/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/04/hoopl-dataflow-analysis/](http://blog.ezyang.com/2011/04/hoopl-dataflow-analysis/)
 - en: Once you’ve determined what [dataflow facts](http://blog.ezyang.com/2011/04/hoopl-dataflow-lattices/)
     you will be collecting, the next step is to write the *transfer function* that
     actually performs this analysis for you!
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦确定了你将收集的[数据流事实](http://blog.ezyang.com/2011/04/hoopl-dataflow-lattices/)，下一步就是编写实际执行此分析的*传递函数*！
 - en: 'Remember what your dataflow facts mean, and this step should be relatively
     easy: writing a transfer function usually involves going through every possible
     statement in your language and thinking about how it changes your state. We’ll
     walk through the transfer functions for constant propagation and liveness analysis.'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 记住你的数据流事实的含义，这一步应该相对容易：编写传递函数通常涉及浏览语言中的每个可能语句，并思考它如何改变你的状态。我们将详细介绍常量传播和活跃性分析的传递函数。
 - en: '* * *'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'Here is the transfer function for liveness analysis (once again, in `Live.hs`):'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是活跃性分析的传递函数（再次在`Live.hs`中）：
 - en: '[PRE0]'
+  id: totrans-10
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: '`live` is the meat of our transfer function: it takes an instruction and the
     current fact, and then modifies the fact in light of that information. Because
     this is a backwards transfer (`BwdTransfer`), the `Fact x Live` passed to `live`
     are the dataflow facts *after* this instruction, and our job is to calculate what
     the dataflow facts are *before* the instruction (the facts flow backwards).'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: '`live`是我们传递函数的核心：它接受一个指令和当前的事实，然后根据这些信息修改事实。因为这是一个向后传递（`BwdTransfer`），传递给`live`的`Fact
+    x Live`是此指令之后的数据流事实，我们的任务是计算这些指令之前的数据流事实（数据流向后流动）。'
 - en: 'If you look closely at this function, there’s something rather curious going
     on: in the line `live (Label _) f = f`, we simply pass out `f` (which ostensibly
     has type `Fact x Live`) as the result. How does that work? Well, `Fact` is actually
     a type family:'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你仔细观察这个函数，会发现有一些非常奇怪的地方：在`live (Label _) f = f`这一行中，我们简单地将`f`（显然具有类型`Fact
+    x Live`）作为结果传递出去。这是如何工作的呢？嗯，`Fact`实际上是一个类型族：
 - en: '[PRE1]'
+  id: totrans-13
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'Look, it’s the O and C phantom types again! If we recall our definition of
     `Insn` (in `IR.hs`):'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 看，又是O和C虚类型！如果我们回顾一下`Insn`的定义（在`IR.hs`中）：
 - en: '[PRE2]'
+  id: totrans-15
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: That means for any of the instructions that are *open on exit* (`x = O` for
     Label, Assign and Store), our function gets `Live`, whereas for an instruction
     that is *closed on exit* (`x = C` for Branch, Cond, Call and Return), we get `FactBase
     Live`, which is a map of labels to facts (`LabelMap Live`)—for reasons we will
     get to in a second.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 这意味着对于任何在退出时是*开放的*指令（对于Label、Assign和Store是`x = O`），我们的函数得到`Live`，而对于在退出时是*封闭的*指令（对于Branch、Cond、Call和Return是`x
+    = C`），我们得到`FactBase Live`，这是一个标签到事实的映射（`LabelMap Live`）——我们稍后会讨论原因。
 - en: 'Because the type of our arguments actually change depending on what instruction
     we receive, some people (GHC developers among them) prefer to use the long form
     `mkBTransfer3`, which takes three functions, one for each shape of node. The rewritten
     code thus looks like this:'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于我们接收的指令的参数类型实际上会根据指令的形状而改变，因此一些人（包括GHC开发人员在内）更喜欢使用长形式`mkBTransfer3`，它接受三个函数，分别对应每种节点形状。因此，重写后的代码如下所示：
 - en: '[PRE3]'
+  id: totrans-18
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: (with the same definitions for `fact`, `addUses` and `addVar`).
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: (使用相同的定义来`fact`、`addUses`和`addVar`)。
 - en: 'With this in mind, it should be fairly easy to parse the code for `firstLive`
     and `middleLive`. Labels don’t change the set of live libraries, so our fact `f`
     is passed through unchanged. For assignments and stores, any uses of a register
     in that expression makes that register live (`addUses` is a utility function that
     calculates this), but if we assign to a register, we *lose* its previous value,
     so it is no longer live. Here is some pseudocode demonstrating:'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 有了这个理解，解析`firstLive`和`middleLive`的代码应该相当容易。标签不会改变活跃库的集合，因此我们的事实`f`保持不变。对于赋值和存储，表达式中对寄存器的任何使用都会使该寄存器变为活跃（`addUses`是一个计算这一点的实用函数），但如果我们对寄存器赋值，则会*失去*其先前的值，因此它不再是活跃的。以下是一些演示伪代码：
 - en: '[PRE4]'
+  id: totrans-21
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: 'If you’re curious out the implementation of `addUses`, the `fold_EE` and `fold_EN`
     functions can be found in `OptSupport.hs`:'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你对`addUses`的实现好奇，`fold_EE`和`fold_EN`函数可以在`OptSupport.hs`中找到：
 - en: '[PRE5]'
+  id: totrans-23
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 'The naming convention is as follows: `E` represents an `Expr`, while `N` represents
     a `Node` (`Insn`). The left letter indicates what kind of values are passed to
     the combining function, while the right letter indicates what is being folded
@@ -106,76 +157,112 @@
     like `Load` and `Binop` can contain expressions inside themselves!) The effect
     of `fold_EN (fold_EE f)`, then, is that `f` will be called on *every* expression
     in a node, which is exactly what we want if we’re checking for uses of `Var`.'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 命名约定如下：`E` 代表 `Expr`，而 `N` 代表 `Node`（`Insn`）。左边的字母表示传递给结合函数的值的种类，而右边的字母表示正在折叠的内容。因此，`fold_EN`
+    折叠节点中的所有 `Expr` 并对其调用结合函数，而 `fold_EE` 折叠 `Expr` 中的所有 `Expr`（注意像 `Load` 和 `Binop`
+    中可能包含内部表达式！）。因此 `fold_EN (fold_EE f)` 的效果是，如果我们正在检查 `Var` 的使用情况，那么 `f` 将在节点中的每个表达式上调用，这正是我们想要的。
 - en: 'We could have also written out the recursion explicitly:'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们也可以明确地写出递归：
 - en: '[PRE6]'
+  id: totrans-26
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: But as you can see, there’s a lot of junk involved with recursing down the structure,
     and you might accidentally forget an `Expr` somewhere, so using a pre-defined
     fold operator is preferred. Still, if you’re not comfortable with folds over complicated
     datatypes, writing out the entire thing in full at least once is a good exercise.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 但是正如你所见，递归结构中涉及很多无用的内容，你可能会无意中忘记某个 `Expr`，因此使用预定义的折叠操作符更可取。然而，如果你对复杂数据类型上的折叠不太熟悉，在至少完整写出一次整个内容后也是一个不错的练习。
 - en: 'The last part to look at is `lastLives`:'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后要看的部分是 `lastLives`：
 - en: '[PRE7]'
+  id: totrans-29
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: There are several questions to ask.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 有几个问题需要问。
 - en: 'Why does it receive a `FactBase Live` instead of a `Live`? This is because,
     as the end node in a backwards analysis, we may receive facts from multiple locations:
     each of the possible paths the control flow may go down.'
+  id: totrans-31
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 为什么它接收 `FactBase Live` 而不是 `Live`？这是因为作为向后分析的结束节点，我们可能从多个位置接收事实：控制流可能经过的每个可能路径。
 - en: 'In the case of a `Return`, there are *no* further paths, so we use `fact_bot
     liveLattice` (no live variables). In the case of `Branch` and `Call`, there is
     only one further path `l` (the label we’re branching or returning to), so we simply
     invoke `fact f l`. And finaly, for `Cond` there are two paths: `tl` and `fl`,
     so we have to grab the facts for both of them and combine them with what happens
     to be our join operation on the dataflow lattice.'
+  id: totrans-32
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 在 `Return` 的情况下，没有更多的路径，因此我们使用 `fact_bot liveLattice`（无活跃变量）。在 `Branch` 和 `Call`
+    的情况下，只有一条进一步路径 `l`（我们正在分支或返回的标签），因此我们简单地调用 `fact f l`。最后，在 `Cond` 的情况下，有两条路径：`tl`
+    和 `fl`，因此我们必须获取它们的事实并将它们与数据流格的结合操作结合。
 - en: Why do we still need to call `addUses`? Because instructions at the end of basic
     blocks can use variables (`Cond` may use them in its conditional statement, `Return`
     may use them when specifying what it returns, etc.)
+  id: totrans-33
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 为什么我们仍然需要调用 `addUses`？因为基本块末尾的指令可以使用变量（`Cond` 在其条件语句中可能使用它们，`Return` 在指定其返回内容时可能使用它们等）。
 - en: 'What’s with the call to `S.difference` in `Call`? Recall that `vs` is the list
     of variables that the function call writes its return results to. So we need to
     remove those variables from the live variable set, since they will get overwritten
     by this instruction:'
+  id: totrans-34
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '`Call` 中为什么要调用 `S.difference`？记住，`vs` 是函数调用写入其返回结果的变量列表。因此，我们需要从活跃变量集中移除这些变量，因为它们将被此指令覆盖：'
 - en: '[PRE8]'
+  id: totrans-35
   prefs:
   - PREF_IND
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: 'You should already have figured out what `fact` does: it looks up the set of
     dataflow facts associated with a label, and returns an empty set (no live variables)
     if that label isn’t in our map yet.'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 你应该已经弄清楚了 `fact` 的作用：它查找与标签相关联的数据流事实集，并且如果该标签尚未在我们的映射中，则返回一个空集（无活跃变量）。
 - en: '* * *'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'Once you’ve seen one Hoopl analysis, you’ve seen them all! The transfer function
     for constant propagation looks very similar:'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦你看过一个 Hoopl 分析，你就看过它们全部了！常量传播的传递函数看起来非常相似：
 - en: '[PRE9]'
+  id: totrans-39
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: 'The notable difference is that, unlike liveness analysis, constant propagation
     analysis is a forward analysis `FwdTransfer`. This also means the type of the
     function is `Node e x -> f -> Fact x f`, rather than `Node e x -> Fact x f ->
@@ -183,32 +270,47 @@
     possible outgoing labels. This is used to good effect in `Cond (Var x)`, where
     we know that if we take the first branch the condition variable is true, and vice-versa.
     The rest is plumbing:'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 显著的区别在于，与活跃性分析不同，常量传播分析是一种向前分析 `FwdTransfer`。 这也意味着函数的类型是 `Node e x -> f ->
+    Fact x f`，而不是 `Node e x -> Fact x f -> f`：当控制流分裂时，我们可以为可能的出口标签提供不同的事实集。 这在 `Cond
+    (Var x)` 中得到了很好的应用，我们知道如果我们采取第一个分支，条件变量为真，反之亦然。 其余是管道：
 - en: '`Branch`: An unconditional branch doesn’t cause any of our variables to stop
     being constant. Hoopl will automatically notice if a different path to that label
     has contradictory facts and convert the mappings to `Top` as notice, using our
     lattice’s join function. `mapSingleton` creates a singleton map from the label
     `l` to the fact `f`.'
+  id: totrans-41
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`Branch`: 无条件分支不会导致我们的任何变量停止为常量。 Hoopl 将自动注意到，如果到该标签的不同路径具有矛盾的事实，并将映射转换为 `Top`
+    作为通知，使用我们格的连接函数。 `mapSingleton` 从标签 `l` 到事实 `f` 创建一个单例映射。'
 - en: '`Cond`: We need to create a map with two entries, which is can be done conveniently
     with `mkFactBase`, where the last argument is a list of labels to maps.'
+  id: totrans-42
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`Cond`: 我们需要创建一个包含两个条目的映射，可以方便地通过 `mkFactBase` 完成，其中最后一个参数是标签到映射的列表。'
 - en: '`Call`: A function call is equivalent to assigning lots of unknown variables
     to all of its return variables, so we set all of them to unknown with `toTop`.'
+  id: totrans-43
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`Call`: 函数调用相当于将所有返回变量分配给许多未知变量，因此我们用 `toTop` 将它们全部设置为未知。'
 - en: '`Return`: Goes nowhere, so an empty map will do.'
+  id: totrans-44
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`Return`: 不会前进任何地方，因此空映射就足够了。'
 - en: Next time, we’ll talk about some of the finer subtleties about transfer functions
     and join functions, and discuss graph rewriting, and wrap it all up with some
     use of Hoopl’s debugging facilities to observe how Hoopl rewrites a graph.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 下次，我们将讨论一些关于传递函数和连接函数的更精细的细微差别，并讨论图重写，并用一些 Hoopl 的调试工具来总结如何观察 Hoopl 如何重写图。

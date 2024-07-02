@@ -1,51 +1,77 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:27'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:27'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Classes begin : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Classes begin：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2010/02/classes-begin/](http://blog.ezyang.com/2010/02/classes-begin/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/02/classes-begin/](http://blog.ezyang.com/2010/02/classes-begin/)
 - en: Classes begin
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Classes begin
 - en: 'And so classes begin this Spring Term of 2010\. The classes that I am currently
     signed up to take are:'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，2010 年春季学期的课程开始了。我目前注册的课程包括：
 - en: '6.005: Software Construction'
+  id: totrans-8
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 6.005：软件构造
 - en: '6.02: Intro to EECS II'
+  id: totrans-9
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '6.02: 电子工程与计算机科学导论 II'
 - en: '6.045: Automata, Computing and Complexity'
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 6.045：自动机、计算与复杂性
 - en: '6.945: Large-scale Symbolic Systems'
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 6.945：大规模符号系统
 - en: '21M.283: Musicals of Stage and Screen'
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 21M.283：舞台和银幕上的音乐剧
 - en: 6.945 is the "fun" class of the semester; I expect to have to sink a lot of
     time into and get a lot out of it in return. 6.005 and 6.02 are strictly being
     taken because my degree requires it (I've scheduled 6.02 as a conflict class on
@@ -54,10 +80,16 @@
     no pure course 18 class for me, unfortunately! And on the advice of Robert Jacobs,
     21M.283 is my HASS-ish class (I'm quite pleased that I've gotten the HASS-D requirement
     out of the way).
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 6.945 是本学期的“有趣”课程；我期望得花费很多时间并且从中获得很多收获。6.005 和 6.02 则是因为我的学位要求而必须选修的（我已经将 6.02
+    安排在冲突课程之上，所以可能需要更多的努力来确保我掌握了所有的课程内容）。6.045 是我本学期的数学课程；不幸的是，没有纯粹的课程 18 类别的课程！受
+    Robert Jacobs 的建议，21M.283 是我本学期的 HASS 类似的课程（我很高兴我已经完成了 HASS-D 的要求）。
 - en: 'Among the classes I''m not taking this term: 6.006 (goodness knows I do need
     the algorithms knowledge), 7.01X (punt punt punt) and 6.824 (sounds like lots
     of fun, but would result in a triple conflict, which I''m not willing to do.)'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本学期我没有选修的课程中包括：6.006（天知道我确实需要算法知识），7.01X（踢踢踢）和 6.824（听起来很有趣，但会导致三重冲突，我不愿意这样做）。

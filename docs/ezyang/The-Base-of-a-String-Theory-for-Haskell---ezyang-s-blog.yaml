@@ -1,37 +1,53 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:04'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:04'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'The Base of a String Theory for Haskell : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Haskell的字符串理论基础：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2016/09/the-base-of-a-string-theory-for-haskell/](http://blog.ezyang.com/2016/09/the-base-of-a-string-theory-for-haskell/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2016/09/the-base-of-a-string-theory-for-haskell/](http://blog.ezyang.com/2016/09/the-base-of-a-string-theory-for-haskell/)
 - en: 'One of the early posts from this blog, from 2010, was on the subject of [how
     to pick your string library in Haskell](http://blog.ezyang.com/2010/08/strings-in-haskell/).
     Half a decade later, the Haskell ecosystem is still largely in the same situation
     as it was half a decade ago, where most of the boot libraries shipped with GHC
     (e.g., `base`) still use the `String` type, despite the existence of superior
     string types. The problem is twofold:'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个博客的早期文章之一，来自2010年，是关于[Haskell中如何选择你的字符串库](http://blog.ezyang.com/2010/08/strings-in-haskell/)的主题。半个世纪后，Haskell生态系统在很大程度上仍处于与半个世纪前相同的情况下，大部分与GHC一起发货的引导库（例如，`base`）仍然使用`String`类型，尽管存在更优秀的字符串类型。问题是双重的：
 - en: No one wants to break all of the existing code, which means libraries like `base`
     have to keep `String` versions of all their code. You can't just search-replace
     every occurrence of `String` with `Text`.
+  id: totrans-7
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 没有人想要破坏所有现有的代码，这意味着像`base`这样的库必须保持对所有代码的`String`版本。你不能只是搜索替换每个`String`出现的地方为`Text`。
 - en: 'No one wants to be in the business of maintaining *two* copies of any piece
     of code, which are copy-pastes of each other but subtly different. In practice,
     we must: e.g., [unix](https://hackage.haskell.org/package/unix) has `ByteString`
@@ -40,41 +56,55 @@
     and scales poorly: every downstream library that wants to support two string types
     (or more) now has to publish two copies of themselves, and any new string implementation
     has the unenviable task of reimplementing the world to make themselves useful.'
+  id: totrans-8
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 没有人想要维护*两个*代码副本，它们彼此复制粘贴但略有不同。在实践中，我们必须：例如，[unix](https://hackage.haskell.org/package/unix)有所有函数的`ByteString`变体（通过复制粘贴完成）；[text](https://hackage.haskell.org/package/text)提供了一些核心IO功能（同样是通过复制粘贴完成）。但这非常糟糕且扩展性差：现在每个下游库想要支持两种或更多的字符串类型都必须发布两个自己的副本，并且任何新的字符串实现都必须重新实现整个世界以使自己有用。
 - en: 'Backpack solves these problems, by allowing you to *parametrize* over a signature
     rather than a concrete implementation of a string type, and instantiate such an
     *indefinite library* whenever you want. This solves both problems:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: Backpack通过允许您对签名进行*参数化*而不是对字符串类型的具体实现进行实例化来解决这些问题。这解决了这两个问题：
 - en: Because you are allowed to instantiate an indefinite library whenever you want,
     we can eagerly instantiate a `posix-indef` using `String` and ship it as `posix`,
     keeping backwards compatibility with all packages which are Backpack ignorant.
+  id: totrans-10
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 因为你可以随时实例化一个不定的库，我们可以急切地使用`String`来实例化`posix-indef`，并将其作为`posix`发布，以保持对所有不了解Backpack的包的向后兼容性。
 - en: At the same time, if packages depend directly on `posix-indef`, they themselves
     are parametrizable over a string type. Entire library ecosystems can defer the
     choice of string type to the end user, which on a sufficiently new version of
     GHC offers an backwards compatible way of adding support for new string types
     to a library. (I don't want to say, support *multiple* string types, because this
     is not necessarily a virtue in-and-of-itself.)
+  id: totrans-11
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 与此同时，如果包直接依赖于`posix-indef`，它们本身可以对字符串类型进行参数化。整个库生态系统可以将字符串类型的选择推迟到最终用户，在GHC的足够新版本上，这为库添加对新字符串类型的支持提供了向后兼容的方式。（我不想说，支持*多种*字符串类型，因为这本身并不一定是一种优点。）
 - en: 'To this end, I would like to propose a string theory, for the base of GHC Haskell:
     namely the core boot libraries that are distributed with GHC today. These packages
     will set the tone for the eventual Backpackification of the rest of the ecosystem.'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 为此，我想提出一个字符串理论，用于GHC Haskell的基础：即今天随GHC分发的核心引导库。这些包将为最终使生态系统的其余部分Backpack化设定基调。
 - en: But first, what is it that we are parametrizing over? A string is not so simple...
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 但首先，我们正在对什么进行参数化？字符串并不那么简单...
 - en: A digression on file paths (and OS strings)
+  id: totrans-14
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 一个关于文件路径（和操作系统字符串）的离题讨论
 - en: 'File paths (`FilePath`) are an important form of `String` which aren''t really
     Unicode strings at all. POSIX specifies that file paths can be arbitrary C strings,
     thus, code which decodes a file path as Unicode must be cognizant of the fact
@@ -83,133 +113,197 @@
     in UTF-16 (with unpaired surrogates, eek!), while in modern Linux environments
     the encoding is dictated by the locale (`base` uses `locale_charset` to determine
     how to interpret file paths; the locale is often UTF-8, but not always).'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 文件路径（`FilePath`）是一种重要的 `String` 形式，实际上并不是 Unicode 字符串。POSIX 指定文件路径可以是任意的 C 字符串，因此，解码文件路径为
+    Unicode 的代码必须意识到底层的 `ByteString` 可能包含任意的、无法解码的无意义字符。更糟糕的是，甚至编码也可能不同：在 Windows
+    中，文件路径编码为 UTF-16（可能存在未配对的代理项），而在现代 Linux 环境中，编码由区域设置决定（`base` 使用 `locale_charset`
+    来确定如何解释文件路径；区域设置通常是 UTF-8，但不总是）。
 - en: Thus, the definition `type FilePath = String` is very questionable indeed. There
     is an existing proposal, the [Abstract FilePath Proposal](https://ghc.haskell.org/trac/ghc/wiki/Proposal/AbstractFilePath)
     to turn `FilePath` into an abstract type, and not just a type synonym for `String`.
     Unfortunately, a change like this is a BC-breaking one, so it will take some time
     to implement, since GHC must first be taught to warn when `FilePath` is used as
     if it were a `String`, to help people find out that they are using it incorrectly.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，定义 `type FilePath = String` 实际上是非常值得怀疑的。已经有一个现有的提案，即 [抽象 FilePath 提案](https://ghc.haskell.org/trac/ghc/wiki/Proposal/AbstractFilePath)，将
+    `FilePath` 转换为抽象类型，而不仅仅是 `String` 的类型同义词。不幸的是，这样的改变会破坏向后兼容性，因此需要一些时间来实现，因为 GHC
+    必须首先被教导在 `FilePath` 被错误使用时发出警告，以帮助人们发现他们的错误用法。
 - en: 'Backpack offers a more decentralized way to move into the future: just define
     an *abstract signature* for `FilePath` to depend upon. The low level signature
     might look like this:'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: Backpack 提供了一种更加分散的方式来迎接未来：只需定义一个*抽象签名*，让 `FilePath` 依赖于它。低级别的签名可能看起来像这样：
 - en: '[PRE0]'
+  id: totrans-18
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: And of course, you would want all of the `FilePath` [manipulation functions](https://hackage.haskell.org/package/filepath-1.4.1.0/docs/System-FilePath-Posix.html)
     that people use.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 当然，你会希望所有的 `FilePath` [操作函数](https://hackage.haskell.org/package/filepath-1.4.1.0/docs/System-FilePath-Posix.html)
+    都能被人们使用。
 - en: To maintain compatibility with the existing ecosystem, you would likely instantiate
     your library with `type FilePath = String`. But there is nothing stopping you
     from picking your own abstract `FilePath` type and using it instead.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了与现有生态系统保持兼容性，你可能会用 `type FilePath = String` 来实例化你的库。但是没有什么可以阻止你选择自己的抽象 `FilePath`
+    类型并使用它。
 - en: 'File paths are not unique in this sense; there are other strings (such as the
     values of environment variables) which have similar properties: I''ve taken to
     calling these [OSStrings](https://doc.rust-lang.org/std/ffi/struct.OsString.html)
     (as they are called in Rust.)'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 从这个意义上说，文件路径并不是唯一的；还有其他具有类似属性的字符串（例如环境变量的值）：我习惯称之为 [OSStrings](https://doc.rust-lang.org/std/ffi/struct.OsString.html)（就像在
+    Rust 中称呼它们一样）。
 - en: Axes of parametrization
+  id: totrans-22
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 参数化的轴
 - en: 'With this in mind, there are three "string variants" any given library can
     be parametrized:'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 考虑到这一点，任何给定的库都可以参数化为三种“字符串变体”：
 - en: They can be parametrized over `FilePath`, for modules which deal with the file
     system (e.g., [System.Posix.Directory](https://hackage.haskell.org/package/unix-2.7.2.0/docs/System-Posix-Directory.html))
+  id: totrans-24
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 它们可以参数化为 `FilePath`，适用于处理文件系统的模块（例如，[System.Posix.Directory](https://hackage.haskell.org/package/unix-2.7.2.0/docs/System-Posix-Directory.html)）
 - en: They can be parametrized over an `OSString`, because they deal with various
     operating system specific APIs (e.g., [System.Posix.Env](https://hackage.haskell.org/package/unix-2.7.2.0/docs/System-Posix-Env.html))
+  id: totrans-25
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 它们可以参数化为 `OSString`，因为它们涉及各种操作系统特定的 API（例如，[System.Posix.Env](https://hackage.haskell.org/package/unix-2.7.2.0/docs/System-Posix-Env.html)）
 - en: They can be parametrized over a `String`, because, well, sometimes a string
     is just a string. (e.g., [Text.ParserCombinators.ReadP](https://hackage.haskell.org/package/base-4.9.0.0/docs/Text-ParserCombinators-ReadP.html))
+  id: totrans-26
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 它们可以参数化为 `String`，因为有时候一个字符串就是一个字符串。（例如，[Text.ParserCombinators.ReadP](https://hackage.haskell.org/package/base-4.9.0.0/docs/Text-ParserCombinators-ReadP.html)）
 - en: 'Some libraries may be parametrized in multiple ways: for example, `readFile`
     needs to be parametrized over both `FilePath` and `String`.'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 有些库可能以多种方式进行参数化：例如，`readFile` 需要同时参数化 `FilePath` 和 `String`。
 - en: Split base (and friends) for Backpack
+  id: totrans-28
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 为 Backpack 拆分 base（和友好组件）
 - en: For technical reasons, Backpack cannot be used to parametrize specific *modules*;
     you have to parametrize over an entire library. So a side-effect of Backpack-ing
     the core libraries is that they will be split into a number of smaller libraries.
     Using module reexports, you can still keep the old libraries around as shims.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于技术原因，Backpack 不能用于对特定*模块*进行参数化；必须对整个库进行参数化。因此，Backpack 化核心库的副作用是它们将被拆分为多个较小的库。使用模块重导出，您仍然可以保留旧库作为
+    shims。
 - en: 'There are four GHC boot libraries which would most benefit from modularization
     on strings:'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 有四个 GHC 引导库将从对字符串的模块化中获益最多：
 - en: '[base](https://hackage.haskell.org/package/base)'
+  id: totrans-31
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[base](https://hackage.haskell.org/package/base)'
 - en: base-io (System.IO and submodules; parametrized over FilePath and String)
+  id: totrans-32
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`base-io`（`System.IO` 及其子模块；参数化为 `FilePath` 和 `String`）'
 - en: There are a few other modules which could be stringified, but the marginal benefit
     may not justify making a new package for each (Data.String, System.Console.GetOpt,
     Text.ParserCombinators.ReadP, Text.Printf). Each of these only needs to be parametrized
     over String.
+  id: totrans-33
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 还有一些其他模块可以字符串化，但边际效益可能不足以为每个模块制作一个新包（`Data.String`、`System.Console.GetOpt`、`Text.ParserCombinators.ReadP`、`Text.Printf`）。每个模块只需要参数化为
+    String。
 - en: Control.Exception, Text.Read and Text.Show are explicit *non-goals*, they are
     too deeply wired into GHC at present to muck about with.
+  id: totrans-34
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`Control.Exception`、`Text.Read` 和 `Text.Show` 是明确的*非目标*，它们目前与 GHC 的深层次连接太紧密，因此不太可能更改。'
 - en: '[unix](https://hackage.haskell.org/package/unix)'
+  id: totrans-35
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[unix](https://hackage.haskell.org/package/unix)'
 - en: unix-env (System.Posix.Env, parametrized over OSString)
+  id: totrans-36
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`unix-env`（`System.Posix.Env`，参数化为 `OSString`）'
 - en: unix-fs (System.Posix.Directory, System.Posix.Files, System.Posix.Temp parametrized
     over FilePath)
+  id: totrans-37
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`unix-fs`（`System.Posix.Directory`、`System.Posix.Files`、`System.Posix.Temp`，参数化为
+    `FilePath`）'
 - en: unix-process (System.Posix.Process, parametrized over FilePath and OSString)
+  id: totrans-38
   prefs:
   - PREF_IND
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`unix-process`（`System.Posix.Process`，参数化为 `FilePath` 和 `OSString`）'
 - en: '[pretty](https://hackage.haskell.org/package/pretty) (parametrized over String;
     then GHC could use it rather than roll its own copy!)'
+  id: totrans-39
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[pretty](https://hackage.haskell.org/package/pretty)（参数化为 String；然后 GHC 可以使用它而不是自己制作副本！）'
 - en: '[process](https://hackage.haskell.org/package/process) (parametrized over String,
     OSString and FilePath)'
+  id: totrans-40
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[process](https://hackage.haskell.org/package/process)（参数化为 String、OSString
+    和 FilePath）'
 - en: The naming scheme I propose is that, e.g., the package unix continues to be
     the package instantiated with old-fashioned Strings. Then unix-indef is a package
     which is uninstantiated (the user can instantiate it to what they want, or pass
@@ -218,5 +312,9 @@
     which would be `base-io` instantiated with `ByteString` rather than `String`,
     though these names could get to be quite long, so it's uncertain how useful this
     would be.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 我提议的命名方案是，例如，`unix` 包继续使用传统的字符串进行实例化。然后 `unix-indef` 是一个未实例化的包（用户可以根据需要进行实例化，或者将决策传递给他们的用户）。一些包可能会选择还提供其包的
+    shims，这些 shims 使用特定类型进行实例化，例如 `base-io-bytestring`，它将使用 `ByteString` 而不是 `String`
+    进行 `base-io` 的实例化，尽管这些名称可能会变得相当长，所以不确定这对你有多大用处。

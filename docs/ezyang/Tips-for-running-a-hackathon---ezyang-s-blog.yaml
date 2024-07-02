@@ -1,104 +1,142 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:18:06'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:18:06
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Tips for running a hackathon : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 运行黑客马拉松的建议：ezyang’s 博客
 - en: 来源：[http://blog.ezyang.com/2010/10/tips-for-running-a-hackatho/](http://blog.ezyang.com/2010/10/tips-for-running-a-hackatho/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/10/tips-for-running-a-hackatho/](http://blog.ezyang.com/2010/10/tips-for-running-a-hackatho/)
 - en: Tips for running a hackathon
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 运行黑客马拉松的建议
 - en: 'A hackathon is an event, spanning from a day to a week, where hackers (not
     the cracking kind) get together to work on some common goals in concert. One use
     of a hackathon is to get some open-source contributors together and work hard
     on a particular feature: the combination of being together and being expected
     to work on the task at hand means that people are more productive than they would
     be if they were just working alone.'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 黑客马拉松是一个事件，从一天到一周不等，黑客（不是破解类型的）聚集在一起，共同致力于一些共同的目标。黑客马拉松的一个用途是让一些开源贡献者聚集在一起，努力完成特定的功能：聚在一起并期望在手头任务上工作意味着人们比起单独工作更有效率。
 - en: 'However, at [SIPB](http://sipb.mit.edu/), we use hackathons in a different
     way: in fact, this type of a hackathon could be said to make maintainers *less*
     effective at whatever tasks they may have on hand. The idea of this hackathon
     is to get new people interested and working on existing projects. This is vital
     in a university environment, where people graduate after only four years and we
     constantly need to be looking for fresh people.'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，在[SIPB](http://sipb.mit.edu/)，我们以一种不同的方式利用黑客马拉松：实际上，这种类型的黑客马拉松可以说使维护者在手头的任何任务上都变得*不那么*有效率。这种黑客马拉松的理念是吸引新人对现有项目感兴趣并投入工作。在大学环境中，这是至关重要的，因为人们仅在四年后毕业，我们需要不断寻找新鲜血液。
 - en: Here are some off-the-cuff tips that I’ve noticed help make these sorts of hackathons
     more successful when the day rolls around.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下是我注意到的一些即兴技巧，可以在当天成功举办这类黑客马拉松时发挥作用。
 - en: Communicate to established project members that you *will not* get stuff done
     until the wee hours of the hackathons, when the prospectives have left. Expect
     to be answering questions, helping people get set up, and generally being attentive
     to the activity around the hackathon on your project.
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 告知已有项目成员，在黑客马拉松的凌晨，有可能不会完成工作，因为有些人已经离开。期望回答问题、帮助人们设置好工作环境，并且全神贯注地关注项目周围的活动。
 - en: Establish a list of tasks to work on before the hackathon begins. Parallelization
     is hard, even in the real world, and so you should already have bite-sized independent
     pieces of work to give to prospectives who are ready to just start working.
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在黑客马拉松开始之前建立一个任务列表是很有必要的。即使在现实世界中，任务的并行执行也很困难，因此你应该事先准备好一些独立的小任务，以便给那些愿意立即开始工作的人。
 - en: Have a lot of tasks. People have different interests, even though they will
     undoubtedly tell you, “Oh, anything is ok,” and you should make it clear that
     if they’re not having fun working towards some task, maybe they could try a different
     one.
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 任务要多。人们有不同的兴趣，即使他们肯定会告诉你，“哦，任何事情都可以”，你应该明确，如果他们在做某项任务时没有乐趣，也许可以尝试做另一项任务。
 - en: Have tasks of differing difficulty. Yes, it’s nice when that one person walks
     in, has the development environment setup in half an hour, and manages to finish
     his task way before the end of the hackathon. Most people are not like that; for
     some, setting up a development environment is a task that can consume an entire
     afternoon and evening. This is frustrating. Let them know that there are things
     that they can actually make productive progress on.
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 任务难度应该有所不同。是的，当那个人步入大门，半小时内就设置好开发环境，并且设法在黑客马拉松结束前完成任务时，这是非常好的。但大多数人并非如此；对于一些人来说，设置开发环境可能会占据整个下午和晚上的时间。这是令人沮丧的。让他们知道，他们确实可以在某些事情上取得实际的进展。
 - en: Keep track of who’s working on what and the final achievements. It’s really
     nice to be able to say what was accomplished at the end of the hackathon; it makes
     people feel good and encourages them to come back.
+  id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 跟踪谁在做什么及最终的成就是很重要的。在黑客马拉松结束时能够说出取得了什么成就非常好，这会让人们感到愉快并鼓励他们再次参加。
 - en: Check in with prospectives, but not too often. It’s good to check half an hour
     after getting someone started how they are doing and help them out if they’re
     struggling. But check on them too much and you can easily make them feel nervous
     or pressured, which is not fun and therefore not OK for a hackathon.
+  id: totrans-15
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 跟前景进行沟通，但不要太频繁。在某人开始后半小时询问他们的进展并在他们若有困难时帮助他们是有好处的。但是如果频繁地监督他们，很容易让他们感到紧张或受到压力，这不是一场黑客马拉松所希望的乐趣，因此也不是可接受的行为。
 - en: 'Take advantage of questions that require “long answers.” If someone suggests
     X and in fact, we’ve thought about it but can’t do X for some complicated reason
     Y, don’t wave the question off: tell the person about Y. They might even have
     a reason around it, and either way, they learn more about the system they are
     working on in a really effective way: knowledge as you need it.'
+  id: totrans-16
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 利用那些需要“长答案”的问题。如果有人建议 X，实际上，我们已经考虑过但由于一些复杂的原因 Y 无法做 X，不要草草带过这个问题：告诉这个人关于 Y 的情况。他们甚至可能有解决这个问题的方法，无论如何，这样做都能以一种非常有效的方式让他们更多地了解他们正在处理的系统：知识随需应变。
 - en: Be an enabler. Do the boring, tedious tasks that you’ve procrastinated on if
     it would make a prospective more effective and have more fun on a task. You can
     trick them into doing those “housekeeping” tasks later, when they’re invested
     in the project. (wink)
+  id: totrans-17
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 做一个推动者。如果做一些你一直拖延的乏味、繁琐的任务能让前景更有效并在任务上更有乐趣，你可以骗他们以后再做这些“家务”任务，当他们投入到项目中时。 （眨眼）
 - en: I encourage past hackathon organizers to also share their wisdom!
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 我鼓励过去的黑客马拉松组织者也分享他们的智慧！

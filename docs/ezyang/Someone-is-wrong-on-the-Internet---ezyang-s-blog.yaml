@@ -1,31 +1,47 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:56'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:56'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Someone is wrong on the Internet : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 有人在互联网上错了：ezyang’s blog
 - en: 来源：[http://blog.ezyang.com/2011/03/someone-is-wrong-on-the-internet/](http://blog.ezyang.com/2011/03/someone-is-wrong-on-the-internet/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/03/someone-is-wrong-on-the-internet/](http://blog.ezyang.com/2011/03/someone-is-wrong-on-the-internet/)
 - en: '*The perverse incentive structure of the Internet*'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: '*互联网的扭曲激励结构*'
 - en: Suppose you have a Random Question™ that you would like answered. For example,
     “Did Sir Francis Galton have any children?” It’s the type of thing you’d type
     into Google.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设你有一个随机问题™，你希望得到答案。例如，“弗朗西斯·高尔顿爵士有孩子吗？”这是你会在谷歌上搜索的类型问题。
 - en: Answers.com is not a terribly good source, but it is something to at least see
     if you can scrounge up some extra information on. So suppose you dig a little
     deeper and discover that Francis Galton only [married once and that this marriage
@@ -34,28 +50,41 @@
     12) indicates that he knocked up some ladies in Syria and managed to pop out four
     offspring, who happened to conveniently be named “Francis, Harriet, Matilda and
     Mark,” Answers.com is wrong.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: Answers.com并不是一个特别好的信息来源，但至少可以看看是否能找到一些额外的信息。所以假设你深挖一点，发现弗朗西斯·高尔顿只结过一次婚，而且这次婚姻是不孕的。所以除非某位历史学家关于高尔顿患梅毒（Kevles
+    12）并导致他在叙利亚某地与一些女士生了四个方便被命名为“弗朗西斯、哈里特、玛蒂尔达和马克”的孩子的记述，Answers.com是错误的。
 - en: Not really surprising. But that’s not what this essay is about.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 这并不奇怪。但这不是本文讨论的内容。
 - en: 'What this essay is about is what you’re supposed to do when you encounter flagrant
     and unabashed misinformation on the Internet: that is, *someone is wrong on the
     Internet*. There are a few obvious answers:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 这篇文章讨论的是当你在互联网上遇到公然的、彻底的错误信息时应该怎么办：也就是说，*有人在互联网上错了*。有几个显而易见的答案：
 - en: Disseminate corrective information,
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 传播正确的信息，
 - en: Fix it, or
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 修复它，或者
 - en: Ignore it.
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 忽略它。
 - en: '*Disseminating corrective information* is really just a glorified term for
     “arguing”. And everyone knows that arguing on the Internet is perhaps one of the
     most undignified occupations one can assume. Nevertheless, it is an important
@@ -65,19 +94,26 @@
     in this debate. For less contentious issues, the formula of the “dispelling myths”
     essay is a popular mechanism of presenting interesting, corrective information
     to a receptive audience.'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: '*传播正确信息*实际上只是“争论”的一个美化术语。每个人都知道，在互联网上争论可能是一个最不体面的职业。然而，这是一个纠正错误信息的重要机制。正如德杰拉西曾经说过（我在此引用），只有
+    masochist 才会与基督教原教旨主义者就进化论进行辩论，然而，如果没有这样的 masochist 愿意参与这场辩论，我们会更糟糕。对于不那么有争议的问题，“驱散迷思”文章的模式是向愿意接受的观众呈现有趣的、纠正的信息的流行机制。'
 - en: 'I think the primary difficulties with this approach can be summed up in three
     words: cost, effectiveness and reach.'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 我认为这种方法的主要困难可以用三个词来概括：成本、效果和影响力。
 - en: '*Cost.* Writing up an effective rebuttal takes time. Arguing is a time-consuming
     activity. If it’s not something you particularly care about, it makes much more
     sense to update your own belief structure, and not bother attempting to convince
     other people about your updated belief.'
+  id: totrans-16
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*成本*。撰写有效的反驳需要时间。辩论是一种耗时的活动。如果这不是你特别关心的事情，更新自己的信念结构并不费力地避免试图说服其他人对你更新的信念感兴趣，这是更有意义的。'
 - en: '*Effectiveness.* The truism is that “arguing with someone on the Internet is
     like arguing with a pig: it frustrates you and irritates the pig.” But social
     psychology research paints an even more troubling picture: even if you manage
@@ -86,21 +122,27 @@
     Not only that, but [true information may cause a person to believe more strongly
     in their false beliefs](http://www.themonkeycage.org/2010/08/public_opinion_and_obamas_reli.html).
     Why bother?'
+  id: totrans-17
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*效果.* “在互联网上与别人争论就像和猪争论一样：它会让你沮丧，而且还会激怒那只猪。”但社会心理学研究描绘了一个更加令人不安的图景：即使你成功说服某人你是对的，他们旧的（被证伪的）信念仍然会影响他们的决策过程。更糟糕的是，[真实的信息可能会让人更加坚信他们错误的信念](http://www.themonkeycage.org/2010/08/public_opinion_and_obamas_reli.html)。还值得吗？'
 - en: '*Reach.* Even if you write a stunning argument that convinces everyone who
     reads it, there is still the problem of dissemination. The Internet makes it extremely
     easy to pick and choose what you want to read, to aggregate news from like-minded
     individuals, a phenomenon Ethan Zuckerman calls [homophily](http://www.ethanzuckerman.com/blog/2008/04/25/homophily-serendipity-xenophilia/).
     The fear is that we get caught up in our own comfortable information loops, making
     us much dumber.'
+  id: totrans-18
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*传播力.* 即使你写了一篇令人惊叹的论据，说服了所有读者，仍然存在传播问题。互联网使得我们极易挑选我们想要阅读的内容，从志同道合的人那里聚合新闻，正如伊桑·扎克曼所称的[同质性](http://www.ethanzuckerman.com/blog/2008/04/25/homophily-serendipity-xenophilia/)现象。恐怕我们会陷入自己舒适信息循环的困境，使我们变得更加愚蠢。'
 - en: '* * *'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: The notion that you might be able to directly *fix it* seems to be a relatively
     recent one, come with the advent of wikis and the social web. Perhaps the ability
     to unrestrictedly edit an incorrect information source is a new, but the ability
@@ -110,22 +152,28 @@
     that offer fame and minuscule amounts of money for those who find errors. Sure
     you might need to argue with one person, but that’s all you need, and afterwards,
     the original infelicity is corrected.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可以直接*修正它*的观念似乎是比较近期的，随着维基和社交网络的出现而来。也许无限制地编辑错误信息源是一个新的事物，但是去到源头，给教科书的编辑写封信，这个能力早已存在。这里有一种光荣传统，包括像[克努特的奖励支票](http://en.wikipedia.org/wiki/Knuth_reward_check)这样的东西，为那些找到错误的人提供名誉和微薄的金钱。当然你可能需要和一个人争论，但这就是你需要的一切，之后，原始的失误就得到了纠正。
 - en: 'When you go to the source, you partially resolve the reach problem: new readers
     instantly have access to the corrected text (though this doesn’t do much for existing
     dead-tree copies). But cost and effectiveness are still present; perhaps even
     exacerbated. You have to convince a single person that you’re right; if you can’t
     manage that, you’ll have to fall back to a separate rebuttal. Sometimes content
     is abandoned, with the original author having no intention of updating it.'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 当你去到信息源头时，你部分解决了传播问题：新读者可以立即获取到修正后的文本（尽管这对现有的纸质复印本没有太大帮助）。但成本和效率仍然存在；甚至可能加剧了。你必须说服一个人你是对的；如果做不到，你就不得不回到单独的反驳上。有时内容被放弃，原作者没有更新的意图。
 - en: Unrestricted edit access has also given rise to [edit warring](http://en.wikipedia.org/wiki/Edit_war).
     In this situation, you have to actively defend the modification you have made,
     and unfortunately, the winner is usually the one who has more time and resources.
     Edit warring is war by attrition,.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 无限制的编辑访问也催生了[编辑战争](http://en.wikipedia.org/wiki/Edit_war)。在这种情况下，你必须积极捍卫你所做的修改，不幸的是，胜利通常属于那些拥有更多时间和资源的人。编辑战争就是一场消耗战。
 - en: '*Aside.* There are some parallels with the world of open-source software. Fixing
     it is analogous to submitting a bug report or a patch; the need to convince the
     maintainers you are right translates into the act of writing a good bug report.
@@ -133,12 +181,16 @@
     need to make the maintainer care about your specific problem. To fork is to disseminate
     corrective information, although there is an element of unrestricted edits mixed
     in with social coding websites that make it easy to find related copies.'
+  id: totrans-23
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '*附注.* 在开源软件世界中有一些相似之处。修复它类似于提交错误报告或补丁；说服维护者你是对的需求转化为写出一个好的错误报告。如果一个项目被抛弃，你就没戏了；即使它没有被抛弃，你也需要让维护者关注你的具体问题。分叉就是传播纠正信息，虽然社交编码网站中混杂着不受限制的编辑元素，这使得找到相关副本变得容易。'
 - en: '* * *'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: Or you can not bother, and just ignore it. Maybe vent a little about the problem
     to your friends, who have no particular stake in the matter, file it away in your
     brain, and let life go on. In fact, this is precisely the disposition I see adopted
@@ -146,8 +198,10 @@
     happy to share their vast warehouse of knowledge and insights with their friends,
     with whom the exchange is usually effective and the cost not very high (they prefer
     informal mediums like face-to-face conversations and instant-messaging).
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 或者你可以选择不去理会，完全忽略它。也许向你的朋友发泄一下这个问题，他们对这件事并不特别在意，在你的大脑中留下印记，然后让生活继续。事实上，这恰恰是我看到大多数同事采取的态度。他们不为公众写作。他们非常乐意与朋友分享他们的广博知识和见解，交流通常是有效的，成本也不高（他们更喜欢非正式的媒介，如面对面的对话和即时通讯）。
 - en: In fact, I’d hazard that only a fraction of what you might call the literati
     and experts of the world prolifically utilize this sort of broad-net information
     dissemination, that sites like Wikipedia, StackOverflow and Quora attempt to exploit.
@@ -158,15 +212,21 @@
     upstream is beneficial insofar as it lets you stop maintaining your bug fixes.
     The mind boggles at how much untapped expertise there is out there (perhaps that’s
     what sites like Quora are going for.)
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 实际上，我敢说，你可能称之为文人和专家的世界中，只有一小部分人大量利用这种广泛信息传播，像维基百科、StackOverflow和Quora这样的网站试图利用。激励结构根本不存在！对于学术界来说，与公众的交流次于与同行和资助者的交流。对于企业家来说，与顾客的交流才是受重视的，而不是我们在这里看到的这种交流方式。对于软件工程师来说，与上游的沟通有利于让你停止维护你的错误修复。想象一下那些尚未开发的专业知识有多少，也许这就是Quora这类网站的目标。
 - en: It would be folly to try to tell them all to not do that. After all, from their
     point of view, this is what is the most rational use of their time. We can try
     to trick individuals into pouring this information out, in the form of social
     incentives and addictive triggers, but by in large I think these individuals will
     not bite. They’re too clever for that.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 要告诉他们不要这样做显然是愚蠢的。毕竟，从他们的角度来看，这是最理性的时间利用方式。我们可以试图通过社会激励和成瘾触发来诱使个体流露出这些信息，但总体而言，我认为这些个体不会上钩。他们太聪明了。
 - en: Better hope you catch them in a fit of irrationality.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 最好希望你在他们的一时冲动中抓住他们。

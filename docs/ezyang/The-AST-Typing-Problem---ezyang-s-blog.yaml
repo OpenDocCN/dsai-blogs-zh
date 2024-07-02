@@ -1,23 +1,35 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:17:21'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024年07月01日 18:17:21
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'The AST Typing Problem : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: AST类型问题：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2013/05/the-ast-typing-problem/](http://blog.ezyang.com/2013/05/the-ast-typing-problem/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2013/05/the-ast-typing-problem/](http://blog.ezyang.com/2013/05/the-ast-typing-problem/)
 - en: 'This [Lambda the Ultimate post (dated 2010)](http://lambda-the-ultimate.org/node/4170)
     describes a rather universal problem faced by compiler writers: how does one go
     about adding “extra information” (e.g. types) to an AST? (The post itself divides
@@ -28,93 +40,136 @@
     sum up ways of solving the problem which were described in this post, and also
     take a look at what some real world compilers do. The running example lambda calculus
     looks like the following:'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 这篇[《Lambda the Ultimate》帖子（2010年）](http://lambda-the-ultimate.org/node/4170)描述了编译器编写者面临的一个相当普遍的问题：如何向AST添加“额外信息”（例如类型）？（帖子本身将问题分为三个组成部分：将信息添加到数据类型中，使用信息来指导节点的构建，使用信息来指导节点的销毁，但我只对如何定义数据类型感兴趣。）在这篇帖子中，我想总结解决这个问题的方法，这些方法在这篇帖子中被描述，并且看看一些真实世界的编译器是如何做的。运行示例lambda演算如下：
 - en: '[PRE0]'
+  id: totrans-7
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: Separate IR where nodes are decorated with types
+  id: totrans-8
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 单独的IR，其中节点带有类型装饰
 - en: 'The low-tech solution: if you need a new version of the IR with more information,
     just define a new IR type where each node can also carry the information. A trick
     to make these definitions more concise is to make a mutually recursive data structure.
     [[1]](http://lambda-the-ultimate.org/node/4170#comment-63834)'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 低技术解决方案：如果您需要一个包含更多信息的新版本IR，只需定义一个新的IR类型，其中每个节点也可以携带信息。使这些定义更简洁的一个技巧是创建一个相互递归的数据结构。[[1]](http://lambda-the-ultimate.org/node/4170#comment-63834)
 - en: '[PRE1]'
+  id: totrans-10
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: Despite (or perhaps because of) it’s simplicity, this approach is extremely
     popular among many compilers, especially in the ML community. A few examples include
     OCaml (parsetree/typedtree), MLton (AST/CoreML) and Ikarus Scheme. Part of the
     reason for this is that the transition from frontend language to typed language
     also comes with some other changes, and when a new AST is defined those changes
     can be combined in too.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管（或许正因为）它的简单性，这种方法在许多编译器中非常受欢迎，特别是在ML社区中。一些例子包括OCaml（parsetree/typedtree）、MLton（AST/CoreML）和Ikarus
+    Scheme。部分原因是从前端语言到类型化语言的转换还伴随着其他一些变化，当定义一个新的AST时，这些变化也可以结合在一起。
 - en: Nullable field
+  id: totrans-12
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 可空字段
 - en: 'The unprincipled solution: use one AST, but have an optional field in which
     you can slot in the information. [[2]](http://lambda-the-ultimate.org/node/4170#comment-63832)'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 无原则解决方案：使用一个AST，但有一个可选字段，可以插入信息。[[2]](http://lambda-the-ultimate.org/node/4170#comment-63832)
 - en: '[PRE2]'
+  id: totrans-14
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: Presented without further comment.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 不再进行进一步评论。
 - en: Explicit typing
+  id: totrans-16
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 显式类型化
 - en: While closely related to the separate IR solution, an explicitly typed IR takes
     the approach of not decorating each node with a type, but arranging that the type
     of any given node can be quickly computed using only local information. [[3]](http://lambda-the-ultimate.org/node/4170#comment-63884)
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然与单独的IR解决方案密切相关，但明确类型化的IR采取的方法是不为每个节点装饰类型，而是安排任何给定节点的类型可以仅使用局部信息快速计算。[[3]](http://lambda-the-ultimate.org/node/4170#comment-63884)
 - en: '[PRE3]'
+  id: totrans-18
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'Here, the difference between `TExp` and `Exp` is very slight; the `TLambda`
     is annotated with an explicit type for the binder. As far as type-checking is
     concerned, this makes a world of difference: we no longer need to look outside
     a lambda to figure out what the binder could be.'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里，`TExp`和`Exp`之间的区别非常微小；`TLambda`用显式类型为绑定器进行了注释。就类型检查而言，这是一个天壤之别：我们不再需要查看lambda外部来确定绑定器可能是什么。
 - en: Forcing your IR to be explicitly typed is often a good idea for metatheoretic
     reasons, as complicated type systems often don’t have decidable inference algorithms.
     Both GHC’s core IR, Ur/Web's core and Coq are explicitly typed in this way.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 强制使您的IR明确类型化通常是出于元理论原因一个好主意，因为复杂的类型系统通常没有可判定的推理算法。GHC的核心IR、Ur/Web的核心和Coq都以这种方式明确类型化。
 - en: Two-level types
+  id: totrans-21
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 两级类型
 - en: By deferring when you tie the knot of a recursive data-structure, you can arrange
     for the base functor to do double-duty for the untyped and typed representations.
     [[4]](http://lambda-the-ultimate.org/node/4170#comment-63836)
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过延迟递归数据结构的节点连接时机，您可以安排基本函子同时为无类型和类型表示提供服务。[[4]](http://lambda-the-ultimate.org/node/4170#comment-63836)
 - en: '[PRE4]'
+  id: totrans-23
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: The Coq kernel uses this to define its expression type, although it doesn’t
     use it to define an untyped variant.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: Coq内核使用这种方法来定义其表达式类型，尽管它不用它来定义一个无类型的变体。
 - en: (Lazy) Attribute grammars
+  id: totrans-25
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: （惰性）属性语法
 - en: I don’t claim to understand this approach too well, but essentially it is a
     programming model distinct from usual algebraic data types which associates attributes
     over nodes of a tree. In some sense, it can be thought as a memoized function
     from AST nodes to the attributes. Many compilers do utlize maps, but only for
     top-level declarations. [[5]](http://lambda-the-ultimate.org/node/4170#comment-63903)
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 我不敢说我太理解这种方法，但它本质上是一种与通常的代数数据类型不同的编程模型，它将树的节点上的属性关联起来。在某种意义上，它可以被视为从AST节点到属性的记忆函数。许多编译器确实使用映射，但仅用于顶层声明。[[5]](http://lambda-the-ultimate.org/node/4170#comment-63903)

@@ -1,23 +1,35 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:18:10'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:18:10
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Interrupting GHC : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 中断GHC：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2010/08/interrupting-ghc/](http://blog.ezyang.com/2010/08/interrupting-ghc/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/08/interrupting-ghc/](http://blog.ezyang.com/2010/08/interrupting-ghc/)
 - en: In my [tech talk about abcBridge](http://blog.ezyang.com/2010/08/galois-tech-talk-abcbridge-functional-interfaces-for-aigs-and-sat-solving/),
     one of the “unsolved” problems I had with making FFI code usable as ordinary Haskell
     code was interrupt handling. Here I describe an experimental solution involving
@@ -25,157 +37,238 @@
     The introductory section may be interesting to practitioners looking for working
     examples of code that catches signals; the later section is a proof of concept
     that I hope will turn into a fully fleshed out patch.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我的[有关abcBridge的技术讲座](http://blog.ezyang.com/2010/08/galois-tech-talk-abcbridge-functional-interfaces-for-aigs-and-sat-solving/)中，我在将FFI代码用作普通Haskell代码时遇到的一个“未解决”问题是中断处理。在这里，我描述了一种涉及GHC运行时系统更改的实验性解决方案，这是由[Simon
+    Marlow](http://permalink.gmane.org/gmane.comp.lang.haskell.glasgow.user/18771)建议的。导论部分可能对寻找代码工作示例的从业者感兴趣，用于捕获信号的代码；后面的部分是我希望能够完全完成的补丁的概念验证。
 - en: '[PRE0]'
+  id: totrans-7
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: '* * *'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: In many interactive applications (especially for REPLs), you would like to be
     able to catch when a user hits `^C` and terminate just the current computation,
     not the entire program. `fooHs` is some function that may take a long time to
     run (in this case, `fooHs` never terminates).
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 在许多交互式应用程序（特别是REPL）中，您希望能够捕获用户按下`^C`时终止当前计算，而不是整个程序。`fooHs`是一个可能需要很长时间才能运行的函数（在这种情况下，`fooHs`永远不会终止）。
 - en: '[PRE1]'
+  id: totrans-10
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'By default, GHC generates an asynchronous exception which we can catch using
     the normal exception handling facilities to say “don’t exit yet”:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 默认情况下，GHC生成一个异步异常，我们可以使用正常的异常处理设施来捕获，以表明“还不要退出”：
 - en: '[PRE2]'
+  id: totrans-12
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: Sometimes, you don’t want an exception generated at all and would like to deliberate
     on the signal as soon as it arrives. You might be in some critical section of
     the program that should not be interrupted! In such a case, you can install a
     signal handler with `installHandler` from [System.Posix.Signals](http://www.haskell.org/ghc/docs/6.12-latest/html/libraries/unix-2.4.0.1/System-Posix-Signals.html).
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 有时，您不希望生成任何异常，并希望在信号到达时立即进行研究。您可能处于程序的某个关键部分，不希望被中断！在这种情况下，您可以使用来自[System.Posix.Signals](http://www.haskell.org/ghc/docs/6.12-latest/html/libraries/unix-2.4.0.1/System-Posix-Signals.html)的`installHandler`安装信号处理程序。
 - en: '[PRE3]'
+  id: totrans-14
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: Care should be taken to make sure you restore the original signal handler when
     you’re done.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 在完成后，应确保恢复原始的信号处理程序。
 - en: 'If you do decide you want to generate an exception from inside a signal handler,
     a little care must be taken: if we try to do just a simple throw, our exception
     will seemingly vanish into the void! This is because the interrupt handler is
     run on a different thread, and we have to use `throwTo` from [Control.Concurrent](http://www.haskell.org/ghc/docs/6.12.2/html/libraries/base-4.2.0.1/Control-Concurrent.html)
     to ensure our exception is sent to the right thread.'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果您决定从信号处理程序内生成异常，需要小心处理：如果我们仅尝试简单地抛出异常，我们的异常似乎会消失到虚无中！这是因为中断处理程序在不同的线程上运行，我们必须使用来自[Control.Concurrent](http://www.haskell.org/ghc/docs/6.12.2/html/libraries/base-4.2.0.1/Control-Concurrent.html)的`throwTo`确保我们的异常发送到正确的线程。
 - en: '[PRE4]'
+  id: totrans-17
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: This code works fine for pure Haskell work.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 这段代码对纯Haskell工作很好。
 - en: '* * *'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'However, our question is whether or not we can interrupt Haskell threads that
     are inside the FFI, not just pure Haskell code. That is, we’d like to replace
     `fooHs` with:'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，我们的问题是，我们是否可以中断处于FFI中的Haskell线程，而不仅仅是纯Haskell代码。也就是说，我们想用`fooHs`替换：
 - en: '[PRE5]'
+  id: totrans-21
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 'where `foo.h` contains:'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 其中`foo.h`包含：
 - en: '[PRE6]'
+  id: totrans-23
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'and `foo.c` contains:'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 而`foo.c`包含：
 - en: '[PRE7]'
+  id: totrans-25
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: 'In real practice, `foo` will be some highly optimized function written in C
     that may take a long time to run. We also can’t kill functions willy nilly: we
     should be able to forcibly terminate it at any time without corrupting some global
     state.'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 在实际应用中，`foo`将是一些在C语言中编写的高度优化的函数，可能需要很长时间才能运行。我们也不能随意终止函数：我们应该能够随时强制终止它，而不会破坏一些全局状态。
 - en: 'If we try our existing `interruptible` functions, we find they don’t work:'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们尝试使用现有的`interruptible`函数，我们发现它们不起作用：
 - en: '`reallySimpleInterruptible` registers the SIGINT, but the foreign call continues.
     On the second SIGINT, the program terminates. This is the [default behavior of
     the runtime system](http://hackage.haskell.org/trac/ghc/wiki/Commentary/Rts/Signals):
     the RTS will attempt to gracefully abort the computation, but has no way of killing
     an FFI call, and forcibly terminates the program when the second SIGINT arrives.'
+  id: totrans-28
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`reallySimpleInterruptible` 注册了 SIGINT，但外部调用仍在继续。在第二个 SIGINT 上，程序终止。这是运行时系统的
+    [默认行为](http://hackage.haskell.org/trac/ghc/wiki/Commentary/Rts/Signals)：RTS 会试图优雅地中止计算，但无法终止
+    FFI 调用，并在第二个 SIGINT 到来时强制终止程序。'
 - en: '`simpleInterruptible` fares even worse: without the “exit on the second signal”
     behavior, we find that we can’t kill the program by pressing `^C`! The thread
     that requested the FFI call is ignoring our exceptions.'
+  id: totrans-29
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`simpleInterruptible` 的表现甚至更糟：没有“在第二个信号上退出”的行为，我们发现无法通过按 `^C` 来终止程序！请求 FFI
+    调用的线程正在忽略我们的异常。'
 - en: '* * *'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Nota bene.* Please let the author know of any factual inaccuracies in this
     section.'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: '*Nota bene.* 请告知作者本节中的任何事实错误。'
 - en: 'Time to dive into the runtime system! The code that manages asynchronous exception
     lives in `RaiseAsync.c` in the `rts` directory. In particular, there is the function:'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 是时候深入了解运行时系统了！管理异步异常的代码位于 `rts` 目录下的 `RaiseAsync.c` 中。特别是这个函数：
 - en: '[PRE8]'
+  id: totrans-33
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: Which is called when a thread invokes `throwTo` to create an exception in another
     thread.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 当线程调用 `throwTo` 在另一个线程中创建异常时会调用。
 - en: 'It’s instructive to first look at what happens when there is no funny business
     going along, that is, when the thread is not blocked:'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先看一下没有任何幽默的情况发生时会发生什么，也就是说，当线程没有被阻塞时：
 - en: '[PRE9]'
+  id: totrans-36
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: If the thread is running normally, we use `raiseAsync` to raise the exception
     and we’re done! However, the thread may have called `block` (from [Control.Exception](http://haskell.org/ghc/docs/6.12.2/html/libraries/base-4.2.0.1/Control-Exception.html#v%3Ablock)),
     in which case we add the exception to the target’s blocked exceptions queue, and
     wait for the target to become unblocked.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果线程正常运行，我们使用 `raiseAsync` 来引发异常，然后完成！然而，线程可能已调用 `block`（来自 [Control.Exception](http://haskell.org/ghc/docs/6.12.2/html/libraries/base-4.2.0.1/Control-Exception.html#v%3Ablock)），在这种情况下，我们将异常添加到目标的阻塞异常队列，并等待目标解除阻塞。
 - en: 'Another state that a Haskell thread can be in is this:'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一个 Haskell 线程可能处于的状态是这样的：
 - en: '[PRE10]'
+  id: totrans-39
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: The runtime system waits for the thread to stop being blocked on the FFI call
     before delivering the exception—it will get there eventually! But if the FFI call
     takes a long time, this will be too late. We could replace this call with `raiseAsync`,
     but what we find is that, while the exception gets raised and the Haskell thread
     resumes normal execution, the *FFI computation continues*!
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 运行时系统等待线程停止在 FFI 调用上的阻塞，然后再传递异常——它最终会到达那里！但如果 FFI 调用时间太长，这将为时已晚。我们可以用 `raiseAsync`
+    替换此调用，但我们发现，虽然异常被引发并且 Haskell 线程恢复正常执行，*FFI 计算继续进行*！
 - en: '* * *'
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: If this seems mysterious, it’s useful to review how [the multithreaded scheduler](http://hackage.haskell.org/trac/ghc/wiki/Commentary/Rts/Scheduler)
     in the GHC runtime system works. Haskell threads are light-weight, and don’t have
     a one-to-one corresponding with OS threads. Instead, Haskell threads, represented
     with a TSO (thread-state object), are scheduled on a smaller number of OS threads,
     abstracted in the RTS as Tasks. Each OS thread is associated with a CPU core,
     abstracted in the RTS as a Capability.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果这看起来很神秘，回顾一下 [GHC 运行时系统的多线程调度器](http://hackage.haskell.org/trac/ghc/wiki/Commentary/Rts/Scheduler)
+    的工作方式将会很有帮助。Haskell 线程是轻量级的，与操作系统线程没有一对一的对应关系。相反，Haskell 线程使用 TSO（线程状态对象）表示，在
+    RTS 中被调度为一小部分操作系统线程，被抽象为任务。每个操作系统线程与一个 CPU 核心相关联，在 RTS 中被抽象为能力。
 - en: 'At the very start of execution, the number of OS threads is the same as the
     number of virtual cores (as specified by the `-N` RTS option): in terms of Haskell
     code, we gain parallelism by having multiple capabilities, *not* multiple tasks!
@@ -183,38 +276,55 @@
     on the operating system, it may give up it’s capability to another task, which
     can continue running Haskell code, thus we frequently refer to these tasks as
     worker threads.'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 在执行的最初阶段，操作系统线程的数量与虚拟核心的数量相同（由 `-N` RTS 选项指定）：就 Haskell 代码而言，我们通过拥有多个能力而获得并行性，*而不是*多个任务！能力一次只能属于一个任务。然而，如果一个任务在操作系统上阻塞，它可能会放弃它的能力给另一个任务，后者可以继续运行
+    Haskell 代码，因此我们经常将这些任务称为工作线程。
 - en: A Task (OS thread) does work by executing InCalls requested by a TSO (Haskell
     thread) in the run queue, scheduling them in a round-robin fashion. During the
     course of this execution, it may run across an FFI call. The behavior here diverges
     depending on whether or not the FFI call is safe or unsafe.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 任务（操作系统线程）通过执行由 TSO（Haskell 线程）在运行队列中请求的 InCall 来执行工作，以循环轮换的方式进行调度。在执行过程中，可能会遇到
+    FFI 调用。这里的行为会根据 FFI 调用是安全还是不安全而有所不同。
 - en: If the call is unsafe, we just make the call, without relinquishing the capability!
     This means no other Haskell code can run this virtual core, which is bad news
     if the FFI call takes a long time or blocks, but if it’s really fast, we don’t
     have to give up the capability only to snatch it back again.
+  id: totrans-45
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如果调用是不安全的，我们直接进行调用，不放弃能力！这意味着没有其他 Haskell 代码可以运行这个虚拟核心，如果 FFI 调用花费很长时间或者阻塞，这是个坏消息，但如果速度真的很快，我们不必放弃能力只为了随后再夺回来。
 - en: If the call is safe, we release the capability (allowing other Haskell threads
     to proceed), and the Haskell thread is suspended as waiting on a foreign call.
     The current OS thread then goes and runs the FFI call.
+  id: totrans-46
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如果调用是安全的，我们释放能力（允许其他 Haskell 线程继续），而 Haskell 线程则暂停在一个外部调用上。当前的操作系统线程接着运行 FFI
+    调用。
 - en: Thus, if we attempt to directly wake up the original Haskell thread by throwing
     it an exception, it will end up getting scheduled on a *different* OS thread (while
     the original thread continues running the FFI call!)
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，如果我们试图通过向其抛出异常来直接唤醒原始的 Haskell 线程，它最终会被调度到*不同*的操作系统线程（而原始线程继续运行 FFI 调用！）
 - en: The trick is to kill the OS thread that is running the FFI call.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 诀窍是终止正在运行 FFI 调用的操作系统线程。
 - en: '[PRE11]'
+  id: totrans-49
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: Which OS thread is it, anyhow? It couldn’t possibly be thread attempting to
     throw the exception and it doesn’t have anything to do with the suspended Haskell
     thread, which is waiting to be woken up but doesn’t know what it’s waiting to
@@ -223,38 +333,61 @@
     that matches up with the target of our exception. Once we find it, we kill the
     thread with fire (`pthread_cancel`) and wakeup the orignating Haskell thread with
     an exception.
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 无论它是哪个操作系统线程？它不可能是试图抛出异常的线程，也与暂停的 Haskell 线程无关，后者正在等待被唤醒但不知道它在等待被唤醒的原因。然而，运行
+    FFI 调用的任务知道哪个 Haskell 线程正在等待它，因此我们可以遍历所有任务列表，查找与我们的异常目标匹配的任务。一旦找到它，我们就使用 `pthread_cancel`
+    杀死线程，并用异常唤醒原始的 Haskell 线程。
 - en: 'There is one subtlety that Marlow pointed out: we do not want to destroy bound
     threads, because they may contain thread local state. Worker threads are identical
     and thus expendable, but bound threads cannot be treated so lightly.'
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 有一个微妙之处是 Marlow 指出的：我们不想销毁绑定线程，因为它们可能包含线程本地状态。工作线程是相同的，因此是可以牺牲的，但不能轻视绑定线程。
 - en: '* * *'
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'We’ve been a bit mean: we haven’t given the library a chance to clean up when
     it got interrupted. Fortunately, the library can use `pthread_setcancelstate`
     and `pthread_setcanceltype`, to give it a chance to cleanup before exiting.'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们有点不友好：在中断时，我们没有给库一个清理的机会。幸运的是，库可以使用 `pthread_setcancelstate` 和 `pthread_setcanceltype`
+    在退出之前给它一个清理的机会。
 - en: '* * *'
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'It turns out that even with the RTS patch, we still aren’t quite able to interrupt
     FFI calls. If we add in an explicit new Haskell thread, hwoever, things work:'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 结果表明，即使使用了 RTS 补丁，我们仍然无法完全中断 FFI 调用。但如果我们添加一个明确的新 Haskell 线程，事情就会起作用：
 - en: '[PRE12]'
+  id: totrans-56
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: 'The output of this literate Haskell file, when compiled with `-threaded` on
     the patched RTS is as follows:'
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 当以修补后的 RTS 编译并使用 `-threaded` 选项时，这个 Literate Haskell 文件的输出如下：
 - en: '[PRE13]'
+  id: totrans-58
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: Proof of concept accomplished! Now to make it work on Windows...
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 概念证明成功！现在让它在 Windows 上工作…

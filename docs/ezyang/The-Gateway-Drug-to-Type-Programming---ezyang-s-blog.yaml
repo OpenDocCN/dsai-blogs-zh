@@ -1,63 +1,93 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:12'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:12'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'The Gateway Drug to Type Programming : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 类型编程的入门药物：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2010/08/the-gateway-drug-to-type-programming/](http://blog.ezyang.com/2010/08/the-gateway-drug-to-type-programming/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/08/the-gateway-drug-to-type-programming/](http://blog.ezyang.com/2010/08/the-gateway-drug-to-type-programming/)
 - en: '[David Powell](http://blog.ezyang.com/2010/07/suggestion-box/#comment-789)
     asks,'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: '[David Powell](http://blog.ezyang.com/2010/07/suggestion-box/#comment-789)
+    提问，'
 - en: There seems to be decent detailed information about each of these [type extensions],
     which can be overwhelming when you’re not sure where to start. I’d like to know
     how these extensions relate to each other; do they solve the same problems, or
     are they mutually exclusive?
+  id: totrans-7
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 看起来关于每个 [类型扩展] 都有相当详细的信息，当你不确定从哪里开始时，这可能会让人感到不知所措。 我想知道这些扩展如何相互关联；它们解决了相同的问题吗，还是它们是互斥的？
 - en: Having only used a subset of GHC’s type extensions (many of them added only
     because the compiler told me to), I’m unfortunately terribly unqualified to answer
     this question. In the cases where I’ve gone out of my way to add a language extension,
     most of the time it’s been because I was following some specific recipe that called
     for that type. (Examples of the former include FlexibleInstances, MultiParamTypeClasses,
     and FlexibleContexts; examples of the latter include GADTs and EmptyDataDecl).
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于只使用了 GHC 的一部分类型扩展（其中许多只是因为编译器告诉我要添加），我不幸地对回答这个问题一窍不通。 在我特意添加语言扩展的情况下，大多数时候都是因为我在遵循某些特定的配方需要那种类型。（前者的例子包括
+    FlexibleInstances、MultiParamTypeClasses 和 FlexibleContexts；后者的例子包括 GADTs 和 EmptyDataDecl）。
 - en: There is, however, one language extension that I have found myself increasingly
     relying on and experimenting with—you could call it my gateway drug to type level
     programming. This extension is `Rank2Types`. ([Tim Carstens](http://intoverflow.wordpress.com/2010/06/30/haskell-features-id-like-to-see-in-other-languages/)
     appears to be equally gaga at this feature.)
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，有一个语言扩展，我发现自己越来越依赖并进行实验——你可以称之为我进入类型级编程的入门药物。 这个扩展就是 `Rank2Types`。（[Tim Carstens](http://intoverflow.wordpress.com/2010/06/30/haskell-features-id-like-to-see-in-other-languages/)
+    对这个功能似乎同样着迷。）
 - en: 'The reason why this feature speaks so powerfully to me is that it lets me encode
     an invariant that I see all the time in imperative code: *when a resource is released,
     you should not use it anymore.* Whether for memory, files or network connections,
     the resource handle is ubiquitous. But normally, you can only write:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个功能对我如此有力的原因是，它让我能够在命令式代码中经常看到的不变量进行编码： *当一个资源被释放时，你不应再使用它。* 无论是内存、文件还是网络连接，资源句柄无处不在。
+    但通常你只能写：
 - en: '[PRE0]'
+  id: totrans-11
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: so you rely on the file handle being available in a small enough scope so that
     it’s obvious if you’re using it incorrectly, or if the handle is to be available
     in a global context, you add runtime checks that it’s hasn’t been closed already
     and hope that no one’s messed it up a thousand lines of code away.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以，你依赖于文件句柄在足够小的范围内可用，以便明确是否使用不正确，或者如果句柄在全局上下文中可用，你会添加运行时检查以确保它尚未关闭，并希望没有人在代码千行之外搞砸它。
 - en: 'So the moment I realized that I could actually enforce this statically, I was
     thrilled. *What other invariants can I move from runtime to compile time?* Luckily,
     the system I was working on offered more opportunities for type-level invariant
@@ -68,44 +98,58 @@
     function.” These are fairly complicated invariants, and I was quite pleased when
     I found that I was able to encode these in the type system. In fact, this was
     a turning point: *I’d moved beyond cookbook types to type programming.*'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以在我意识到我实际上可以在静态情况下强制执行这一点时，我感到非常兴奋。 *还有哪些不变量可以从运行时移到编译时？* 幸运的是，我所在的系统提供了更多的类型级别不变量强制执行的机会，从“已释放的资源不能被重用”到“绑定到一个资源的组件不应与另一个资源混合使用”和“前一规则的例外：组件可以用于另一个资源，但前提是目标资源来自源资源，并且你需要调用一个翻译函数。”
+    这些都是相当复杂的不变量，当我发现我能够在类型系统中编码它们时，我感到非常高兴。 实际上，这是一个转折点： *我已经超越了简单的类型，进入了类型编程。*
 - en: 'So, how do you discover your gateway drug to type programming? I feel that
     right now, there are two ways:'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 那么，你如何发现你进入编程的入门药物？我觉得现在有两种方式：
 - en: Consider all type system features and extensions to be intrinsically useful,
     study each of them to learn their capabilities and obvious use-cases, and hope
     that at some point you know the primitives well enough to start fitting them together.
     (As for many other things, I feel that knowing the fundamentals is the only way
     to get to truly understand a system, but I personally find this approach very
     daunting.)
+  id: totrans-15
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 认为所有类型系统特性和扩展本质上都是有用的，研究每一个以了解它们的能力和明显的用例，并希望在某个时候你能够足够了解这些基本元素以开始将它们组合起来。（对于许多其他事情而言，我觉得了解基本原理是真正理解一个系统的唯一途径，但我个人觉得这种方法非常令人畏惧。）
 - en: Get acquainted with the canonical use-cases for any given type system feature
     and extension, accumulating a cookbook-like repository of type system possibilities.
     Stumble upon a real problem that is precisely the use-case, implement it, and
     then start tinkering at the edges to extend what you can do. (This is how I got
     hooked, but it has also left me at a loss as to a methodology—a common framework
     of thought as opposed to isolated instances of cleverness.)
+  id: totrans-16
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 认识任何给定类型系统特性和扩展的经典用例，并积累像食谱一样的类型系统可能性库。偶然发现一个确切的使用案例，实施它，然后开始在边缘处摆弄，以扩展你能做的事情。（这就是我沉迷其中的方式，但也让我对方法论——作为一种普遍的思维框架而非孤立的巧思实例——感到困惑。）
 - en: 'In fact, this seems quite similar to the learning process for any programming
     language. There are several types of learning materials that I would love to know
     about:'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 实际上，这似乎与任何编程语言的学习过程非常相似。我想了解几种类型的学习材料：
 - en: A comprehensive cookbook of type level encodings of invariants that are normally
     checked at runtime. It would show the low-tech, runtime-verified program, and
     then show the abstractions and transformations necessary to move the invariant
     to types. It would collect all of the proposed use-cases that all of the various
     literature has explored for various type extensions under a uniform skin, a kind
     of Patterns book. A catalog of Oleg’s work would be a good place to start.
+  id: totrans-18
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一个全面的类型级编码的食谱，其中包含通常在运行时检查的不变量。它将展示低技术的、运行时验证的程序，然后展示将不变量移至类型所需的抽象和转换。它将在统一皮肤下收集所有各种文献探索的各种类型扩展的提议用例，一种模式书的形式。Oleg
+    的作品目录是个很好的起点。
 - en: When I reuse a type variable in an expression such as `Foo a -> Foo a`, I’ve
     state that whatever type the left side is, the right side must be the same too.
     You might usually associate `a` with a usual type like `Int` or `Char`, and `Foo`
@@ -116,19 +160,28 @@
     `forall b. b`, I’ve a unique label which can be passed along but can’t be forged.
     What is actually going on here? What does the “types as propositions” (Curry-Howard)
     viewpoint say about this?
+  id: totrans-19
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 当我在表达式中重复使用类型变量，比如 `Foo a -> Foo a`，我已经声明左边的任何类型右边也必须相同。你可能通常将 `a` 关联到像 `Int`
+    或 `Char` 这样的普通类型，并将 `Foo` 视为某种容器。但我们可以在这个位置放入更奇怪的类型。如果 `Foo` 使用 `a` 作为幻影类型，我可以使用空类型来区分一组固定的类型，而无需为
+    `Foo` 提供相应的值。如果我使用 `Rank2Types` 让 `a` 绑定到另一个全称量化类型 `forall b. b`，我有一个可以传递但无法伪造的唯一标签。这里实际上发生了什么？“类型即命题”（Curry-Howard）的观点对此有何解释？
 - en: What kinds of type programming result in manageable error messages, and what
     types of type programming result in [infamous error messages](http://intoverflow.wordpress.com/2010/05/21/announcing-potential-x86-64-assembler-as-a-haskell-edsl/#more-385)?
     When I first embarked on my API design advantage, a fellow engineer at Galois
     warned me, “If you have to sacrifice some static analysis for a simpler type system,
     do it. Things like type level numbers are not worth it.” I may have wandered too
     far off into the bushes already!
+  id: totrans-20
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 哪些类型编程会产生可管理的错误消息，哪些类型编程会导致[臭名昭著的错误消息](http://intoverflow.wordpress.com/2010/05/21/announcing-potential-x86-64-assembler-as-a-haskell-edsl/#more-385)？当我首次着手设计
+    API 时，Galois 的一位工程师警告我：“如果为了简化类型系统而牺牲一些静态分析，那就去做吧。像类型级数字这样的东西不值得。”也许我已经在灌木丛中迷失了！
 - en: I’m sure that some of this literature exists already, and would love to see
     it. Bring on the types!
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 我确信已经存在一些这样的文献，并且很想看看它们。带来类型吧！

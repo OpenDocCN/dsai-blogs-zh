@@ -1,24 +1,38 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:38'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:38'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Interactive Demo of Zero-Knowledge Proofs : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 交互式零知识证明演示：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2011/12/interactive-demo-of-zero-knowledge-proofs/](http://blog.ezyang.com/2011/12/interactive-demo-of-zero-knowledge-proofs/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/12/interactive-demo-of-zero-knowledge-proofs/](http://blog.ezyang.com/2011/12/interactive-demo-of-zero-knowledge-proofs/)
 - en: Interactive Demo of Zero-Knowledge Proofs
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 交互式零知识证明演示

@@ -1,53 +1,77 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:09'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:09'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Towards platform-agnostic interruptibility : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 向平台无关的可中断性迈进：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2010/09/towards-platform-agnostic-interruptibility/](http://blog.ezyang.com/2010/09/towards-platform-agnostic-interruptibility/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/09/towards-platform-agnostic-interruptibility/](http://blog.ezyang.com/2010/09/towards-platform-agnostic-interruptibility/)
 - en: 'Last post, I talked about some of the notable difficulties in [emulating pthread_cancel
     on Windows](http://blog.ezyang.com/2010/09/pthread-cancel-on-window/). Today,
     I want to talk about what a platform agnostic compiler like GHC actually ought
     to do. Recall our three design goals:'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 上一篇文章中，我讨论了在[Windows上模拟pthread_cancel](http://blog.ezyang.com/2010/09/pthread-cancel-on-window/)时遇到的一些显著困难。今天，我想讨论像GHC这样的跨平台编译器实际上应该做什么。回想我们的三个设计目标：
 - en: GHC would like to be able to put blocking IO calls on a worker thread but cancel
     them later; it can currently do this on Linux but not on Windows,
+  id: totrans-7
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: GHC希望能够将阻塞IO调用放在工作线程上，然后稍后取消；目前在Linux上可以做到这一点，但在Windows上不行，
 - en: Users would like to write interrupt friendly C libraries and have them integrate
     seamlessly with Haskell’s exception mechanism, and
+  id: totrans-8
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 用户希望编写友好于中断的C库，并使其与Haskell的异常机制无缝集成，以及
 - en: We’d like to have the golden touch of the IO world, instantly turning blocking
     IO code into nice, well-behaved, non-blocking, interruptible code.
+  id: totrans-9
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 我们希望拥有IO世界的黄金之手，即将阻塞IO代码瞬间转变为良好行为、非阻塞、可中断的代码。
 - en: I am going to discuss these three situations, described concisely as blocking
     system calls, cooperative libraries and blocking libraries. I propose that, due
     to the lack of a cross-platform interruption mechanism, the correct interruptibility
     interface is to permit user defined handlers for asynchronous exceptions.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 我将讨论这三种情况，简要描述为阻塞系统调用、协作库和阻塞库。我建议，由于缺乏跨平台的中断机制，正确的中断接口是允许用户定义处理程序以处理异步异常。
 - en: '* * *'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Interruptible blocking system calls.* In the past, GHC has had [some bugs](http://hackage.haskell.org/trac/ghc/ticket/2363)
     in which a foreign call to a blocking IO system call caused Windows to stop being
     interruptible. This is a long standing difference in asynchronous IO philosophy
@@ -55,15 +79,19 @@
     can be interrupted by signals, while Windows believes in callbacks. Thus, calls
     that seem harmless enough actually break interruptibility and have to be rewritten
     manually into a form amenable to both the POSIX and Windows models of asynchrony.'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: '*可中断的阻塞系统调用*。在过去，GHC曾经有[一些错误](http://hackage.haskell.org/trac/ghc/ticket/2363)，其中对阻塞IO系统调用的外部调用导致Windows无法被中断。这是POSIX和Windows异步IO哲学长期存在的差异：POSIX认为某些看似阻塞但可以被信号中断的函数，而Windows则依赖回调函数。因此，看似无害的调用实际上破坏了中断性，并且必须手动重写为既适用于POSIX模型又适用于Windows模型的形式。'
 - en: While it is theoretically and practically possible to manually convert every
     blocking call (which, by the way, works perfectly fine on Linux, because you can
     just send it a signal) into the asynchronous version, but this is very annoying
     and subverts the idea that we can simply ship blocking calls onto another thread
     to pretend that they’re nonblocking.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然理论上和实际上可以手动将每个阻塞调用转换为异步版本（顺便说一句，在Linux上完全可以，因为你可以发送信号），但这非常烦人，违背了我们可以简单地将阻塞调用移到另一个线程以假装它们是非阻塞的这一想法。
 - en: 'Since Windows Vista, we can interrupt blocking IO calls using a handy new function
     [CancelSynchronousIo](http://msdn.microsoft.com/en-us/library/aa363794(VS.85).aspx).
     Notice that cancelling IO is not the same as cancelling a thread: in particular,
@@ -72,60 +100,83 @@
     directly by GHC (which can then notice the aborted operation and propagate the
     interrupt further) or occur in C code that can handle this error condition. Unfortunately,
     this function does not exist on earlier versions of Windows.'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 自Windows Vista以来，我们可以使用一个方便的新函数[CancelSynchronousIo](http://msdn.microsoft.com/en-us/library/aa363794(VS.85).aspx)来中断阻塞IO调用。请注意，取消IO与取消线程不同：特别是同步操作仅返回失败，并将上次错误设置为`ERROR_OPERATION_ABORTED`，因此系统调用必须由GHC直接执行（然后可以注意到中止操作并进一步传播中断），或者出现在能够处理此错误条件的C代码中。不幸的是，此功能在较早版本的Windows上不存在。
 - en: '*Aside.* Is there anything we can do for pre-Vista Windows? Not obviously:
     the under-the-hood changes that were made to Windows Vista were partially to make
     a function like `CancelSynchronousIo` possible. If we were to enforce extremely
     strong invariants on when we call `TerminateThread`; that is, we’d have to manually
     vet every function we consider for termination, and at that point, you might as
     well rewrite it asynchronous style.'
+  id: totrans-15
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '*旁注.* 有什么我们可以为 Vista 之前的 Windows 做吗？显然没有：Windows Vista 中所做的底层更改部分是为了使`CancelSynchronousIo`这样的功能成为可能。如果我们要对何时调用`TerminateThread`强制执行极强的不变量；也就是说，我们必须手动审查我们考虑终止的每个函数，那么在那一点上，你可能会选择重写为异步风格。'
 - en: '* * *'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Interruptible cooperative libraries.* This is the situation where we have
     a C library that we have a high level of control over: it may be our own library
     or we may be writing a intermediate C layer between GHC and an expressive, asynchronous
     underlying library. What we would like to do is have GHC seamlessly convert its
     asynchronous exceptions into some for that our C can notice and act gracefully
     upon.'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: '*可中断的协作库.* 这是我们对 C 库有很高控制权的情况：它可能是我们自己的库，或者我们可能正在为 GHC 和一个富有表现力的异步底层库之间编写一个中间
+    C 层。我们想要做的是让 GHC 无缝地将其异步异常转换为我们的 C 可以注意到并优雅地处理的异常。'
 - en: 'As you may have realized by now, there are *a lot* of ways to achieve this:'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如你现在可能已经意识到的，有*很多*方法可以实现这一点：
 - en: Signals. POSIX only, signals can be temporarily blocked with `sigprocmask` or
     `pthread_sigmask` and a signal handler can be installed with `sigaction` to cleanup
     and possible exit the thread or long jump.
+  id: totrans-19
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 信号。仅限 POSIX，信号可以通过`sigprocmask`或`pthread_sigmask`临时阻止，并且可以通过`sigaction`安装信号处理程序来清理并可能退出线程或长跳转。
 - en: Pthread cancellation. POSIX only, cancellation can be temporarily blocked with
     `pthread_setcanceltype` and a cancellation handler can be installed with `pthread_cleanup_push`.
+  id: totrans-20
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Pthread 取消。仅限 POSIX，取消可以通过`pthread_setcanceltype`临时阻止，并且可以通过`pthread_cleanup_push`安装取消处理程序。
 - en: Select/poll loop. Cancellation requests are sent over a socket which is being
     polled, handler can choose to ignore them.
+  id: totrans-21
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Select/poll 循环。取消请求通过正在轮询的套接字发送，处理程序可以选择忽略它们。
 - en: Event objects. Windows only, threads can receive cancellation requests from
     the handle from `OpenEvent` but choose to ignore them.
+  id: totrans-22
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 事件对象。仅限 Windows，线程可以从`OpenEvent`的句柄接收取消请求，但选择忽略它们。
 - en: IO cancellation. Windows Vista only, as described above.
+  id: totrans-23
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: IO 取消。仅限 Windows Vista，如上所述。
 - en: Completion queue. Windows only, similar to select/poll loop.
+  id: totrans-24
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 完成队列。仅限 Windows，类似于 select/poll 循环。
 - en: 'It doesn’t make much sense to try to implement all of these mechanisms natively.
     Therefore, my proposal: have GHC call a user-defined function in a different thread
     upon receipt of an asynchronous function and let the user figure out what to do.
@@ -134,11 +185,16 @@
     POSIX will still only work with POSIX. However, this is still an advance from
     the current state, which is that asynchronous exceptions *necessarily* behave
     differently for Haskell and FFI code.'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 试图本地实现所有这些机制并没有太多意义。因此，我的建议是：在接收到异步函数时，让 GHC 在不同的线程中调用用户定义的函数，并让用户自己决定该怎么做。在许多方面，这实际上并不是一个决定：特别是，我们要求程序员自己解决问题。只能与
+    POSIX 一起工作的库仍然只能与 POSIX 一起工作。然而，这仍然是一个进步，因为当前状态是，Haskell 和 FFI 代码的异步异常*必然*表现不同。
 - en: '* * *'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Interruptible blocking libraries.* Because blocking IO is much easier to program
     than non-blocking IO, blocking interfaces tend to be more prevalent and better
     tested. (A friend of mine who spent the summer working on Chromium had no end
@@ -147,22 +203,32 @@
     system calls into asynchronous style, but when you have a blob of existing C code
     that you want to interface with, the maintenance cost of such a rewrite quickly
     becomes untenable. What is one to do?'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: '*可中断的阻塞库.* 因为阻塞 IO 比非阻塞 IO 更容易编程，阻塞接口往往更普遍且测试更充分。（我的一个朋友在夏季在 Chromium 上工作时对
+    NSS 的非阻塞接口的[bug](https://bugzilla.mozilla.org/show_bug.cgi?id=542832)感到无穷无尽的抱怨。）将一些系统调用重写为异步风格可能是可行的，但当你有一大块现有的
+    C 代码要进行接口处理时，这种重写的维护成本很快就变得难以承受。该怎么办呢？'
 - en: 'Alas, there is no magic bullet: if the library never had any consideration
     for interruptibility, forcibly terminating it is more than likely to leave your
     program in a corrupted state. For those who would like to play it fast and loose,
     however, the user-defined function approach would still let you call `TerminateThread`
     if you *really* wanted to.'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 唉，世上并无灵丹妙药：如果库从未考虑到可中断性，强行终止它很可能会使你的程序处于破坏状态。然而，对于那些想要走捷径的人来说，用户定义的函数方法仍然可以让你在*真的*需要时调用`TerminateThread`。
 - en: '* * *'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: In conclusion, I propose that the interruptibility patch be extended beyond
     just a simple `interruptible` keyword to allow a user-defined asynchronous exception
     handler, compiled against the RTS, as well as providing a few built-in handlers
     which provide sensible default behaviors (both platform specific and non-platform
     specific, though I expect the latter to give much weaker guarantees).
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 总之，我建议可中断性补丁不仅仅局限于简单的`interruptible`关键字，还应允许用户定义异步异常处理程序，这些处理程序编译后与运行时系统（RTS）兼容，并提供一些内置处理程序，这些处理程序提供合理的默认行为（无论是特定于平台还是非特定于平台，尽管我预计后者会提供较弱的保证）。

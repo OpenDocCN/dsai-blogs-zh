@@ -1,30 +1,44 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:24'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:24'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'The case of the Hash Array Mapped Trie : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 'The case of the Hash Array Mapped Trie : ezyang’s blog'
 - en: 来源：[http://blog.ezyang.com/2010/03/the-case-of-the-hash-array-mapped-trie/](http://blog.ezyang.com/2010/03/the-case-of-the-hash-array-mapped-trie/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/03/the-case-of-the-hash-array-mapped-trie/](http://blog.ezyang.com/2010/03/the-case-of-the-hash-array-mapped-trie/)
 - en: 'The fast, efficient association map has long been the holy grail of the functional
     programming community. If you wanted such an abstract data structure in an imperative
     language, there would be no question about it: you would use a hash table. But
     the fact that the hash table is founded upon the destructive update makes it hard
     to use with pure code.'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 高效的关联映射长期以来一直是函数式编程社区的圣杯。如果你在命令式语言中需要这样的抽象数据结构，那么毫无疑问地，你会使用哈希表。但是哈希表建立在破坏性更新之上，这使得它在纯代码中难以使用。
 - en: What we are in search of is a strictly more powerful association map, one that
     implements a *non-destructive* update (i.e. is "persistent"). In the Haskell world,
     [Data.Map](http://www.haskell.org/ghc/docs/6.10.4/html/libraries/containers/Data-Map.html)
@@ -33,36 +47,54 @@
     [IntMap](http://hackage.haskell.org/packages/archive/containers/0.1.0.1/doc/html/Data-IntMap.html)
     is an extremely fast purely functional that uses bit twiddling tricks on top of
     big-endian Patricia tries.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们正在寻找的是一个严格更强大的关联映射，它实现了*非破坏性*更新（即“持久性”）。在 Haskell 的世界中，[Data.Map](http://www.haskell.org/ghc/docs/6.10.4/html/libraries/containers/Data-Map.html)
+    是一个相当引人注目的通用结构，只需要其键具有 `Ord` 类型类。对于能够清晰映射到机器大小整数的键来说，[IntMap](http://hackage.haskell.org/packages/archive/containers/0.1.0.1/doc/html/Data-IntMap.html)
+    是一个极快的纯函数数据结构，它在大端 Patricia tries 之上使用了位操作技巧。
 - en: 'Other functional programming languages have championed their own datastructures:
     many of Clojure''s collections critical datastructures were invented by Phil Bagwell,
     among them the [hash-array mapped trie (PDF)](http://lampwww.epfl.ch/papers/idealhashtrees.pdf),
     which drives Clojure''s persistent association maps.'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 其他函数式编程语言推广了自己的数据结构：Clojure 的许多关键数据结构都是由 Phil Bagwell 发明的，其中包括[hash-array mapped
+    trie（PDF）](http://lampwww.epfl.ch/papers/idealhashtrees.pdf)，这些数据结构驱动了 Clojure
+    的持久性关联映射。
 - en: 'On paper, the implementations have the following asymptotics:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 纸面上，这些实现具有以下的渐近性能：
 - en: '*Data.Map.* Let *n* and *m* be the number of elements in a map. *O(log n)*
     lookups, inserts, updates and deletes. *O(n+m)* unions, differences and intersections'
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*Data.Map.* 让 *n* 和 *m* 分别表示地图中的元素数量。*O(log n)* 查找、插入、更新和删除操作。*O(n+m)* 并集、差集和交集操作。'
 - en: '*Data.IntMap.* Let *n* and *m* be the number of elements in a map, and *W*
     be the number of bits in a machine-sized integer (e.g. 32 or 64). *O(min(n,W))*
     lookups, inserts, updates and deletes. *O(n+m)* unions, differences and intersections.'
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*Data.IntMap.* 让 *n* 和 *m* 分别表示地图中的元素数量和机器大小整数（例如32或64）中的位数。*O(min(n,W))* 查找、插入、更新和删除操作。*O(n+m)*
+    并集、差集和交集操作。'
 - en: '*Hash array mapped trie.* Let *n* be the number of elements in a map. Since
     [Hickey''s implementation](http://github.com/richhickey/clojure/blob/master/src/jvm/clojure/lang/PersistentHashMap.java)
     doesn''t have sub-tree pools or root-resizing, we''ll omit them from the asymptotics.
     *O(log(n))* lookups, inserts, updates and deletes. No implementation for unions,
     differences and intersections is described.'
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*Hash array mapped trie.* 让 *n* 表示地图中的元素数量。由于 [Hickey''s implementation](http://github.com/richhickey/clojure/blob/master/src/jvm/clojure/lang/PersistentHashMap.java)
+    没有子树池或根重新调整，我们将在渐近性能中省略它们。*O(log(n))* 查找、插入、更新和删除操作。未描述并集、差集和交集的实现。'
 - en: 'Unfortunately, these numbers don''t actually tell us very much about the real
     world performance of these data structures, since the world of associations is
     competitive enough that the constant factors really count. So I constructed the
@@ -72,103 +104,158 @@
     and HAMT (with an implementation in Java and an implementation in Haskell). Initial
     results indicated that IntMap was faster than Java HAMT was much faster than Haskell
     HAMT.'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 不幸的是，这些数字实际上并没有告诉我们关于这些数据结构的实际性能有多少，因为关联的世界足够竞争，常数因子真的很重要。因此，我构建了以下基准测试：生成 *N*
+    个随机数，并将它们插入映射中。然后，在这些随机数中进行 *N/2* 次查找，并对另外 *N/2* 个未使用的数字进行查找（这将构成未命中）。竞争者是 IntMap
+    和 HAMT（Java 和 Haskell 中的实现）。初步结果表明，IntMap 比 Java HAMT 更快，Java HAMT 比 Haskell HAMT
+    快得多。
 - en: Of course, this was absolutely bogus.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 当然，这完全是胡说八道。
 - en: 'I turned to the [Clojure mailing list](http://groups.google.com/group/clojure/browse_thread/thread/776943086de213f9)
     and presented them with a strange (incorrect) result: Haskell''s IntMap was doing
     up to five times better than Clojure''s built-in implementation of HAMT. Rich
     Hickey immediately pointed out three problems with my methodology:'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 我转向 [Clojure 邮件列表](http://groups.google.com/group/clojure/browse_thread/thread/776943086de213f9)，并向他们展示了一个奇怪的（不正确的）结果：Haskell
+    的 IntMap 比 Clojure 内置的 HAMT 实现快了多达五倍。Rich Hickey 立即指出了我的方法论存在三个问题：
 - en: I was using Java's default heap size (to be fair, I was using Haskell's default
     heap size too),
+  id: totrans-16
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我使用的是 Java 的默认堆大小（公平地说，我也使用了 Haskell 的默认堆大小），
 - en: It wasn't performed with the `-server` flag, and
+  id: totrans-17
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 没有使用 `-server` 标志进行测试，
 - en: I wasn't accounting for the JVM's profile-driven optimization.
+  id: totrans-18
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我没有考虑 JVM 的基于配置文件的优化。
 - en: (There were a few more comments about random number generation and interleaving,
     but further testing revealed those to be of negligible cost.) Rich offered me
     some new code that used `(apply hash-map list-of-vals)` to construct the hash-map,
     and after fixing a bug where Rich was only inserting N/2 entries into the hash
     table, I sallied on.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: （还有一些关于随机数生成和交错的评论，但进一步测试表明这些成本可以忽略不计。）Rich 给了我一些新代码，使用 `(apply hash-map list-of-vals)`
+    构建哈希映射，在修复了一个问题后，Rich 只将 N/2 个条目插入哈希表，我继续前行。
 - en: 'With an improved set of test-cases, I then derived the following statistics
     (for the source, check out [this IntMap criterion harness](http://github.com/ezyang/hamt/blob/master/IntMapTest.hs),
     and the postscript of this blog post for the Clojure harness):'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过改进的测试用例集，我得出了以下统计数据（源代码请查看[此处的 IntMap criterion 测试](http://github.com/ezyang/hamt/blob/master/IntMapTest.hs)，以及此博客文章的后记中的
+    Clojure 测试）：
 - en: '[PRE0]'
+  id: totrans-21
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'Still puzzling, however, was the abysmal performance of [my Haskell reimplementation
     of HAMT](http://github.com/ezyang/hamt), performing three to four times worse
     even after I tore my hair out with bit twiddling tricks and GHC boxing and unboxing.
     Then, I had a revelation:'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，令人困惑的是，我重新实现的 [HAMT 的 Haskell 版本](http://github.com/ezyang/hamt) 表现极差，即使在我用位操作技巧、GHC
+    的装箱和解箱折腾了自己之后，也比原版慢了三到四倍。然后，我有了一个顿悟：
 - en: '[PRE1]'
+  id: totrans-23
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'That tricky Hickey: he''s using mutation (note the `asTransient` call) under
     the hood to optimize the `(apply hash-map ...)` call! A few tweaks later to force
     use of the functional interface, and voila:'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: Hickey 可能是个棘手的家伙：他正在使用变异（请注意 `asTransient` 调用），以优化 `(apply hash-map ...)` 的调用！稍作调整后强制使用函数接口，Voila：
 - en: '[PRE2]'
+  id: totrans-25
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: Much more comparable performance (and if you watch closely the JVM numbers,
     they start off at about the same as Haskell's, and then speed up as HotSpot kicks
     in.)
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 更加可比的性能（如果您仔细观察 JVM 的数字，它们从与 Haskell 大致相同的速度开始，然后随着 HotSpot 的启动而加快。）
 - en: Unfortunately, I can't play similar tricks in the Haskell world. For one thing,
     GHC doesn't have runtime profile-based optimization. Additionally, while I certainly
     *can* unsafely freeze a single array in GHC (this is standard operating procedure
     in many packages), I can't recursively freeze arrays pointing to arrays without
     walking the entire structure. Thus, blazing fast construction of recursive datastructures
     with mutation remains out of reach for Haskell... for now.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 不幸的是，在 Haskell 的世界中我不能使用类似的技巧。首先，GHC 没有基于运行时配置文件的优化。此外，虽然我确实**可以**在 GHC 中不安全地冻结单个数组（这是许多包中的标准操作过程），但我不能递归地冻结指向数组的数组，而不是遍历整个结构。因此，使用变异进行递归数据结构的快速构建对于
+    Haskell 来说仍然是不可能的......暂时是。
 - en: 'This is very much a story in progress. In particular, I still have to:'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个故事还在不断发展之中。特别是，我还需要：
 - en: Do a much more nuanced benchmark, which distinguishes the cost of insertion,
     lookup and other operations; and
+  id: totrans-29
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 进行更加细致的基准测试，区分插入、查找和其他操作的成本；并
 - en: Implement IntMap in Java and see what the JVM buys the algorithm, unifying the
     garbage collection strategies would also be enlightening.
+  id: totrans-30
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在 Java 中实现 IntMap 并观察 JVM 对算法的影响，统一垃圾收集策略也将会很有启发性。
 - en: '*Postscript.* You can see the gory details of the benchmarking on the [Clojure
     mailing list](http://groups.google.com/group/clojure/browse_thread/thread/776943086de213f9).
     Here is the test code that was used to test Java''s HAMT implementation.'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: '*附言.* 你可以在 [Clojure 邮件列表](http://groups.google.com/group/clojure/browse_thread/thread/776943086de213f9)
+    上查看基准测试的详细内容。这是用于测试 Java 的 HAMT 实现的测试代码。'
 - en: 'First with mutation:'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先是变异版本：
 - en: '[PRE3]'
+  id: totrans-33
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'Here is the alternative main definition that forces usage of the functional
     interface:'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里是强制使用函数接口的备选主要定义：
 - en: '[PRE4]'
+  id: totrans-35
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'

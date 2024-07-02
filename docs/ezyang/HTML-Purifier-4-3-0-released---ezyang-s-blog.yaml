@@ -1,34 +1,52 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:55'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:55'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'HTML Purifier 4.3.0 released : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: HTML净化器 4.3.0 发布：ezyang's 博客
 - en: 来源：[http://blog.ezyang.com/2011/03/html-purifier-4-3-0-released/](http://blog.ezyang.com/2011/03/html-purifier-4-3-0-released/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/03/html-purifier-4-3-0-released/](http://blog.ezyang.com/2011/03/html-purifier-4-3-0-released/)
 - en: HTML Purifier 4.3.0 released
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: HTML净化器 4.3.0 发布
 - en: The release cycle gets longer and longer... probably to the delight of all those
     downstream, anyway.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 发布周期变得越来越长……可能会让所有下游开心吧。
 - en: '* * *'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '[HTML Purifier](http://htmlpurifier.org) 4.3.0 is a major security release
     addressing various security vulnerabilities related to user-submitted code and
     legitimate client-side scripts. It also contains an accumulation of new features
@@ -36,11 +54,15 @@
     %CSS.AllowedFonts and %Cache.SerializerPermissions. There is a backwards-incompatible
     API change for customized raw definitions, see [the customization documentation](http://htmlpurifier.org/docs/enduser-customize.html#optimized)
     for details.'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: '[HTML净化器](http://htmlpurifier.org) 4.3.0是一个重要的安全发布版本，解决了与用户提交的代码和合法客户端脚本相关的各种安全漏洞。它还包含了半年来的新功能和错误修复累积。新的配置选项包括%CSS.Trusted、%CSS.AllowedFonts和%Cache.SerializerPermissions。为了定制原始定义，API发生了不兼容的变化，请参阅[定制文档](http://htmlpurifier.org/docs/enduser-customize.html#optimized)获取详细信息。'
 - en: HTML Purifier is a standards-compliant HTML filter library written in PHP (gasp!).
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: HTML净化器是一个用PHP编写的符合标准的HTML过滤器库。
 - en: '*Non sequitur.* While researching the security vulnerabilities that were fixed
     in this version of HTML Purifier, a thought occurred to me: how easy is it to
     do programming with higher-order functions in JavaScript? JavaScript is extremely
@@ -53,5 +75,9 @@
     in Python is that it just takes too long to explain this sort of thing to ones
     colleagues, and debugging them is a headache (it''s... hard to inspect functions
     to see what you got) so it''s better to leave it out.'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: '*无关逻辑。* 在研究这个版本的HTML净化器中修复的安全漏洞时，我有了一个想法：在JavaScript中使用高阶函数编程有多容易？JavaScript在传递函数方面非常流畅（有人可能会说它的面向对象编程设施只是在某些基础结构上放置函数），但由于缺乏类型系统，可能会很烦人，需要说明某个特定函数具有类似`Direction
+    -> DataflowLattice -> (Block -> Fact -> (DG, Fact)) -> [Block] -> (Fact -> DG,
+    Fact)`（简化的真实例子，我不是在开玩笑！）。我在Python中的经验是，向同事解释这种事情需要花费太多时间，调试也是个头疼的问题（检查函数以查看实际内容很困难），所以最好不要涉及。'

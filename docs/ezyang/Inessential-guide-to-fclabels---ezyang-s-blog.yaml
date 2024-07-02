@@ -1,125 +1,185 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:18:21'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:18:21
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Inessential guide to fclabels : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: fclabels的非必需指南：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2010/04/inessential-guide-to-fclabels/](http://blog.ezyang.com/2010/04/inessential-guide-to-fclabels/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/04/inessential-guide-to-fclabels/](http://blog.ezyang.com/2010/04/inessential-guide-to-fclabels/)
 - en: Last time I did an [Inessential guide to data-accessor](http://blog.ezyang.com/2010/04/inessential-guide-to-data-accessor/)
     and everyone told me, "You should use fclabels instead!" So here's the partner
     guide, the inessential guide to fclabels. Like data-accessor the goal is to make
     record access and editing not suck. However, it gives you some more useful abstractions.
     It uses Template Haskell on top of your records, so it is not compatible with
     data-accessor.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 上次我做了一个[关于数据访问器的非必需指南](http://blog.ezyang.com/2010/04/inessential-guide-to-data-accessor/)，所有人告诉我，“你应该使用fclabels！”所以这里是伙伴指南，fclabels的非必需指南。像数据访问器一样，其目标是使记录的访问和编辑变得更加顺畅。然而，它为您提供了一些更有用的抽象。它在您的记录之上使用了模板哈斯克尔，因此与数据访问器不兼容。
 - en: '*Identification.* There are three tell-tale signs:'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '*识别*。有三个显著特征：'
 - en: Type signatures that contain `:->` in them ("Oh, that kind of looks like a function
     arrow... but it's not? Curious!"),
+  id: totrans-8
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 类型签名中包含`:->`（“哦，看起来有点像函数箭头...但不是？好奇怪！”），
 - en: Records that contain fields with a leading underscore (as opposed to data-accessor's
     convention of an trailing underscore), and
+  id: totrans-9
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 记录包含具有前导下划线的字段（与数据访问器约定使用尾随下划线不同），以及
 - en: An `import Prelude hiding (id, (.), mod)`, with an import from `Control.Category`
     to replace them.
+  id: totrans-10
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 一个`import Prelude hiding (id, (.), mod)`，用来自`Control.Category`的导入替换它们。
 - en: '*Interpreting types.* A *label* is signified by `r :-> a` which contains a
     getter `r -> a` and a setter `a -> r -> r`. Internally, a wrapped label is simply
     a *point*, a structure consisting of `r -> a` and `b -> r -> r`, with `a` required
     to be equal to `b`. (As we will see later, a point is useful in its own right,
     but not for basic functionality.)'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: '*解释类型*。*标签*由`r :-> a`表示，其中包含一个getter`r -> a`和一个setter`a -> r -> r`。在内部，包装的标签仅仅是一个*点*，一个由`r
+    -> a`和`b -> r -> r`组成的结构，要求`a`等于`b`。（稍后我们将看到，点本身非常有用，但不适用于基本功能。）'
 - en: '*Accessing record fields.*'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: '*访问记录字段*。'
 - en: '[PRE0]'
+  id: totrans-13
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: '*Setting record fields.*'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: '*设置记录字段*。'
 - en: '[PRE1]'
+  id: totrans-15
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: '*Modifying record fields.* For `fieldname :: f a :-> a`, `modifier` should
     have type `a -> a`.'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: '*修改记录字段*。对于`fieldname :: f a :-> a`，`modifier`应具有类型`a -> a`。'
 - en: '[PRE2]'
+  id: totrans-17
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: '*Accessing, setting and modifying sub-record fields.* Composition is done with
     the period operator `(.)`, but you can''t use the one from the Prelude since that
     only works with functions. The composition is treated as if you were you composing
     the getter.'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: '*访问、设置和修改子记录字段*。组合使用点运算符`(.)`进行组合，但不能使用Prelude中的那个，因为那个只适用于函数。这种组合被视为您正在组合getter。'
 - en: '[PRE3]'
+  id: totrans-19
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: '*Accessor over applicative.* You can use `fmapL` to lift an accessor into an
     applicative context. This is useful if your record is actually `Maybe r` (You
     can turn `r :-> a` into `Maybe r :-> Maybe a`).'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: '*访问器胜于应用程序*。您可以使用`fmapL`将访问器提升到应用程序上下文中。如果您的记录实际上是`Maybe r`（您可以将`r :-> a`转换为`Maybe
+    r :-> Maybe a`），这将非常有用。'
 - en: But wait, there's more!
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 但等等，还有更多！
 - en: '*More fun with views.* Remember that a point is a getter and a setter, but
     they don''t have to be for the same types. Combined with a clever applicative
     instance, we can use this to incrementally build up a label composed of multiple
     labels. The result looks a lot like a view that you''d be able to create on a
     relational database. The recipe is:'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: '*更有趣的视图*。请记住，点是一个getter和一个setter，但它们不必是相同类型的。结合巧妙的应用实例，我们可以使用这一点逐步构建由多个标签组成的标签。结果看起来很像您在关系数据库上创建的视图。配方如下：'
 - en: Have the constructor for the resulting type (e.g. `(,)`, the tuple constructor),
+  id: totrans-23
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 有生成类型的构造函数（例如`(,)`，元组构造函数），
 - en: Have all of the accessors for the resulting type (e.g. `fst` and `snd`), and
+  id: totrans-24
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 对于生成类型的所有访问器（例如`fst`和`snd`），以及
 - en: Have the labels you would like to compose together (say, `label1` and `label2`).
+  id: totrans-25
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 您希望组合在一起的标签（比如`label1`和`label2`）。
 - en: 'Combine, with `for`, each accessor for the resulting type (2) with the label
     to be accessed with that accessor (3), combine all of these resulting points with
     the constructor for the resulting type with the applicative instance, i.e. `<$>`
     and `<*>`, and then stick it in a label with `Label`:'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用`for`结合每个生成类型的访问器（2）和要访问该访问器的标签（3），将所有这些生成的点与生成类型的构造函数结合使用，即`<$>`和`<*>`，然后将其放入带有`Label`的标签中：
 - en: '[PRE4]'
+  id: totrans-27
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: Amazingly, you won't be able to mix up which argument an accessor (2) should
     be placed in; the result won't typecheck! (See the *Postscript* for a more detailed
     argument.)
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 令人惊讶的是，你将无法混淆放置访问器（2）的参数的方向；结果将无法通过类型检查！（详见*后记*中的更详细的论证。）
 - en: '*More fun with lenses.* A function implies directionality: a to b. But light
     can filter through a lense either way, and thus a lense represents a bidirectional
     function. We can apply filter a label `f :-> a` through a lense `a :<->: b` to
@@ -127,74 +187,116 @@
     insufficient since we need to put values in as well as take values out). One has
     to be careful about what direction your lense is pointed. If `label :: r :-> a`,
     `in :: b -> a` and `out :: a -> b`, then:'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: '*与镜头（lenses）更多有趣的事情*。一个函数暗示着方向性：从a到b。但光可以通过镜头双向过滤，因此镜头代表了双向函数。我们可以通过一个标签`f
+    :-> a`通过一个镜头`a :<->: b`来获取一个新的标签`f :-> b`（请记住，与常规函数的组合不够，因为我们需要放入值和取出值）。必须小心你的镜头指向的方向。如果`label
+    :: r :-> a`，`in :: b -> a`和`out :: a -> b`，那么：'
 - en: '[PRE5]'
+  id: totrans-30
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: The other directions won't typecheck if `a != b`.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果`a != b`，其他方向将无法通过类型检查。
 - en: You can lift a lense into a functor using `lmap` (it simply runs `fmap` on both
     directions).
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可以使用`lmap`将一个镜头提升为一个函子（它简单地在两个方向上运行`fmap`）。
 - en: '*Further reading.* The [Hackage documentation](http://hackage.haskell.org/package/fclabels)
     has a ton of excellent examples.'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: '*进一步阅读*。[Hackage文档](http://hackage.haskell.org/package/fclabels)中有大量优秀的例子。'
 - en: '*Postscript.* With our original example in mind:'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: '*后记*。以我们原始的例子为例：'
 - en: '[PRE6]'
+  id: totrans-35
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'We consider the types of the points we''ve constructed, before combining them
     with the applicative instance:'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们考虑我们构建的点的类型，在与应用实例组合之前：
 - en: '[PRE7]'
+  id: totrans-37
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: 'We have a shared applicative functor `Point Person (a, b)`, and if we treat
     that as `f`, clearly:'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们有一个共享的应用函子`Point Person (a, b)`，如果我们将其视为`f`，显然：
 - en: '[PRE8]'
+  id: totrans-39
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: which is equivalent to `Point Person (a, b) (a, b)`, which is a valid `Label`.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 这等同于`Point Person (a, b) (a, b)`，这是一个有效的`Label`。
 - en: 'But what is `for` doing? The source code documentation says:'
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 那么`for`在做什么呢？源代码文档说：
 - en: Combine a partial destructor with a label into something easily used in the
     applicative instance for the hidden Point datatype. Internally uses the covariant
     in getter, contravariant in setter bi-functioral-map function. (Please refer to
     the example because this function is just not explainable on its own.)
+  id: totrans-42
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 将部分析构器与标签结合起来，轻松地在隐藏的点数据类型的应用实例中使用getter中的协变，setter中的逆变双函子映射函数。（请参考示例，因为这个函数本身无法单独解释。）
 - en: 'Well, I''m going to ignore this advice, since you''ve seen the example already.
     Let''s parse this. `for` is covariant in getter `r -> a` and contravariant in
     setter `a -> f -> f`. These terms are from category theory describing functors.
     A covariant functor is a "normal" functor, whereas a contravariant functor is
     one with composition flipped around. So while normally `fmap f g == f . g`, in
     the contravariant world `fmap f g == g . f`:'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 嗯，我要忽略这个建议，因为你已经看过例子了。让我们来解析一下。`for`在getter `r -> a`中是协变的，在setter `a -> f ->
+    f`中是逆变的。这些术语来自范畴论，用来描述函子。协变函子是“正常”的函子，而逆变函子是将组合反过来的函子。因此，虽然通常情况下 `fmap f g ==
+    f . g`，在逆变世界中 `fmap f g == g . f`：
 - en: '[PRE9]'
+  id: totrans-44
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: 'Well, we''re not doing much interesting to the getter, but we''re mapping `a
     :: (a, b) -> a` (in our example) onto the setter `a -> f -> f`. Luckily (for the
     befuddled), the covariant map doesn''t typecheck (`(a, b) != (f -> f)`), but the
     contravariant map does: `(a, b) -> f -> f`, which is a new setter that takes `(a,
     b)`, precisely what we expected from the type signature.'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: '好吧，我们对getter并没有做太多有趣的事情，但我们将`a :: (a, b) -> a`（在我们的例子中）映射到setter `a -> f ->
+    f`上。幸运的是（对于困惑的人来说），协变映射不会类型检查（`(a, b) != (f -> f)`），但是逆变映射会：`(a, b) -> f -> f`，这是一个新的setter，接受`(a,
+    b)`，正是我们从类型签名中期望的。'
 - en: So, `for` sets up our setters and partially our getter, and the applicative
     instance finishes setting up our getter.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，`for`设置了我们的setter和部分getter，并且应用实例完成了我们的getter设置。

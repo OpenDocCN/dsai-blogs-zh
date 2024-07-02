@@ -1,23 +1,35 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:18:05'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:18:05
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Don’t Repeat Yourself is context dependent : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: “不要重复自己”是依赖上下文的：ezyang's 博客
 - en: 来源：[http://blog.ezyang.com/2010/10/dry-is-context-dependen/](http://blog.ezyang.com/2010/10/dry-is-context-dependen/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/10/dry-is-context-dependen/](http://blog.ezyang.com/2010/10/dry-is-context-dependen/)
 - en: 'I am a member of a group called the [Assassins’ Guild](http://web.mit.edu/assassin/www/).
     No, we don’t kill people, and no, we don’t play the game Assassin. Instead, we
     write and run competitive live action role-playing games: you get some game rules
@@ -25,8 +37,10 @@
     and we set you loose for anywhere from four hours to ten days. In this context,
     I’d like to describe a situation where applying the rule [Don’t Repeat Yourself](http://en.wikipedia.org/wiki/Don''t_repeat_yourself)
     can be harmful.'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 我是一个名为[刺客协会](http://web.mit.edu/assassin/www/)的组织成员。不，我们不杀人，也不玩刺客游戏。相反，我们编写和运行竞技实时角色扮演游戏：你会得到一些描述宇宙的游戏规则，一个包含目标、能力和限制的角色表，然后我们会放你在四小时到十天的时间内自由发挥。在这种情况下，我想描述一个应用“不要重复自己”规则可能有害的情况。
 - en: 'The principle of *Don’t Repeat Yourself* comes up in a very interesting way
     when game writers construct game rules. The game rules are rather complex: we’d
     like players to be able to do things like perform melee attacks, stab each other
@@ -39,85 +53,116 @@
     bleeding. It’s great fun.) Because there are so many rules necessary to construct
     a reasonable base universe, there is a vanilla, nine-page rules sheet that most
     gamewriters adapt for their games.'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 当游戏作者构建游戏规则时，“不要重复自己”的原则以非常有趣的方式出现。游戏规则相当复杂：我们希望玩家能够执行诸如进行近战攻击、背后刺杀、施展魔法、打破门等操作，而又不能实际上伤害任何人或破坏任何财产，因此，就像MIT的学生那样，我们有“机制”来执行这些游戏内的行动（例如，在一组规则中，近战攻击可以用“Wound
+    5”声明，其中5是你的战斗评级，如果另一个个体的CR大于或等于5，他们可以声明“抵抗”；否则，他们必须扮演昏倒并流血。这非常有趣。）由于构建合理的基础宇宙需要这么多规则，大多数游戏作者都会采用一个普通的、九页的规则表。
 - en: Of course, the rules aren’t always the same. One set of GMs (the people who
     write and run the game) may decide that a single CR rating is not enough, and
     that people should have separate attack and defense ratings. Another set of GMs
     might introduce robotic characters, who cannot die from bleeding out. And so forth.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 当然，规则并不总是一样。一个GM（即编写和运行游戏的人）可能会决定单独使用攻击和防御等级，而不只是一个CR评级。另一组GM可能会引入机器人角色，这些角色不能因流血而死亡。等等。
 - en: 'So when we give rules out to players, we have two possibilities: we can repeat
     ourselves, and simply give them the full, amended set of rules. Or we can avoid
     repeating ourselves, and give out the standard rules and a list of errata—the
     specific changes made in our universe. We tend to repeat ourselves, since it’s
     easier to do with our game production tools. But an obvious question to ask is,
     which approach is better?'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，当我们向玩家提供规则时，我们有两种可能性：我们可以重复自己，简单地给他们完整的、修改后的规则集。或者我们可以避免重复自己，给出标准规则和一份勘误表——我们宇宙中所做的具体更改。我们倾向于重复自己，因为这在我们的游戏制作工具中更容易。但一个明显的问题是，哪种方法更好？
 - en: The answer is, of course, *it depends.*
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 答案当然是，*这取决于情况*。
 - en: Veteran players who are well acquainted with the standard set of rules don’t
     need the entire set of rules given to them every time they play a game; instead,
     it would be much easier and more efficient for them if they were just given the
     errata sheet, so they can go, “Oh, hm, that’s different, ok” and go and concoct
     strategies for this altered game universe. This is particularly important for
     ten-days, where altered universe rules can greatly influence plotting and strategy.
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 熟悉标准规则的老玩家在玩游戏时不需要每次都给他们整套规则；相反，如果他们只是给一个勘误表，他们会更容易更高效地说：“哦，嗯，有所不同，好的”，然后为这个改变过的游戏宇宙制定策略。这对于十天游戏尤为重要，因为改变宇宙规则可以极大地影响情节和策略。
 - en: For new players who have never played a game before, being given a set of rules
     and then being told, “Oh, but disregard that and that and here is an extra condition
     for that case” would be very confusing! The full rules, repeated for the first
     few times they play a game, is helpful.
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 对于从未玩过游戏的新玩家来说，拿到一套规则，然后被告知，“哦，但忽略这个和那个，这里还有一个额外的条件”，会非常令人困惑！在他们玩游戏的最初几次中重复完整的规则是有帮助的。
 - en: 'I think this same principle applies to *Don’t Repeat Yourself* as applied in
     software development. It’s good and useful to adopt a compact, unique representation
     for any particular piece of code or data, but don’t forget that a little bit of
     redundancy will greatly help out people learning your system for the first time!
     And to get the best of both worlds, you shouldn’t even have to repeat yourself:
     you should make the computer do it for you.'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 我认为这个原则同样适用于软件开发中的*不要重复自己*。为任何特定的代码或数据采用简洁、独特的表示是好的和有用的，但不要忘记一点冗余会极大地帮助那些初次学习你系统的人！而且，为了两全其美，你甚至不应该重复自己：应该让计算机替你完成。
 - en: '*Postscript.* For the curious, here is a [PDF of the game rules](http://web.mit.edu/~ezyang/Public/dangerous-scenario.pdf)
     we used for a game I wrote in conjunction with Alex Gurany and Jonathan Chapman,
     *The Murder of Jefferson Douglass* (working name *A Dangerous Game*).'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: '*附言.* 好奇的朋友们，这里有我们在与Alex Gurany和Jonathan Chapman合作编写的游戏《杰斐逊·道格拉斯的谋杀案》（工作名称《危险的游戏》）的[游戏规则PDF](http://web.mit.edu/~ezyang/Public/dangerous-scenario.pdf)。'
 - en: '*Postscript II.* When has repeating yourself been considered good design?'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: '*附言 II.* 什么时候重复自己被认为是好设计呢？'
 - en: Perl wants programmers to have to say as little as possible to get the job done,
     and this has given it a reputation as a “write only language.”
+  id: totrans-16
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Perl希望程序员尽可能少地说话来完成工作，这给它赢得了“只写语言”的声誉。
 - en: Not all code that looks the same should be refactored into a function; there
     should be some logical unity to what is factored out.
+  id: totrans-17
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 并非所有看起来相同的代码都应该重构为一个函数；所抽象出来的东西应该有一定的逻辑统一性。
 - en: 'Java involves writing copious amounts of code: IDEs generate code for `hashCode`
     and `equals`, and you possibly tweak it after the fact. Those who like Java controversially
     claim that this prevents Java programmers from doing too much damage (though some
     might disagree.)'
+  id: totrans-18
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Java涉及大量的代码编写：IDE生成`hashCode`和`equals`的代码，你可能事后会微调它们。喜欢Java的人大胆地声称这阻止了Java程序员造成过多的破坏（尽管也有人持不同意见）。
 - en: When you write essays, even if you’ve already defined a term fifty pages ago,
     it’s good to refresh a reader’s memory. This is especially true for math textbooks.
+  id: totrans-19
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 当你写论文时，即使你在五十页前已经定义了一个术语，给读者刷新记忆是很好的。这对数学教科书尤其如此。
 - en: Haskell challenges you to abstract as much mathematically sound structure as
     possible. As a result, it makes people’s heads hurt, leads to combinator zoos
     up to the wazoo. But it’s also quite beneficial for even moderately advanced users.
+  id: totrans-20
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Haskell挑战你尽可能抽象出数学上合理的结构。因此，这会让人们的头痛，导致各种组合的动物园。但对于即使是中等程度的高级用户来说，它也非常有益。
 - en: Readers are encouraged to come up with more examples.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 鼓励读者提出更多例子。

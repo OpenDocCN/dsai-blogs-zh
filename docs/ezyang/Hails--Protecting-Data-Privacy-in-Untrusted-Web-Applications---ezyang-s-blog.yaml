@@ -1,33 +1,49 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:25'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:25'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Hails: Protecting Data Privacy in Untrusted Web Applications : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 'Hails: 在不受信任的Web应用程序中保护数据隐私：ezyang''s博客'
 - en: 来源：[http://blog.ezyang.com/2012/10/hails-protecting-data-privacy-in-untrusted-web-applications/](http://blog.ezyang.com/2012/10/hails-protecting-data-privacy-in-untrusted-web-applications/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2012/10/hails-protecting-data-privacy-in-untrusted-web-applications/](http://blog.ezyang.com/2012/10/hails-protecting-data-privacy-in-untrusted-web-applications/)
 - en: '*This post is adapted from the talk which Deian Stefan gave for Hails at OSDI
     2012.*'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: '*这篇文章是从Deian Stefan在OSDI 2012上为Hails发表的演讲改编而来。*'
 - en: It is a truth universally acknowledged that any website (e.g. Facebook) is in
     want of a web platform (e.g. the Facebook API). Web platforms are *awesome*, because
     they allow third-party developers to build apps which operate on our personal
     data.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 它是一个广为人知的真理，任何网站（例如Facebook）都渴望一个Web平台（例如Facebook API）。Web平台是*很棒的*，因为它们允许第三方开发者构建能够操作我们个人数据的应用程序。
 - en: But web platforms are also *scary*. After all, they allow *third-party* developers
     to build apps which operate on our *personal* data. For all we know, they could
     be selling our email addresses to spamlords or snooping on our personal messages.
@@ -35,24 +51,33 @@
     data. Even if we assumed that all developers had our best interests at heart,
     we'd still have to worry about developers who don't understand (or care about)
     security.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 但Web平台也是*可怕的*。毕竟，它们允许*第三方*开发者构建能够操作我们*个人*数据的应用程序。据我们所知，他们可能会将我们的电子邮件地址出售给垃圾邮件发送者或窥探我们的个人消息。随着第三方应用程序的普及，窃取个人数据几乎变得微不足道。即使我们假设所有开发者都抱着最好的意图，我们仍然必须担心那些不理解（或不关心）安全性的开发者。
 - en: 'When these third-party applications live on untrusted servers, there is nothing
     we can do: once the information is released, the third-party is free to do whatever
     they want. To mitigate this, platforms like Facebook employ a CYA (“Cover Your
     Ass”) approach:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 当这些第三方应用程序存在于不受信任的服务器上时，我们无能为力：一旦信息泄露，第三方就可以随心所欲地做任何事情。为了减轻这种情况，像Facebook这样的平台采用了CYA（“自我保护”）的方法：
 - en: 'The thesis of the Hails project is that we can do better. Here is how:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: Hails项目的论点是我们可以做得更好。以下是如何实现的：
 - en: First, third-party apps must be hosted on a trusted runtime, so that we can
     enforce security policies in software. At minimum, this means we need a mechanism
     for running untrusted code and expose trusted APIs for things like database access.
     Hails uses [Safe Haskell](http://www.haskell.org/ghc/docs/latest/html/users_guide/safe-haskell.html)
     to implement and enforce such an API.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，第三方应用程序必须托管在一个受信任的运行时上，以便我们可以在软件中强制执行安全策略。至少，这意味着我们需要一种机制来运行不受信任的代码，并公开受信任的API，例如数据库访问。Hails使用[Safe
+    Haskell](http://www.haskell.org/ghc/docs/latest/html/users_guide/safe-haskell.html)来实现和强制执行这样的API。
 - en: Next, we need a way of specifying security policies in our trusted runtime.
     Hails observes that most data models have ownership information built into the
     objects in question. So a policy can be represented as a function on a document
@@ -63,8 +88,10 @@
     it combines both a model and a policy, and we provide a DSL for specifying policies.
     Policies tend to be quite concise, and more importantly are centralized in one
     place, as opposed to many conditionals strewn throughout a codebase.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来，我们需要一种方法在我们信任的运行时中指定安全策略。Hails观察到大多数数据模型在相关对象中都内置了所有权信息。因此，一个策略可以被表示为一个对文档到可读人员标签集合和可写人员标签集合的函数。例如，“只有珍的朋友可以看她的邮箱地址”这个策略是一个函数，它接受一个代表用户的文档，并将文档的“朋友”字段作为有效读者的集合返回。我们称之为应用的MP，因为它结合了模型和策略，并且我们提供了一个DSL来指定策略。策略往往非常简洁，更重要的是集中在一个地方，而不是散布在代码库中的多个条件语句中。
 - en: Finally, we need a way of enforcing these security policies, even when untrusted
     code is being run. Hails achieves this by implementing thread-level dynamic information
     flow control, taking advantage of Haskell’s programmable semicolon to track and
@@ -72,27 +99,37 @@
     data with Bob, but the data is not labeled as readable by Bob, the runtime will
     raise an exception. This functionality is called [LIO (Labelled IO)](http://hackage.haskell.org/package/lio),
     and is built on top of Safe Haskell.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，即使在运行不受信任的代码时，我们也需要一种强制执行这些安全策略的方法。Hails通过实现线程级动态信息流控制来实现这一点，利用Haskell的可编程分号来跟踪和执行信息流。如果第三方应用试图与Bob共享一些数据，但这些数据未标记为Bob可读取，运行时将引发异常。这种功能被称为[LIO（标记输入输出）](http://hackage.haskell.org/package/lio)，建立在Safe
+    Haskell之上。
 - en: 'Third-party applications run on top of these three mechanisms, implementing
     the view and controller (VC) components of a web application. These components
     are completely untrusted: even if they have security vulnerabilities or are malicious,
     the runtime will prevent them from leaking private information. You don’t have
     to think about security at all! This makes our system a good choice even for implementing
     official VCs.'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 第三方应用运行在这三种机制之上，实现Web应用程序的视图和控制器（VC）组件。这些组件是完全不受信任的：即使它们存在安全漏洞或者是恶意的，运行时也会阻止它们泄露私人信息。您根本不需要考虑安全问题！这使得我们的系统甚至适合用于实现官方VC。
 - en: One of the example applications we developed was [GitStar](http://www.gitstar.com/),
     a website which hosts Git projects in much the same way as GitHub. The key difference
     is that almost all of the functionality in GitStar is implemented in third party
     apps, including project and user management, code viewing and the wiki. GitStar
     simply provides MPs (model-policy) for projects and users. The rest of the components
     are untrusted.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们开发的一个示例应用是[GitStar](http://www.gitstar.com/)，一个类似GitHub的Git项目托管网站。其主要区别在于，GitStar的几乎所有功能都是通过第三方应用实现的，包括项目和用户管理、代码查看和wiki。GitStar仅仅为项目和用户提供了MPs（模型策略）。其余组件都是不受信任的。
 - en: Current web platforms make users decide between functionality and privacy. Hails
     lets you have your cake and eat it too. Hails is mature enough to be used in a
     real system; check it out at [http://www.gitstar.com/scs/hails](http://www.gitstar.com/scs/hails)
     or just `cabal install hails`.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 当前的Web平台让用户在功能和隐私之间做选择。Hails让你两者兼得。Hails已经成熟到可以在实际系统中使用；请访问[http://www.gitstar.com/scs/hails](http://www.gitstar.com/scs/hails)，或直接`cabal
+    install hails`查看。

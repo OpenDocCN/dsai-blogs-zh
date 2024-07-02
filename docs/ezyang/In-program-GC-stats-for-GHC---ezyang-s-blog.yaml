@@ -1,38 +1,59 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:42'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:42'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'In-program GC stats for GHC : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 'In-program GC stats for GHC : ezyang’s blog'
 - en: 来源：[http://blog.ezyang.com/2011/07/in-program-gc-stats-for-ghc/](http://blog.ezyang.com/2011/07/in-program-gc-stats-for-ghc/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/07/in-program-gc-stats-for-ghc/](http://blog.ezyang.com/2011/07/in-program-gc-stats-for-ghc/)
 - en: I’ll be at this year’s [Hac Phi](http://www.haskell.org/haskellwiki/Hac_%CF%86)
     (coming up in a week and a half), and I am planning on working on in-program garbage
     collector statistics for GHC. There is nothing really technically difficult about
     this task (we just need to expose some functions in the RTS), but it’s not been
     done yet and I know quite a few performance-minded and long-running-server-minded
     folks who would love to see this functionality.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: '-   我将参加今年的[Hac Phi](http://www.haskell.org/haskellwiki/Hac_%CF%86)（将在一周半后举行），我计划在
+    GHC 的程序中工作，收集垃圾收集器的统计信息。这个任务并不是技术上的难题（我们只需要在运行时系统中暴露一些函数），但迄今尚未完成。我知道许多注重性能和长期运行服务器的人都希望看到这样的功能。'
 - en: 'My question for you is this: what would you like such an API to look like?
     What things should it offer, how would you like to interact with it?'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '-   我想问你的问题是：你希望这样的 API 看起来如何？它应该提供哪些功能，你希望如何与之交互？'
 - en: 'Here’s one sample API to get the ball rolling:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Here’s one sample API to get the ball rolling:'
 - en: '[PRE0]'
+  id: totrans-9
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'

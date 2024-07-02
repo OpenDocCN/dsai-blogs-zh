@@ -1,79 +1,115 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:03'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:03'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Thoughts about Spec-ulation (Rich Hickey) : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 关于 Spec-ulation 的思考（Rich Hickey）：ezyang’s 博客
 - en: 来源：[http://blog.ezyang.com/2016/12/thoughts-about-spec-ulation-rich-hickey/](http://blog.ezyang.com/2016/12/thoughts-about-spec-ulation-rich-hickey/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2016/12/thoughts-about-spec-ulation-rich-hickey/](http://blog.ezyang.com/2016/12/thoughts-about-spec-ulation-rich-hickey/)
 - en: Rich Hickey recently gave a [keynote](https://www.youtube.com/watch?v=oyLBGkS5ICk)
     at Clojure/conj 2016, meditating on the problems of versioning, specification
     and backwards compatibility in language ecosystems. In it, Rich considers the
     ["extremist" view](http://blog.ezyang.com/2012/11/extremist-programming/), *what
     if we built a language ecosystem, where you never, ever broke backwards compatibility.*
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: Rich Hickey 最近在 Clojure/conj 2016 上发表了[主题演讲](https://www.youtube.com/watch?v=oyLBGkS5ICk)，思考语言生态系统中版本控制、规范和向后兼容性的问题。在此，Rich
+    考虑了["极端"观点](http://blog.ezyang.com/2012/11/extremist-programming/)，*如果我们构建一个语言生态系统，永远不会破坏向后兼容性*。
 - en: 'A large portion of the talk is spent grappling with the ramifications of this
     perspective. For example:'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 演讲的大部分时间都花在探讨这一观点的后果上。例如：
 - en: Suppose you want to make a backwards-compatibility breaking change to a function.
     Don't *mutate* the function, Richard says, give the function another name.
+  id: totrans-8
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 假设你想对一个函数进行破坏性的向后兼容性更改。不要*改变*函数，Richard 说，给函数取另一个名字。
 - en: 'OK, but how about if there is some systematic change you need to apply to many
     functions? That''s still not an excuse: create a new namespace, and put all the
     functions there.'
+  id: totrans-9
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 好的，但如果有一些系统性的更改需要应用到许多函数中怎么办？这仍然不是借口：创建一个新的命名空间，把所有函数放在那里。
 - en: What if there's a function you really don't like, and you really want to get
     rid of it? No, don't remove it, create a new namespace with that function absent.
+  id: totrans-10
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 如果有一个你真的不喜欢的函数，你真的想要摆脱它怎么办？不，不要删除它，创建一个新的命名空间，该函数不在其中。
 - en: Does this sound like a lot of work to remove things? Yeah. So don't remove things!
+  id: totrans-11
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 要是听起来很多工作要去除一些东西？是的。所以不要去除东西！
 - en: In general, Rich wants us to avoid breakage by turning all changes into *accretion*,
     where the old and new can coexist. "We need to bring functional programming [immutability]
     to the library ecosystem," he says, "dependency hell is just mutability hell."
     And to do this, there need to be tools for you to make a commitment to what it
     is that a library provides and requires, and not accidentally breaking this commitment
     when you release new versions of your software.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 总的来说，Rich 希望我们通过将所有变更转化为*堆积*来避免破坏，这样新旧可以共存。他说：“我们需要将函数式编程[不变性]带到库生态系统中，依赖地狱只是可变性的地狱。”
+    为此，需要有工具让你承诺库提供和需要的内容，并且在发布新版本软件时不会意外破坏这一承诺。
 - en: He says a lot more in the talk, so I encourage you to give it a watch if you
     want to hear the whole picture.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 他在演讲中说了更多，因此我鼓励你如果想要全面了解，请观看整个演讲。
 - en: '* * *'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: In general, I'm in favor of this line of thinking, because my feeling is that
     a large amount of breakage associated with software change that is just a product
     of negligence; breakage not for any good reason, breakage that could have been
     avoided if there was a little more help from tooling.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 总的来说，我赞同这种思路，因为我认为大量与软件变更相关的破坏只是疏忽的产物；破坏不是因为任何良好的理由，而是可以通过工具帮助避免的。
 - en: That being said, I do have some thoughts about topics that are not so prominently
     featured in his talk.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 话虽如此，我确实对他演讲中未被如此突出展示的话题有一些看法。
 - en: '**Accretion is not a silver bullet... if you believe in data hiding.** In his
     talk, Rich implies that backwards compatibility can be maintained simply by committing
     not to "remove things". As a Haskeller, this sounds obviously false to me: if
@@ -81,8 +117,11 @@
     invariants), I *cannot* just load up both old and new copies of the library and
     expect to pass values of this type between the two. Indeed, the typechecker won''t
     even let you do this even if the representation hasn''t changed.'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: '**堆积并非万灵药……如果你信仰数据隐藏。** 在他的演讲中，Rich 暗示通过承诺“不移除事物”可以简单地维护向后兼容性。作为一个 Haskell
+    用户，这对我显然是错误的：如果我改变某些抽象类型的内部表示（甚至是内部不变式），我*无法*简单地加载新旧版本的库并期望在两者之间传递此类型的值。事实上，即使表示方式没有改变，类型检查器也不会允许这样做。'
 - en: 'But, at least for Clojure, I think Rich is right. The reason is this: [Clojure
     doesn''t believe data hiding](http://codequarterly.com/2011/rich-hickey/)! The
     [prevailing style](http://clojure.org/reference/datatypes) of Clojure code is
@@ -91,41 +130,59 @@
     change; non-breaking representation changes are simply not done. (I suspect a
     similar ethos explains why [duplicated dependencies in node.js](http://stackoverflow.com/questions/25268545/why-does-npms-policy-of-duplicated-dependencies-work)
     work as well as they do.)'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 但至少对于Clojure来说，我认为Rich是对的。原因在于：[Clojure不相信数据隐藏](http://codequarterly.com/2011/rich-hickey/)！Clojure代码的流行风格是数据类型由不可变记录组成，具有公共字段传递。因此，对数据表示的更改可能是破坏性的变更；非破坏性的表示更改根本不会发生。（我怀疑类似的理念也解释了为什么
+    [Node.js中的重复依赖](http://stackoverflow.com/questions/25268545/why-does-npms-policy-of-duplicated-dependencies-work)
+    也能够如此成功。）
 - en: I am not sure how I feel about this. I am personally a big believer in data
     abstraction, but I often admire the pragmatics of "everything is a map". (I [tweeted](https://twitter.com/ezyang/status/809704816150597633)
     about this earlier today, which provoked some thoughtful discussion.)
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 我不确定我对此的感觉如何。我个人非常信仰数据抽象，但我经常赞赏“一切皆为映射”的实用主义。（我之前在 [推特上发表过](https://twitter.com/ezyang/status/809704816150597633)
+    这个话题，引发了一些深思的讨论。）
 - en: '**Harmful APIs.** At several points in the talk, Rich makes fun of developers
     who are obsessed with taking away features from their users. ("I hate this function.
     I hate it, I hate it, I hate that people call it, I just want it out of my life.")
     This downplays the very real, very important reasons why infinite backwards compatibility
     has been harmful to the software we write today.'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: '**有害的API。** 在演讲中的几个点上，Rich嘲笑那些痴迷于从用户那里夺走功能的开发者。（“我讨厌这个函数。我讨厌它，我讨厌它，我讨厌人们调用它，我只是想让它从我的生活中消失。”）这忽略了无限向后兼容性之所以对我们今天编写的软件非常重要的原因。'
 - en: 'One need look no further than the [systems with decades of backwards compatibility](https://youtu.be/oyLBGkS5ICk?t=1h8m18s)
     that Rich cites: the Unix APIs, Java and HTML. In all these cases, backwards compatibility
     has lead to harmful APIs sticking around far longer than they should: [strncpy](https://randomascii.wordpress.com/2013/04/03/stop-using-strncpy-already/),
     [gets](http://stackoverflow.com/questions/1694036/why-is-the-gets-function-so-dangerous-that-it-should-not-be-used),
     legacy parsers of HTML (XSS), [Java antipatterns](http://www.odi.ch/prog/design/newbies.php),
     etc. And there are examples galore in Android, C libraries, everywhere.'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 无需更进一步，就能看到Rich所引用的具有几十年向后兼容性的 [系统](https://youtu.be/oyLBGkS5ICk?t=1h8m18s)
+    ：Unix API、Java和HTML。在所有这些情况下，向后兼容性导致有害API长期存在，远远超出了它们应该存在的时间：[strncpy](https://randomascii.wordpress.com/2013/04/03/stop-using-strncpy-already/)、[gets](http://stackoverflow.com/questions/1694036/why-is-the-gets-function-so-dangerous-that-it-should-not-be-used)、HTML的旧解析器（XSS）、[Java反模式](http://www.odi.ch/prog/design/newbies.php)
+    等等。在Android、C库以及各个地方都有大量的例子。
 - en: In my opinion, library authors should design APIs in such a way that it is easy
     to do the right thing, and hard to do the wrong thing. And yes, that means sometimes
     that means you that you need to stop people from using insecure or easy-to-get
     wrong library calls.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我看来，库的作者应该设计 API，使得正确操作变得容易，而错误操作变得困难。是的，这意味着有时候你需要阻止人们使用不安全或容易出错的库调用。
 - en: '**Semantic versioning doesn''t cause cascading version bumps, lack of version
     ranges is the cause.** In the slide ["Do deps force Versioning?"](https://youtu.be/oyLBGkS5ICk?t=13m49s),
     Rich describe a problem in the Clojure ecosystem which is that, when following
     semantic versioning, a new release of a package often causes cascading version
     bumps in the system.'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: '**语义化版本控制并不会导致级联的版本增加，缺乏版本范围才是问题的根源。** 在幻灯片 ["Do deps force Versioning?"](https://youtu.be/oyLBGkS5ICk?t=13m49s)
+    中，Rich描述了Clojure生态系统中的一个问题，即遵循语义化版本控制时，一个包的新版本通常会导致系统中的级联版本增加。'
 - en: 'While the problem of cascading version bumps is [a real question](https://github.com/mojombo/semver/issues/148)
     that applies to semantic versioning in general, the "cascading version bumps"
     Rich is referring to in the Clojure ecosystem stem from a much more mundane source:
@@ -133,8 +190,12 @@
     in your package metadata. When a new version of a dependency comes out, you need
     to bump the version of a package so that you can update the recorded version of
     the dependency... and so forth.'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管级联版本升级的问题是一个[真正的问题](https://github.com/mojombo/semver/issues/148)，适用于语义化版本控制的一般情况，但
+    Rich 在 Clojure 生态系统中提到的“级联版本升级”源于一个更为世俗的来源：最佳实践是在你的包元数据中[指定依赖的特定版本](https://nelsonmorris.net/2012/07/31/do-not-use-version-ranges-in-project-clj.html)。当依赖的新版本发布时，你需要升级包的版本，以便更新依赖的记录版本……
+    等等。
 - en: I'm not saying that Clojure is *wrong* for doing things this way (version ranges
     have their own challenges), but in his talk Rich implies that this is a failure
     of semantic versioning... which it's not. If you use version ranges and aren't
@@ -142,15 +203,22 @@
     range of a dependency is not a breaking change. If you have a solver that picks
     a single copy of a library for the entire application, you can even expose types
     from your dependency in your API.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 我并不是在说 Clojure 用这种方式做事情是*错误的*（版本范围有它们自己的挑战），但在他的演讲中 Rich 暗示这是语义化版本控制的失败…… 事实并非如此。如果你使用版本范围，并且不习惯从你的依赖中重新导出
+    API，更新依赖的版本范围并不是一个破坏性的变化。如果你有一个求解器为整个应用程序选择一个库的单一副本，甚至可以在你的 API 中公开来自依赖的类型。
 - en: '* * *'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'Overall, I am glad that Clojure is thinking about how to put backwards compatibility
     first and foremost: often, it is in the most extreme applications of a principle
     that we learn the most. Is it the end of the story? No; but I hope that all languages
     continue slowly moving towards explicit specifications and tooling to help you
     live up to your promises.'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 总的来说，我很高兴 Clojure 正在思考如何将向后兼容性放在首位：通常，最极端的应用原则的情况下，我们学到的最多。这是故事的结尾吗？不是；但我希望所有的语言都能慢慢向明确的规范和工具迈进，以帮助你实现自己的承诺。

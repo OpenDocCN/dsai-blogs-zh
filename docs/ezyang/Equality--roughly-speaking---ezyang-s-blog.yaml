@@ -1,57 +1,86 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:15'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:15'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Equality, roughly speaking : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 等式，粗略地说：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2014/01/equality-roughly-speaking/](http://blog.ezyang.com/2014/01/equality-roughly-speaking/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2014/01/equality-roughly-speaking/](http://blog.ezyang.com/2014/01/equality-roughly-speaking/)
 - en: Equality, roughly speaking
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 等式，粗略地说
 - en: 'In Software Foundations, equality is [defined in this way](http://www.cis.upenn.edu/~bcpierce/sf/Logic.html#lab220):'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 在《软件基础》中，等式是[以这种方式定义的](http://www.cis.upenn.edu/~bcpierce/sf/Logic.html#lab220)：
 - en: Even Coq's equality relation is not built in. It has (roughly) the following
     inductive definition.
+  id: totrans-8
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 即使是 Coq 的等式关系也不是内建的。它有（大致）以下归纳定义。
 - en: ''
+  id: totrans-9
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
 - en: '[PRE0]'
+  id: totrans-10
   prefs:
   - PREF_BQ
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: '*Why the roughly?* Well, as it turns out, Coq defines equality a little differently
     (reformatted to match the Software Foundations presentation):'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: '*为什么是“粗略地说”？* 好吧，事实证明，Coq 对等式的定义略有不同（重新格式化以匹配《软件基础》的呈现）：'
 - en: '[PRE1]'
+  id: totrans-12
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'What’s the difference? The trick is to look at the induction principles that
     Coq generates for each of these:'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 什么是区别？诀窍在于查看 Coq 为每个这些生成的归纳原理：
 - en: '[PRE2]'
+  id: totrans-14
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: During our Homotopy Type Theory reading group, Jeremy pointed out that the difference
     between these two principles is exactly the difference between path induction
     (eq0) and based path induction (eq1). (This is covered in the [Homotopy Type Theory
@@ -59,5 +88,8 @@
     weirder definition because it happens to be a bit more convenient. (I’m sure this
     is folklore, but I sure didn’t notice this until now! For more reading, check
     out this [excellent blog post by Dan Licata](http://homotopytypetheory.org/2011/04/10/just-kidding-understanding-identity-elimination-in-homotopy-type-theory/).)
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们的同伦类型论阅读小组中，Jeremy 指出这两个原则之间的区别正是路径归纳（eq0）和基于路径归纳（eq1）之间的确切区别。（这在[同伦类型论书](http://homotopytypetheory.org/book/)的第1.12节中有涵盖）因此，Coq
+    使用略微更奇怪的定义，因为它恰好更方便一些。（我确信这是传统知识，但直到现在我才注意到这一点！欲了解更多，请阅读 Dan Licata 的[优秀博文](http://homotopytypetheory.org/2011/04/10/just-kidding-understanding-identity-elimination-in-homotopy-type-theory/)。）

@@ -1,23 +1,35 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:17:36'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 时间：2024-07-01 18:17:36
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Modelling IO: MonadIO and beyond : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 模拟IO：MonadIO及其进一步的应用：ezyang博客
 - en: 来源：[http://blog.ezyang.com/2012/01/modelling-io/](http://blog.ezyang.com/2012/01/modelling-io/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2012/01/modelling-io/](http://blog.ezyang.com/2012/01/modelling-io/)
 - en: 'The MonadIO problem is, at the surface, a simple one: we would like to take
     some function signature that contains `IO`, and replace all instances of `IO`
     with some other IO-backed monad `m`. The MonadIO typeclass itself allows us to
@@ -31,8 +43,12 @@
     troublesome in the case of exception handling, where these higher-order functions
     were *primitive*. Thus, the community began searching for a new type class which
     captured more of IO.'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: '`MonadIO`问题表面上看起来很简单：我们希望获取一些包含`IO`的函数签名，并用另一个基于`IO`的单子`m`替换所有`IO`的实例。`MonadIO`类型类本身允许我们将形如`IO
+    a`的值转换为`m a`（并通过组合，任何结果为`IO a`的函数）。这个接口既没有争议，也非常灵活；自从[2001年创建](https://github.com/ghc/packages-base/commit/7f1f4e7a695c402ddd3a1dc2cc7114e649a78ebc)以来，它一直在引导库中（最初在base中，后来迁移到transformers）。然而，很快发现，当存在许多形如`IO
+    a -> IO a`的函数时，我们希望将它们转换为`m a -> m a`时，`MonadIO`没有处理函数负位置参数的规定。这在异常处理的情况下尤其麻烦，这些高阶函数是原始的。因此，社区开始寻找一个更能捕捉IO更多特性的新类型类。'
 - en: While the semantics of lift were well understood (by the transformer laws),
     it wasn’t clear what a more powerful mechanism looked like. So, early attacks
     at the problem took the approach of picking a few distinguished functions which
@@ -44,8 +60,10 @@
     was refined into the `MonadPeelIO` and `MonadTransControlIO` typeclasses. However,
     only `MonadError` was in the core, and it had failed to achieve widespread acceptance
     due to some fundamental problems.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管升力的语义已经很清楚（通过变换器定律），但更强大的机制是什么并不清楚。因此，早期解决这个问题的方法是挑选一些我们想要的特定函数，将它们放入一个类型类中，并手动实现它们的升力版本。这导致已经存在的`MonadError`类发展成为更专业的`MonadCatchIO`类。然而，安德斯·卡塞奥格意识到这些函数升力版本的实现有一个共同的模式，他将其提取出来形成了`MonadMorphIO`类。这种方法被进一步完善成了`MonadPeelIO`和`MonadTransControlIO`类型类。然而，只有`MonadError`位于核心，并且由于一些根本性问题而未能获得广泛认可。
 - en: I believe it is important and desirable for the community of library writers
     to converge on one of these type classes, for the primary reason that it is important
     for them to implement exception handling properly, a task which is impossible
@@ -54,8 +72,10 @@
     type classes. However, I think it would be more accurate to describe `MonadError`
     and `MonadCatchIO` as one school of thought, and `MonadMorphIO`, `MOnadPeelIO`
     and `MonadTransControlIO` as another.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 我认为社区库编写者收敛到其中一个这些类型类是重要且可取的，因为如果希望导出仅需要`MonadIO`接口的界面，则无法正确实现异常处理任务。我完全预期monad-control将成为“赢家”，它是类型类的长期系列的终点。然而，我认为将`MonadError`和`MonadCatchIO`描述为一种思想流派，将`MonadMorphIO`、`MonadPeelIO`和`MonadTransControlIO`描述为另一种流派更为准确。
 - en: 'In this blog post, I’d like to examine and contrast these two schools of thought.
     A type class is an interface: it defines operations that some object supports,
     as well as laws that this object abides by. The utility in a type class is both
@@ -64,68 +84,98 @@
     making it easier to reason about code that uses an interface). This is the essential
     tension: and these two schools have very different conclusions about how it should
     be resolved.'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本博客文章中，我想研究并对比这两种思想流派。类型类是一个接口：它定义了某些对象支持的操作，以及该对象遵循的法则。类型类的实用性既在于其通用性（支持多个实现的单一接口）也在于其精确性（通过*法则*对可接受的实现进行限制，使得使用接口的代码更易于推理）。这是一个基本的张力：这两种流派在如何解决这一问题上有非常不同的结论。
 - en: Modelling exceptions
+  id: totrans-10
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 对异常建模
 - en: 'This general technique can be described as picking a few functions to generalize
     in a type class. Since a type class with less functions is preferable to one with
     more (for generality reasons), `MonadError` and `MonadCatchIO` have a very particular
     emphasis on exceptions:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种一般的技术可以描述为在一个类型类中选择几个函数进行泛化。由于通用性的原因，一个功能较少的类型类更可取于一个功能较多的类型类，因此 `MonadError`
+    和 `MonadCatchIO` 对异常有着非常特殊的强调：
 - en: '[PRE0]'
+  id: totrans-12
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'Unfortunately, these functions are marred by some problems:'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 不幸的是，这些函数被一些问题所困扰：
 - en: MonadError encapsulates an abstract notion of errors which does not necessarily
     include asynchronous exceptions. That is to say, `catchError undefined h` will
     not necessarily run the exception handler `h`.
+  id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`MonadError` 封装了一个关于错误的抽象概念，并不一定包括异步异常。也就是说，`catchError undefined h` 不一定会运行异常处理程序
+    `h`。'
 - en: MonadError is inadequate for robust handling of asynchronous exceptions, because
     it does not contain an interface for `mask`; this makes it difficult to write
     bracketing functions robustly.
+  id: totrans-15
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`MonadError` 对于强大的异步异常处理来说是不足的，因为它不包含 `mask` 的接口；这使得编写健壮的括号函数变得困难。'
 - en: MonadCatchIO explicitly only handles asynchronous exceptions, which means any
     pure error handling is not handled by it. This is the “finalizers are sometimes
     skipped” problem.
+  id: totrans-16
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`MonadCatchIO` 明确只处理异步异常，这意味着任何纯粹的错误处理不由它处理。这就是“最终器有时被跳过”的问题。'
 - en: MonadCatchIO, via the `MonadIO` constraint, requires the API to support lifting
     arbitrary IO actions to the monad (whereas a monad designer may create a restricted
     IO backed monad, limiting what IO actions the user has access to.)
+  id: totrans-17
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 通过 `MonadIO` 约束，`MonadCatchIO` 要求 API 支持将任意 IO 操作提升到该单子（而单子设计者可能创建一个限制了用户访问的
+    IO 支持单子）。
 - en: MonadCatchIO exports the outdated `block` and `unblock` function, while modern
     code should use `mask` instead.
+  id: totrans-18
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`MonadCatchIO` 导出了过时的 `block` 和 `unblock` 函数，而现代代码应该使用 `mask`。'
 - en: MonadCatchIO exports an instance for the `ContT` transformer. However, continuations
     and exceptions are [known to have nontrivial interactions](http://hpaste.org/56921)
     which require extra care to handle properly.
+  id: totrans-19
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`MonadCatchIO` 导出了 `ContT` 变换器的一个实例。然而，续体和异常之间有[已知的非平凡交互](http://hpaste.org/56921)，需要额外的注意来正确处理。'
 - en: 'In some sense, `MonadError` is a non-sequitur, because it isn’t tied to IO
     at all; perfectly valid instances of it exist for non-IO backed monads as well.
     `MonadCatchIO` is closer; the latter three points are not fatal ones could be
     easily accounted for:'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 从某种意义上说，`MonadError` 是一个不合逻辑的论断，因为它与 IO 没有任何关联；它对于非 IO 支持的单子也存在完全有效的实例。`MonadCatchIO`
+    更接近；后三点并不致命，可以很容易地加以考虑：
 - en: '[PRE1]'
+  id: totrans-21
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: (With a removal of the `ContT` instance.) However, the “finalizers are sometimes
     skipped” problem is a bit more problematic. In effect, it is the fact that there
     may exist zeros which a given instance of `MonadCatchIO` may not know about. It
@@ -134,8 +184,12 @@
     you would like to respect finalizers installed using `MonadException`, it should
     be implemented using asynchronous exceptions. In other words, `ErrorT` is a bad
     idea.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: (去除了 `ContT` 实例。) 然而，“最终器有时被跳过”问题更为棘手。事实上，可能存在某些实例的 `MonadCatchIO` 不知道的零存在。有人认为[这些零与
+    `MonadCatchIO` 无关](http://www.haskell.org/pipermail/haskell-cafe/2010-October/085079.html)；从中可以推断出，如果你想要通过使用
+    `MonadException` 安装的最终器来尊重短路，则应该使用异步异常来实现。换句话说，`ErrorT` 是一个糟糕的想法。
 - en: 'However, there is another perspective you can take: `MonadException` is not
     tied just to asynchronous exceptions, but any zero-like value which obeys the
     same laws that exceptions obey. The semantics of these exceptions are described
@@ -147,42 +201,59 @@
     This also means that it is no longer acceptable to provide a `MonadException`
     instance for `ErrorT e`, unless we also have an underlying `MonadException` for
     the inner monad: we can’t forget about exceptions on the lower layers!'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，您可以采取另一种观点：`MonadException`不仅仅与异步异常有关，而是与任何遵循异常规则的零值有关。这些异常的语义在文章[Asynchronous
+    Exceptions in Haskell](http://community.haskell.org/~simonmar/papers/async.pdf)中有详细描述。它们确切地规定了掩码、抛出和捕获的互动方式，以及其他线程如何引入中断。从这个角度来看，无论这种行为是由运行时系统规定还是通过传递纯值来实现，都是实现细节：只要实例编写正确，零值将得到正确处理。这也意味着，如果我们没有内层单子的基础`MonadException`，为`ErrorT
+    e`提供`MonadException`实例就不再可接受：我们不能忽略低层的异常！
 - en: 'There is one last problem with this approach: once the primitives have been
     selected, huge swaths of the standard library have to be redefined by “copy pasting”
     their definitions but having them refer to the generalized versions. This is a
     significant practical hurdle for implementing a library based on this principle:
     it’s simply not enough to tack a `liftIO` to the beginning of a function!'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 采用这种方法还存在一个最后的问题：一旦选择了原语，标准库的大部分内容就必须通过“复制粘贴”其定义来重新定义，但是它们必须引用广义版本。这对基于这一原则实现库来说是一个重大的实际障碍：仅仅在函数开头加上`liftIO`是远远不够的！
 - en: I think an emphasis on the semantics of the defined type class will be critical
     for the future of this lineage of typeclasses; this is an emphasis that hasn’t
     really existed in the past. From this perspective, we define with our typeclass
     not only a way to access otherwise inaccessible functions in IO, but also how
     these functions should behave. We are, in effect, modeling a subset of IO. I think
     Conal Elliott [would be proud](http://conal.net/blog/posts/notions-of-purity-in-haskell).
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 我认为强调定义类型类语义将对这一类型类谱系的未来至关重要；这是过去并没有真正存在的一种强调。从这个角度来看，我们定义了我们的类型类，不仅可以访问IO中否则无法访问的函数，还可以定义这些函数的行为方式。实际上，我们正在对IO的一个子集进行建模。我认为Conal
+    Elliott会为此感到自豪。
 - en: There is a [lively debate](http://comments.gmane.org/gmane.comp.lang.haskell.cafe/93834)
     going on about extensions to the original semantics of asynchronous exceptions,
     allowing for the notion of “recoverable” and “unrecoverable” errors. (It’s nearer
     to the end of the thread.)
+  id: totrans-26
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 关于异步异常原始语义扩展的[激烈辩论](http://comments.gmane.org/gmane.comp.lang.haskell.cafe/93834)正在进行中，允许“可恢复”和“不可恢复”错误的概念。（这是线程末尾附近的内容。）
 - en: Threading pure effects
+  id: totrans-27
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 线程纯效果
 - en: 'This technique can be described as generalizing the a common implementation
     technique which was used to implement many of the original functions in `MonadCatchIO`.
     These are a rather odd set of signatures:'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种技术可以描述为概括了一个常见的实现技术，用于实现`MonadCatchIO`中许多原始函数。这些是一组相当奇怪的签名：
 - en: '[PRE2]'
+  id: totrans-29
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: The key intuition behind these typeclasses is that they utilize *polymorphism*
     in the IO function that is being lifted in order to *thread the pure effects*
     of the monad stack on top of IO. You can see this as the universal quantification
@@ -194,16 +265,22 @@
     values, we can smuggle out our updated state and reincorporate it when the lifted
     function finishes. The set of functions which are amenable to this technique are
     precisely the ones for which this threaded is possible.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些类型类的关键直觉是它们利用了在被提升的IO函数中的*多态性*，以便*在IO的顶部线索纯粹效果*。你可以把这看作是`morphIO`中的普遍量化，`peelIO`的返回类型（这是`IO
+    (m a)`，而不是`IO a`），以及`MonadBaseControl`中的`StM`关联类型。例如，`Int -> StateT s IO a`相当于类型`Int
+    -> s -> IO (s, a)`。我们可以部分应用这个函数与当前状态，得到`Int -> IO (s, a)`；很明显，只要我们提升的IO函数让我们秘密地传出任意值，我们就能传出我们更新的状态，并在提升的函数完成时重新整合它。能够适用于这种技术的函数集合恰好是那些能够进行这种线索的函数集合。
 - en: 'As I described in [this post](http://blog.ezyang.com/2012/01/monadbasecontrol-is-unsound/),
     this means that you won’t be able to get any transformer stack effects if they
     aren’t returned by the function. So perhaps a better word for MonadBaseControl
     is not that it is unsound (although it does admit strange behavior) but that it
     is incomplete: it cannot lift all IO functions to a form where the base monad
     effects and the transformer effects always occur in lockstep.'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如我在[这篇文章](http://blog.ezyang.com/2012/01/monadbasecontrol-is-unsound/)中描述的，这意味着如果它们不是由函数返回的话，你将无法获得任何变换器堆叠效果。因此，MonadBaseControl的一个更好的词可能不是它是不安全的（尽管它确实允许奇怪的行为），而是它是不完整的：它无法将所有IO函数提升到一个形式，其中基础monad效果和变换器效果总是同步进行的。
 - en: 'This has some interesting implications. For example, this forgetfulness is
     in fact precisely the reason why a lifted bracketing function will always run
     no matter if there are other zeros: `finally` by definition is only aware of asynchronous
@@ -211,8 +288,10 @@
     asynchronous exceptions: a lifted `catch` function will not catch an ErrorT zero.
     However, if you manually implement `finally` using lifted versions of the more
     primitive functions, finalizers may be dropped.'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 这有一些有趣的含义。例如，这种遗忘性实际上正是为什么一个提升的括号函数将始终运行的精确原因，无论是否存在其他的零值：`finally`根据定义只能察觉异步异常。这使得monad-control提升的函数非常明确地只处理异步异常：提升的`catch`函数将不会捕获`ErrorT`的零值。然而，如果您使用更原始函数的提升版本手动实现`finally`，则可能会丢弃最终器。
 - en: 'It also suggests an alternate implementation strategy for monad-control: rather
     than thread the state through the return type of a function, it could instead
     be embedded in a hidden IORef, and read out at the end of the computation. In
@@ -220,8 +299,10 @@
     inside IO. Some care must be taken in the `forkIO` case, however: the IORefs need
     to also be duplicated appropriately, in order to maintain thread locality, or
     MVars used instead, in order to allow coherent non-local communication.'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 它还建议了一种monad-control的替代实现策略：与其通过函数的返回类型将状态线索化，不如将其嵌入到隐藏的IORef中，并在计算结束时读取出来。实际上，我们希望*嵌入*纯monad变换器堆栈的语义到IO中。然而，在`forkIO`情况下需要注意一些细节：IORefs需要适当地复制，以保持线程本地性，或者使用MVars代替，以允许一致的非局部通信。
 - en: 'It is well known that MonadBaseControl does not admit a reasonable instance
     for ContT. Mikhail Vorozhtsov has argued that this is too restrictive. The difficulty
     is that while unbounded continuations do not play nice with exceptions, limited
@@ -231,15 +312,21 @@
     modeling a subset of IO are, in some sense, more general! It also highlights the
     fact that these type classes are first and foremost driven by an abstraction of
     a common implementation pattern, rather than any sort of semantics.'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 众所周知，MonadBaseControl不允许ContT有一个合理的实例。Mikhail Vorozhtsov认为这太过于限制性。困难在于，虽然无限制的继续与异常不兼容，但在有限的延续传递风格中，可以以一种明智的方式结合异常。不幸的是，monad-control对此情况没有作任何处理：它要求用户实现的功能太过强大。似乎明确建模IO子集的类型类，在某种意义上更为一般化！这也突显了这些类型类首先和主要地是受到通用实现模式抽象的驱动，而不是任何语义上的考量。
 - en: Conclusion
+  id: totrans-35
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 结论
 - en: I hope this essay has made clear why I think of MonadBaseControl as an implementation
     strategy, and not as a reasonable *interface* to program against. MonadException
     is a more reasonable interface, which has a semantics, but faces significant implementation
     hurdles.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 我希望这篇文章已经清楚地表明了，我为什么将MonadBaseControl视为一种实现策略，而不是一个合理的*编程接口*。MonadException是一个更合理的接口，它具有语义，但面临重要的实现障碍。

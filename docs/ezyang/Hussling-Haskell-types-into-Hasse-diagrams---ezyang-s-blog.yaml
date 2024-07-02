@@ -1,82 +1,120 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:01'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:01'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Hussling Haskell types into Hasse diagrams : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 把Haskell类型推入Hasse图表：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2010/12/hussling-haskell-types-into-hasse-diagrams/](http://blog.ezyang.com/2010/12/hussling-haskell-types-into-hasse-diagrams/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/12/hussling-haskell-types-into-hasse-diagrams/](http://blog.ezyang.com/2010/12/hussling-haskell-types-into-hasse-diagrams/)
 - en: Values of Haskell types form a partial order. We can illustrate this partial
     order using what is called a [Hasse diagram](http://en.wikipedia.org/wiki/Hasse_diagram).
     These diagrams are quite good for forcing yourself to explicitly see the bottoms
     lurking in every type. Since my [last post about denotational semantics](http://blog.ezyang.com/2010/12/how-i-learned-to-stop-worrying-and-love-the-bottom/)
     failed to elicit much of a response at all, I decided that I would have better
     luck with some more pictures. After all, everyone loves pictures!
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: Haskell类型的值形成偏序。我们可以使用称为[Hasse图](http://en.wikipedia.org/wiki/Hasse_diagram)来说明这个偏序。这些图表非常适合强迫自己明确看到每种类型中潜藏的底部。自从我关于表达语义的[上篇文章](http://blog.ezyang.com/2010/12/how-i-learned-to-stop-worrying-and-love-the-bottom/)未能引起任何响应之后，我决定我会在一些更多的图片中运气更好。毕竟，每个人都喜欢图片！
 - en: '* * *'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'We’ll start off with something simple: `()` or unit.'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将从一些简单的东西开始：`()`` or unit`。
 - en: 'Immediately there are a few interesting things to notice. While we normally
     think of unit as only having one possible value, `()`, but in fact they have two:
     `()` and bottom (frequently written as `undefined` in Haskell, but `fix id` will
     do just as well.) We’ve omitted the arrows from the lines connecting our partial
     order, so take as a convention that higher up values are “greater than” their
     lower counterparts.'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 立即有几件有趣的事情要注意。虽然我们通常认为单元只有一个可能的值，`()``，但实际上它们有两个：`()``和bottom（在Haskell中通常写作`undefined`，但`fix
+    id`同样适用。）我们省略了连接我们偏序的线条上的箭头，所以我们约定较高的值比它们的较低对应物“更大”。
 - en: 'A few more of our types work similarly, for example, `Int` and `Bool` look
     quite similar:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的几个类型也工作得很类似，例如，`Int`和`Bool`看起来非常相似：
 - en: 'Note that `Int` without bottom has a total ordering independent of our formulation
     (the usual -3 is less than 5 affair, alluded to by the `Ord` instance for `Int`).
     However, *this is not the ordering you’re looking for!* In particular, it doesn’t
     work if bottom is the game: is two less than or greater than bottom? In this partial
     ordering, it is “greater”.'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意，没有底部的`Int`在我们的公式之外具有独立的全序（通常的-3小于5的情况，`Int`的`Ord`实例所暗示的）。然而，*这不是你要找的顺序！*
+    特别是，如果底部是游戏规则：二是否小于或大于底部？在这个部分排序中，它是“更大”的。
 - en: 'It is no coincidence that these diagrams look similar: their unlifted sets
     (that is, the types with bottom excluded) are discrete partial orders: no element
     is less than or greater than another.'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些图表看起来相似并非巧合：它们的未升级集合（即排除底部的类型）是离散的偏序：没有元素小于或大于另一个。
 - en: '* * *'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: What happens if we introduce data types that include other data types? Here
     is one for the natural numbers, Peano style (a natural number is either zero or
     the successor of a natural number.)
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们引入包含其他数据类型的数据类型会发生什么？以下是自然数的一种，Peano风格（自然数要么是零，要么是另一个自然数的后继。）
 - en: We no longer have a flat diagram! If we were in a strict language, this would
     have collapsed back into the boring partial orders we had before, but because
     Haskell is lazy, inside every successor constructor is a thunk for a natural number,
     which could be any number of exciting things (bottom, zero, or another successor
     constructor.)
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们不再拥有一个平面图！如果我们处于严格的语言环境中，这将会崩溃回到我们以前拥有的无聊的偏序，但因为Haskell是惰性的，每个后继构造函数内部都是一个自然数的惰性计算，它可以是任何数量的令人兴奋的事物（底部，零，或另一个后继构造函数。）
 - en: We’ll see a structure that looks like this again when we look at lists.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我们查看列表时，我们会再次看到类似的结构。
 - en: '* * *'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'I’d like to discuss polymorphic data types now. In [Haskell Denotational semantics
     wikibook](http://en.wikibooks.org/wiki/Haskell/Denotational_semantics), in order
     to illustrate these data types, they have to explicitly instantiate all of the
@@ -85,81 +123,121 @@
     values, suggestive of the fact that there may be *more than one constructor* for
     that type (as was the case for Int, Bool and Nat). At the end of this section
     I’ll show you how to fill in the type variables.'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 我想现在讨论多态数据类型。在[Haskell Denotational semantics wikibook](http://en.wikibooks.org/wiki/Haskell/Denotational_semantics)中，为了说明这些数据类型，他们必须显式实例化所有类型。我们将采用以下简写：当我需要展示某个多态类型的值时，我将绘制一个星号。此外，我将向这些值绘制楔形，暗示该类型可能有*多个构造函数*（就像Int，Bool和Nat的情况一样）。在本节的末尾，我将向您展示如何填写类型变量。
 - en: 'Here is Maybe:'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里是Maybe：
 - en: If Haskell allowed us to construct infinite types, we could recover Nat by defining
     Maybe (Maybe (Maybe ...)).
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果Haskell允许我们构造无限类型，我们可以通过定义Maybe (Maybe (Maybe ...))来恢复Nat。
 - en: 'Either looks quite similar, but instead of Nothing we have Right:'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然看起来相似，但我们用右而不是Nothing：
 - en: 'Is Left ⊥ greater than or less than Right () in this partial order? It’s a
     trick question: since they are different constructors they’re not comparable anymore.'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这个偏序关系中，Left ⊥是否比Right ()大还是小？这是个技巧问题：因为它们是不同的构造函数，所以它们不再可比。
 - en: 'Here’s a more interesting diagram for a 2-tuple:'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里是一个更有趣的二元组的图表：
 - en: The values merge back at the very top! This is because while ((), ⊥) is incomparable
     to (⊥, ()), both of them are less than ((), ()) (just imagine filling in () where
     the ⊥ is in both cases.)
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些值在顶部汇合！这是因为虽然((), ⊥)与(⊥, ())无法比较，但它们都小于((), ())（只需想象在这两种情况下将⊥处填入()）。
 - en: '* * *'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'If we admit lazy data structures, we get a lot richer space of possible values
     than if we’re forced to use strict data structures. If these constructors were
     strict, our Hasse diagrams would still be looking like the first few. In fact,
     we can see this explicitly in the difference between a lazy constructor and a
     strict constructor:'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们允许惰性数据结构，我们将得到比强制使用严格数据结构更丰富的可能值空间。如果这些构造函数是严格的，我们的哈斯图仍然看起来像前几个。实际上，我们可以在惰性构造函数和严格构造函数之间明显地看到这一点：
 - en: The strict constructor squashes ⊥ and C ⊥ to be the same thing.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 严格构造函数压扁了⊥和C ⊥成为同一件事情。
 - en: 'It may also be useful to look at newtype, which merely constructs an isomorphism
     between two types:'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 查看newtype也可能是有用的，它仅仅在两种类型之间构建了一个同构：
 - en: It looks a bit like the strict constructor, but it’s actually not at all the
     same. More on this in the next blog post.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 它看起来有点像严格构造函数，但实际上完全不同。关于这一点，我们将在下一篇博客中详细讨论。
 - en: '* * *'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'How do we expand stars? Here’s a diagram showing how:'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们如何扩展星号？这里有一个显示的图表：
 - en: Graft in the diagram for the star type (excluding bottom, since we’ve already
     drawn that into the diagram), and duplicate any of the incoming and outgoing arrows
     as necessary (thus the wedge.) This can result in an exponential explosion in
     the number of possible values, which is why I’ll prefer the star notation.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 在星形类型的图表中嫁接（不包括底部，因为我们已经将其绘制到图表中），并根据需要复制任何传入和传出的箭头（因此楔形）。这可能导致可能值数量的指数爆炸，这就是为什么我更喜欢星号表示法。
 - en: '* * *'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'And now, the *tour de force*, lazy lists:'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，*tour de force*，惰性列表：
 - en: '*Update.* There’s one bit of extra notation: the stars with subscript ⊥ mean
     that you’ll need to graft in bottom as well (thanks Anonymous for pointing this
     out.) Tomorrow we’ll see list expanded in its full, exponential glory.'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: '*更新.* 还有一个额外的符号：带有下标 ⊥ 的星号意味着您需要将底部也嫁接进去（感谢Anonymous指出这一点）。明天我们将看到列表在其完整的指数荣耀中展开。'
 - en: 'We almost recover Nat if we set a to be `()`, but they’re not quite isomorphic:
     every `()` might actually be a bottom, so while `[()]` and `[⊥]` are equivalent
     to one, they are different. In fact, we actually want to set a to the empty type.
     Then we would write 5 as [⊥, ⊥, ⊥, ⊥, ⊥].'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们将a设置为`()`，我们几乎可以恢复Nat，但它们并不完全是同构的：每个`()`实际上可能是底部，所以虽然`[()]`和`[⊥]`等效于一个，但它们是不同的。事实上，我们实际上想将a设置为空类型。然后我们会将5写成[⊥，⊥，⊥，⊥，⊥]。
 - en: Next time, we’ll [draw pictures of the partial ordering of functions and illustrate
     monotonicity.](http://blog.ezyang.com/2010/12/gin-and-monotonic/)
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 下次，我们将[绘制函数的偏序关系图并说明单调性。](http://blog.ezyang.com/2010/12/gin-and-monotonic/)

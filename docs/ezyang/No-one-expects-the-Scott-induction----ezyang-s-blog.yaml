@@ -1,39 +1,59 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:00'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:00'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'No one expects the Scott induction! : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '没有人预料到斯科特归纳！: ezyang’s 博客'
 - en: 来源：[http://blog.ezyang.com/2010/12/no-one-expects-the-scott-induction/](http://blog.ezyang.com/2010/12/no-one-expects-the-scott-induction/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/12/no-one-expects-the-scott-induction/](http://blog.ezyang.com/2010/12/no-one-expects-the-scott-induction/)
 - en: New to this series? Start at [the beginning!](http://blog.ezyang.com/2010/12/hussling-haskell-types-into-hasse-diagrams/)
+  id: totrans-6
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 新来这个系列？请从[最开始！](http://blog.ezyang.com/2010/12/hussling-haskell-types-into-hasse-diagrams/)开始。
 - en: 'Recursion is perhaps one of the first concepts you learn about when you learn
     functional programming (or, indeed, computer science, one hopes.) The classic
     example introduced is factorial:'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 递归可能是你学习函数式编程（或者说计算机科学，希望如此）时首先了解的概念之一。经典的例子是阶乘：
 - en: '[PRE0]'
+  id: totrans-8
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: Recursion on natural numbers is closely related to induction on natural numbers,
     as is [explained here](http://scienceblogs.com/goodmath/2007/01/basics_recursion_and_induction_1.php).
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 自然数上的递归与自然数上的归纳密切相关，如[这里解释的](http://scienceblogs.com/goodmath/2007/01/basics_recursion_and_induction_1.php)。
 - en: 'One thing that’s interesting about the data type `Int` in Haskell is that there
     are no infinities involved, so this definition works perfectly well in a strict
     language as well as a lazy language. (Remember that `Int` is a flat data type.)
@@ -42,8 +62,11 @@
     does something sensible when it is passed infinity: it outputs infinity. Fortunately,
     the definition of factorial is precisely the same for Omega (given the appropriate
     typeclasses.) But why does it work?'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 有趣的一点是，Haskell 中数据类型 `Int` 没有涉及到无穷大，因此这个定义在严格语言和惰性语言中都能完美工作。（记住 `Int` 是一个扁平的数据类型。）然而，请考虑一下，我们之前正在玩耍的
+    `Omega`，它确实有一个无穷大！因此，我们还需要展示，当阶乘传入无穷大时也会产生一些合理的结果：它输出无穷大。幸运的是，阶乘的定义对于 Omega 类型也是完全相同的（鉴于适当的类型类）。但是它为什么有效呢？
 - en: 'One operational answer is that any given execution of a program will only be
     able to deal with a finite quantity: we can’t ever actually “see” that a value
     of type Omega is infinity. Thus if we bound everything by some large number (say,
@@ -53,60 +76,88 @@
     you will never need the infinity. It’s the natural and fluid way to reason about
     it. As it turns out, there’s an induction principle to go along with this as well:
     transfinite induction.'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 一种操作性的回答是，程序的任何执行都只能处理有限数量：我们永远不能真正“看到”类型 Omega 的值是无穷大。因此，如果我们将一切都限制在某个大数之下（比如，我们计算机的
+    RAM），我们可以使用同样的推理技术来处理 `Int`。然而，我希望你对这个答案感到深感不满：你想要*将*无限数据类型想象为无限的，即使实际上你永远也不会需要无穷大。这是自然和流畅的推理方式。事实证明，还有一个归纳原理与之对应：超越归纳。
 - en: recursion on natural numbers - induction
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 自然数上的递归 - 归纳
 - en: recursion on Omega - transfinite induction
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: Omega 上的递归 - 超越归纳
 - en: 'Omega is perhaps not a very interesting data type that has infinite values,
     but there are plenty of examples of infinite data types in Haskell, infinite lists
     being one particular example. So in fact, we can generalize both the finite and
     infinite cases for arbitrary data structures as follows:'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: Omega 或许并不是一个非常有趣的数据类型，它具有无限的值，但在 Haskell 中有许多无限数据类型的例子，无限列表就是其中一个特别的例子。因此，实际上，我们可以将有限和无限情况推广到任意数据结构，如下所示：
 - en: recursion on finite data structures - structural induction
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 在有限数据结构上的递归 - 结构归纳
 - en: recursion on infinite data structures - Scott induction
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 无限数据结构上的递归 - 斯科特归纳
 - en: 'Scott induction is the punch line: with it, we have a versatile tool for reasoning
     about the correctness of recursive functions in a lazy language. However, its
     definition straight up may be a little hard to digest:'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 斯科特归纳是关键：有了它，我们有一个多功能的工具来推理惰性语言中递归函数的正确性。然而，它的定义可能有点难以理解：
 - en: Let D be a cpo. A subset S of D is chain-closed if and only if for all chains
     in D, if each element of the chain is in S, then the least upper bound of the
     chain is in S as well. If D is a domain, a subset S is admissible if it is chain-closed
     and it contains bottom. Scott’s fixed point induction principle states that to
     prove that fix(f) is in S, we merely need to prove that for all d in D, if d is
     in S, then f(d) is in S.
+  id: totrans-18
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 让 D 是一个 cpo。D 的一个子集 S 如果是链闭的，则对于 D 中的所有链，如果链中的每个元素都在 S 中，则链的上确界也在 S 中。如果 D 是一个
+    domain，一个子集 S 如果既是链闭的又包含 bottom，则它是可接受的。斯科特的不动点归纳原理表明，要证明 fix(f) 在 S 中，我们只需证明对于
+    D 中的所有 d，如果 d 在 S 中，则 f(d) 也在 S 中。
 - en: 'When I first learned about Scott induction, I didn’t understand why all of
     the admissibility stuff was necessary: it was explained to me to be “precisely
     the stuff necessary to make the induction principle work.” I ended up coming around
     to this point of view in the end, but it’s a little hard to see in its full generality.'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我第一次学习斯科特归纳时，我不明白为什么所有这些可接受性的东西是必要的：有人告诉我，这些是“使归纳原理生效所必需的东西”。最后，我也认同了这个观点，但是要在其全面性上看清楚还是有点困难。
 - en: So, in this post, we’ll show how the jump from induction on natural numbers
     to transfinite induction corresponds to the jump from structural induction to
     Scott induction.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，在本文中，我们将展示从自然数归纳到超限归纳的跃迁是如何对应从结构归纳到斯科特归纳的跃迁。
 - en: '* * *'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Induction on natural numbers.* This is the induction you learn on grade school
     and is perhaps the simplest form of induction. As a refresher, it states that
     if some property holds for when n = 0, and if some property holds for n + 1 given
     that it holds for n, then the property holds for all natural numbers.'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: '*自然数归纳.* 这是你在小学学到的归纳法，也许是最简单的归纳形式。简单来说，它规定如果某个性质对 n = 0 成立，并且如果某个性质对 n + 1
+    成立，那么它对所有自然数都成立。'
 - en: 'One way of thinking of the base case and the inductive step is to see them
     as inference rules that we need to show are true: if they are, we get another
     inference rule that lets us sidestep the infinite applications of the inductive
@@ -114,8 +165,10 @@
     all natural numbers. (Note that there is on problem if we only want to show that
     the property holds for an arbitrary natural number: that only requires a finite
     number of applications of the inductive step!)'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 把基本情况和归纳步骤看作推理规则的一种方式是：我们需要证明它们是正确的，如果它们是正确的，我们就得到了另一个推理规则，让我们能够避开无限应用归纳步骤来满足我们对所有自然数成立的性质的要求。（请注意，如果我们只想证明某个性质对一个任意自然数成立，那只需要有限次应用归纳步骤！）
 - en: '*Transfinite induction on Omega.* Recall that Omega is the natural numbers
     plus the smallest infinite ordinal ω. Suppose that we wanted to prove that some
     property held for all natural numbers as well as infinity. If we just used induction
@@ -123,18 +176,25 @@
     finite natural number, but not necessarily for infinity (for example, we might
     conclude that every natural number has another number greater than it, but there
     is no value in Omega greater than infinity).'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: '*Omega 上的超限归纳.* 回忆一下，Omega 是自然数加上最小的无限序数 ω。假设我们想要证明某个性质对所有自然数以及无穷大都成立。如果我们仅仅使用自然数归纳，我们会注意到我们可以证明某个有限自然数具有某个性质，但未必对无穷大成立（例如，我们可能会得出每个自然数都有比它大的另一个数，但在
+    Omega 中大于无穷大的值却不存在）。'
 - en: 'This means we need one case: given that a property holds for all natural numbers,
     it holds for ω as well. Then we can apply induction on natural numbers and then
     infer that the property holds for infinity as well.'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 这意味着我们需要一个情况：如果一个性质对所有自然数成立，那么它也对 ω 成立。然后我们可以应用自然数归纳，并推断该性质对无穷大也成立。
 - en: We notice that transfinite induction on Omega requires strictly more cases to
     be proven than induction on natural numbers, and as such is able to draw stronger
     conclusions.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 Omega 上的超限归纳需要证明的情况比自然数归纳多得多，因此能够得出更强的结论。
 - en: '*Aside.* In its full generality, we may have many infinite ordinals, and so
     the second case generalizes to *successor ordinals* (e.g. adding 1) and the third
     case generalizes to limit ordinal (that is, an ordinal that cannot be reached
@@ -142,61 +202,88 @@
     from zero). Does this sound familiar? I hope it does: this notion of a limit should
     remind you of the least upper bounds of chains (indeed, ω is the least upper bound
     of the only nontrivial chain in the domain Omega).'
+  id: totrans-27
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '*旁白。* 在其全面性中，我们可能有许多无限序数，因此第二种情况推广到*继承者序数*（例如添加 1），而第三种情况推广到极限序数（即，不能通过有限次应用继承者函数达到的序数——例如从零到无穷大）。这听起来熟悉吗？希望是的：这种极限的概念应该让你想起链的最小上界（事实上，ω
+    是域 Omega 中唯一非平凡链的最小上界）。'
 - en: '* * *'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'Let’s take a look at the definition of Scott induction again:'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们再次看一下 Scott 归纳的定义：
 - en: Let D be a cpo. A subset S of D is chain-closed if and only if for all chains
     in D, if each element of the chain is in S, then the least upper bound of the
     chain is in S as well. If D is a domain, a subset S is admissible if it is chain-closed
     and it contains bottom. Scott’s fixed point induction principle states that to
     prove that fix(f) is in S, we merely need to prove that for all d in D, if d is
     in S, then f(d) is in S.
+  id: totrans-30
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 让 D 是一个 cpo。D 的子集 S 是链闭的，当且仅当对于 D 中的所有链，如果链中的每个元素都在 S 中，则链的最小上界也在 S 中。如果 D 是一个域，子集
+    S 是可接受的，如果它是链闭的并且包含底部。Scott 的不动点归纳原理表明，要证明 fix(f) 在 S 中，我们只需证明对于所有 d 属于 D，如果 d
+    属于 S，则 f(d) 也属于 S。
 - en: We can now pick out the parts of transfinite induction that correspond to statements
     in this definition. S corresponds to the set of values with the property we want
     to show, so `S = {d | d in D and prop(d)}` The *base case* is the inclusion of
     bottom in S. The *successor case* is “if d is in S, then f(d) is in S” (notice
     that *f* is our successor function now, not the addition of one). And the *limit
     case* corresponds to the chain-closure condition.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们可以找出与这个定义中的语句对应的超限归纳的部分。S 对应于具有我们想要展示属性的值的集合，因此 `S = {d | d in D and prop(d)}`。*基础情况*
+    是底部包含在 S 中。*继承者情况* 是“如果 d 属于 S，则 f(d) 属于 S”（注意现在 *f* 是我们的继承者函数，而不是加一）。*极限情况* 对应于链闭条件。
 - en: Here are all of the inference rules we need to show!
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里是我们需要展示的所有推理规则！
 - en: The domain D that we would use to prove that factorial is correct on Omega is
     the domain of functions `Omega -> Omega`, the successor function is `(Omega ->
     Omega) -> (Omega -> Omega)`, and the subset S would correspond to the chain of
     increasingly defined versions of factorial. With all these ingredients in hand,
     we can see that `fix(f)` is indeed the factorial function we are looking for.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们用于证明阶乘在 Omega 上正确的域 D 是函数 `Omega -> Omega` 的域，继承者函数是 `(Omega -> Omega) ->
+    (Omega -> Omega)`，而子集 S 对应于阶乘不断定义版本的链。有了所有这些要素，我们可以看到 `fix(f)` 确实是我们要找的阶乘函数。
 - en: '* * *'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'There are a number of interesting “quirks” about Scott induction. One is the
     fact that the property must hold for bottom, which is a partial correctness result
     (“such and such holds if the program terminates”) rather than a total correctness
     result (“the program terminates AND such and such holds”). The other is that the
     successor case is frequently not the most difficult part of a proof involving
     Scott induction: showing admissibility of your property is.'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: Scott 归纳法有许多有趣的“怪癖”。其中一个是这个属性必须对底部成立，这是一个部分正确性结果（“如果程序终止，则如此如此成立”），而不是一个完全正确性结果（“程序终止且如此如此成立”）。另一个是继承者情况通常不是涉及
+    Scott 归纳的证明中最困难的部分：显示属性的可接受性是。
 - en: 'This concludes our series on denotational semantics. This is by no means complete:
     usually the next thing to look at is a simple functional programming language
     called PCF, and then relate the operational semantics and denotational semantics
     of this language. But even if you decide that you don’t want to hear any more
     about denotational semantics, I hope these glimpses into this fascinating world
     will help you reason about laziness in your Haskell programs.'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 这结束了我们关于指称语义的系列。这并不是完整的：通常接下来要看的是一个称为 PCF 的简单函数式编程语言，然后将这种语言的操作语义和指称语义联系起来。但即使你决定不想再听有关指称语义的更多内容，我希望这些对这个迷人世界的一瞥能帮助你在
+    Haskell 程序中思考惰性。
 - en: '*Postscript.* I originally wanted to relate all these forms of inductions to
     generalized induction as presented in TAPL: the inductive principle is that the
     least fixed point of a monotonic function F : P(U) -> P(U) (where P(U) denotes
@@ -204,10 +291,15 @@
     But this lead to the rather interesting situation where the greatest fixed points
     of functions needed to accept sets of values, and not just a single value. I wasn’t
     too sure what to make of this, so I left it out.'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: '*后记.* 最初我想将所有这些归纳形式与TAPL中提出的广义归纳联系起来：归纳原理是单调函数 F : P(U) -> P(U)（这里 P(U) 表示宇宙的幂集）的最小不动点是
+    U 的所有 F-闭子集的交集。但这导致了一个非常有趣的情况，即函数的最大不动点需要接受值的集合，而不仅仅是单个值。我对此并不确定应该如何解释，所以我将其略过了。'
 - en: Unrelatedly, it would also be nice, for pedagogical purposes, to have a “paradox”
     that arises from incorrectly (but plausibly) applying Scott induction. Alas, such
     an example eluded me at the time of writing.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 无关的是，出于教学目的，也很好有一个由于错误（但似乎合理）应用斯科特归纳而产生的“悖论”。可惜，在我写作时，这样的例子让我无法捉摸。

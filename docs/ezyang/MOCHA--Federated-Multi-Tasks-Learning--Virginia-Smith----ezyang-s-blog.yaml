@@ -1,31 +1,48 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:16:59'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:16:59'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'MOCHA: Federated Multi-Tasks Learning (Virginia Smith) : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 'MOCHA: Federated Multi-Tasks Learning (Virginia Smith) : ezyang’s blog'
 - en: 来源：[http://blog.ezyang.com/2017/12/mocha-federated-multi-tasks-learning-virginia-smith/](http://blog.ezyang.com/2017/12/mocha-federated-multi-tasks-learning-virginia-smith/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2017/12/mocha-federated-multi-tasks-learning-virginia-smith/](http://blog.ezyang.com/2017/12/mocha-federated-multi-tasks-learning-virginia-smith/)
 - en: The below is a transcript of a talk by [Virginia Smith](https://people.eecs.berkeley.edu/~vsmith/)
     on [MOCHA](https://arxiv.org/abs/1705.10467), at the [ML Systems Workshop](https://nips.cc/Conferences/2017/Schedule?showEvent=8774)
     at NIPS'17.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面是[Virginia Smith](https://people.eecs.berkeley.edu/~vsmith/)在[MOCHA](https://arxiv.org/abs/1705.10467)上的讲话记录，于[ML
+    Systems Workshop](https://nips.cc/Conferences/2017/Schedule?showEvent=8774)上进行，这在NIPS'17上举办。
 - en: '* * *'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: The motivation for this work comes from the way we think about solving ML problems
     in practice is changing. The typical ML workflow looks like this. You start iwth
     dataset and problem to solve. Say you want to build a classifier to identify high
@@ -33,16 +50,20 @@
     Under the hood, to fit the model to your data, you have to select an optimization
     algorithm. The goal is to find an optimal model that minimizes some function over
     your data.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 这项工作的动机来自于我们在实际中解决机器学习问题的方式正在改变。典型的机器学习工作流程是这样的。你从数据集和要解决的问题开始。假设你想建立一个分类器来识别高质量的新闻文章。下一步是选择一个机器学习模型来解决问题。在幕后，为了将模型拟合到你的数据上，你必须选择一个优化算法。目标是找到一个能在数据上最小化某个函数的最优模型。
 - en: In practice, there's a very important part of the workflow that is missing.
     For new datasets, interesting and systems, the system and properties of system,
     play a large role in the optimization algorithm we select to fix. To give an example,
     in the past several years, data that is so large that must be distributed over
     multiple machines, in a datacenter environment. I've been thinking about how to
     perform fast distributed optimization in this setting, when data is so large.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 在实践中，工作流程中有一个非常重要的部分缺失。对于新的数据集、有趣的系统和系统属性，优化算法的选择起着重要作用。举个例子，在过去几年中，数据量变得非常大，必须分布在多台机器上，处于数据中心环境中。我一直在思考如何在这种情况下进行快速的分布式优化，当数据如此之大时。
 - en: But more and more frequently, data is not coming nicely packaged in datacenter.
     It's coming from mobile phones, devices, distributed across country and globe.
     Training ML in this setting is challenging. For one, whereas in datacenter you
@@ -50,8 +71,10 @@
     devices are similar capability; here, you have phones that are old, low battery,
     not connected to wifi. This can change ability to perform computation at any given
     iteration.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 但越来越频繁地，数据并非从数据中心优雅地包装而来。它来自手机、设备，分布在全国乃至全球各地。在这种设置下进行机器学习训练是具有挑战性的。首先，在数据中心中，你有数百到数千台设备，而在这里，你有数百万甚至数十亿个设备。此外，在数据中心中，设备具有相似的能力；而在这里，你有旧手机、低电量、未连接wifi的情况。这会影响到每次迭代中进行计算的能力。
 - en: Additionally, there's heterogeneity in data itself. For privacy and computation
     reasons, data can become very unbalanced in network. And it can be non-IID, so
     much so that there can be interesting underlying structure to the data at hand.
@@ -60,11 +83,15 @@
     statistical in this federated setting; the punchline is that systems setting plays
     a role not only in optimization algorithm but also the model we select to fit.
     IT plays a more important role in this overall workflow.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，数据本身的异质性也很重要。出于隐私和计算原因，数据可能在网络中变得非常不平衡。它可能是非独立同分布的，因此数据本身可能存在有趣的底层结构。我很兴奋，因为这些挑战可以分解为系统和统计挑战。这项工作的一句总结是，在联邦设置中思考系统和统计问题；关键在于系统设置不仅在优化算法中起作用，而且在选择适合的模型时也起作用。在整个工作流程中，系统设置扮演着更加重要的角色。
 - en: I'm going to go through how we holistically tackle systems and statistical challenges.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将全面解决系统和统计挑战的方法进行概述。
 - en: Starting with statistical. The goal is we have a bunch of devices generating
     data, could be unbalanced; some devices have more data than others. One approach
     used in past is fit a single model across all of this data. All of the data can
@@ -75,8 +102,10 @@
     What we're proposing is something between these two extremes. We want to find
     local models for each device, but share information in a structured way. This
     can be captured in a framework called multitask learning.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 从统计学角度出发。目标是我们有一堆生成数据的设备，可能是不平衡的；一些设备比其他设备拥有更多的数据。过去使用的一种方法是在所有这些数据上拟合单一模型。所有数据可以聚合；您找到一个在所有数据上同时实现准确性的模型。另一个极端是为每个数据设备找到一个模型，并且不共享信息。从系统的角度来看这是很好的，但从统计学角度来看，你可能会有一些设备只有…在实践中表现不佳。我们提出的是介于这两个极端之间的方法。我们想为每个设备找到本地模型，但以一种结构化的方式共享信息。这可以在一个称为多任务学习的框架中捕获。
 - en: The goal is to fit a separate loss function for each device. These models can
     be aggregated in this matrix W, and the function of the regularizer, is to force
     some structure omega on it. This omega is a task relationship matrix, capturing
@@ -84,14 +113,18 @@
     weights, or most of the tasks are related and there are a few outliers, or there
     are clusters and groups, or there are more sophisticated relationships like asymmetric
     relationships. These can all be captured in multitask.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 目标是为每个设备拟合单独的损失函数。这些模型可以在矩阵 W 中进行聚合，并且正则化函数的作用是强制施加某种结构 omega 在其上。这个 omega 是一个任务关系矩阵，捕捉有趣的关系，例如，所有任务相关并且你想学习权重，或者大多数任务相关并且有一些异常值，或者有集群和群体，或者更复杂的关系像是非对称的关系。所有这些都可以在多任务中捕获。
 - en: We developed a benchmarking set of real federated data. This includes trying
     to predict human activity from mobile phone, predict if eating or drinking, land
     mine, and vehicle sensor; distributed sensor to determine if a vehicle is passing
     by.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们开发了一个真实的联合数据基准集。这包括尝试从手机预测人类活动，预测是否进食或饮酒，地雷和车辆传感器；分布式传感器来确定车辆是否经过。
 - en: For these various datasets, we compared global, local and MTL. The goal is to
     fit a SVD model. For each data set, we looked at the average error across tasks,
     where each model is a task. What you can see is average error, for SVD, is significantly
@@ -99,8 +132,11 @@
     expressive; it lets you go between these extremes. What's interesting is that
     in these real data sets, it really helps. Reduction by half. This is a significant
     improvement in practice.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于这些不同的数据集，我们比较了全局、本地和多任务学习（MTL）。目标是拟合一个奇异值分解（SVD）模型。对于每个数据集，我们查看了跨任务的平均误差，其中每个模型都是一个任务。您可以看到，对于
+    SVD，平均误差显著低于全局和本地方法。这是有道理的，因为多任务学习更加表达丰富；它让您可以在这些极端之间切换。有趣的是，在这些真实数据集中，它确实有所帮助。实践中减少了一半。这在实践中是一个显著的改进。
 - en: Given that we like to be using multitask learning to model data in federated
     environment, the next problem is figure out how to train this in distributed setting,
     thinking about massive distributed. In particular, the goal is to solve the following
@@ -111,13 +147,19 @@
     practice is the W update. The challenge of doing this is communication is extremely
     expensive. And because of heterogeneity, you may have massive problems with stragglers
     and fault tolerance; e.g., someone who turns their phone off.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 鉴于我们喜欢在联合环境中使用多任务学习来建模数据，下一个问题是如何在分布式设置中训练这个模型，考虑到大规模分布式。特别是，目标是解决以下优化目标。在研究如何解决这个目标时，我们注意到通常是交替解决
+    W 和 omega 的问题。当你解决 omega 时，它是集中的，你只需要访问模型。但是 W 必须是分布式的，因为数据分布在设备之间。在实践中解决这个问题的关键组成部分是
+    W 的更新。做这件事的挑战是通信非常昂贵。并且由于异构性，你可能会遇到大量的问题，如拖延者和容错性问题；例如，有人把手机关掉。
 - en: The high level idea for how we're doing this, take a communication efficient
     method that works well in data center, and modify it to work in federated setting.
     It will handle MTL as well as stragglers and fault tolerance.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们正在实施这个高层次的想法，采用一种通信高效的方法，在数据中心中运行良好，并修改为在联邦设置中运行。它将处理多任务学习以及stragglers和容错。
 - en: What is the method we're using? The method we're using is COCOA, which is a
     state of the art method for empirical risk minimization problems. The thing that's
     nice about COCOa is it spans prior work of mini-batch and one-shot communication,
@@ -125,8 +167,10 @@
     as possible. It does it by not solving the primal formulation, but the dual. The
     dual is nice because we can easily approximate it by forming a quadratic approximation
     to the objective; and this more easily decomposes across machines.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们正在使用的方法是什么？我们正在使用的方法是COCOA，这是一种用于经验风险最小化问题的最先进方法。COCOA的优点在于它涵盖了迷你批处理和一次性通信的先前工作，通过将通信作为方法的第一类参数来实现灵活性。它通过不解决原始形式而解决对偶形式来实现这一点。对偶形式之所以好，是因为我们可以通过形成客观函数的二次近似来轻松地近似它；这种方法更容易在多台机器之间分解。
 - en: To distribute this to federate setting, a key challenge is figuring out how
     to generalize it to the MTL framework. A second challenge; in COCOA, the subproblems
     are assumed to be solved to some accuracy theta. This is nice because theta varies
@@ -137,8 +181,10 @@
     cannot be set exactly to one, it cannot handle fault tolerance, where there's
     no work performed at any iteration. Making this communication parameter much more
     flexible in practice.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 要将其分布到联邦设置，一个关键挑战是找出如何将其推广到MTL框架。第二个挑战；在COCOA中，假设子问题解决到某个精度θ。这很好，因为θ从0到1变化，其中0是精确解，1是不精确解。这可以看作是本地通信与通信时间的比例。然而，在实际中，这并不像在联邦设置中应该那样灵活。对所有迭代和所有节点设置的唯一θ。由于θ不能完全设定为1，所以它无法处理容错，在任何迭代中都没有工作执行。在实践中，这使得通信参数更加灵活。
 - en: 'JHow are we doing this? we developed MOCHA. The goal is to solve multitask
     learning framework; W and Omega in an alternating fashion. In particular, we''re
     able to form the following dual formulation, similar to COCOA, so it decomposes.
@@ -149,21 +195,27 @@
     tolerance. So this looks like a simple fix: we make this accuracy parameter more
     flexible: allow it to vary by node and iteration t, and let it be exactly 1\.
     The hard thing is showing it converges to optimal solution.'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们是如何做到这一点的？我们开发了MOCHA。其目标是解决多任务学习框架；以交替的方式解决W和Ω。特别是，我们能够形成以下类似于COCOA的对偶形式，使其分解。相比之下，我们对子问题参数做出了更加灵活的假设。这是重要的，因为stragglers有统计原因、不平衡、不同分布，解决这些子问题的难度可能会有很大不同。此外，由于系统问题，还可能出现stragglers。以及容错问题。因此，看起来这是一个简单的修复：我们使这个准确性参数更加灵活：允许它根据节点和迭代t变化，并让它确切为1。困难在于表明它收敛到最优解。
 - en: Following this new assumption, and you can't have a device go down every single
     round, we show the following convergence guarantee. For L-Lipschitz loss, we get
     a convergence at 1/epsilon; for smooth models (logistic regression) we get a linear
     rate.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 在采纳这一新假设之后，你不能让设备每一轮都出现问题，我们展示了以下的收敛保证。对于L-Lipschitz损失，我们得到1/ε的收敛率；对于平滑模型（逻辑回归），我们得到线性率。
 - en: How does this perform in practice? The method is quite simple. The assumption
     is we have data stored at m different devices. We alternate between solving Omega,
     and W stored on each. While we're solving w update, it works by defining these
     local subproblems for machines, and calling solver that does approximate solution.
     This is flexible because it can vary by node and iteration.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 在实践中，这种方法表现如何？这种方法非常简单。假设我们的数据存储在m个不同的设备上。我们在解决Ω和W存储在每个设备上时交替进行。在解决w更新时，它通过为每台机器定义这些本地子问题，并调用进行近似解的求解器来工作。这是灵活的，因为它可以根据节点和迭代变化。
 - en: In terms of comparing this to other methods, what we've seen is the following.
     Comparing MOCHA to CoCoA, compared to Mb-SDCA and Mb-SGD. We had simulation, with
     real data to see what would happen if we do it on wifi. We have simulated time
@@ -173,45 +225,61 @@
     the different types of networks; LET and 3G. The blue line and MOCHA and CoCOA,
     they work well in high communication settings, because they are more flexible.
     But compared to CoCOA, MOCHA is much more robust to statistical heterogeneity.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 就比较这个方法与其他方法而言，我们所看到的是以下内容。将MOCHA与CoCoA、Mb-SDCA和Mb-SGD进行比较。我们有模拟，用真实数据来看如果我们在WiFi上进行会发生什么。我们有模拟的时间以及接近最优解的情况。你可以看到的是，MoCHA更快地收敛到最优解，因为MoCHA没有统计异质性的问题，并且不会被拖累。这对所有不同类型的网络都适用；LET和3G。蓝线和MOCHA以及CoCOA，在高通信环境中表现良好，因为它们更灵活。但与CoCOA相比，MOCHA对统计异质性更加稳健。
 - en: What's interesting is that if we impose some systems heterogeneity, some devices
     are slower than others, we looked at imposing low and high systems heterogeneity,
     MOCHA with this additional heterogeneity, it's a two orders of magnitude speedup
     to reach optimal solution.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 有趣的是，如果我们施加一些系统异质性，一些设备比其他设备慢，我们看了低和高系统异质性的情况，MOCHA在这种额外的异质性下，达到最优解的速度提高了两个数量级。
 - en: And for MOCHA in particular, we looked at issue of fault tolerance. What we're
     showing here, we're increasing the probability a device will drop out at any distribution.
     Going up until there's half devices, we're still fairly robust to MOCHA converging,
     in almost the same amount of time. But what we see with green dotted line, of
     the same device drops out every iteration, it doesn't converge. This shows the
     assumption we made makes sense in practice.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 特别是对于MOCHA，我们关注了容错性的问题。我们在这里展示的是，我们增加了设备在任何分布中掉线的概率。直到有一半的设备，我们对MOCHA的收敛仍然相当稳健，几乎在同样的时间内。但是我们看到绿色虚线，如果同一设备每次迭代都掉线，它就不会收敛。这表明我们实际做出的假设是合理的。
 - en: The punchline is that in terms of thinking this new setting, training ML on
     these massive networks of devices, this is both a statistical and systems issue.
     We've addressed it in a holistic matter. Code at [http://cs.berkeley.edu/~vsmith](http://cs.berkeley.edu/~vsmith)
     I also want to reiterate about SysML conference in February.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 关键是，在思考这种新的设置中，在这些大规模设备网络上训练ML，这既是统计问题也是系统问题。我们已经以整体的方式解决了这个问题。代码位于[http://cs.berkeley.edu/~vsmith](http://cs.berkeley.edu/~vsmith)，我还想重申一下SysML会议将于2月举行。
 - en: 'Q: When you compare global and local? Why is it always better than global?'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Q: 当你比较全局和本地时？为什么总是比全局好？'
 - en: 'A: The motivation why you want to use local model over global model, is that
     if you have a local data a lot, you might perform better. It boosts the overall
     sample size. I have some additional experiments where we took the original data,
     and skewed it even further than it already was. We took the local data, and there
     was less data locally, and they have global approaches. That''s just a function
     of the data in the devices.'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 'A: 你想使用本地模型而不是全局模型的动机是，如果你有大量本地数据，你可能会表现得更好。这提升了整体样本量。我有一些额外的实验，我们在那里采取了原始数据，并且比它已经存在的情况更进一步倾斜。我们采取了本地数据，那里的数据更少，它们有全局方法。这只是设备中数据的功能。'
 - en: 'Q: I really like how your method has guarantees, but I''m wondering about an
     approach where you create a metalearning algorithm locally and have it work locally?'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Q: 我真的很喜欢你的方法有保证，但我想知道一种在本地创建元学习算法并在本地运行的方法？'
 - en: 'A: That''s worth looking into empirically, since you can do fine tuning locally.
     What we were trying to do first was converge to exact optimal solution, but you
     might want to just work empirically well, would be good to compare to this setting.'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 'A: 从经验来看，这是值得研究的，因为你可以在本地进行微调。我们最初试图达到确切的最优解，但你可能只想要在经验上表现良好，与此设置进行比较将是很好的。'

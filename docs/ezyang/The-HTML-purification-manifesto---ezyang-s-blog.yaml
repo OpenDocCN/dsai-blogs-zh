@@ -1,23 +1,35 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 分类：未分类
 - en: 'date: 2024-07-01 18:18:06'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:18:06
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'The HTML purification manifesto : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: HTML净化宣言：ezyang’s blog
 - en: 来源：[http://blog.ezyang.com/2010/10/the-html-purification-manifesto/](http://blog.ezyang.com/2010/10/the-html-purification-manifesto/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/10/the-html-purification-manifesto/](http://blog.ezyang.com/2010/10/the-html-purification-manifesto/)
 - en: I recently sent Greg Weber an email about his [xss-sanitize](http://github.com/gregwebs/haskell-xss-sanitize)
     package, cautioning about his reuse of the pandoc sanitization algorithm for his
     own package. He responded (with good justification) that a mere caution was not
@@ -25,23 +37,37 @@
     which HTML Purifier follows and which I think is a prerequisite for any industrial
     grade HTML sanitization library. I will admit it’s a tough manifesto to follow,
     and I’ll talk about when you can get away with not following it to the line.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 最近我给 Greg Weber 发了一封电子邮件，关于他的[xss-sanitize](http://github.com/gregwebs/haskell-xss-sanitize)包，警告他在他自己的包中重用
+    pandoc 净化算法。他做出了回应（有很好的理由），指出仅仅警告并不是很有建设性！因此，这是我的回应，即“HTML净化宣言”，HTML Purifier
+    遵循的准则，我认为这是任何工业级HTML净化库的先决条件。我承认这是一个难以遵循的宣言，并且我会讨论您何时可以不完全遵循它。
 - en: '*The manifesto.*'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '*宣言。*'
 - en: Use semantic data structures.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用语义化数据结构。
 - en: Whitelist and validate *everything*.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 白名单和验证*一切*。
 - en: Output only what *all* browsers understand.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 仅输出*所有*浏览器理解的内容。
 - en: '* * *'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Use semantic data structures.* Many filters attempt to never build up a DOM
     or tokenized representation of their HTML during the processing stage for performance
     reasons. It turns out this makes securing your filter notoriously difficult. Consider
@@ -49,29 +75,40 @@
     involve non-well-formed HTML. If you require HTML to be converted into a DOM,
     and then serialize it out again, you have a pretty good guarantee that the result
     will be well-formed, and you eliminate all of those vulnerabilities.'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: '*使用语义化数据结构。* 许多过滤器在处理阶段试图永远不建立DOM或标记化的HTML表示，出于性能原因。结果证明，这使得保护您的过滤器变得非常困难。考虑[XSS
+    cheatsheet](http://ha.ckers.org/xss.html)：看看多少漏洞涉及非格式良好的HTML。如果您要求将HTML转换为DOM，然后再序列化输出，您几乎可以保证结果是格式良好的，并消除所有这些漏洞。'
 - en: 'This must be applied to all sublanguages in HTML, and not just HTML itself.
     You also have to be careful that your serializer produces standards compliant
     output. For example, a [vulnerability in HTML Purifier itself](http://htmlpurifier.org/security/2008/http-protocol-removal)
     was caused by a lax adherence to standards. As it states:'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 这必须应用于HTML中的所有子语言，而不仅仅是HTML本身。您还必须小心，确保您的序列化程序生成符合标准的输出。例如，HTML Purifier 本身的一个[漏洞](http://htmlpurifier.org/security/2008/http-protocol-removal)是由于对标准的松散遵守而引起的。正如其所述：
 - en: HTML Purifier's fix also percent-encodes any other reserved character in each
     segment of a URI. This was actually a previously identified section of relaxed
     standards compliance, and strictly enforcing the rules eliminated the vulnerability.
+  id: totrans-14
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: HTML Purifier 的修复还会对 URI 的每个段落中的任何其他保留字符进行百分比编码。这实际上是一个先前确定的放宽标准遵从部分，严格执行规则消除了漏洞。
 - en: Semantic data structures are also useful for implementing extra features—for
     example extracting content from the document or converting all URIs into absolute
     form—and makes validation and manipulation tremendously easier. It will also be
     critical for the next step.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 语义化数据结构还有助于实现额外功能，例如从文档中提取内容或将所有URI转换为绝对形式，并且极大地简化了验证和操作。这对于下一步也将至关重要。
 - en: '* * *'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Whitelist and validate everything.* Whitelisting is a well accepted practice,
     and I will not harp on it here. However, there are subtleties in its application.
     In order to understand the first part of the manifesto, you need to understand
@@ -79,8 +116,10 @@
     to whitelist are elements and attributes. But if you decide to allow the `href`
     attribute, you need to make sure you whitelist URI schemes too—three things to
     whitelist. And heaven forbid you decide to allow `style` attributes!'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: '*白名单和验证一切。* 白名单是一种被广泛接受的做法，在这里我不会多加强调。但是，其应用中存在微妙之处。为了理解宣言的第一部分，您需要理解*一切*的含义。乍一看，您可能需要白名单的明显内容是元素和属性。但是，如果您决定允许`href`属性，则需要确保白名单URI方案——要白名单的三件事情。而且最好您决定允许`style`属性！'
 - en: 'It’s far better to take a different approach to whitelisting: every time you
     encounter an attribute, figure out what its sensible values are, and validate
     it to a whitelist. Think you don’t need to validate that `height`? Consider the
@@ -92,19 +131,26 @@
     would try to avoid it), but it certainly makes coding the algorithms a lot easier.
     Also, it is much easier to manipulate the resulting semantic structure than it
     is to manipulate a bunch of strings.'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 更好的方法是采取不同的白名单方法：每次遇到属性时，找出其合理的值，并将其验证为白名单。认为不需要验证`height`？考虑到可以通过将图像的宽度和高度设置为999999来使不知情的Windows用户蓝屏的图像崩溃攻击。复杂的属性？它可能具有进一步的结构，因此将其扩展为适当的语义数据结构！（最明显的候选者是URI和CSS字符串。）您不一定需要在内存中创建这些结构（事实上，优化的实现会尽量避免这样做），但这确实使编写算法变得更加容易。此外，操作结果的语义结构比操作一堆字符串要容易得多。
 - en: 'This is a rather large problem to tackle, because there are so many elements
     and attributes in HTML and so many sublanguages embedded within those. However,
     you can dramatically simplify matters by creating a domain specific language to
     help you declaratively specify what the semantics are: though I didn’t know it
     at the time, this was the approach that HTML Purifier took with its `HTMLModule`
     system.'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是一个相当庞大的问题，因为HTML中有如此多的元素和属性，而且这些元素中嵌入了许多子语言。但是，通过创建一个特定领域语言来帮助您声明性地指定语义，您可以显著简化问题：尽管当时我并不知道，但这正是HTML
+    Purifier在其`HTMLModule`系统中采用的方法。
 - en: '* * *'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Output only what all browsers understand.* I used to believe that standards
     compliance was enough to make sure all browsers understood your syntax (the primary
     target of most exploits.) Sometimes, however, browsers just don’t parse by the
@@ -113,8 +159,11 @@
     and Internet Explorer [goes and does Y](http://htmlpurifier.org/security/2010/css-quoting).
     It is tempting to throw your hands up in the air and just deal with the vulnerabilities
     as they come in.'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: '*只输出所有浏览器都能理解的内容。* 我曾经认为，符合标准就足以确保所有浏览器理解您的语法（大多数攻击的主要目标）。然而，有时浏览器根本不按标准解析。通常，模糊行为的荒野领域在标准的规定之外，但有时标准说应该发生X，而Internet
+    Explorer却做Y。很诱人的是，只是把手举在空中，然后处理漏洞。'
 - en: But because this is an incompatibility with the standards, there are many web
     developers have discovered that what should work doesn’t! For CSS, even the most
     obscure parsing bug in Internet Explorer has been tripped over by some web developer
@@ -122,30 +171,43 @@
     seemingly not related to the questions of security, is critical for someone writing
     an HTML filter! It tells you, in particular, what the *subset* of standards-compliant
     HTML that is understood by all browsers is.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 但由于这与标准不兼容，许多网页开发人员发现应该工作的东西却不起作用！对于CSS，即使是Internet Explorer中最隐蔽的解析错误也已被一些网页开发人员碰到，并被记录在维基或编码为CSS
+    hack中。尽管这些知识看似与安全问题无关，但对于编写HTML过滤器的人来说至关重要！它告诉您，特别是所有浏览器都理解的符合标准的HTML子集是什么。
 - en: '* * *'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*A more practical note.* Whenever I see a new HTML filter pop up on the web,
     I apply these three litmus tests to the source code (I don’t even bother trying
     the demo):'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: '*更实际的注意事项。* 每当我看到网络上出现一个新的HTML过滤器时，我都会对源代码应用以下三个检验标准（我甚至都不会尝试演示）：'
 - en: Does it use an HTML parser or attempt to do a bunch of string transformations?
+  id: totrans-25
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 它是否使用HTML解析器或尝试进行一堆字符串转换？
 - en: How much does it whitelist? Just elements and attributes? What contents of attributes
     does it treat?
+  id: totrans-26
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 它有多少白名单？仅元素和属性？它如何处理属性的内容？
 - en: Does the filter appear to have accreted those battle scars that come from dealing
     with the real world?
+  id: totrans-27
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 过滤器是否显得有处理实际世界中问题的经验？
 - en: 'I apply the second and third criterion less strongly depending on what the
     filter claims to support: for example, a filter with no support for CSS needs
     not worry about its attendant difficulties. In the extreme case, if you’re writing
@@ -154,17 +216,23 @@
     and you will inevitably start adding new elements and attributes. So I also judge
     whether or not the source seems to have thought about extending itself in these
     directions.'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 根据过滤器声称支持的内容，我对第二和第三标准的应用不那么严格：例如，一个不支持 CSS 的过滤器无需担心其相关的困难。在极端情况下，如果你只是为`<b>`和`<i>`编写过滤器，你可以不遵循这些建议而且没问题。但我怀疑用户总是希望拥有更多功能，你也将不可避免地开始添加新的元素和属性。因此，我也要判断源代码是否考虑过在这些方向上进行扩展。
 - en: '*A more linguistic note.* I use the word “purification” rather than “sanitization”,
     because sanitization implies that the pathogens have merely been rendered inert,
     whereas purification implies that they have actually been removed altogether.
     I think that the latter philosophy is a much safer stance!'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: '*更多语言学上的注意。* 我使用“净化”一词，而不是“消毒”，因为“消毒”意味着病原体仅仅被使无害，而“净化”则意味着它们实际上已被完全去除。我认为后者的理念更为安全！'
 - en: '*Conclusion.* Back in the day, I managed to write highly inflammatory comments
     about other HTML filters in an overzealous attempt to promote my own. I avoid
     doing direct comparisons these days; instead, I hope this manifesto is helpful
     to people interested in writing or improving their own filters.'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: '*结论。* 早些时候，我曾对其他 HTML 过滤器写下高度激烈的评论，试图过分推广我自己的产品。现在我避免直接比较；相反，我希望这份宣言能帮助那些对编写或改进自己过滤器感兴趣的人。'

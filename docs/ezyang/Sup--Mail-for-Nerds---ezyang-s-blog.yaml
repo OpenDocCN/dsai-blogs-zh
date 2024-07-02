@@ -1,37 +1,56 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:18:29'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:18:29
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Sup: Mail for Nerds : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Sup：极客的邮件：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2010/01/sup/](http://blog.ezyang.com/2010/01/sup/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/01/sup/](http://blog.ezyang.com/2010/01/sup/)
 - en: 'Sup: Mail for Nerds'
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Sup：极客的邮件
 - en: '**Update (September 1, 2012):** This post is a bit out of date. I''m planning
     on writing an update, but the main new points are: if you have an SSD, the startup
     time of Sup is really fast, so you can easily run it on your laptop and you should
     use the maildir-sync branch, which gives you backwards synchronization of your
     labels (or my patchset, which is pretty sweet but needs to be polished and published.)'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '**更新（2012 年 9 月 1 日）：** 本文已有些过时。我计划写一篇更新文章，但主要新点是：如果你有 SSD，Sup 的启动时间非常快，所以你可以轻松在笔记本上运行它，并且你应该使用
+    maildir-sync 分支，它提供了标签的反向同步（或者我的 patchset，非常棒但需要打磨和发布）。'
 - en: '* * *'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: I use [Sup](http://sup.rubyforge.org/) and I love it; never mind the ridiculing
     from friends who've found their inbox get painfully slow as they broke the hundred
     thousand message mark or managed to get their index obliterated. It's not quite
@@ -39,41 +58,58 @@
     guide for setting up Sup for your own geeky emailing needs. We'll be using tip-top
     everything, which means running off a Git checkout of the next branch, using Xapian
     indexes and using OfflineImap.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 我使用 [Sup](http://sup.rubyforge.org/) 并且我喜欢它；不要在意朋友们的嘲笑，他们发现当他们的收件箱超过十万封邮件或者管理索引被抹掉时，收件箱变得非常缓慢。通往电子邮件极乐的道路并不轻松，以及一个十封邮件的收件箱，所以这里有一个为你设置
+    Sup 的逐步指南。我们将使用顶尖的一切，这意味着从下一个分支的 Git 检出运行，使用 Xapian 索引，并使用 OfflineImap。
 - en: Get a server you can SSH into and run screen on. Sup has a nontrivial startup
     time, so the best way to work around it is to never shut down the process. It
     also saves you the trouble from needing to have ISP sensitive SMTP switching.
+  id: totrans-10
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 获取一个可以 SSH 连接并且运行 screen 的服务器。Sup 的启动时间不算短，所以绕过它的最佳方法是永远不关闭这个进程。这还可以避免你需要因为
+    ISP 的敏感 SMTP 切换而麻烦。
 - en: Setup [OfflineIMAP](http://software.complete.org/software/projects/show/offlineimap)
     to slurp down your mails. IMAP is generally slow, and I find I care enough about
     my mail to want a local backup. The configuration of `.offlineimaprc` was slightly
     fiddly (I blew away my results twice before getting the right setup); see end
     of post for the template I ended up using. Since the import process will take
     a long time, double-check your configuration before running.
+  id: totrans-11
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 设置 [OfflineIMAP](http://software.complete.org/software/projects/show/offlineimap)
+    来下载你的邮件。IMAP 通常很慢，我发现我对我的邮件很重视，希望有一个本地备份。`.offlineimaprc` 的配置稍微麻烦（我在得到正确设置之前两次搞砸了）；看本文末尾获取我最终使用的模板。由于导入过程会花费很长时间，请在运行之前仔细检查你的配置。
 - en: Setup a Ruby environment; Sup works on Ruby 1.8 but not 1.9\. If you're on Ubuntu
     Jaunty, you'll want to [manually install RubyGems](http://docs.rubygems.org/read/chapter/3);
     on Karmic the packaged version works fine.
+  id: totrans-12
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 设置 Ruby 环境；Sup 在 Ruby 1.8 上可以工作，但在 1.9 上不行。如果你使用的是 Ubuntu Jaunty，你需要[手动安装 RubyGems](http://docs.rubygems.org/read/chapter/3)；在
+    Karmic 上，打包版本可以正常工作。
 - en: Grab the dependency gems. This is as simple as installing the Sup gem using
     `gem install sup`, and then removing just the Sup gem with `gem uninstall sup`.
+  id: totrans-13
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 获取依赖 gems。这就像使用 `gem install sup` 安装 Sup gem，然后仅移除 Sup gem 一样简单。
 - en: Grab a copy of Sup from Git using `git clone git://gitorious.org/sup/mainline.git
     sup`. Inside your shell's rc file (`.bashrc` for Bash users), set your PATH to
     include $SUPDIR/bin and your RUBYLIB to include $SUPDIR/lib. An example set of
     lines to add can be found at the bottom of this post.
+  id: totrans-14
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用`git clone git://gitorious.org/sup/mainline.git sup`从 Git 获取 Sup 的副本。在你的 shell
+    配置文件（Bash 用户为 `.bashrc`）中，设置 PATH 包括 $SUPDIR/bin 和 RUBYLIB 包括 $SUPDIR/lib。添加示例行的一组可以在本帖子底部找到。
 - en: Run `sup-config` to setup general configuration. When it prompts you to add
     a new source, add a Maildir source, specifying a folder inside the directory you
     asked OfflineImap to sync to (for example, I asked OfflineImap to download my
@@ -81,36 +117,56 @@
     When I switched to Sup, I stopped using server side folders, so this is the only
     one I have a source for; if you still want to use them you'll need to add them
     each as independent sources.
+  id: totrans-15
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 运行 `sup-config` 来设置通用配置。当它提示你添加一个新源时，添加一个 Maildir 源，指定一个目录内的文件夹，这个目录是你要求 OfflineImap
+    同步到的（例如，我要求 OfflineImap 下载我的邮件到 ~/Mail/MIT，所以 ~/Mail/MIT/INBOX 将是我的 Maildir 的有效文件夹）。当我转换到
+    Sup 后，我停止使用服务器端文件夹，所以这是我唯一为之设置源的文件夹；如果你仍然想使用它们，你需要将它们分别添加为独立的源。
 - en: 'Open up `.sup/config.yaml` in your favorite editor and on a new line add `:index:
     xapian`. An alternative method would have been to set an environment variable,
     but I prefer this method as more resilient.'
+  id: totrans-16
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '打开你喜欢的编辑器中的`.sup/config.yaml`文件，在新的一行中添加`:index: xapian`。作为更为可靠的方法，另一种选择是设置一个环境变量，但我更倾向于这种方法。'
 - en: There are a few [hooks](http://sup.rubyforge.org/wiki/wiki.pl?Hooks) that I
     unilaterally recommend you setup when you start Sup. Since you are using OfflineImap,
     the `before-poll` hook that executes OfflineImap prior to a poll is a must. There
     is also no good reason for you to not be running "Automatic backups of your labels"
     `startup` hook.
+  id: totrans-17
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 当你开始使用 Sup 时，我强烈建议你设置一些[钩子](http://sup.rubyforge.org/wiki/wiki.pl?Hooks)。由于你在使用
+    OfflineImap，执行 OfflineImap 的 `before-poll` 钩子在进行轮询前是必要的。同时，“自动备份你的标签” `startup`
+    钩子也是必须的。
 - en: Load up `sup` in a screen session and enjoy!
+  id: totrans-18
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在 screen 会话中加载 `sup` 并享受吧！
 - en: '`.offlineimaprc` template:'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: '`.offlineimaprc` 模板：'
 - en: '[PRE0]'
+  id: totrans-20
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: '`.bashrc` template (assuming Sup lives in `$HOME/Dev/sup`):'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: '`.bashrc` 模板（假设 Sup 存在于 `$HOME/Dev/sup` 中）：'
 - en: '[PRE1]'
+  id: totrans-22
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'

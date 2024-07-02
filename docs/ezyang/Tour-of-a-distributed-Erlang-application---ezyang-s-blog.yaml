@@ -1,23 +1,35 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:12'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:12'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Tour of a distributed Erlang application : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 访问分布式 Erlang 应用程序：ezyang 博客
 - en: 来源：[http://blog.ezyang.com/2010/08/tour-of-preach-distributed-erlang/](http://blog.ezyang.com/2010/08/tour-of-preach-distributed-erlang/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/08/tour-of-preach-distributed-erlang/](http://blog.ezyang.com/2010/08/tour-of-preach-distributed-erlang/)
 - en: Bonus post today! Last Tuesday, John Erickson gave a Galois tech talk entitled
     [“Industrial Strength Distributed Explicit Model Checking”](http://vimeo.com/13865125)
     ([video](http://vimeo.com/13865125)), in which he describe [PReach](http://bitbucket.org/jderick/preach),
@@ -25,11 +37,17 @@
     that Intel uses to look for bugs in its models. It is intended as a simpler alternative
     to Murphi’s built-in distributed capabilities, leveraging Erlang to achieve much
     simpler network communication code.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 今天的额外帖子！上周二，John Erickson 在 Galois 的技术讲座中发表了一篇名为 [“工业强度分布式显式模型检查”](http://vimeo.com/13865125)（[视频](http://vimeo.com/13865125)）的演讲，在其中他描述了
+    [PReach](http://bitbucket.org/jderick/preach)，这是一个基于 [Murphi](http://verify.stanford.edu/dill/murphi.html)
+    的开源模型检查器，Intel 用它来查找其模型中的错误。它旨在作为 Murphi 内置的分布能力的简化替代方案，利用 Erlang 实现了更简单的网络通信代码。
 - en: '*First question.* Why do you care?'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '*第一个问题。* 你为什么在乎呢？'
 - en: '*Model checking is cool.* Imagine you have a complicated set of interacting
     parallel processes that evolve nondeterministically over time, using some protocol
     to communicate with each other. You think the code is correct, but just to be
@@ -40,18 +58,23 @@
     all of the possible state evolutions of the system for deadlocks or violated invariants.
     With this, you can find subtle bugs *and* you can find out precisely the inputs
     that lead to that event.'
+  id: totrans-8
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*模型检查很酷。* 想象一下，您有一组复杂的相互作用的并行进程，随时间不确定地演变，使用某种协议相互通信。您认为代码是正确的，但为了确保，您添加了一些检查不变量的断言：也许某些状态配置永远不会被看到，也许您希望确保您的协议永远不会死锁。测试这一点的一种方法是在现场运行一段时间，并在不变量失败时报告。模型检查允许您全面测试系统的所有可能状态演变，以查找死锁或违反不变量的情况。有了这个，您可以找出微妙的错误，并且您可以找出导致该事件的精确输入。'
 - en: '*Distributed applications are cool.* As you might imagine, the number of states
     that need to be checked explodes exponentially. Model checkers apply algorithms
     to coalesce common states and reduce the state space, but at some point, if you
     want to test larger models you will need more machines. PReach has allowed Intel
     to run the underlying model checker Murphi fifty times faster (with a hundred
     machines).'
+  id: totrans-9
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*分布式应用程序很酷。* 正如您可能想象的那样，需要检查的状态数量呈指数级增长。模型检查器应用算法来合并常见状态并减少状态空间，但是在某个时刻，如果您想测试更大的模型，您将需要更多的机器。PReach
+    已经让 Intel 的基础模型检查器 Murphi 的运行速度提高了五十倍（使用一百台机器）。'
 - en: This talk was oriented more towards to the challenges that the PReach team encountered
     when making the core Murphi algorithm distributed than how to model check your
     application (although I’m sure some Galwegians would have been interested in that
@@ -59,65 +82,92 @@
     design a distributed system in Erlang. Since the software is open source, I’ll
     link to relevant source code lines as we step through the high level implementation
     of this system.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 这次讲话更多地关注了 PReach 团队在使核心 Murphi 算法分布式化时遇到的挑战，而不是如何对您的应用程序进行模型检查（尽管我相信一些 Galwegians
+    也会对这个方面感兴趣）。我认为这给出了一个出色的高层次概述，展示了如何在 Erlang 中设计分布式系统。由于软件是开源的，我们将在高层次实现该系统的过程中链接相关的源代码行。
 - en: '*The algorithm.* At its heart, model checking is simply a breadth-first search.
     You take the initial states, compute their successor states, and add those states
     to the queue of states to be processed.'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: '*该算法。* 从本质上讲，模型检查只是一种广度优先搜索。您获取初始状态，计算它们的后继状态，并将这些状态添加到待处理的状态队列中。'
 - en: '[PRE0]'
+  id: totrans-12
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: '*The parallel algorithm.* We now need to make this search algorithm parallel.
     We can duplicate the work queues across computers, making the parallelization
     a matter of distributing the work load across a number of computers. However,
     the set of visited states is trickier: if we don’t have a way of partitioning
     it across machines, it becomes shared state and a bottleneck for the entire process.'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: '*并行算法。* 现在我们需要将这个搜索算法并行化。我们可以在多台计算机上复制工作队列，将并行化问题转变为在多台计算机上分发工作负载。然而，访问状态集合比较棘手：如果我们无法将其有效地分区到多台机器上，它将成为共享状态并成为整个过程的瓶颈。'
 - en: '[Stern and Dill (PS)](http://sprout.stanford.edu/dill/PAPERS/verification/SD97.ps)
     came up with a clever workaround: use a hash function to distribute states to
     processors. This has several important implications:'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Stern and Dill (PS)](http://sprout.stanford.edu/dill/PAPERS/verification/SD97.ps)
+    想出了一个巧妙的解决方案：使用哈希函数将状态分配给处理器。这有几个重要的含义：'
 - en: If the hash function is uniform, we now can distribute work evenly across the
     machines by splitting up the output space of the function.
+  id: totrans-15
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如果哈希函数是均匀的，现在我们可以通过分割函数的输出空间来均匀地分配工作负载。
 - en: Because the hash function is deterministic, any state will always be sent to
     the same machine.
+  id: totrans-16
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 因为哈希函数是确定性的，任何状态都将始终发送到同一台机器。
 - en: Because states are sticky to machines, each machine can maintain an independent
     visited states and trust that if a state shows up twice, it will get sent to the
     same machine and thus show up in the visited states of that machine.
+  id: totrans-17
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 因为状态粘附在机器上，每台机器可以维护独立的访问状态，并相信如果一个状态出现两次，它将被发送到同一台机器，并因此出现在该机器的访问状态中。
 - en: One downside is that a machine cannot save network latency by deciding to process
     it’s own successor states locally, but this is a fair tradeoff for not having
     to worry about sharing the visited states, which is considered a hard problem
     to do efficiently.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 其一个缺点是，机器无法通过决定在本地处理自己的后续状态来节省网络延迟，但这对于不必担心共享访问状态的问题来说是一个公平的权衡，这被认为是一个难以有效解决的问题。
 - en: The relevant source functions that implement the bulk of this logic are [recvStates](http://bitbucket.org/jderick/preach/src/514dcacd581c/release-1.1/preach.erl#cl-770)
     and [reach](http://bitbucket.org/jderick/preach/src/514dcacd581c/release-1.1/preach.erl#cl-694).
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 实现大部分这一逻辑的相关源函数是 [recvStates](http://bitbucket.org/jderick/preach/src/514dcacd581c/release-1.1/preach.erl#cl-770)
+    和 [reach](http://bitbucket.org/jderick/preach/src/514dcacd581c/release-1.1/preach.erl#cl-694)。
 - en: '*Crediting.* When running early versions of PReach, the PReach developers would
     notice that occasionally a machine in the cluster would massively slow down or
     crash nondeterministically.'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: '*积分机制。* 在运行 PReach 的早期版本时，PReach 的开发人员会注意到集群中的某些机器偶尔会因非确定性地大幅减速或崩溃。'
 - en: 'It was discovered that this machine was getting swamped by incoming states
     languishing in the in-memory Erlang request queue: even though the hash function
     was distributing the messages fairly evenly, if a machine was slightly slower
     than its friends, it would receive states faster than it could clear out.'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 发现这台机器被内存中的 Erlang 请求队列淹没：尽管哈希函数均匀分配消息，如果一台机器稍慢于其他机器，它将收到更多的状态，而无法及时处理。
 - en: To fix this, PReach first implemented a back-off protocol, and then implemented
     a crediting protocol. The intuition? Don’t send messages to a machine if it hasn’t
     acknowledged your previous C messages. Every time a message is sent to another
@@ -127,19 +177,26 @@
     messages in the queue to be `N * C`, where `N` is the number of nodes (usually
     about a 100 when Intel runs this). To prevent a build-up of pending states in
     memory when we have no more credits, we save them to disk.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了解决这个问题，PReach 首先实现了一种退避协议，然后实现了一种积分协议。其直觉是：如果一台机器还没有确认你之前的 C 条消息，就不要向其发送消息。每次向另一台机器发送消息时，都会发送一个积分；当机器回复说它已处理完状态时，[积分会一同发送回来](http://bitbucket.org/jderick/preach/src/514dcacd581c/release-1.1/preach.erl#cl-794)。如果没有积分，则不发送任何消息。这将队列中待处理消息的数量限制为`N
+    * C`，其中`N`是节点数（通常情况下是约 100 个，当 Intel 运行时）。为了防止内存中待处理状态的积累，当没有积分时，我们将它们保存到磁盘。
 - en: Erickson was uncertain if Erlang had a built-in that performed this functionality;
     to him it seemed like a fairly fundamental extension for network protocols.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: Erickson 不确定 Erlang 是否有一个内建功能来执行这个功能；对他来说，这似乎是网络协议的一个相当基本的扩展。
 - en: '*Load balancing.* While the distribution of states is uniform, once again,
     due to a heterogeneous environment, some machines may be able to process states
     faster than other. If those machines finish all of their states, they may sit
     idly by, twiddling their thumbs, while the slower machines still work on their
     queue.'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: '*负载均衡。* 虽然状态的分布是均匀的，但由于异构环境，某些机器可能能够比其他机器更快地处理状态。如果这些机器完成了它们所有的状态，它们可能会闲置不动，摆弄着大拇指，而慢速机器仍在处理它们的队列。'
 - en: 'One thing to do when this happens is for the busy nodes to notice that a machine
     is idling, and send them their states. Erickson referenced some work by [Kumar
     and Mercer (PDF)](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.94.2832&rep=rep1&type=pdf)
@@ -148,8 +205,13 @@
     the same, it will waste a lot of network time pushing states across the network
     as the speeds of the machines fluctuate. Instead, only send states when you notice
     someone with X times less states than you (where X is around 5.)'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 当这种情况发生时，一个要做的事情是让繁忙的节点注意到有一台机器正在空闲，并向它们发送它们的状态。Erickson 引用了[Kumar 和 Mercer
+    (PDF)](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.94.2832&rep=rep1&type=pdf)
+    关于这个主题的一些工作。他的见解是，过于热衷于负载均衡和根本不进行负载均衡一样糟糕：如果负载均衡器试图保持所有队列完全相同，它将浪费大量网络时间将状态推送到网络中，因为机器的速度波动。相反，只有在注意到某人的状态比你少
+    X 倍（其中 X 大约为 5）时才发送状态。
 - en: 'One question that might come up is this: does moving the states around in this
     fashion cause our earlier cleverness with visited state checking to stop working?
     The answer is fortunately no! States on a machine can be in one of two places:
@@ -158,8 +220,11 @@
     When we push states to a slacker, those states are [taken from our work queue](http://bitbucket.org/jderick/preach/src/514dcacd581c/release-1.1/preach.erl#cl-817):
     the idler just does the invariant checking and state expansion (and also harmlessly
     happens to add that state to their visited states list).'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个可能出现的问题是：这种方式的状态移动是否会导致我们早期用于访问状态检查的聪明办法停止工作？答案幸运地是不会！机器上的状态可以在两个地方之一：内存中的
+    Erlang 接收队列或磁盘上的工作队列。当将消息从接收队列转移到工作队列时，[将执行访问测试](http://bitbucket.org/jderick/preach/src/514dcacd581c/release-1.1/preach.erl#cl-798)。当我们向懒汉推送状态时，这些状态是从我们的工作队列中[获取的](http://bitbucket.org/jderick/preach/src/514dcacd581c/release-1.1/preach.erl#cl-817)：懒汉仅执行不变检查和状态扩展（并且还无害地将该状态添加到他们的访问状态列表中）。
 - en: '*Recovering shared states.* When an invariant fails, how do you create a backtrace
     that demonstrates the sequence of events that lead to this state? The processing
     of any given state is scattered across many machines, which need to get stitched
@@ -168,18 +233,25 @@
     The recipient then [logs both states to disk](http://bitbucket.org/jderick/preach/src/514dcacd581c/release-1.1/preach.erl#cl-804).
     When you want to trace back, you can always [look at the previous state and hash
     it to determine which machine that state came from](http://bitbucket.org/jderick/preach/src/514dcacd581c/release-1.1/preach.erl#cl-350).'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: '*恢复共享状态。* 当不变量失败时，如何创建一个回溯，显示导致此状态的事件序列？任何给定状态的处理都分散在许多机器上，这些机器需要再次拼接在一起。诀窍是在传递后继状态时，不仅传输当前状态，而且[还传输前一个状态](http://bitbucket.org/jderick/preach/src/514dcacd581c/release-1.1/preach.erl#cl-793)。接收方然后[将这两个状态记录到磁盘](http://bitbucket.org/jderick/preach/src/514dcacd581c/release-1.1/preach.erl#cl-804)。当您想要追溯时，您始终可以[查看先前的状态并对其进行哈希，以确定该状态来自哪台机器](http://bitbucket.org/jderick/preach/src/514dcacd581c/release-1.1/preach.erl#cl-350)。'
 - en: '*In the field.* Intel has used PReach on clusters of up to 256 nodes to test
     real models of microarchitecture protocols of up to thirty billion states (to
     Erickson’s knowledge, this is the largest amount of states that any model checker
     has done on real models.)'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: '*在现场中。* Intel 在多达 256 个节点的集群上使用 PReach，以测试多达三百亿状态的微体系结构协议的真实模型（据 Erickson 知道，这是任何模型检查器在真实模型上完成的状态最多的数量）。'
 - en: '*Erlang pain.* Erickson’s primary complaint with Erlang was that it did not
     have good profiling facilities for code that interfaced heavily with C++; they
     would have liked to have performance optimized their code more but found it difficult
     to pin down where the slowest portions were. Perhaps some Erlang enthusiasts have
     some comments here?'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: '*Erlang 的痛点。* Erickson 对 Erlang 的主要抱怨是它没有为与 C++ 大量接口的代码提供良好的性能分析工具；他们希望能够更优化他们的代码性能，但很难确定最慢的部分在哪里。或许一些
+    Erlang 爱好者对此有所评论？'

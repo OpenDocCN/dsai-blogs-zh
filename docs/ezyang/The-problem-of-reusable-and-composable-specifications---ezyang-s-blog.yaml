@@ -1,31 +1,46 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 分类：未分类
 - en: 'date: 2024-07-01 18:17:03'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:03'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'The problem of reusable and composable specifications : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 可重用和可组合规范的问题：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2016/12/the-problem-of-reusable-and-composable-specifications/](http://blog.ezyang.com/2016/12/the-problem-of-reusable-and-composable-specifications/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2016/12/the-problem-of-reusable-and-composable-specifications/](http://blog.ezyang.com/2016/12/the-problem-of-reusable-and-composable-specifications/)
 - en: It's not too hard to convince people that version bounds are poor approximation
     for a particular API that we depend on. What do we mean when we say `>= 1.0 &&
     < 1.1`? A version bound is a proxy some set of modules and functions with some
     particular semantics that a library needs to be built. Version bounds are imprecise;
     what does a change from 1.0 to 1.1 mean? Clearly, we should instead write down
     the actual specification (either types or contracts) of what we need.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 说服人们认为版本边界是特定 API 的不良近似并不太困难。当我们说 `>= 1.0 && < 1.1` 时，我们指的是什么？版本边界是代表某些具有特定语义的模块和函数集合的代理，这些模块需要构建库。版本边界是不精确的；从
+    1.0 到 1.1 的变化意味着什么？显然，我们应该写下我们实际需要的规范（类型或合同）。
 - en: 'This all sounds like a good idea until you actually try to put it into practice,
     at which point you realize that version numbers had one great virtue: they''re
     very short. Specifications, on the other hand, can get quite large: even just
@@ -33,40 +48,55 @@
     alone executable contracts describing more complex behavior. To make matters worse,
     the same function will be depended upon repeatedly; the specification must be
     provided in each case!'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 这听起来都是一个好主意，直到你试图将其付诸实践，那时你会意识到版本号有一个很大的优点：它们非常简短。规范却可能变得相当庞大：甚至只是写下你依赖的所有函数类型可能就需要几页纸，更不用说描述更复杂行为的可执行合同了。更糟糕的是，同一个函数会被重复依赖；规范必须在每种情况下提供！
 - en: So we put on our PL hats and say, "Aha! What we need is a mechanism for *reuse*
     and *composition* of specifications. Something like... a *language* of specification!"
     But at this point, there is disagreement about how this language should work.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以我们戴上我们的 PL 帽子说：“啊哈！我们需要的是一种能够*重用*和*组合*规范的机制。类似于……规范的*语言*！”但是在这一点上，关于这种语言应该如何工作存在分歧。
 - en: '**Specifications are code.** If you talk to a Racketeer, they''ll say, "Well,
     [contracts](https://docs.racket-lang.org/reference/contracts.html) are just [code](https://docs.racket-lang.org/guide/Building_New_Contracts.html),
     and we know how to reuse and compose code!" You have primitive contracts to describe
     values, compose them together into contracts that describe functions, and then
     further compose these together to form contracts about modules. You can collect
     these contracts into modules and share them across your code.'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: '**规范就是代码。** 如果你与一个 Racketeer 聊天，他们会说：“嗯，[合同](https://docs.racket-lang.org/reference/contracts.html)只是[代码](https://docs.racket-lang.org/guide/Building_New_Contracts.html)，而我们知道如何重用和组合代码！”你可以用原始合同描述值，将它们组合成描述函数的合同，然后进一步将这些合同组合成关于模块的合同。你可以将这些合同收集到模块中，并在你的代码中共享它们。'
 - en: 'There is one interesting bootstrapping problem: you''re using your contracts
     to represent versions, but your contracts themselves live in a library, so should
     you version your contracts? Current thinking is that you shouldn''t.'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 'There is one interesting bootstrapping problem: you''re using your contracts
+    to represent versions, but your contracts themselves live in a library, so should
+    you version your contracts? Current thinking is that you shouldn''t.'
 - en: '**But maybe you shouldn''t compose them the usual way.** One of the things
     that stuck out to me when I was reading the frontmatter of Clojure''s spec documentation
     is that [map specs should be of keysets only](http://clojure.org/about/spec#_map_specs_should_be_of_keysets_only),
     and [how they deal with it](http://clojure.org/about/spec#_global_namespaced_names_are_more_important).'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: '**但也许你不应该像通常那样组合它们。** 当我阅读 Clojure 规范文档的前言时，有一件事引起了我的注意，那就是[地图规范应仅包含键集](http://clojure.org/about/spec#_map_specs_should_be_of_keysets_only)，以及[它们如何处理这个问题](http://clojure.org/about/spec#_global_namespaced_names_are_more_important)。'
 - en: 'The core principle of spec''s design is that specifications for records should
     NOT take the form `{ name: string, age: int }`. Instead, the specification is
     split into two pieces: a set of keys `{ name, age }`, and a mapping from keys
     to specifications which, once registered, apply to all occurrences of a key in
     all map specifications. (Note that keys are all namespaced, so it is not some
     insane free-for-all in a global namespace.) The justification for this:'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 'spec设计的核心原则是记录的规范不应采用`{ name: string, age: int }`的形式。相反，规范分为两部分：一组键 `{ name,
+    age }`，以及从键到规范的映射，一旦注册，将适用于所有地图规范中的所有键。（请注意，键都是命名空间的，因此这并非是全局命名空间中的一场疯狂的自由竞争。）这样做的理由是：'
 - en: In Clojure we gain power by dynamically composing, merging and building up maps.
     We routinely deal with optional and partial data, data produced by unreliable
     external sources, dynamic queries etc. These maps represent various sets, subsets,
@@ -74,9 +104,11 @@
     semantic for the same key wherever it is used. Defining specifications of every
     subset/union/intersection, and then redundantly stating the semantic of each key
     is both an antipattern and unworkable in the most dynamic cases.
+  id: totrans-13
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 在Clojure中，我们通过动态组合、合并和构建地图来增强功能。我们通常处理可选和部分数据，由不可靠外部来源产生的数据，动态查询等。这些地图代表了相同键的各种集合、子集、交集和并集，并且通常在使用相同键的情况下应具有相同的语义。在每个子集/并集/交集定义规范，然后冗余地说明每个键的语义，在最动态的情况下既是反模式又不可行。
 - en: '**Back to the land of types.** Contracts can do all this because they are code,
     and we know how to reuse code. But in (non-dependently) typed languages, the language
     of types tends to be far more impoverished than than the language of values. To
@@ -86,16 +118,22 @@
     problem identified by spec: because the signature of a module includes the signatures
     of its functions, you end up having to repeat these function signatures whenever
     you write slightly different iterations of a module.'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: '**回到类型的世界。** 契约可以做所有这些，因为它们是代码，我们知道如何重用代码。但是在（非依赖性）类型化的语言中，类型的语言往往比值的语言要贫乏得多。以Backpack作为（异常表现出色的）例子，我们可以对签名执行的唯一操作是定义它们（对类型的完整定义）并将它们合并在一起。因此，Backpack签名正面临着由规范识别出的冗余问题：因为模块的签名包括其函数的签名，所以每当编写略有不同的模块迭代时，您最终不得不重复这些函数签名。'
 - en: 'To adopt the Clojure model, you would have to write a separate signature per
     module (each in their own package), and then have users combine them together
     by adding a `build-depends` on every signature they wanted to use:'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 要采用Clojure模型，您需要为每个模块编写一个单独的签名（每个位于自己的包中），然后让用户通过在每个他们想要使用的签名上添加`build-depends`来将它们组合在一起：
 - en: '[PRE0]'
+  id: totrans-16
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'In our current implementation of Backpack, this is kind of insane: to write
     the specification for a module with a hundred methods, you''d need a hundred packages.
     The ability to concisely define multiple public libraries in a single package
@@ -103,23 +141,30 @@
     is worse than the disease. The package manager-compiler stratification rears its
     ugly head again!) (Note to self: signature packages ought to be treated specially;
     they really shouldn''t be built when you instantiate them.)'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们当前的Backpack实现中，这有点不可思议：要为具有一百个方法的模块编写规范，您需要一百个包。在单个包中简明地定义多个公共库的能力可能会有所帮助，但这涉及到尚不存在的设计。（也许治疗比疾病更糟糕。包管理器
+    - 编译器分层结构再次展现了其丑陋的一面！）（自己的注意：签名包应该受到特殊对待；在实例化时确实不应该构建它们。）
 - en: '**Conclusions.** A lot of my thinking here did not crystallize until I started
     reading about how dynamic languages like Clojure were grappling with the specification
     problem: I think this just goes to show how much we can learn by paying attention
     to other systems, even if their context is quite different. (If Clojure believed
     in data abstraction, I think they could learn a thing or two from how Backpack
     mix-in links abstract data declarations.)'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: '**结论。** 直到我开始阅读像Clojure这样的动态语言如何应对规范问题时，我的许多思考才得以凝结：我认为这只是表明我们通过关注其他系统可以学到多少，即使它们的背景可能完全不同。（如果Clojure相信数据抽象，我认为他们可以从Backpack混入链接抽象数据声明中学到一些东西。）'
 - en: 'In Clojure, the inability to reuse specs is a deal breaker which lead them
     to spec''s current design. In Haskell, the inability to reuse type signatures
     flirts on the edge of unusability: types are *just* short enough and copy-pasteable
     enough to be tolerable. Documentation for these types, less so; this is what lead
     me down my search for better mechanisms for signature reuse.'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 在Clojure中，无法重用规范是一个不可接受的问题，这导致了它们当前的规范设计。在Haskell中，无法重用类型签名则接近无法使用的边缘：类型*刚好*足够短并且可以复制粘贴以至于可以容忍。对于这些类型的文档，情况稍好；这正是我寻找更好的签名重用机制的原因。
 - en: 'Although Backpack''s current design is "good enough" to get things done, I
     still wonder if we can''t do something better. One tempting option is to allow
     for downstream signatures to selectively pick out certain functions from a larger
@@ -127,5 +172,7 @@
     you had better also require `Queue.Queue` (without which, the type of `push` cannot
     even be stated: the avoidance problem); this could lead to a great deal of mystery
     as to what exactly is required in the end. Food for thought.'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然Backpack的当前设计已经足够"好"来完成工作，但我仍然怀疑我们是否不能做得更好。一个诱人的选择是允许下游签名有选择地从较大的签名文件中挑选出某些函数添加到它们的需求中。但是，如果你需要`Queue.push`，你最好也需要`Queue.Queue`（没有它，`push`的类型甚至不能声明：避免问题）；这可能导致对最终需要的内容有很多疑问。值得深思。

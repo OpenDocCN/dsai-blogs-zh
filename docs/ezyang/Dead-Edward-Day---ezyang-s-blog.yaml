@@ -1,34 +1,52 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:04'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:04'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Dead Edward Day : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 'Dead Edward Day : ezyang’s blog'
 - en: 来源：[http://blog.ezyang.com/2010/11/dead-edward-day/](http://blog.ezyang.com/2010/11/dead-edward-day/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/11/dead-edward-day/](http://blog.ezyang.com/2010/11/dead-edward-day/)
 - en: Dead Edward Day
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Dead Edward Day
 - en: Should software engineers be required to implement the abstractions use before
     using them? (Much like how before you’re allowed to use a theorem in a math textbook,
     you have to prove it first.) A bit like reinventing the wheel for pedagogical
     purposes.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 软件工程师在使用抽象之前是否应该要求实现这些抽象？（有点像数学教科书中使用定理前要先证明一样。）在教学目的上有点像重复造轮子。
 - en: (I've been sick since Saturday, so it’s a Dead Edward Day. Hopefully I’ll clean
     up the DP Zoo post and present it with more annotations for this Friday.)
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: （自从周六病倒以来，今天是一个 Dead Edward Day。希望我能在本周五之前清理 DP Zoo 文章，并附加更多注释。）

@@ -1,27 +1,41 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:31'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:31'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Reduce Ubuntu latency by disabling mDNS : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 通过禁用mDNS来降低Ubuntu的延迟：ezyang博客
 - en: 来源：[http://blog.ezyang.com/2012/03/reduce-ubuntu-latency-by-disabling-mdns/](http://blog.ezyang.com/2012/03/reduce-ubuntu-latency-by-disabling-mdns/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2012/03/reduce-ubuntu-latency-by-disabling-mdns/](http://blog.ezyang.com/2012/03/reduce-ubuntu-latency-by-disabling-mdns/)
 - en: Reduce Ubuntu latency by disabling mDNS
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 通过禁用mDNS来降低Ubuntu的延迟
 - en: 'This is a very quick and easy fix that has made latency on Ubuntu servers I
     maintain go from *three to four seconds* to instantaneous. If you''ve noticed
     that you have high latency on ssh or scp (or even other software like remctl),
@@ -29,11 +43,16 @@
     libnss-mdns`. It turns out that multicast DNS on Ubuntu has a [longstanding bug](https://bugs.launchpad.net/ubuntu/+source/nss-mdns/+bug/94940)
     on Ubuntu where they didn''t correctly tune the timeouts, which results in extremely
     bad performance on reverse DNS lookups when an IP has no name.'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是一个非常快速和简单的修复，使我维护的Ubuntu服务器的延迟从*三到四秒*降至瞬间。如果您注意到ssh或scp（甚至像remctl这样的其他软件）存在高延迟，并且您可以控制您的服务器，请在服务器上尝试：`aptitude
+    remove libnss-mdns`。原来Ubuntu上的多播DNS存在[长期存在的bug](https://bugs.launchpad.net/ubuntu/+source/nss-mdns/+bug/94940)，他们没有正确调整超时，导致IP没有名称时进行反向DNS查找的性能极差。
 - en: Removing multicast DNS will break some applications which rely on multicast
     DNS; however, if you're running Linux you *probably* won't notice. There are a
     number of other solutions listed on the bug I linked above which you're also welcome
     to try.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 移除多播DNS将会破坏一些依赖多播DNS的应用程序；不过，如果您正在运行Linux，*可能*不会注意到这一点。我在上述链接的bug中列出了一些其他解决方案，您也可以尝试。

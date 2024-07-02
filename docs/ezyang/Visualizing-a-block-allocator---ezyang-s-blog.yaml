@@ -1,27 +1,41 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:16'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:16'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Visualizing a block allocator : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 可视化块分配器：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2013/10/visualizing-a-block-allocator/](http://blog.ezyang.com/2013/10/visualizing-a-block-allocator/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2013/10/visualizing-a-block-allocator/](http://blog.ezyang.com/2013/10/visualizing-a-block-allocator/)
 - en: Visualizing a block allocator
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 可视化块分配器
 - en: 'GHC’s [block allocator](http://ghc.haskell.org/trac/ghc/wiki/Commentary/Rts/Storage/BlockAlloc)
     is a pretty nifty piece of low-level infrastructure. It offers a much more flexible
     way of managing a heap, rather than trying to jam it all in one contiguous block
@@ -30,14 +44,21 @@
     quite old (BIBOP: Big Bag of Pages), and is useful for any situation where you
     have a number of objects that are tagged with the same descriptor, and you don’t
     want to pay the cost of the tag on each object.'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 'GHC的[block allocator](http://ghc.haskell.org/trac/ghc/wiki/Commentary/Rts/Storage/BlockAlloc)是一个非常棒的低级基础设施。它提供了一种更灵活的管理堆的方式，而不是试图把所有内容都塞进一块连续的内存块中，可能对于像运行时这样实现低级代码的任何人都应该是一件通常感兴趣的事情。其核心思想相当古老（BIBOP:
+    大袋子页），对于任何对象都标有相同描述符的情况并且不想为每个对象支付标签的成本都非常有用。'
 - en: 'Managing objects larger than pages is a bit tricky, however, and so I wrote
     a document visualizing the situation to help explain it to myself. I figured it
     might be of general interest, so you can get it here: [http://web.mit.edu/~ezyang/Public/blocks.pdf](http://web.mit.edu/~ezyang/Public/blocks.pdf)'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 管理比页面大的对象有些棘手，因此我写了一篇文档来可视化这种情况，以帮助自己理解。我想这可能会引起一般兴趣，所以你可以在这里获取它：[http://web.mit.edu/~ezyang/Public/blocks.pdf](http://web.mit.edu/~ezyang/Public/blocks.pdf)
 - en: Some day I’ll convert it into wikiable form, but I don’t feel like Gimp'ing
     the images today...
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 总有一天我会把它转换成可维基形式，但今天我不想处理图像...

@@ -1,64 +1,98 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:22'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:22'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'The single export pattern : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '单一导出模式 : 艾德华·杨的博客'
 - en: 来源：[http://blog.ezyang.com/2013/03/the-single-export-pattern/](http://blog.ezyang.com/2013/03/the-single-export-pattern/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[艾德华·杨的博客](http://blog.ezyang.com/2013/03/the-single-export-pattern/)
 - en: The single export pattern
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 单一导出模式
 - en: '*From the files of the ECMAScript TC39 proceedings*'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '*来自ECMAScript TC39会议记录的文件*'
 - en: '**Single export** refers to a design pattern where a module identifier is overloaded
     to also represent a function or type inside the module. As far as I can tell,
     the term “single export” is not particularly widely used outside the ECMAScript
     TC39 committee; however, the idea shows up in other contexts, so I’m hoping to
     popularize this particular name (since names are powerful).'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: '**单一导出**指的是一种设计模式，其中模块标识符被重载为表示模块内部的函数或类型。据我所知，“单一导出”这个术语在ECMAScript TC39委员会之外并不特别广泛使用；然而，这个想法在其他上下文中也有出现，所以我希望推广这个特定的名称（因为名称具有力量）。'
 - en: 'The basic idea is very simple. In JavaScript, a module is frequently represented
     as an object:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个基本概念非常简单。在JavaScript中，模块经常表示为一个对象：
 - en: '[PRE0]'
+  id: totrans-10
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'The methods of `sayHello` are the functions exported by the module. But what
     about `sayHello` itself? Because functions are objects too, we could imagine that
     `sayHello` was a function as well, and thus:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: '`sayHello`的方法是模块导出的函数。但是`sayHello`本身呢？因为函数也是对象，我们可以想象`sayHello`也是一个函数，因此：'
 - en: '[PRE1]'
+  id: totrans-12
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: would be a valid fragment of code, perhaps equivalent to `sayHello.run()`. Only
     one symbol can be exported this way, but in many modules, there is an obvious
     choice (think of jQuery’s `$` object, etc).
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 这将是一个有效的代码片段，也许相当于 `sayHello.run()`。只能以这种方式导出一个符号，但在许多模块中，有一个明显的选择（例如jQuery的`$`对象等）。
 - en: 'This pattern is also commonly employed in Haskell, by taking advantage of the
     fact that types and modules live in different namespaces:'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种模式在Haskell中也很常见，利用了类型和模块存在不同命名空间的事实：
 - en: '[PRE2]'
+  id: totrans-15
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: '`Map` is now overloaded to be both a type and a module.'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: '`Map`现在被重载为类型和模块两者。'

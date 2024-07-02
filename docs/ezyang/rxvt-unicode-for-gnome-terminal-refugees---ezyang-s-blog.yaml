@@ -1,30 +1,46 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:33'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:33'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'rxvt-unicode for gnome-terminal refugees : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 'rxvt-unicode for gnome-terminal refugees : ezyang’s blog'
 - en: 来源：[http://blog.ezyang.com/2010/01/rxvt-unicode-for-gnome-terminal-refugees/](http://blog.ezyang.com/2010/01/rxvt-unicode-for-gnome-terminal-refugees/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/01/rxvt-unicode-for-gnome-terminal-refugees/](http://blog.ezyang.com/2010/01/rxvt-unicode-for-gnome-terminal-refugees/)
 - en: 'When I switched from Ubuntu''s default Gnome desktop to the tiling window manager
     [Xmonad](http://xmonad.org/), I kept around Gnome Terminal, although with the
     menu bar and the scroll bars removed. I changed from the default white to a nice
     shade of #2B2B2B (a hue that [Sup](http://sup.rubyforge.org/) originally introduced
     me to).'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: '当我从 Ubuntu 的默认 Gnome 桌面切换到平铺窗口管理器 [Xmonad](http://xmonad.org/) 时，我保留了 Gnome
+    Terminal，尽管删除了菜单栏和滚动条。我从默认的白色切换到了一个很好的 #2B2B2B 色调（[Sup](http://sup.rubyforge.org/)
+    最初向我介绍的一种色调）。'
 - en: Over the months, however, I got increasingly annoyed at the slowness at which
     Gnome Terminal rendered when I switched windows (a not uncommon task in a tiling
     window manager, made especially important when you have a relatively small screen
@@ -33,8 +49,12 @@
     did *not* flash when I switched screens, I hereby resolved to find a faster terminal
     emulator; on the advice of David Benjamin I finally settled on rxvt-unicode, also
     known as urxvt.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，随着时间的推移，当我在切换窗口时（在平铺窗口管理器中是一个常见的任务，特别是在屏幕尺寸相对较小时），我对 Gnome Terminal 渲染速度缓慢感到越来越恼火；基本症状是在旧终端离开和新终端绘制过程中屏幕会闪白。在测试了
+    xterm 并发现在切换窗口时它并*不*会闪白后，我决定寻找一个更快的终端仿真器；在 David Benjamin 的建议下，我最终选择了 rxvt-unicode，也称为
+    urxvt。
 - en: 'rxvt-unicode is part of a proud tradition of X terminal emulators, so its settings
     are managed by the X window manager (as opposed to gnome-settings, which gnome-terminal
     used). You can manipulate the settings at runtime using a program named `xrdb`;
@@ -42,34 +62,52 @@
     automatically gets loaded at session start. The syntax is simple: a newline-separated
     file, with the form `Appname*option: value`. Appname in the case of rxvt-unicode
     is `URxvt`.'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 'rxvt-unicode 是 X 终端仿真器自豪传统的一部分，因此其设置由 X 窗口管理器管理（而不是 gnome-terminal 使用的 gnome-settings）。您可以使用名为`xrdb`的程序在运行时操纵设置；但我发现将我想要的设置放在
+    `.Xdefaults` 中大多数时候更加简单，它会在会话启动时自动加载。语法很简单：一个以换行分隔的文件，格式为 `Appname*option: value`。在
+    rxvt-unicode 的情况下，Appname 是 `URxvt`。'
 - en: 'Having used gnome-terminal for a long time, I was somewhat loathe to part with
     the colors and behaviors I''d come to love. So here is my `.Xdefaults` file, with
     notes about what the various bits do:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用了很长时间的 gnome-terminal，我有点不愿意放弃我所喜爱的颜色和行为。因此，这是我的 `.Xdefaults` 文件，带有关于各部分作用的注释：
 - en: '[PRE0]'
+  id: totrans-10
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: These parts are all fairly self-explanatory; rxvt-unicode supports anti-aliased
     fonts, which means bold text looks good (one of the primary reasons I couldn't
     stand xterm, since bold fonts tend to bleed into each other without anti-aliasing).
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些部分都相当容易理解；rxvt-unicode 支持抗锯齿字体，这意味着粗体文本看起来很好（这也是我无法忍受 xterm 的主要原因之一，因为粗体字体在没有抗锯齿的情况下往往会相互混合）。
 - en: '[PRE1]'
+  id: totrans-12
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: These lines implement clickable URLs inside your terminal. The launcher doesn't
     give any visual cue in your cursor when a link is clickable, but I find the underlining
     and change in color to be enough change.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些行实现了终端内可点击的 URL。启动器在光标上不会给出任何视觉提示，但我发现下划线和颜色变化已经足够。
 - en: '[PRE2]'
+  id: totrans-14
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: I absolutely adore gnome-terminal's color scheme, which is a bit more subdued
     than the rxvt default. So in it goes. The first color is "normal"; the second
     color is "bright."
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 我非常喜欢 gnome-terminal 的颜色方案，比 rxvt 默认的要低调一些。因此，它被采纳了。第一个颜色是“正常”的；第二个颜色是“亮的”。

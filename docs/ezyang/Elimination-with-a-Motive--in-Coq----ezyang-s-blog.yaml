@@ -1,50 +1,75 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:14'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:14'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Elimination with a Motive (in Coq) : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 用动机进行消除（在 Coq 中）：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2014/05/elimination-with-a-motive-in-coq/](http://blog.ezyang.com/2014/05/elimination-with-a-motive-in-coq/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2014/05/elimination-with-a-motive-in-coq/](http://blog.ezyang.com/2014/05/elimination-with-a-motive-in-coq/)
 - en: Elimination with a Motive (in Coq)
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 用动机进行消除（在 Coq 中）
 - en: 'Elimination rules play an important role in computations over datatypes in
     proof assistants like Coq. In his paper "Elimination with a Motive", Conor McBride
     argued that "we should exploit a hypothesis not in terms of its immediate consequences,
     but in terms of the leverage it exerts on an arbitrary goal: we should give elimination
     a motive." In other words, proofs in a refinement setting (backwards reasoning)
     should use their goals to guide elimination.'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 在像 Coq 这样的证明助手中，消除规则在数据类型的计算中起着重要作用。在他的论文《用动机进行消除》中，Conor McBride 论述道：“我们应该利用假设，不是仅仅在其直接后果上，而是在其对任意目标产生的影响上：我们应该给消除一个动机。”
+    换句话说，在细化设置中的证明（向后推理）应该利用它们的目标来指导消除。
 - en: 'I recently had the opportunity to reread this historical paper, and in the
     process, I thought it would be nice to port the examples to Coq. Here is the result:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 最近我有机会重新阅读这篇历史性的论文，在此过程中，我想将示例移植到 Coq 中。以下是结果：
 - en: '[http://web.mit.edu/~ezyang/Public/motive/motive.html](http://web.mit.edu/~ezyang/Public/motive/motive.html)'
+  id: totrans-9
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '[http://web.mit.edu/~ezyang/Public/motive/motive.html](http://web.mit.edu/~ezyang/Public/motive/motive.html)'
 - en: 'It''s basically a short tutorial motivating John Major equality (also known
     as heterogenous equality.) The linked text is essentially an annotated version
     of the first part of the paper—I reused most of the text, adding comments here
     and there as necessary. The source is also available at:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 这基本上是一个激励约翰·梅杰相等性（也称为异构相等性）的简短教程。链接的文本实质上是论文第一部分的注释版本——我大部分文本重复使用，并在必要时添加了评论。源代码也可以在以下链接找到：
 - en: '[http://web.mit.edu/~ezyang/Public/motive/motive.v](http://web.mit.edu/~ezyang/Public/motive/motive.v)'
+  id: totrans-11
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '[http://web.mit.edu/~ezyang/Public/motive/motive.v](http://web.mit.edu/~ezyang/Public/motive/motive.v)'

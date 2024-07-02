@@ -1,68 +1,102 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: '分类: 未分类'
 - en: 'date: 2024-07-01 18:18:21'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: '日期: 2024-07-01 18:18:21'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Association maps in mit-scheme : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 'Association maps in mit-scheme : ezyang’s blog'
 - en: 来源：[http://blog.ezyang.com/2010/04/association-maps-in-mit-scheme/](http://blog.ezyang.com/2010/04/association-maps-in-mit-scheme/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/04/association-maps-in-mit-scheme/](http://blog.ezyang.com/2010/04/association-maps-in-mit-scheme/)
 - en: Association maps in mit-scheme
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: MIT Scheme中的关联映射
 - en: 'I recently some did some benchmarking of persistent data structures in mit-scheme
     for my UROP. There were a few questions we were interested in:'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 我最近在MIT Scheme中对持久化数据结构进行了一些基准测试，作为我的UROP项目。我们对几个问题感兴趣：
 - en: For what association sizes does a fancier data structure beat out your plain
     old association list?
+  id: totrans-8
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 对于什么样的关联大小，更高级的数据结构能够超越普通的关联列表？
 - en: What is the price of persistence? That is, how many times slower are persistent
     data structures as compared to your plain old hash table?
+  id: totrans-9
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 持久性的代价是多少？也就是说，持久化数据结构与普通的哈希表相比慢了多少倍？
 - en: What is the best persistent data structure?
+  id: totrans-10
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 什么是最佳的持久化数据结构？
 - en: 'These are by no means authoritative results; I still need to carefully comb
     through the harness and code for correctness. But they already have some interesting
     implications, so I thought I''d share. The implementations tested are:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些结果并非权威；我仍需仔细检查测试和代码的正确性。但它们已经具有一些有趣的含义，因此我想分享一下。
 - en: All implementations use `eq?` for key comparison.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 所有实现都使用`eq?`进行键比较。
 - en: Unsurprisingly, assoc beats out everyone else, since all it has to do is a simple
     cons. However, there are some strange spikes at regular intervals, which I am
     not sure of the origin; it might be the garbage collector kicking in.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 不出所料，assoc击败了其他所有数据结构，因为它只需做一个简单的cons操作。然而，有些奇怪的高峰出现在固定的间隔，我不确定它们的起源，可能是垃圾收集器在起作用。
 - en: Of course, you pay back the cheap updates in assoc with a linear lookup time;
     the story also holds true for weight-balanced trees, which have fast inserts but
     the slowest lookups.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 当然，你通过简单的关联操作支付廉价的更新，具有线性查找时间；这个故事同样适用于权衡树，它们具有快速插入但最慢的查找。
 - en: The hamt really flies when the key isn't present, even beating out hash-tables
     until 15 elements or so.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 当键不存在时，Hamt确实效率很高，甚至在15个元素左右也超过了哈希表。
 - en: Source code for running the benchmarks, our home-grown implementations, and
     graphing can be found at the [scheme-hamt repository](http://github.com/ezyang/scheme-hamt).
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 可以在[scheme-hamt repository](http://github.com/ezyang/scheme-hamt)找到运行基准测试的源代码、我们自己开发的实现以及图表。

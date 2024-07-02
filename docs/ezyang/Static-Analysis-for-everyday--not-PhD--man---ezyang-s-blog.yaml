@@ -1,31 +1,46 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:16'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:16'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Static Analysis for everyday (not-PhD) man : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 'Static Analysis for everyday (not-PhD) man : ezyang’s blog'
 - en: 来源：[http://blog.ezyang.com/2010/06/static-analysis-mozilla/](http://blog.ezyang.com/2010/06/static-analysis-mozilla/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/06/static-analysis-mozilla/](http://blog.ezyang.com/2010/06/static-analysis-mozilla/)
 - en: '*Bjarne Stroustrup once boasted, "C++ is a multi-paradigm programming language
     that supports Object-Oriented and other useful styles of programming. If what
     you are looking for is something that forces you to do things in exactly one way,
     C++ isn''t it." But as Taras Glek wryly notes, most of the static analysis and
     coding standards for C++ are mostly to make sure developers don''t use the other
     paradigms.*'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: '*Bjarne Stroustrup曾自豪地说：“C++是一种支持面向对象和其他有用编程风格的多范式编程语言。如果你在寻找一种强制你只能用一种方式做事情的语言，那么C++不是。”
+    但正如Taras Glek讽刺地指出的那样，大多数用于C++的静态分析和编码标准主要是为了确保开发人员不使用其他范式。*'
 - en: 'On Tuesday, [Taras Glek](http://blog.mozilla.com/tglek/) presented [Large-Scale
     Static Analysis at Mozilla](http://www.galois.com/blog/2010/06/03/tech-talk-large-scale-static-analysis-at-mozilla/).
     You can watch the video at [Galois’s video stream.](http://vimeo.com/12614626)
@@ -34,31 +49,43 @@
     that it has? But there was another underlying topic: static analysis is not just
     for the formal-methods people and the PhDs; anyone can and should tap into the
     power afforded by static analysis.'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 星期二，[Taras Glek](http://blog.mozilla.com/tglek/)在[Mozilla进行大规模静态分析](http://www.galois.com/blog/2010/06/03/tech-talk-large-scale-static-analysis-at-mozilla/)上做了演讲。你可以在[Galois的视频流](http://vimeo.com/12614626)上观看视频。讲座的主题很简单直接：Mozilla如何利用静态分析来管理其数百万行的C++和JavaScript代码？但背后还有一个潜在的主题：静态分析不仅仅是形式方法专家和博士生的专利；任何人都可以并且应该利用静态分析带来的能力。
 - en: 'Since Mozilla is a C++ shop, the talk was focused on tools built on top of
     the C++ language. However, there were four parts to static analysis that Taras
     discussed, which are broadly applicable to any language you might perform static
     analysis in:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于Mozilla是一个C++的工作室，这次讲座集中讨论了构建在C++语言之上的工具。然而，Taras讨论的静态分析的四个部分是广泛适用于你可能进行静态分析的任何语言：
 - en: '*Parsing.* How do you convert a text file into an abstract representation of
     the source code (AST)?'
+  id: totrans-9
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*解析.* 如何将文本文件转换为源代码的抽象表示（AST）？'
 - en: '*Semantic grep.* How do you ask the AST for information?'
+  id: totrans-10
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*语义grep.* 如何向AST询问信息？'
 - en: '*Analysis.* How do you restrict valid ASTs?'
+  id: totrans-11
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*分析.* 如何限制有效的AST？'
 - en: '*Refactoring.* How do you change the AST and write it back?'
+  id: totrans-12
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*重构.* 如何改变AST并将其写回？'
 - en: '*Parsing.* Parsing C++ is hard. Historically this is the case because it inherited
     a lot of syntax from C; technically this is the case because it is an extremely
     ambiguous grammar that requires semantic knowledge to disambiguate. Taras used
@@ -68,32 +95,45 @@
     of the [plugin interface to GCC 4.5](http://gcc.gnu.org/wiki/plugins) means that
     you can take advantage of GCC''s parsing capabilities, and many of the later stage
     tools are built upon that.'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: '*解析.* 解析C++很困难。从历史上看，这是因为它继承了许多来自C的语法；从技术上讲，这是因为它是一个极其模糊的语法，需要语义知识来消除歧义。Taras使用[Elsa](http://scottmcpeak.com/elkhound/sources/elsa/)（在Taras修复了一堆bug之后，可以解析所有Mozilla的代码），并急切地期待[Clang](http://clang.llvm.org/)的稳定（因为它还不能完全解析所有Mozilla的代码）。当然，[GCC
+    4.5的插件接口](http://gcc.gnu.org/wiki/plugins)的添加意味着你可以利用GCC的解析能力，并且许多后期工具都是基于此构建的。'
 - en: '*Semantic grep.* `grep` is so 70''s! If you''re lucky, the maintainers of your
     codebase took care to follow the idiosyncratic rules that make code "more greppable",
     but otherwise you''ll grep for an identifier and get pages of results and miss
     the needle. If you have an in-memory representation of your source, you can intelligently
     ask for information. Taken further, this means better code browsing like [DXR](http://dxr.proximity.on.ca/dxr/).'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: '*语义grep.* `grep` 已经老掉牙了！如果你幸运的话，你的代码库维护者会遵循使代码“更易搜索”的古怪规则，但否则你会用一个标识符来grep，却得到一页页的结果，却错过了你要找的。如果你有源代码的内存表示，你可以智能地询问信息。进一步来说，这意味着更好的代码浏览，比如[DXR](http://dxr.proximity.on.ca/dxr/)。'
 - en: 'Consider the following [source code view](http://dxr.proximity.on.ca/dxr/mozilla-central/xpcom/io/nsLocalFileUnix.h.html).
     It''s what you''d expect from a source code browser: source on the right, declarations
     on the left.'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 请考虑以下的[源代码视图](http://dxr.proximity.on.ca/dxr/mozilla-central/xpcom/io/nsLocalFileUnix.h.html)。这是您从源代码浏览器期望看到的：右边是源代码，左边是声明。
 - en: Let's pick an identifier from the left, let's say `CopyTo`. Let's first scroll
     through the source code and see if we can pick it out.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们从左边选一个标识符，比如`CopyTo`。让我们先浏览源代码，看看能否找到它。
 - en: Huh! That was a really short class, and it was no where to be found. Well, let's
     try clicking it.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 哎呀！那真是一个很短的课程，但找不到它在哪里。好吧，让我们试着点击一下。
 - en: Aha! It was in the *macro definition.* The tool *can be* smarter than the untrained
     eye.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 啊哈！它在*宏定义*中。这个工具*可能比*未经培训的眼睛更聪明。
 - en: '*Analysis.* For me, this was really the flesh of the talk. Mozilla has a very
     pimped out build process; hooking into GCC with [Dehydra](https://developer.mozilla.org/en/Dehydra)
     and [Treehydra](https://developer.mozilla.org/en/Treehydra). The idea behind the
@@ -103,11 +143,15 @@
     can be run on the result. These scripts can emit errors and warnings, which look
     just like GCC build errors and warnings. Treehydra is an advanced version of Dehydra,
     that affords more flexibility to the analysis script writer.'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: '*分析.* 对我来说，这真正是演讲的核心。Mozilla有一个非常复杂的构建过程；通过使用[Dehydra](https://developer.mozilla.org/zh-CN/Dehydra)和[Treehydra](https://developer.mozilla.org/zh-CN/Treehydra)与GCC进行交互。Dehydra项目的想法是利用GCC提供给插件的内部结构，并将其转换为类似JSON的结构（类似JSON，因为JSON是非循环的，但这些结构是循环的），Dehydra脚本（用*JavaScript*编写）可以在其上运行。这些脚本可以生成错误和警告，看起来就像GCC的构建错误和警告一样。Treehydra是Dehydra的高级版本，为分析脚本编写者提供了更多灵活性。'
 - en: So, what makes Dehydra/Treehydra interesting?
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 那么，Dehydra/Treehydra有什么有趣之处呢？
 - en: '*JavaScript.* GCC''s plugin interface natively supports C code, which may be
     intimidating to developers with no static analysis experience. Porting these structures
     to JavaScript means that you get a high-level language to play in, and also lets
@@ -116,27 +160,36 @@
     the JSON-like structure, and eyeball the resulting structure for the data you''re
     looking for; it means when your code crashes you get nice backtraces. Just like
     Firefox''s plugin interface, Dehydra brings GCC extensions to the masses.'
+  id: totrans-21
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*JavaScript.* GCC的插件接口本来只支持C代码，这可能让没有静态分析经验的开发人员望而却步。将这些结构转换为JavaScript意味着您可以使用高级语言进行操作，也能让您告诉完全没有静态分析经验的初级开发人员：“这就像在一个Web应用程序上进行黑客攻击一样。”
+    这意味着您可以直接打印出类似JSON的结构，并查看所需数据的结果；这意味着当您的代码崩溃时，您会得到漂亮的回溯信息。就像Firefox的插件接口一样，Dehydra将GCC扩展带给了大众。'
 - en: '*Language duct tape.* I took a jab at Stroustrup at the beginning of his post,
     and this is why. We can bolt on extra language features like `final` for classes
     (with attributes, `__attribute__((user("NS_final")))` wrapped up in a macro `NS_FINAL_CLASS`)
     and other [restrictions](http://hg.mozilla.org/mozilla-central/file/86cdcd6616de/xpcom/analysis)
     that plain C++ doesn''t give you.'
+  id: totrans-22
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*语言的胶带.* 我在他的帖子开头批评了Stroustrup，这就是原因。我们可以为类（带有属性`__attribute__((user("NS_final")))`，在宏`NS_FINAL_CLASS`中包装）和其他[限制](http://hg.mozilla.org/mozilla-central/file/86cdcd6616de/xpcom/analysis)，像`final`这样的额外语言特性附加功能，纯C++不提供这些。'
 - en: '*Power when you need it.* Dehydra is a simplified interface suitable for people
     without static analysis or compiler background; Treehydra is full-strength, intended
     for people with such backgrounds and can let you do things like control-flow analysis.'
+  id: totrans-23
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*需要时有力量.* Dehydra是一个简化的接口，适合没有静态分析或编译器背景的人；Treehydra则更为强大，面向具有这些背景的人，可以让您执行诸如控制流分析之类的操作。'
 - en: All of this is transparently integrated into the build system, so developers
     don't have to fumble with an external tool to get these analyses.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 所有这些都透明地集成到构建系统中，因此开发人员无需摸索外部工具来获取这些分析结果。
 - en: '*Refactoring.* Perhaps the most ambitious of them all, Taras discussed refactoring
     beyond the dinky *Extract method* that Java IDEs like Eclipse give you using [Pork](https://wiki.mozilla.org/Pork).
     The kind of refactoring like "rewrite all of Mozilla to use garbage collection
@@ -145,22 +198,28 @@
     six years" style refactoring. Branches pose similar problems; once the major refactoring
     lands on one branch, it''s difficult to keep the branch up-to-date with the other,
     and inevitably one branch kills off the other.'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: '*重构。* 或许是其中最雄心勃勃的一个，Taras讨论了超越像Java IDEs（比如Eclipse）提供的简单*提取方法*的重构，使用[Pork](https://wiki.mozilla.org/Pork)。这种重构，比如“重写Mozilla所有代码以使用垃圾回收而不是引用计数”。当你拥有像Mozilla这样活跃的代码库时，你没有豪华的机会去做“停止所有开发并开始重构...长达六年”的风格重构。分支也会带来类似的问题；一旦主要重构在一个分支上落地，要保持该分支与其他分支同步更新是困难的，最终一个分支会淘汰另一个分支。'
 - en: The trick is an automated refactoring tool, because it lets you treat the refactoring
     as "just another patch", and continually rebuild the branch from trunk, applying
     your custom patches and running the refactoring tool to generate a multimegabyte
     patch to apply in the stack.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 关键在于自动化重构工具，因为它让你把重构当作“只是另一个补丁”来对待，并持续从主干重建分支，应用你的自定义补丁并运行重构工具生成一个多兆字节的补丁来应用在堆栈中。
 - en: Refactoring C++ is hard, because developers don't just write C++; they write
     a combination of C++ and CPP (C pre-processor). Refactoring tools need to be able
     to reconstruct the CPP macros when writing back out, as opposed to languages like
     ML which can get away with just pretty-printing their AST. Techniques include
     pretty-printing as little as possible, and forcing the parser to give you a log
     of all of the pre-processor changes it made.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 重构C++很难，因为开发者不仅仅写C++代码；他们写的是C++和CPP（C预处理器）的结合体。重构工具在写回时需要能够重建CPP宏，而不像ML等语言那样仅仅进行漂亮的AST打印。技术包括尽可能少的漂亮打印，以及强制解析器给出所有预处理器修改的日志。
 - en: '*Open source.* Taras left us with some words about open-source collaboration,
     that at least the [SIPB](http://sipb.mit.edu) crowd should be well aware of. Don''t
     treat tools you depend on black boxes: they''re open-source! If you find a bug
@@ -170,5 +229,7 @@
     browsers to compilers, compilers to operating systems. The advantage of an open-source
     ecosystem is that you can read the source *all the way down.* Use the source,
     Luke.'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: '*开源软件。* Taras 留给我们一些关于开源协作的话语，至少[SIPB](http://sipb.mit.edu)群体应该深知。不要把你依赖的工具当作黑盒子：它们是开源的！如果你在GCC中发现了一个bug，不要仅仅绕过它，查看源代码，编写补丁并提交到上游。这是修复bug的最佳方式，而且你为后续提交的bug赢得了即时的可信度。在Web应用到浏览器、浏览器到编译器、编译器到操作系统的层级中，开源生态系统的优势在于你可以一路阅读源代码。利用源代码，卢克。'

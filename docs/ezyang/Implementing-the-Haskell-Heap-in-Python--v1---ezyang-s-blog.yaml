@@ -1,61 +1,97 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:53'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:53'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Implementing the Haskell Heap in Python, v1 : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 在 Python 中实现 Haskell 堆，v1：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2011/04/implementing-the-haskell-heap-in-python-v1/](http://blog.ezyang.com/2011/04/implementing-the-haskell-heap-in-python-v1/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/04/implementing-the-haskell-heap-in-python-v1/](http://blog.ezyang.com/2011/04/implementing-the-haskell-heap-in-python-v1/)
 - en: Here is a simple implementation of all of the parts of the Haskell heap we have
     discussed up until now, ghosts and all.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里是到目前为止我们讨论的所有 Haskell 堆部分的简单实现，包括所有的鬼魂。
 - en: '[PRE0]'
+  id: totrans-7
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: '*Technical notes.* You can already see some resemblance of the ghosts’ Python
     implementations and the actual Core GHC might spit out. Here’s an sample for pseq:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: '*技术说明。* 您已经可以看到鬼魂的 Python 实现与实际的 Core GHC 产生的代码之间的某些相似之处。这里是 pseq 的一个示例：'
 - en: '[PRE1]'
+  id: totrans-9
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'The case operation on x corresponds to opening x, and once it’s open we do
     an indirection to y (`return heap[''y''].open()`). Here’s another example for
     the non-polymorphic adding ghost:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 对 x 的 case 操作对应于打开 x，一旦它打开，我们对 y 进行间接引用（`return heap['y'].open()`）。这里是另一个非多态添加鬼魂的示例：
 - en: '[PRE2]'
+  id: totrans-11
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: In this case, `Box` plays the role of `GHC.Types.I#`. See if you can come up
     with some of the other correspondences (What is pattern matching on `bx` and `by`?
     What is `GHC.Prim.+#` ?)
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这种情况下，`Box` 扮演了 `GHC.Types.I#` 的角色。看看你能否找到其他一些对应关系（在 `bx` 和 `by` 上的模式匹配是什么？
+    `GHC.Prim.+#` 是什么？）
 - en: I might do the next version in C just for kicks (and because then it would actually
     look something like what a real heap in a Haskell program looks like.)
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 我可能会在下一个版本中用 C 来开发，只是为了好玩（而且因为那样看起来实际上会像 Haskell 程序中真实的堆。）
 - en: 'Last time: [IO evaluates the Haskell Heap](http://blog.ezyang.com/2011/04/io-evaluates-the-haskell-heap/)'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 上次：[IO evaluates the Haskell Heap](http://blog.ezyang.com/2011/04/io-evaluates-the-haskell-heap/)
 - en: 'Next time: [Functions produce the Haskell Heap](http://blog.ezyang.com/2011/04/functions-produce-the-haskell-heap/)'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 下次：[Functions produce the Haskell Heap](http://blog.ezyang.com/2011/04/functions-produce-the-haskell-heap/)
 - en: This work is licensed under a [Creative Commons Attribution-ShareAlike 3.0 Unported
     License](http://creativecommons.org/licenses/by-sa/3.0/).
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 这项工作根据 [知识共享署名-相同方式共享 3.0 未本地化许可协议](http://creativecommons.org/licenses/by-sa/3.0/)
+    授权。

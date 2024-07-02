@@ -1,51 +1,73 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 分类：未分类
 - en: 'date: 2024-07-01 18:18:12'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:18:12
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Buffered streams and iteratees : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 缓冲流和迭代器：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2010/08/buffered-streams-and-iteratee/](http://blog.ezyang.com/2010/08/buffered-streams-and-iteratee/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/08/buffered-streams-and-iteratee/](http://blog.ezyang.com/2010/08/buffered-streams-and-iteratee/)
 - en: While attempting to figure out how I might explain lazy versus strict bytestrings
     in more depth without boring half of my readership to death, I stumbled upon a
     nice parallel between a standard implementation of buffered streams in imperative
     languages and iteratees in functional languages.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 在试图找出如何更深入地解释惰性与严格字节串而不会让我的读者半途而废时，我偶然发现了在命令式语言中缓冲流的标准实现与函数式语言中的迭代器之间存在的一个有趣的对比。
 - en: 'No self-respecting input/output mechanism would find itself without *buffering.*
     Buffering improves efficiency by grouping reads or writes together so that they
     can be performed as a single unit. A simple read buffer might be implemented like
     this in C (though, of course, with the static variables wrapped up into a data
     structure... and proper handling for error conditions in `read`...):'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 没有自重的输入/输出机制会缺少*缓冲*。通过将读取或写入操作分组以便作为单个单元执行，缓冲可以提高效率。在 C 中，一个简单的读取缓冲区可以像这样实现（当然，使用静态变量封装到数据结构中...并且对`read`中的错误条件进行适当处理...）：
 - en: '[PRE0]'
+  id: totrans-8
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: The exported interface is `readChar`, which doles out a single `char` cast to
     an `int` every time a user calls it, but behind the scenes only actually reads
     from the input if it has run out of buffer to supply (`pos >= end`).
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 导出的接口是`readChar`，每次用户调用时提供一个转换为`int`的单个`char`，但在幕后仅在缓冲区耗尽时实际从输入中读取（`pos >= end`）。
 - en: 'For most applications, this is good enough: the chunky underlying behavior
     is hidden away by a nice and simple function. Furthermore, our function is not
     *too* simple: if we were to read all of standard input into one giant buffer,
     we wouldn’t be able to do anything else until the `EOF` comes along. Here, we
     can react as the input comes in.'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于大多数应用程序来说，这已经足够好了：底层行为的粗糙性被一个简单而明了的函数隐藏起来。此外，我们的函数并不*过于*简单：如果我们将所有标准输入读入一个巨大的缓冲区中，直到`EOF`到来之前我们将无法做任何其他事情。在这里，我们可以在输入到来时做出反应。
 - en: 'What would such a set of functions look like in a purely functional setting?
     One obvious difficulty is the fact that `buffer` is repeatedly mutated as we perform
     reads. In the spirit of persistence, we should very much prefer that our buffer
@@ -53,28 +75,40 @@
     means we also save ourselves from having to copy the data out if we want to hold
     onto it while reading in more data (you could call this zero copy). We can link
     buffers together using something simple: say, a linked list.'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 在纯函数设置中，这样一组函数会是什么样子呢？一个明显的困难是`buffer`被重复地突变，因为我们执行读取操作。在持久性的精神中，我们应该尽量避免在最初填充之后对缓冲区进行变异。使缓冲区持久化意味着我们在读取更多数据时也可以保存数据而不必复制它（你可以称之为零拷贝）。我们可以使用一些简单的方式将缓冲区链接在一起：比如说，一个链表。
 - en: 'Linked lists eh? Let’s pull up the definition for lazy and strict ByteStrings
     (slightly edited for you, the reader):'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 链表？让我们查看惰性和严格字节字符串的定义（稍作编辑，以适应你，读者）：
 - en: '[PRE1]'
+  id: totrans-13
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'In C, these would be:'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 C 中，这些将是：
 - en: '[PRE2]'
+  id: totrans-15
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'The Strict.ByteString is little more than a glorified, memory-managed buffer:
     the two integers track offset and length. Offset is an especially good choice
     in the presence of persistence: taking a substring of a string no longer requires
     a copy: just create a new strict ByteString with the offset and length set appropriately,
     and use the same base pointer.'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 严格字节串只不过是一个精心设计的、内存管理的缓冲区：两个整数跟踪偏移量和长度。在持久性存在的情况下，选择偏移量是一个特别好的选择：从字符串中取子串不再需要复制：只需创建一个新的严格字节串，适当设置偏移量和长度，并使用相同的基指针。
 - en: 'So what is Lazy.ByteString? Well, it’s a glorified lazy linked list of strict
     ByteStrings—just read Chunk as Cons, and Empty as Null: the laziness derives from
     the lack of strictness on the second argument of `Chunk` (notice the lack of an
@@ -84,37 +118,51 @@
     invoked. (This is not too different from how GHC does it; minus a layer of indirection
     or so.) If we ignore the laziness, this sounds a bit like the linked list of buffers
     we described earlier.'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 那么什么是`Lazy.ByteString`呢？嗯，它是一种显赫的懒惰严格字节串的惰性链表——只需将`Chunk`理解为`Cons`，将`Empty`理解为`Null`：惰性源自于对`Chunk`的第二个参数的非严格性（注意没有感叹号，这是一种严格性注释）。这种惰性是我们在`lazy_bytestring`结构中有`thunk`联合和`forced`布尔值的原因：当调用时，此API将新的`lazy_bytestring`
+    scribble到函数指针上（这与GHC的工作方式非常相似；少了一层或更多的间接层）。如果忽略惰性，这听起来有点像我们之前描述的缓冲区链表。
 - en: 'There is an important difference, however. A `Lazy.ByteString` is pure: we
     can’t call the original `read` function (a syscall, which makes it about as IO
     as you can get). So lazy ByteStrings are appropriate for when we have some pure
     computation (say, a Markov process) which can generate infinite amounts of text,
     but are lacking when it comes to buffering input.'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，有一个重要的区别。`Lazy.ByteString`是纯的：我们无法调用原始的`read`函数（一个系统调用，这使得它几乎是最IO的操作）。因此，当我们有一些纯计算（比如马尔可夫过程）可以生成无限量的文本时，懒惰字节串是合适的选择，但在缓冲输入方面则显得不足。
 - en: '“No problem!” you might say, “Just change the datatype to hold an `IO Lazy.ByteString`
     instead of a `Lazy.ByteString`:'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: “没问题！”你可能会说，“只需将数据类型更改为持有`IO Lazy.ByteString`而不是`Lazy.ByteString`即可：
 - en: '[PRE3]'
+  id: totrans-20
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'But there’s something wrong about this datatype: nothing is stopping someone
     from invoking `IO IO.ByteString` multiple times. In fact, there’s no point in
     placing the IO operation in the `Chunk` value: due to the statefulness of file
     descriptors, the IO operation is the same code every time: `hReadByteString handle`.
     We’re back to handle-based IO.'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 但是这种数据类型有些问题：没有人阻止多次调用`IO IO.ByteString`。事实上，将IO操作放在`Chunk`值中没有任何意义：由于文件描述符的状态性质，每次都是相同的代码：`hReadByteString
+    handle`。我们又回到基于句柄的IO。
 - en: 'The idea of `IO.ByteString` as a list is an important intuition, however. The
     key insight is this: who said that we have to give the list of IO actions to the
     user? Instead, *invert the control* so that the user doesn’t call the iteratee:
     the iteratee calls the user with the result of the IO. The user, in turn, can
     initiate other IO, or compose iteratees together (something we have not discussed)
     to stream from one iteratee to another.'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: '`IO.ByteString`作为列表的想法是一个重要的直觉。关键的洞察力在于：谁说我们必须将IO操作的列表提供给用户？相反，*倒转控制*，使得用户不再调用迭代器：迭代器调用用户并将IO的结果返回给用户。用户反过来可以启动其他IO操作，或将迭代器组合在一起（我们还没有讨论过），以从一个迭代器流向另一个。'
 - en: 'At this point, I defer to Oleg’s [excellent annotated slides (PDF)](http://okmij.org/ftp/Haskell/Iteratee/IterateeIO-talk-notes.pdf)
     for further explanation of iteratees (no really, the slides are extremely well
     written), as well as the multitude of [iteratee](http://ianen.org/articles/understanding-iteratees/)
@@ -122,29 +170,40 @@
     My hope is that the emphasis on the “linked list of buffers” generated by IO operations
     directs some attention towards the fundamental nature of an iteratee: an abstraction
     on top of a list of IO actions.'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 此时，我推荐参考Oleg的[优秀注释幻灯片（PDF）](http://okmij.org/ftp/Haskell/Iteratee/IterateeIO-talk-notes.pdf)进一步解释迭代器（不是开玩笑，幻灯片写得非常好），以及多种[迭代器](http://ianen.org/articles/understanding-iteratees/)
+    [教程](http://cdsmith.wordpress.com/2010/05/23/iteratees-step-by-step-part-1/)。我希望对由IO操作生成的“缓冲区链表”进行重视，引起对迭代器本质的注意：这是一个在IO操作列表之上的抽象。
 - en: 'To summarize:'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 总结一下：
 - en: Use *strict bytestrings* as a primitive for building more interesting structures
     that have buffers (though avoid reimplementing lazy bytestrings or iteratees).
     Use them when the amount of data is small, when all of it can be initialized at
     once, or when random access, slicing and other non-linear access patterns are
     important.
+  id: totrans-25
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用*严格的字节串*作为构建更有趣的结构的原语，这些结构具有缓冲区（尽管避免重新实现惰性字节串或迭代器）。当数据量较小、全部可以一次性初始化或随机访问、切片和其他非线性访问模式很重要时，请使用它们。
 - en: Use *lazy bytestrings* as a mechanism for representing infinite streams of data
     generated by pure computation. Consider using them when performing primarily operations
     well suited for lazy lists (`concat`, `append`, `reverse` etc). Avoid using them
     for lazy IO (despite what the module says on the tin).
+  id: totrans-26
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用*lazy bytestrings*作为表示纯计算生成的无限数据流的机制。考虑在执行主要适合于惰性列表的操作（`concat`、`append`、`reverse`等）时使用它们。尽管模块上写着，避免在惰性IO时使用它们。
 - en: 'Use *iteratees* for representing data from an IO source that can be incrementally
     processed: this usually means large datasets. Iteratees are especially well suited
     for multiple layers of incremental processing: they “fuse” automatically and safely.'
+  id: totrans-27
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用*iteratees*表示可以逐步处理的来自IO源的数据：这通常意味着大型数据集。迭代器特别适合多层逐步处理：它们可以自动且安全地“融合”处理。

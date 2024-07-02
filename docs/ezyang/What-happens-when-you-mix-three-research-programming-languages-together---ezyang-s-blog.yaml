@@ -1,45 +1,71 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:17:30'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:17:30
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'What happens when you mix three research programming languages together : ezyang’s
     blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 当你将三种研究性编程语言混合在一起时会发生什么：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2012/05/what-happens-when-you-mix-three-research-programming-languages-together/](http://blog.ezyang.com/2012/05/what-happens-when-you-mix-three-research-programming-languages-together/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2012/05/what-happens-when-you-mix-three-research-programming-languages-together/](http://blog.ezyang.com/2012/05/what-happens-when-you-mix-three-research-programming-languages-together/)
 - en: “...so that’s what we’re going to build!”
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: “...所以这就是我们要做的！”
 - en: “Cool! What language are you going to write it in?”
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: “酷！你打算用什么语言写？”
 - en: “Well, we were thinking we were going to need three programming languages...”
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: “嗯，我们曾经认为我们需要三种编程语言...”
 - en: “...three?”
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: “...三个？”
 - en: “...and they’ll be research programming languages too...”
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: “...而且它们也将是研究性编程语言...”
 - en: “Are you out of your mind?”
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: “你疯了吗？”
 - en: '* * *'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'This was the conversation in streaming through my head when I decided that
     I would be writing my latest software project in Coq, Haskell and Ur/Web. I had
     reasonably good reasons for the choice: I wanted Coq because I didn’t actually
@@ -48,69 +74,95 @@
     Haskell because I didn’t want to write a bucket of C to get Ur/Web and Coq to
     talk to each other. But taken altogether the whole thing seemed a bit ludicrous,
     like an unholy fusion of a trinity of research programming languages.'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 这就是我决定用Coq、Haskell和Ur/Web编写最新软件项目时，在我脑海中流淌的对话。我对选择有合理的理由：我想要Coq是因为我实际上不想从头开始实现一个定理证明器，我想要Ur/Web是因为我实际上不想手写JavaScript来实现AJAX接口，我想要Haskell是因为我不想写一堆C来让Ur/Web和Coq进行通信。但总体来看，整件事情似乎有些荒谬，像是三种研究性编程语言的不祥结合。
 - en: 'In the end, it worked out quite well. Now, what this means depends on your
     expectations: it was not the case that “everything worked out of the box and had
     very nice instructions attached.” However, if it was the case that:'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 最终，效果还不错。现在，这意味着什么取决于你的期望：情况并非“一切都毫不费力并带有非常好的说明”。然而，如果情况是这样：
 - en: No single issue ended up requiring an unbounded amount of time and yak shaving,
+  id: totrans-15
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 没有单一问题最终需要花费不可估量的时间和刮毛，
 - en: Any patches written made it into upstream, improving the situation of the software
     for future developers, and
+  id: totrans-16
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 编写的任何补丁都进入了上游，改善了软件对未来开发者的情况，而且
 - en: The time spent on engineering grease is less than the time it would have taken
     to build the system with inferior languages,
+  id: totrans-17
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在工程润滑上花费的时间少于用劣质语言构建系统所需的时间，
 - en: Everyone involved in the project is willing to learn all of the languages involved
     (easy if it’s only one person),
+  id: totrans-18
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 项目中所有参与者都愿意学习所涉及的所有语言（如果只有一个人，这很容易），
 - en: then yes, it worked “quite well”. In this post, I’d like to describe in a little
     more detail what happened when I put these three languages together and speculate
     wildly about general maxims that might apply when someone is doing something similar.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 那么是的，“效果”“还不错”。在这篇文章中，我想稍微详细描述一下当我将这三种语言组合在一起时发生了什么，并对可能适用于类似活动的一般准则进行疯狂的推测。
 - en: Coq
+  id: totrans-20
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: Coq
 - en: While Coq is a research language, it is also in very wide use among academics,
     and most of its instability lies in advanced features that I did not use in my
     project. So the primary issues I encountered with Coq were not bugs, but in integrating
     it with the system (namely, making it talk to Haskell).
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然Coq是一个研究语言，但它在学术界非常广泛地使用，大部分的不稳定性来自于我在项目中没有使用的高级特性。所以我在Coq中遇到的主要问题不是bug，而是将其与系统集成（即，使其与Haskell通信）。
 - en: '**Maxim 1.** *Interchange formats will be undocumented and just good enough
     to get the job done.*'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: '**准则1.** *交换格式将不会被记录下来，只是足够好以完成工作。*'
 - en: 'Coq is already designed to allow for communication between processes (this
     is how the Proof General/Emacs and Coq talk to each other), but the format between
     coqtop and Proof General was undocumented, ad hoc, and didn''t transmit enough
     information for my application. In the face of such a situation, there are two
     ways to proceed: grit your teeth and implement the bad protocol or patch the compiler
     to make a better one. I chose the latter, and learned something very interesting:'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: Coq已经设计用于允许进程间通信（这是Proof General/Emacs和Coq互相通信的方式），但是coqtop和Proof General之间的格式是未记录的、临时的，并且没有为我的应用程序传输足够的信息。在这种情况下，有两种解决方法：忍耐并实现不好的协议或者修改编译器以实现更好的协议。我选择了后者，并学到了一些非常有趣的东西：
 - en: '**Maxim 2.** *In ML-like languages, it’s very easy to make simple but far reaching
     changes to a codebase, due to the assistance of the typechecker.*'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: '**Maxim 2.** *在类ML语言中，由于类型检查器的帮助，对代码库进行简单但影响深远的更改非常容易。*'
 - en: Making the changes to the frontend was very simple; there was nothing deep about
     the change, and a combination of the typechecker and grep allowed me to pull off
     the patch with zero debugging. With a few XML tags at a few key spots, I got output
     reasonable enough to build the rest of the system with.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 对前端进行的更改非常简单；这个更改没有任何深层次的东西，类型检查器和grep的结合使我能够在零调试的情况下完成补丁。通过在几个关键位置放置一些XML标记，我得到了足够合理的输出来构建系统的其余部分。
 - en: '*Aside.* Later, I learned that coqide in recent versions of Coq (8.4 and later)
     has another interchange format. Moving forward, it is probably the correct mechanism
     to interact with Coq interactively, though this is made somewhat more difficult
@@ -121,21 +173,29 @@
     provers, but the Coq developers and I later discovered that the PGIP project is
     inactive, and the other user, Isabelle, has discontinued using their PGIP backend.
     (Sometimes standards don’t help!)'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: '*旁白.* 后来，我了解到Coq的最新版本（8.4及更高版本）中coqide有另一种交换格式。从现在开始，这可能是与Coq进行交互的正确机制，尽管这一点因为交换格式未记录而变得更加困难；然而，我已经[提交了一个bug](https://coq.inria.fr/bugs/show_bug.cgi?id=2777)。希望它能比我的补丁做得更好。最初，我的补丁打算部分实现PGIP，一个通用的与定理证明器交互的交换格式，但后来我和Coq开发者发现PGIP项目不活跃，另一个用户Isabelle也停止使用他们的PGIP后端。（有时标准并不总是有帮助！）'
 - en: Ur/Web
+  id: totrans-27
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: Ur/Web
 - en: Ur/Web is comparatively less used, and accordingly we ran into a variety of
     bugs and other infelicities spanning all parts of the system, from the frontend
     to the compiler. Were they blockers? No!
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: Ur/Web的使用相对较少，因此我们遇到了各种各样的bug和系统各部分的其他不便，从前端到编译器都有。它们是阻碍吗？不是！
 - en: '**Maxim 3.** *A deterministically reproducible bug in some core functionality
     will get fixed very quickly by an active original author of the code.*'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: '**Maxim 3.** *在一些核心功能中发现的具有确定性可复现性的bug，原始代码的积极作者会非常快速地修复。*'
 - en: This maxim doesn’t apply to fundamental limitations in design (where the fix
     will take a lot of elbow grease, though the author will usually have a good idea
     when that’s the case), but other bugs of this type, I found I could get freakishly
@@ -144,15 +204,21 @@
     is to it. There is a certain pride that comes with an interesting, tricky bit
     of code you wrote, that makes it an irresistible little puzzle when someone shows
     you a bug. And we *love* little puzzles.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个格言并不适用于设计中的基本限制（在这种情况下修复会需要大量的精力，尽管作者通常会对这种情况有很好的想法），但是对于其他这种类型的bug，我发现可以非常快速地得到修复。虽然我可能会把部分原因归功于我的指导教师是编译器的作者，但我认为问题不止于此。当有人向你展示一个bug时，你写的有趣而棘手的代码碎片会给你一种不可抗拒的小难题的自豪感。而我们*喜欢*小难题。
 - en: 'There’s also a corollary:'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 还有一个推论：
 - en: '**Maxim 4.** *The less interesting a problem is to the academic, the more likely
     it is you’ll be able to fix it yourself.*'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: '**Maxim 4.** *学术界对问题越不感兴趣，你自己解决问题的可能性就越大。*'
 - en: Academics are somewhat allergic to problems that they’re not interested in and
     which aren’t vital for their research. This means they don’t like working on these
     bits, but it also means that they’ve probably kept it simple, which means you’re
@@ -163,24 +229,33 @@
     research software tend to be quite receptive to these "engineering" patches, which
     serve no direct research purpose. I consider these contributes to be a vital component
     of being a good citizen of the open source community.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 学术界对于他们不感兴趣且对他们研究不重要的问题有些过敏。这意味着他们不喜欢处理这些细节，但这也意味着他们可能保持了简单，这意味着你更有可能能够弄清楚它。（一个好的类型检查器也确实有很大帮助！见第二条原则。）Ur/Web编译的FastCGI服务404时存在一个简单的bug，有一个非常简单的修复方法；我还对Ur/Web做了一些修改，使其可以在没有`make
+    install`的情况下运行。积极维护研究软件的维护者通常对这些“工程”补丁非常接受，这些补丁对研究本身没有直接用途，但我认为它们是成为开源社区良好公民的重要组成部分。
 - en: Haskell
+  id: totrans-34
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: Haskell
 - en: 'OK, Haskell is not really “just” a research language anymore; it is also a
     very flexible general purpose language which has seen quite a bit of real world
     use and can be treated as an “ordinary” language in that respect. This made it
     a good choice for gluing the two other languages together; it can do just about
     anything, and has very good FFI support for calling into and out of Haskell. This
     brings us to our next maxim:'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 好的，Haskell现在不仅仅是一个研究语言；它也是一种非常灵活的通用语言，在现实世界中得到了相当多的应用，并且可以作为“普通”语言来对待。这使得它成为将其他两种语言粘合在一起的好选择；它几乎可以做任何事情，并且在调用Haskell中的函数时具有非常好的FFI支持。这带我们来到我们的下一个原则：
 - en: '**Maxim 5.** *An FFI is a crucial feature for any DSL, and should be a top
     priority among tasks involved in preparing a language for general usage.*'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: '**原则5.** *对于任何DSL来说，FFI都是一个至关重要的功能，并且应该是准备语言供一般使用的任务中的首要任务之一。*'
 - en: 'Having Haskell and Ur/Web talk to each other through their FFIs was key for
     making this all work. Ur/Web is a domain specific language for writing web applications,
     and among other things it does not include robust systems libraries (e.g. executing
@@ -192,70 +267,98 @@
     (Haskell), wrap it up in an API which gives the appropriate transactional guarantees,
     and let Ur/Web use it. Without it, we would not have been able to use Ur/Web:
     it’s an extremely flexible escape hatch.'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过它们的FFI让Haskell和Ur/Web相互通信对于使所有这些工作都能正常运行至关重要。Ur/Web是一种用于编写Web应用程序的领域特定语言，除了其他事情外，它不包括健壮的系统库（例如执行外部进程并与其交互）。大多数语言都会遇到这个问题，因为要添加库支持需要花费一些功夫，但Ur/Web有第二个问题：所有具有副作用的事务也需要能够回滚，这对于一般的输入输出来说相当困难。然而，通过FFI，我们可以在一个更合适的语言（Haskell）中实现需要这种库支持的任何代码，将其封装在一个提供适当事务保证的API中，并让Ur/Web使用它。如果没有这个，我们将无法使用Ur/Web：它是一个非常灵活的逃生舱。
 - en: 'Specifying an FFI also is a good way of demonstrating how your language is
     *different* from C: it forces you to think about what invariants you expect foreign
     functions to have (referential transparency? thread-safety?): these invariants
     are exactly the ones that get automatically fulfilled by code written in your
     language. That’s pretty cool!'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 指定一个FFI也是展示你的语言与C语言“不同”的一个好方法：它迫使你思考你期望外部函数具有的不变量（引用透明性？线程安全性？）：这些不变量恰好是你的语言中编写的代码自动满足的那些。这真的很酷！
 - en: 'However, because functions which manipulate C pointers are non-transactional,
     Ur/Web is limited to FFI functions which handle basic C types, e.g. integers and
     strings. Thus the question of parsing becomes one of utmost importance for Ur/Web,
     as strings are the preferred interchange format for complex structures. While
     different languages will have different situations, in general:'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 但是，由于操作C指针的函数是非事务性的，Ur/Web仅限于处理基本C类型的FFI函数，例如整数和字符串。因此，对于Ur/Web来说，解析的问题成为至关重要的问题，因为字符串是复杂结构的首选交换格式。虽然不同的语言会有不同的情况，但通常：
 - en: '**Maxim 6.** *Make sure you know how to do parsing in all of the languages
     involved.*'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: '**准则 6。** *确保你知道如何在涉及的所有语言中进行解析。*'
 - en: Conclusion
+  id: totrans-41
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 结论
 - en: 'I’ve presented six maxims of research polyglottism:'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 我提出了研究多语言能力的六大准则：
 - en: Interchange formats will be undocumented and just good enough to get the job
     done.
+  id: totrans-43
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 交换格式将没有文档，并且只足以完成工作。
 - en: In ML-like languages, it’s very easy to make simple but far reaching changes
     to a codebase, due to the assistance of the typechecker.
+  id: totrans-44
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在类 ML 的语言中，由于类型检查器的帮助，对代码库进行简单但影响深远的更改非常容易。
 - en: A deterministically reproducible bug in some core functionality will get fixed
     very quickly by an active original author of the code.
+  id: totrans-45
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 某些核心功能中确定性可重现的 bug 将由代码的活跃原始作者非常快速地修复。
 - en: The less interesting a problem is to the academic, the more likely it is you’ll
     be able to fix it yourself.
+  id: totrans-46
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 对学者来说越无趣的问题，你越有可能自己解决。
 - en: An FFI is a crucial feature for any DSL, and should be a top priority among
     tasks involved in preparing a language for general usage.
+  id: totrans-47
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: FFI 对于任何 DSL 都是至关重要的功能，并且应该是准备语言以供一般使用中涉及的任务中的首要任务。
 - en: Make sure you know how to do parsing in all of the languages involved.
+  id: totrans-48
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 确保你知道如何在涉及的所有语言中进行解析。
 - en: If you keep all of these maxims in mind, I believe that the tradeoff between
     some extra bugfixing and yak shaving for the benefits of the research programming
     language is a compelling one, and one that should be considered seriously. Yes,
     you have to be willing to muck around with the innards of all the tools you use,
     but for any sufficiently important tool, this is inevitably true. And what is
     a more important tool than your compiler?
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你记住了所有这些准则，我相信在一些额外的错误修复和为了研究编程语言的好处而进行的琐事之间的权衡是一个引人注目的选择，应该认真考虑。是的，你必须愿意涉足你使用的所有工具的内部，但对于任何足够重要的工具来说，这是不可避免的。比你的编译器更重要的工具是什么？
 - en: '*Postscript.* The application in question is [Logitext](http://logitext.ezyang.scripts.mit.edu/main).'
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: '*附言。* 相关的应用是[Logitext](http://logitext.ezyang.scripts.mit.edu/main)。'

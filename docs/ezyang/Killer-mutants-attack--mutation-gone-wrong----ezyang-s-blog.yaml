@@ -1,42 +1,66 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:56'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:17:56
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Killer mutants attack (mutation gone wrong) : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Killer mutants attack (mutation gone wrong)：ezyang’s 博客
 - en: 来源：[http://blog.ezyang.com/2011/03/killer-mutants-attack-mutation-gone-wrong/](http://blog.ezyang.com/2011/03/killer-mutants-attack-mutation-gone-wrong/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/03/killer-mutants-attack-mutation-gone-wrong/](http://blog.ezyang.com/2011/03/killer-mutants-attack-mutation-gone-wrong/)
 - en: This is a collection of WTFs due to misuse of mutable state.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是由于误用可变状态导致的一系列 WTFs。
 - en: '* * *'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: We'll start off with some Java. What do you expect this snippet of code to do?
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将从一些 Java 开始。你期望这段代码做什么？
 - en: '[PRE0]'
+  id: totrans-9
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'Ostensibly, it registers the current object to receive just accelerometer updates.
     But what if I told you getDefaultSensor was implemented like this:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 表面上，它注册当前对象以接收加速度计更新。但如果我告诉你 getDefaultSensor 是这样实现的呢：
 - en: '[PRE1]'
+  id: totrans-11
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'This code completely fails to manage the expected semantics: there is a single
     `sm` wide `Sensor` object (stored in `sensors`) that accumulates sensor values
     as `getDefaultSensor` is called. So in fact, `this` will receive events from both
@@ -44,22 +68,35 @@
     register event listeners, we usually do want them to receive all events, so we
     might not notice if we weren''t looking too closely. This is real code from [OpenIntents
     SensorSimulator](http://code.google.com/p/openintents/source/browse/trunk/sensorsimulator/SensorSimulatorSettings/src/org/openintents/sensorsimulator/hardware/SensorManagerSimulator.java).'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 这段代码完全无法管理预期的语义：有一个宽为 `sm` 的单个 `Sensor` 对象（存储在 `sensors` 中），随着 `getDefaultSensor`
+    的调用累积传感器值。因此，实际上，`this` 将同时接收来自加速度计和磁力计的事件。唯一的救赎是，当我们注册事件监听器时，通常确实希望它们接收所有事件，所以如果我们不仔细看的话可能不会注意到这一点。这是来自
+    [OpenIntents SensorSimulator](http://code.google.com/p/openintents/source/browse/trunk/sensorsimulator/SensorSimulatorSettings/src/org/openintents/sensorsimulator/hardware/SensorManagerSimulator.java)
+    的真实代码。
 - en: '* * *'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'Lest you think I only make fun of other people''s code, here is [a diff from
     a project of my own](https://github.com/ezyang/git-ftp/commit/291bc437da61ca7065b7e3651446704fd47decab):'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 以免你认为我只取笑别人的代码，这里是[我自己项目的一处差异](https://github.com/ezyang/git-ftp/commit/291bc437da61ca7065b7e3651446704fd47decab)：
 - en: '[PRE2]'
+  id: totrans-15
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'It looks fairly plausible: I’ve factored out some common `storebinary` logic.
     Can you tell what the bug is? [Here’s a hint](https://github.com/ezyang/git-ftp/commit/ec14419c53ae5e4ac155f5daf685fface98c01a8).'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 这看起来相当合理：我已经分离出一些常见的`storebinary`逻辑。你能看出 bug 是什么吗？[这里有个提示](https://github.com/ezyang/git-ftp/commit/ec14419c53ae5e4ac155f5daf685fface98c01a8)。
 - en: The problem is that the `upload_all` changes the current working directory on
     the FTP connection (mutable state!), while `upload_diff` does not (working entirely
     from the `base` working directory). The upload function assumed `upload_all` style
@@ -67,11 +104,17 @@
     base directory. Mutability hurts modularity! The fix was to get rid of this mutation
     and manually calculate the full path; this also removed some delicate invariant
     preservation in the original `upload_all` implementation.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 问题在于 `upload_all` 在 FTP 连接上改变了当前工作目录（可变状态！），而 `upload_diff` 则没有（完全从 `base` 工作目录操作）。上传函数假设了
+    `upload_all` 风格的工作目录更改，因此所有 `upload_diff` 的上传都被放在了基本目录中。可变性损害了模块化！解决方法是摆脱这种变化，并手动计算完整路径；这也消除了原始
+    `upload_all` 实现中一些复杂的不变性维护。
 - en: '* * *'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: Paradoxically enough, though Haskell encourages you not to use mutation, when
     you do use it, Haskell expressive static type system gives you the unusual ability
     to statically encode complicated invariants about your mutation—invariants that
@@ -79,44 +122,66 @@
     this is [ST monad](http://www.haskell.org/haskellwiki/Monad/ST), which uses rank-2
     types to ensure that references to mutable memory cannot escape `runST`, the isolated
     “mutation thread.”
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 令人矛盾的是，尽管 Haskell 鼓励你不要使用突变，但当你使用它时，Haskell 强大的静态类型系统赋予了你一种非同寻常的能力，即在静态地编码关于突变的复杂不变量——如果你没有使用突变，这些不变量是不必要的。一个小例子是
+    [ST monad](http://www.haskell.org/haskellwiki/Monad/ST)，它使用 rank-2 类型来确保对可变内存的引用不能逃逸出
+    `runST`，这是孤立的“突变线程”。
 - en: 'To the limit, you may find yourself knee deep in advanced type system features
     if you try to statically rule out incorrect usages of a mutable API. I found this
     out when I worked with [abcBridge](http://blog.ezyang.com/2010/08/galois-tech-talk-abcbridge-functional-interfaces-for-aigs-and-sat-solving/),
     and tried very hard to use types to prevent improper use of underlying C library.
     Here is one relevant code quote:'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你尝试静态地排除对可变API的不正确使用，你可能会发现自己深陷于高级类型系统特性之中。我在与[abcBridge](http://blog.ezyang.com/2010/08/galois-tech-talk-abcbridge-functional-interfaces-for-aigs-and-sat-solving/)合作时发现了这一点，并且非常努力地使用类型来防止底层C库的不当使用。这里有一个相关的代码引用：
 - en: '[PRE3]'
+  id: totrans-21
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: This truly is some WTF, rank-2-phantom-types code, but it grew out of a very
     specific bug I stumbled onto and was unconvinced that I’d remember to avoid in
     the future (can you guess what it was?) A curious reader may ask, why do I need
     to duplicate networks in the first place? Because some operations that the underlying
     library provides are destructive, and the only way I can provide the illusion
     of persistent networks is duplicating before destruction.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 这确实是一些WTF，等级-2-幻影类型的代码，但它源于我偶然发现的一个非常具体的错误，并且我并不确定我会记得在未来避免它（你能猜到是什么吗？）一个好奇的读者可能会问，为什么我需要在第一次重复网络？因为底层库提供的一些操作是破坏性的，我可以提供持久网络的假象的唯一方法是在破坏之前复制。
 - en: '* * *'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'In summary:'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 总结起来：
 - en: Mutation is frequently not what people expect,
+  id: totrans-25
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 变异通常不符合人们的预期，
 - en: Mutation is not modular, and
+  id: totrans-26
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 变异不是模块化的，而且
 - en: Mutation is complicated.
+  id: totrans-27
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 变异是复杂的。
 - en: Avoid it when you can!
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽量避免它！

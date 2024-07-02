@@ -1,73 +1,104 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:57'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:57'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Semi-automatic testing : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 半自动化测试：ezyang’s 博客
 - en: 来源：[http://blog.ezyang.com/2011/02/semi-automatic-testing/](http://blog.ezyang.com/2011/02/semi-automatic-testing/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/02/semi-automatic-testing/](http://blog.ezyang.com/2011/02/semi-automatic-testing/)
 - en: Semi-automatic testing
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 半自动化测试
 - en: 'When programmers automate something, we often want to go whole-hog and automate
     everything. But it’s good to remember there’s still a place for manual testing
     with machine assistance: instead of expending exponential effort to automate everything,
     automate the easy bits and hard-code answers to the hard research problems. When
     I was compiling the following graph of sources of test data, I noticed a striking
     polarization at the ends of "automated" and "non-automated."'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 当程序员自动化某些事情时，我们常常希望全面自动化所有事情。但是要记住，手动测试在机器辅助下仍然有其存在的价值：与其花费指数级的努力去自动化一切，不如自动化容易的部分，并对困难的研究问题硬编码答案。当我编制下面的测试数据来源图表时，我注意到在“自动化”和“非自动化”的两端存在显著的极化现象。
 - en: 'An ideal test framework would support combining all of these data sources and
     all of these testing mechanisms. Some novel approaches include:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个理想的测试框架将支持结合所有这些数据来源和所有这些测试机制。一些新颖的方法包括：
 - en: Randomly generated test-cases with manual verification. Obviously you won’t
     be able to hand verify thousands of test-cases, but a few concrete examples can
     do wonders for documentation purposes, and random generation prevents us from
     only picking “nice” inputs.
+  id: totrans-9
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 通过手动验证随机生成的测试用例。显然，您无法手动验证成千上万个测试用例，但几个具体的例子对文档目的非常有帮助，而随机生成可以防止我们只选择“好”的输入。
 - en: Reference implementation as previous version of the code. To the limit, you
     automatically accept the output of an old implementation and save it to your test
     suite, and when a test starts failing you the framework asks you to check the
     output, and if it’s “better” than before you overwrite the old test data with
     the new. GHC’s test suite has something along these lines.
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 作为旧版本代码的参考实现。到极限，您自动接受旧实现的输出并将其保存到您的测试套件中，当测试开始失败时，框架会要求您检查输出，如果比以前“更好”，则用新的数据覆盖旧的测试数据。
+    GHC 的测试套件就有类似的功能。
 - en: You’ve written lots of algebraic laws, which you are using Quickcheck to verify.
     You should be able to swap out the random generator with a deterministic stream
     of data from a sampled data source. You’d probably want a mini-DSL for various
     source formats and transforming them into your target representation. This also
     works great when you’ve picked manual inputs, but *exactly* specifying the output
     result is a pain because it is large and complicated. This is [data-driven testing](http://en.wikipedia.org/wiki/Data-driven_testing).
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 你已经编写了很多代数定律，现在正使用 Quickcheck 进行验证。您应该能够用来自采样数据源的确定性数据流替换随机生成器。您可能希望为各种源格式和将它们转换为目标表示形式的迷你
+    DSL。当您选择了手动输入时，这也非常有效，但*确切*指定输出结果却很痛苦，因为它又大又复杂。这就是[数据驱动测试](http://en.wikipedia.org/wiki/Data-driven_testing)。
 - en: Non-fuzzing testing frameworks like Quickcheck and Smallcheck are reasonably
     good at dealing with runtime exceptions but not so much with more critical failures
     like segmentation faults. Drivers for these frameworks should take advantage of
     statelessness to notice when their runner has mysteriously died and let the user
     know the minimal invocation necessary to reproduce the crash—with this modification,
     these frameworks subsume fuzzers (which are currently built in an ad hoc fashion.)
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Quickcheck 和 Smallcheck 这样的非模糊测试框架在处理运行时异常时表现相当不错，但在处理像分段错误这样更严重的故障时则不然。这些框架的驱动程序应利用无状态性质来注意其运行程序何时莫名其妙地终止，并告知用户重现崩溃所需的最小调用方式
+    —— 经过这种修改，这些框架涵盖了当前以临时方式构建的模糊器。
 - en: It would be great if we didn’t have to commit to one testing methodology, and
     if we could reuse efforts on both sides of the fence for great victory.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们不必致力于一种测试方法，并且可以在围墙的两侧重复利用工作以获得巨大的胜利，那将是非常好的。

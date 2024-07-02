@@ -1,31 +1,46 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:27'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:18:27
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Scheming environments : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 环境策划：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2010/02/scheming-environment/](http://blog.ezyang.com/2010/02/scheming-environment/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/02/scheming-environment/](http://blog.ezyang.com/2010/02/scheming-environment/)
 - en: Environments are [first-class objects in MIT/GNU Scheme](http://www.gnu.org/software/mit-scheme/documentation/mit-scheme-ref/Environment-Operations.html#Environment-Operations).
     This is neat, because an integral part of the lexical structure of a Scheme is
     also a data-structure in its own right, able to encode data and behavior. In fact,
     the environment data structure is precisely what Yegge calls [property lists](http://steve-yegge.blogspot.com/2008/10/universal-design-pattern.html),
     maps that can be linked up with inheritance. So not only is it a data structure,
     it's a highly general one too.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 环境在 [MIT/GNU Scheme 中是一流对象](http://www.gnu.org/software/mit-scheme/documentation/mit-scheme-ref/Environment-Operations.html#Environment-Operations)。这很棒，因为
+    Scheme 的词法结构的一个整体部分也是一个数据结构，能够编码数据和行为。事实上，环境数据结构正是 Yegge 所称的 [属性列表](http://steve-yegge.blogspot.com/2008/10/universal-design-pattern.html)，可以与继承链接起来。因此它不仅是一个数据结构，而且还是一个高度通用的数据结构。
 - en: Even without the ability to pass around an environment as a first class variable,
     you can still leverage its syntactic ties to [stash away local state](http://mitpress.mit.edu/sicp/full-text/book/book-Z-H-21.html#%_sec_3.2.3)
     in an object-oriented manner. The data is only accessible inside procedures that
@@ -34,22 +49,31 @@
     that acts as the only interface into the enclosing state. This requires a fair
     amount of boilerplate, since this lambda has to support every possible operation
     you might want to do to the innards of the function.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 即使不能将环境作为一流变量传递，你仍然可以利用其在面向对象方式中[隐藏本地状态](http://mitpress.mit.edu/sicp/full-text/book/book-Z-H-21.html#%_sec_3.2.3)的语法联系。数据只能在指向适当环境框架的过程内部访问，传统上闭包返回一个
+    lambda（其双泡指向新出生的环境框架），作为封闭状态的唯一接口。这需要相当多的样板代码，因为此 lambda 必须支持你可能希望对函数内部进行的每种操作。
 - en: 'With a first class environment object, however, you can futz around with the
     closure''s bindings arbitrarily. Unfortunately, there''s no way to directly `get-current-environent`
     (except for the top-level REPL environment, which doesn''t count), so we resort
     to the following trick:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，具有一流环境对象，你可以随意处理闭包的绑定。不幸的是，没有直接 `get-current-environent` 的方法（除了顶级 REPL 环境，这不算），所以我们采取以下技巧：
 - en: '[PRE0]'
+  id: totrans-9
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: '`procedure-environment` can grab the environment pointer from the double-bubble
     for some procedure. So, we force the creation of a double-bubble pointing to the
     environment we care about with the empty lambda.'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: '`procedure-environment` 可以从某些过程的双泡中抓取环境指针。因此，我们强制使用空 lambda 创建指向我们关心的环境的双泡。'
 - en: I most recently used this technique in a 6.945 project, in which I used a lambda
     to generate a bunch of procedures with various parameters swapped out (encouraging
     code-reuse), something akin to the time-honored trick of including C files multiple
@@ -57,14 +81,19 @@
     as a hash-table which then people would have to explicitly call, I just returned
     the environment, and thus any consumer could enter "a different universe" by using
     an appropriate environment.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 我最近在一个 6.945 项目中使用了这种技术，使用 lambda 生成了一堆带有不同参数的过程（鼓励代码重用），类似于多次包含 C 文件并使用不同宏定义的时间荣誉技巧。不是将这些过程作为哈希表返回然后人们必须显式调用，而是返回环境，因此任何消费者都可以通过使用适当的环境进入"一个不同的宇宙"。
 - en: Scheme is pretty unique in its celebration of environments as first-class objects.
     I could try this trick in Python, but the `func_closure` attribute on functions
     is read-only, and also Python has some pretty lame scoping rules. A shame, since
     this technique allows for some lovely syntactic simplifications.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: Scheme 在其庆祝环境作为一流对象方面非常独特。我可以尝试在 Python 中使用这种技巧，但函数上的 `func_closure` 属性是只读的，而且
+    Python 的作用域规则相当弱。这真是遗憾，因为这种技术允许一些可爱的语法简化。
 - en: '*Comment.* Oleg Kiselyov writes in to mention that "*MIT Scheme* specifically
     is unique in its celebration of environments as first class environments," and
     notes that even some developers of MIT scheme have [second](http://people.csail.mit.edu/gregs/ll1-discuss-archive-html/msg03947.html)
@@ -73,10 +102,15 @@
     and practically dangerous: theoretically dangerous since environments are really
     an implementation detail, and practically dangerous because it makes it very difficult
     to reason about code.'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: '*评论。* Oleg Kiselyov 提到 "*MIT Scheme* 特别是在将环境作为一等环境进行庆祝方面是独一无二的"，并指出即使一些 MIT
+    Scheme 的开发者也对该特性有了[反思](http://people.csail.mit.edu/gregs/ll1-discuss-archive-html/msg03947.html)。这使得代码难以优化，从理论和实际上来说都是危险的：从理论上讲，环境实际上是一种实现细节，从实际上讲，这使得对代码的推理变得非常困难。'
 - en: From in-person discussions, I'm not surprised that Sussman's favored dialect
     of Scheme allows such a dangerous feature; Sussman has always been in favor of
     letting people have access to dangerous toys and trusting them to use them correctly.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 从面对面的讨论中，我对 Sussman 偏爱的 Scheme 方言允许这样一个危险的特性并不感到惊讶；Sussman 一直支持让人们接触危险的玩具，并相信他们能正确使用它们。

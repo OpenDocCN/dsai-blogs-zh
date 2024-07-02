@@ -1,23 +1,35 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:58'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:58'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'The return of Hellenistic reasoning : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 'The return of Hellenistic reasoning : ezyang’s blog'
 - en: 来源：[http://blog.ezyang.com/2011/03/the-return-of-hellenistic-reasonin/](http://blog.ezyang.com/2011/03/the-return-of-hellenistic-reasonin/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/03/the-return-of-hellenistic-reasonin/](http://blog.ezyang.com/2011/03/the-return-of-hellenistic-reasonin/)
 - en: 'I recently attended a talk which [discussed extending proof assistants with
     diagrammatic reasoning support](http://talks.cam.ac.uk/talk/index/29335) , helping
     to break the hegemony of symbolic systems that is predominant in this field. While
@@ -32,8 +44,10 @@
     though these forms of reasoning may not be as powerful or general as symbolic
     reasoning, they will be critical to the application and communication of abstract
     mathematical results.'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 我最近参加了一场讨论，讨论了如何通过图解推理来扩展证明助手的支持，这有助于打破在这一领域中占主导地位的符号系统的霸权。虽然这项工作在某些方面显然是新颖的，但我也不禁想到我们是否已经回到了古希腊人的轨迹，他们非常喜欢几何学及其相应的视觉推理形式。在我阅读数学文本并对展示同一概念的多种方法感到惊叹时，这个想法再次出现。在本文中，我想探讨这种回归到更古老、更“直观”推理形式的现象：我称之为“希腊式推理”，因为几何学和苏格拉底方法很好地总结了我想讨论的视觉和交互推理。我认为这种复兴是件好事，并且尽管这些推理形式可能不像符号推理那样强大或普适，但它们对抽象数学结果的应用和沟通至关重要。
 - en: Symbolic reasoning involves syntactic manipulation of abstract symbols on a
     page; as Knuth puts it, it's the sort of thing we do when we have a symbol that
     "appears in both the upper and the lower position, and we wish to have it appear
@@ -44,8 +58,10 @@
     reasoning derives its power from being a common language which can be used as
     a communication channel to share these insights. Unlike natural language, it's
     compact, precise and easy to write.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 符号推理涉及对页面上抽象符号的句法操作；正如Knuth所说，这是我们在一个符号“同时出现在上方和下方位置，而我们希望它只出现在一个位置”的情况下所做的事情。这是一种相当不自然和机械的推理模式，大多数人必须接受培训才能做到，但它无疑是最流行和有效的推理模式之一。虽然我怀疑导致新数学发现的深刻洞察力不属于这个领域，但符号推理的力量源于它作为一种通用语言，可以用作传播这些洞察力的通道。与自然语言不同，它既紧凑又精确，易于书写。
 - en: 'While symbols are an imperfect but serviceable basis for communication among
     the mathematically inclined, they strike fear and terror in the hearts of everyone
     else. A conference room of mathematicians will sigh in relief when the slide of
@@ -55,15 +71,21 @@
     are too great to give up. (What are those benefits? Unfortunately, that''s out
     of the scope of this particular essay.) Can we toss out the symbols but not the
     formalism? Maybe...'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然符号在数学倾向的人群中是一种不完美但可用的沟通基础，但它们在其他人心中却令人恐惧和恐惧。一个由数学家组成的会议室在公理和方程式的幻灯片出现时会松一口气；而系统研究者组成的会议室在同一张幻灯片再次出现时则会心不在焉。这是否意味着我们应该放弃，开始使用
+    UML？我的答案显而易见：不！精确形式主义的好处太大，不应该放弃。（这些好处是什么？不幸的是，这超出了本篇论文的范围。）我们能否丢弃符号而不是形式主义？也许……
 - en: 'First on the list is visual reasoning. [If you can find one for your problem](http://mathoverflow.net/questions/8846/proofs-without-words),
     they can be quite elegant. Unfortunately, the key word is *if*: proofs with visual
     equivalents are the exception, not the rule. But there are some encouraging theorems
     and other efforts that can show a class of statements can be "drawn as pictures
     on paper." Here are some examples:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先是视觉推理。[如果你能为你的问题找到一个](http://mathoverflow.net/questions/8846/proofs-without-words)，它们可能非常优雅。不幸的是，关键词是
+    *if*：具有视觉等效证明的情况是例外，而不是规则。但是有一些鼓励定理和其他努力可以展示一类陈述可以“画成纸上的图片”。以下是一些例子：
 - en: '*Theorem.* Let ![\mathcal{H}](img/9920ad14b512de4ab34bbb3cd7743858.png "\mathcal{H}")
     be the algebra of all open subsets (for the non-topologically inclined, you can
     think of this as sets minus their "edges": the interior (Int) of all subsets)
@@ -88,9 +110,27 @@
     "(p \rightarrow q) \rightarrow q") is ![\mathbb{R}](img/d45050f10297ecea21f0d654268e5b21.png
     "\mathbb{R}"), and the full expression is ![\mathbb{R} - \lbrace 0\rbrace](img/60fd4a6e3b4c9d352c899d1095b3b7f5.png
     "\mathbb{R} - \lbrace 0\rbrace"), just one point shy of the full number line.'
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*定理.* 设 ![ \mathcal{H} ](img/9920ad14b512de4ab34bbb3cd7743858.png "\mathcal{H}")
+    是集合 ![ \mathbb{R} ](img/d45050f10297ecea21f0d654268e5b21.png "\mathbb{R}") 或 ![
+    \mathbb{R}^2 ](img/b354ef1921645e93e3cab273d80d0640.png "\mathbb{R}^2") 的所有开子集的代数（对于非拓扑倾向者，可以将其视为减去其“边缘”的集合：所有子集的内部）。那么
+    ![ \mathcal{H} \vdash p ](img/0c2404e8685d7c2d7b9865d2e3924ded.png "\mathcal{H}
+    \vdash p") 当且仅当 ![ p ](img/187ea0951ed36f0e67ba0fe8193525d0.png "p") 是直觉上有效的。这意味着针对实数线或欧几里得平面上的无效公式总是可能给出反例。一个例子是皮尔斯定律
+    ![ ((p \rightarrow q) \rightarrow p) \rightarrow p ](img/d611df344af1808be1f4b622abe6b3db.png
+    "((p \rightarrow q) \rightarrow p) \rightarrow p")：在实数线上的反例如下：让 ![ p ](img/60fd4a6e3b4c9d352c899d1095b3b7f5.png
+    "\mathbb{R} - \lbrace 0\rbrace") 的估值为实数减去零点集，![ q ](img/1cb7bf4e36ef6363b2c7fb7934b3f9b0.png
+    "\emptyset") 的估值为空集。方法是反复应用我们的组合规则，看看结果是否覆盖了整个实数线（如果没有，它就不是直觉上有效的）。对于 ![ A \rightarrow
+    B ](img/3a8d8b895b5de3416dad41c17bfc408c.png "A \rightarrow B") 的规则是 ![ \mathrm{Int}(-A
+    \cup B) ](img/d5bb20263d273667612ece6a35180f58.png "\mathrm{Int}(-A \cup B)")，所以我们发现
+    ![ p \rightarrow q ](img/45500e295d3816a41d8d374ca46d206e.png "p \rightarrow q")
+    是 ![ \emptyset ](img/1cb7bf4e36ef6363b2c7fb7934b3f9b0.png "\emptyset")，![ (p \rightarrow
+    q) \rightarrow q ](img/5d3705eb4f8ceb4f1a833a897bb50e33.png "(p \rightarrow q)
+    \rightarrow q") 是 ![ \mathbb{R} ](img/d45050f10297ecea21f0d654268e5b21.png "\mathbb{R]")，而完整的表达式是
+    ![ \mathbb{R} - \lbrace 0\rbrace ](img/60fd4a6e3b4c9d352c899d1095b3b7f5.png "\mathbb{R}
+    - \lbrace 0\rbrace")，整个数轴仅缺一点。'
 - en: 'von Neumann famously remarked: "I do not believe absolutely in Hilbert space
     no more." He was referring to the growing pains of the Hilbert Space formalism
     for quantum mechanics. If you''ve ever played around with tensor products and
@@ -99,22 +139,28 @@
     of a graphical language, with the goal of making simple theorems, well, simple.
     No word yet if they will actually be successful, but it''s a very interesting
     vein of investigation.'
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 冯·诺依曼曾著名地说过：“我不再绝对相信希尔伯特空间。”他指的是希尔伯特空间形式化在量子力学中的成长烦恼。如果你曾经玩过张量积和量子位，你会知道即使是最简单的计算也需要大量的工作。量子图像主义运动试图通过图形语言重新构建量子计算，其目标是使简单的定理更简单化。目前还不清楚它们是否会真正成功，但这是一个非常有趣的研究方向。
 - en: 'Commutative diagrams in category theory make proving properties a cinch: one
     simply needs to understand what it is that is being proved and draw the appropriate
     diagram! One particularly elegant proof of the Church-Rosser theorem (confluence
     of the untyped lambda calculus) uses a diagram chase after addressing one small
     technical detail.'
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 范畴论中的交换图使证明属性变得轻而易举：只需理解正在被证明的内容并绘制适当的图表！无类型λ演算的Church-Rosser定理的一个尤为优雅的证明使用了一个图表追逐后解决了一个小的技术细节。
 - en: 'We proceed on to interactive reasoning. These are methods that involve dialogues
     and games: they find their roots in game theory, but have since then popped up
     in a variety of contexts.'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们继续进行交互式推理。这些方法涉及对话和游戏：它们的根源可以追溯到博弈论，但此后它们在各种背景下都有所涌现。
 - en: 'The act of creating a construction for a formula can be thought of as a dialogue
     between a prover (who claims to know how to produce the construction), and a skeptic
     (who claims the construction doesn''t exist.) We can bundle up all of the information
@@ -125,23 +171,30 @@
     to tricking the skeptic into providing contradictory information and classical
     logic permits *Catch-22 tricks* (see section 6.5 of *Lectures on the Curry-Howard
     Isomorphism*).'
+  id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 制作公式的过程可以被看作是一个对话的过程，一方是声称知道如何构建的证明者，另一方是质疑者（声称这种构建不存在）。我们可以通过为证明者指定一个“策略”来捆绑所有证明的信息内容，但游戏的特定实例的一点具体性可以极大地启发我们。它们还突出显示了各种“有趣”的逻辑转折，这些转折可能并不一定显而易见地适用于推理规则：*ex
+    falso sequitur quodlibet* 对应于欺骗质疑者提供矛盾信息，而经典逻辑允许*Catch-22 tricks*（见《Curry-Howard同构讲义》第6.5节）。
 - en: 'Game semantics gives meaning to program execution in terms of games. Some interesting
     results include *increased* expressiveness over the more traditional denotational
     semantics (game semantics is able to "see" if a function requests the value of
     one of its argument), but in my opinion this is perhaps the most natural way to
     talk about laziness: when a thunk is forced I am asking someone for an answer;
     if I never force the thunk then this conversation never happens.'
+  id: totrans-15
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 游戏语义为程序执行赋予了意义。一些有趣的结果包括在比传统的指示性语义更具表现力（游戏语义能“看见”函数是否请求其参数的值），但在我看来，这也许是谈论惰性的最自然方式：当一个thunk被强迫时，我正在向某人询问答案；如果我从不强迫thunk，那么这种对话永远不会发生。
 - en: 'In a much more mundane sense, traditional debuggers are a interactive reasoning
     *system*: the programmer converses with the program, asks questions and gets answers.'
+  id: totrans-16
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在更加平凡的意义上，传统的调试器是一个交互式推理*系统*：程序员与程序进行对话，提问并得到答案。
 - en: '(It is that last sense that makes wonder if interactional reasoning is something
     that could become very widely used among software engineers: if you want to reason
     about the correctness of a system as a whole using a game, you still need to prove
@@ -149,12 +202,17 @@
     compiler error) it could be very simple and useful. This is idle speculation:
     interactive error systems have been built before, e.g. LaTeX, and unfortunately,
     they''re not very good. One wonders why.)'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: （正是最后这种感觉让我想知道交互推理是否会在软件工程师中广泛使用：如果你想用一场游戏来推理整个系统的正确性，你仍然需要证明关于一般策略的事实，但在对抗性环境中（例如编译器错误）这可能非常简单和有用。这只是一种空想：交互式错误系统以前已经构建过，例如
+    LaTeX，但不幸的是，它们并不是很好。人们不禁要问为什么。）
 - en: I could end this essay with an admonition to "draw pictures and describe interactions",
     but that would be very silly, since people do that already. What I would like
     to suggest is that there is rich theory that formalizes these two very informal
     activities, and this formalism is a good thing, because it makes our tools more
     precise, and thereby more effective.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 我本可以在这篇论文中结束时发出“画图并描述交互”的警告，但那样做会显得很愚蠢，因为人们已经在做这些了。我想建议的是，有一个丰富的理论来正式化这两种非常非正式的活动，这种形式主义是一件好事，因为它使我们的工具更加精确，从而更加有效。

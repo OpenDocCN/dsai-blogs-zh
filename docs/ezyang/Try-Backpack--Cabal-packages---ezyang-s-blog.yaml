@@ -1,157 +1,242 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:03'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:17:03
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Try Backpack: Cabal packages : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 尝试 Backpack：Cabal 包：ezyang’s 博客
 - en: 来源：[http://blog.ezyang.com/2017/01/try-backpack-cabal-packages/](http://blog.ezyang.com/2017/01/try-backpack-cabal-packages/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2017/01/try-backpack-cabal-packages/](http://blog.ezyang.com/2017/01/try-backpack-cabal-packages/)
 - en: This post is part two of a series about how you can try out Backpack, a new
     mixin package system for Haskell. In the [previous post](http://blog.ezyang.com/2016/10/try-backpack-ghc-backpack/),
     we described how to use a new `ghc --backpack` mode in GHC to quickly try out
     Backpack's new signature features. Unfortunately, there is no way to distribute
     the input files to this mode as packages on Hackage. So in this post, we walk
     through how to assemble equivalent Cabal packages which have the same functionality.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文是关于如何尝试使用 Backpack，一个新的 Haskell 混合包系统的系列文章的第二部分。在[上一篇文章](http://blog.ezyang.com/2016/10/try-backpack-ghc-backpack/)中，我们描述了如何使用
+    GHC 的新`ghc --backpack`模式快速尝试 Backpack 的新签名特性。不幸的是，目前没有办法将输入文件分发到这种模式作为 Hackage
+    上的包。因此，在本文中，我们将介绍如何组装具有相同功能的等效 Cabal 包。
 - en: GHC 8.2, cabal-install 2.0
+  id: totrans-7
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: GHC 8.2，cabal-install 2.0
 - en: 'Before you start on this tutorial, you will need to ensure you have up-to-date
     versions of [GHC 8.2](https://ghc.haskell.org/trac/ghc/blog/ghc-8.2.11-released)
     and [cabal-install 2.0](https://www.haskell.org/cabal/download.html). When they
     are up-to-date, you should see:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 在开始本教程之前，您需要确保您已经安装了最新版本的[GHC 8.2](https://ghc.haskell.org/trac/ghc/blog/ghc-8.2.11-released)和[cabal-install
+    2.0](https://www.haskell.org/cabal/download.html)。当它们更新后，您应该看到：
 - en: '[PRE0]'
+  id: totrans-9
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: Where we are going
+  id: totrans-10
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 我们的目标
 - en: 'Here is an abridged copy of the code we developed in the last post, where I
     have removed all of the module/signature contents:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是我们在上篇文章中开发的代码摘录，我已经删除了所有的模块/签名内容：
 - en: '[PRE1]'
+  id: totrans-12
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: One obvious way to translate this file into Cabal packages is to define a package
     per unit. However, we can also define a single package with many *internal libraries*—a
     new feature, independent of Backpack, which lets you define private helper libraries
     inside a single package. Since this approach involves less boilerplate, we'll
     describe it first, before "productionizing" the libraries into separate packages.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 将此文件翻译为 Cabal 包的一种明显方法是定义每个单元的包。然而，我们也可以定义一个包含许多*内部库*的单个包——这是一种独立于 Backpack
+    的新功能，允许您在单个包内定义私有辅助库。由于这种方法涉及的模板代码较少，我们将在将库“生产化”为单独的包之前首先描述它。
 - en: For all of these example, we assume that the source code of the modules and
     signatures have been copy-pasted into appropriate `hs` and `hsig` files respectively.
     You can find these files in the [source-only branch of backpack-regex-example](https://github.com/ezyang/backpack-regex-example/tree/source-only)
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于所有这些示例，我们假设模块和签名的源代码已经复制粘贴到适当的 `hs` 和 `hsig` 文件中。您可以在[backpack-regex-example
+    的 source-only 分支](https://github.com/ezyang/backpack-regex-example/tree/source-only)中找到这些文件。
 - en: Single package layout
+  id: totrans-15
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: Single package layout
 - en: In this section, we'll step through the Cabal file which defines each unit as
     an internal library. You can find all the files for this version at the [single-package
     branch of backpack-regex-example](https://github.com/ezyang/backpack-regex-example/tree/single-package).
     This package can be built with a conventional `cabal configure -w ghc-8.2` (replace
     `ghc-8.2` with the path to where GHC 8.2 is installed, or omit it if `ghc` is
     already GHC 8.2) and then `cabal build`.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本节中，我们将逐步介绍将每个单元定义为内部库的 Cabal 文件。您可以在[backpack-regex-example 的 single-package
+    分支](https://github.com/ezyang/backpack-regex-example/tree/single-package)找到此版本的所有文件。此包可以使用传统的
+    `cabal configure -w ghc-8.2`（将 `ghc-8.2` 替换为 GHC 8.2 安装路径，或者如果 `ghc` 已经是 GHC 8.2，则省略它）构建，然后进行
+    `cabal build`。
 - en: 'The header of the package file is fairly ordinary, but as Backpack uses new
     Cabal features, `cabal-version` must be set to `>=1.25` (note that Backpack does
     NOT work with `Custom` setup):'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 包文件的标题非常普通，但由于 Backpack 使用了新的 Cabal 功能，`cabal-version` 必须设置为 `>=1.25`（请注意，Backpack
+    不支持 `Custom` 设置）：
 - en: '[PRE2]'
+  id: totrans-18
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: '**Private libraries.** `str-bytestring`, `str-string` and `regex-types` are
     completely conventional Cabal libraries that only have modules. In previous versions
     of Cabal, we would have to make a package for each of them. However, with private
     libraries, we can simply list multiple library stanzas annotated with the internal
     name of the library:'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: '**私有库**。`str-bytestring`，`str-string` 和 `regex-types` 都是完全传统的 Cabal 库，只包含模块。在早期的
+    Cabal 版本中，我们需要为它们中的每一个制作一个包。然而，通过私有库，我们可以简单地列出多个带有库内部名称注释的库段：'
 - en: '[PRE3]'
+  id: totrans-20
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: To keep the modules for each of these internal libraries separate, we give each
     a distinct `hs-source-dirs`. These libraries can be depended upon inside this
     package, but are hidden from external clients; only the *public library* (denoted
     by a `library` stanza with no name) is publically visible.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了保持每个内部库的模块分开，我们为每个给出了一个不同的 `hs-source-dirs`。这些库可以在此包内部依赖，但对外部客户端是隐藏的；只有 *公共库*（用无名称的
+    `library` 段表示）是公开可见的。
 - en: '**Indefinite libraries.** `regex-indef` is slightly different, in that it has
     a signature. But it is not too different writing a library for it: signatures
     go in the aptly named `signatures` field:'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: '**不定库。** `regex-indef` 稍有不同，因为它有一个签名。但编写它的库并不完全不同：签名放在名为 `signatures` 的适当命名的字段中：'
 - en: '[PRE4]'
+  id: totrans-23
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: '**Instantiating.** How do we instantiate `regex-indef`? In our `bkp` file,
     we had to explicitly specify how the signatures of the package were to be filled:'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: '**实例化。** 我们如何实例化 `regex-indef`？在我们的 `bkp` 文件中，我们必须明确指定如何填写包的签名：'
 - en: '[PRE5]'
+  id: totrans-25
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 'With Cabal, these instantiations can be specified through a more indirect process
     of *mix-in linking*, whereby the dependencies of a package are "mixed together",
     with required signatures of one dependency being filled by exposed modules of
     another dependency. Before writing the `regex-example` executable, let''s write
     a `regex` library, which is like `regex-indef`, except that it is specialized
     for `String`:'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用 Cabal，这些实例化可以通过更间接的 *mix-in linking* 过程来指定，其中一个包的依赖关系被 "混合在一起"，一个依赖的所需签名被另一个依赖的暴露模块填充。在编写
+    `regex-example` 可执行文件之前，让我们编写一个 `regex` 库，它类似于 `regex-indef`，但专门用于 `String`：
 - en: '[PRE6]'
+  id: totrans-27
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'Here, `regex-indef` and `str-string` are mix-in linked together: the `Str`
     module from `str-string` fills the `Str` requirement from `regex-indef`. This
     library then reexports `Regex` under a new name that makes it clear it''s the
     `String` instantiation.'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里，`regex-indef` 和 `str-string` 通过 *mix-in linking* 混合链接在一起：来自 `str-string`
+    的 `Str` 模块填充了 `regex-indef` 的 `Str` 要求。然后，这个库重新导出 `Regex`，并使用新名称以明确表示它是 `String`
+    的实例化。
 - en: 'We can easily do the same for a `ByteString` instantiated version of `regex-indef`:'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以轻松地为 `regex-indef` 的 `ByteString` 实例化版本做同样的事情：
 - en: '[PRE7]'
+  id: totrans-30
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: '**Tie it all together.** It''s simple enough to add the executable and then
     build the code:'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: '**将所有这些联系起来。** 添加可执行文件非常简单，然后构建代码：'
 - en: '[PRE8]'
+  id: totrans-32
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: In the root directory of the package, you can `cabal configure; cabal build`
     the package (make sure you pass `-w ghc-head`!) Alternatively, you can use `cabal
     new-build` to the same effect.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 在包的根目录下，您可以使用 `cabal configure; cabal build` 来构建包（确保您传递了 `-w ghc-head`！）。或者，您可以使用
+    `cabal new-build` 以同样的效果。
 - en: There's more than one way to do it
+  id: totrans-34
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 有多种方法可以做到这一点
 - en: 'In the previous code sample, we used `reexported-modules` to rename modules
     at *declaration-time*, so that they did not conflict with each other. However,
     this was possible only because we created extra `regex` and `regex-bytestring`
@@ -161,104 +246,160 @@
     this: any package declared in `build-depends` can be specified in `mixins` with
     an explicit renaming, specifying which modules should be brought into scope, with
     what name.'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 在前面的代码示例中，我们使用 `reexported-modules` 在 *声明时间* 重命名模块，以避免它们互相冲突。但是，这仅在我们创建了额外的
+    `regex` 和 `regex-bytestring` 库时才可能。在某些情况下（尤其是如果我们实际上正在创建新的包而不是内部库），这可能会非常麻烦，因此
+    Backpack 提供了一种在 *使用时间* 重命名模块的方式，使用 `mixins` 字段。它的工作方式如下：在 `build-depends` 中声明的任何包可以在
+    `mixins` 中指定，使用显式的重命名，指定应该将哪些模块引入作用域，并使用什么名称。
 - en: 'For example, `str-string` and `str-bytestring` both export a module named `Str`.
     To refer to both modules without using package-qualified imports, we can rename
     them as follows:'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 例如，`str-string` 和 `str-bytestring` 都导出一个名为 `Str` 的模块。为了不使用包限定的导入来引用这两个模块，我们可以如下重命名它们：
 - en: '[PRE9]'
+  id: totrans-37
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: 'The semantics of the `mixins` field is that we bring only the modules explicitly
     listed in the import specification (`Str as Str.String`) into scope for import.
     If a package never occurs in `mixins`, then we default to bringing all modules
     into scope (giving us the traditional behavior of `build-depends`). This does
     mean that if you say `mixins: str-string ()`, you can force a component to have
     a dependency on `str-string`, but NOT bring any of its module into scope.'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: '`mixins` 字段的语义是我们仅将导入规范中明确列出的模块（`Str as Str.String`）引入到导入范围内。如果一个包在 `mixins`
+    中从不出现，则默认将所有模块引入范围内（给出 `build-depends` 的传统行为）。这确实意味着，如果你说 `mixins: str-string
+    ()`，你可以强制一个组件依赖于 `str-string`，但不会引入其任何模块。'
 - en: 'It has been argued package authors should avoid defining packages with [conflicting
     module names](http://www.snoyman.com/blog/2017/01/conflicting-module-names). So
     supposing that we restructure `str-string` and `str-bytestring` to have unique
     module names:'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 有人认为包作者应避免定义具有[冲突模块名称](http://www.snoyman.com/blog/2017/01/conflicting-module-names)的包。因此，假设我们重构
+    `str-string` 和 `str-bytestring` 以具有唯一的模块名称：
 - en: '[PRE10]'
+  id: totrans-40
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: 'We would then need to rewrite `regex` and `regex-bytestring` to rename `Str.String`
     and `Str.ByteString` to `Str`, so that they fill the hole of `regex-indef`:'
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后我们需要重写 `regex` 和 `regex-bytestring`，将 `Str.String` 和 `Str.ByteString` 重命名为
+    `Str`，以填补 `regex-indef` 的空缺：
 - en: '[PRE11]'
+  id: totrans-42
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: 'In fact, with the `mixins` field, we can avoid defining the `regex` and `regex-bytestring`
     shim libraries entirely. We can do this by declaring `regex-indef` twice in `mixins`,
     renaming the *requirements* of each separately:'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 实际上，通过 `mixins` 字段，我们可以完全避免定义 `regex` 和 `regex-bytestring` 的外壳库。我们可以通过在 `mixins`
+    中两次声明 `regex-indef`，分别重命名其要求来做到这一点：
 - en: '[PRE12]'
+  id: totrans-44
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: This particular example is given in its entirety at the [better-single-package
     branch in backpack-regex-example](https://github.com/ezyang/backpack-regex-example/tree/better-single-package).
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个特定示例的完整代码在[backpack-regex-example 的更好单包分支](https://github.com/ezyang/backpack-regex-example/tree/better-single-package)中给出。
 - en: Note that requirement renamings are syntactically preceded by the `requires`
     keyword.
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意，要求的重命名在语法上由 `requires` 关键字引导。
 - en: 'The art of writing Backpack packages is still in its infancy, so it''s unclear
     what conventions will win out in the end. But here is my suggestion: when defining
     a module intending to implement a signature, follow the existing no-conflicting
     module names convention. However, add a reexport of your module to the name of
     the signature. This trick takes advantage of the fact that Cabal will not report
     that a module is redundant unless it is actually used. So, suppose we have:'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 编写 Backpack 包的艺术仍处于起步阶段，因此尚不清楚最终会采用哪些约定。但这是我的建议：在定义意图实现签名的模块时，遵循现有的无冲突模块名称约定。但是，将您的模块重新导出到签名名称。这个技巧利用了
+    Cabal 只有在实际使用时才会报告模块冗余的事实。所以，假设我们有：
 - en: '[PRE13]'
+  id: totrans-48
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: 'Now all of the following components work:'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在所有以下组件都可以工作：
 - en: '[PRE14]'
+  id: totrans-50
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE14]'
 - en: Separate packages
+  id: totrans-51
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 独立的包
 - en: OK, so how do we actually scale this up into an ecosystem of indefinite packages,
     each of which can be used individually and maintained by separate individuals?
     The library stanzas stay essentially the same as above; just create a separate
     package for each one. Rather than reproduce all of the boilerplate here, the full
     source code is available in the [multiple-packages branch of backpack-regex-example](https://github.com/ezyang/backpack-regex-example/tree/multiple-packages).
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 好的，那么我们如何将其扩展成一个无限制包的生态系统，每个包都可以单独使用并由不同的个人维护呢？库模块基本与上述相同；只需为每个模块创建一个独立的包。不再在此复制所有样板内容，完整的源代码可在[backpack-regex-example
+    的多包分支](https://github.com/ezyang/backpack-regex-example/tree/multiple-packages)中找到。
 - en: 'There is one important gotcha: the package manager needs to know how to instantiate
     and build these Backpack packages (in the single package case, the smarts were
     encapsulated entirely inside the `Cabal` library). As of writing, the only command
     that knows how to do this is `cabal new-build` (I plan on adding support to `stack`
     eventually, but not until after I am done writing my thesis; and I do not plan
     on adding support to old-style `cabal install` ever.)'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 有一个重要的陷阱：包管理器需要知道如何实例化和构建这些 Backpack 包（在单个包情况下，智能完全封装在 `Cabal` 库中）。截至目前，唯一知道如何做到这一点的命令是
+    `cabal new-build`（我计划最终支持 `stack`，但要在完成论文后才会，而且我不打算永远支持旧式的 `cabal install`。）
 - en: Fortunately, it's very easy to use `cabal new-build` to build `regex-example`;
     just say `cabal new-build -w ghc-head regex-example`. Done!
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 幸运的是，使用`cabal new-build`构建`regex-example`非常简单；只需说`cabal new-build -w ghc-head
+    regex-example`。完成！
 - en: Conclusions
+  id: totrans-55
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 结论
 - en: 'If you actually want to use Backpack *for real*, what can you do? There are
     a number of possibilities:'
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你真的想要真正地使用Backpack，你可以做什么？有几种可能性：
 - en: If you are willing to use GHC 8.2 only, and you only need to parametrize code
     internally (where the public library looks like an ordinary, non-Backpack package),
     using Backpack with internal libraries is a good fit. The resulting package will
@@ -266,17 +407,24 @@
     This is probably the most pragmatic way you can make use of Backpack; the primary
     problem is that Haddock doesn't know how to deal with [reexported modules](https://github.com/haskell/haddock/issues/563),
     but this should be fixable.
+  id: totrans-57
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 如果你只想使用GHC 8.2，并且只需要在内部参数化代码（其中公共库看起来像普通的非Backpack包）时，使用内部库与Backpack非常合适。生成的包可以使用Stack和cabal-install构建，只要你使用的是GHC
+    8.2。这可能是你能够实际应用Backpack的最实用方式；主要问题是Haddock不知道如何处理[重新导出的模块](https://github.com/haskell/haddock/issues/563)，但这应该可以解决。
 - en: If you are willing to use `cabal new-build` only, then you can also write packages
     which have requirements, and let clients decide however they want to implement
     their packages.
+  id: totrans-58
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 如果你只想使用`cabal new-build`，那么你也可以编写有要求的包，并让客户决定如何实现他们的包。
 - en: Probably the biggest "real-world" impediment to using Backpack, besides any
     lurking bugs, is subpar support for Haddock. But if you are willing to overlook
     this (for now, in any case), please give it a try!
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 除了潜在的任何潜在错误外，实际世界中使用Backpack的最大障碍可能是对Haddock的支持不足。但如果你愿意暂时忽略这一点，请试试看！

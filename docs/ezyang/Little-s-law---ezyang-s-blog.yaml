@@ -1,27 +1,41 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:14'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:14'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Little’s law : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 'Little’s law : ezyang’s blog'
 - en: 来源：[http://blog.ezyang.com/2010/07/littles-law/](http://blog.ezyang.com/2010/07/littles-law/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/07/littles-law/](http://blog.ezyang.com/2010/07/littles-law/)
 - en: Little’s law
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Little’s law
 - en: 'A short thought from standing in line at the World Expo: [Little’s law](http://en.wikipedia.org/wiki/Little''s_law)
     is a remarkable result that relates the number of people in a queue, the arrival
     rate of people to the queue, and the time spent waiting in the queue. It seems
@@ -33,10 +47,15 @@
     an instantaneous “wait time in queue” figure based on a smoothed running average
     of queue size and arrival rate. Added benefit for being electronic, which means
     you can easily beam it to information boards across the park!'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 从在世博会排队的短暂思考中得到的一个见解：[Little’s law](http://en.wikipedia.org/wiki/Little's_law)
+    是一个引人注目的结果，它关联着排队中的人数、人们加入排队的速率以及在队列中等待的时间。似乎可以轻松地应用到主题公园中最普遍的特征之一：等待队列。与那些不可靠的方法不同，例如给游客标记来测试他们在排队某段路程上花费的时间，然后从那里直观地估计等待时间，安装两个门来计数进入游客和离开游客将是一件简单的事情，通过这些数据可以基于平滑的队列大小和到达率的实时平均值推导出一个瞬时的“队列等待时间”数字。电子设备的额外好处是，你可以轻松地将其传送到公园各处的信息板上！
 - en: It occurs to me that I don’t have any evidence that theme parks aren’t already
     using this technique, except maybe for the fact that their posted wait times are
     *wildly* inaccurate.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 我想到一个问题，我没有任何证据表明主题公园没有已经在使用这种技术，除了它们发布的等待时间*极其*不准确之外。

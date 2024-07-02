@@ -1,111 +1,168 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:14'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:14'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Safety first: FFI and threading : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 安全第一：FFI和线程：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2010/07/safety-first-ffi-and-threading/](http://blog.ezyang.com/2010/07/safety-first-ffi-and-threading/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/07/safety-first-ffi-and-threading/](http://blog.ezyang.com/2010/07/safety-first-ffi-and-threading/)
 - en: '**Update.** While this blog post presents two true facts, it gets the causal
     relationship between the two facts wrong. [Here is the correction.](http://blog.ezyang.com/2014/12/unintended-consequences-bound-threads-and-unsafe-ffi-calls/)'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: '**更新。** 虽然这篇博文列出了两个事实，但它错误地解释了这两个事实之间的因果关系。[这里是更正链接。](http://blog.ezyang.com/2014/12/unintended-consequences-bound-threads-and-unsafe-ffi-calls/)'
 - en: '*Attention conservation notice.* Don’t use `unsafe` in your FFI imports! We
     really mean it!'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '*注意保守使用。* 在FFI导入中不要使用`unsafe`！我们是认真的！'
 - en: 'Consider the following example in from an old version of Haskellwiki’s [FFI
     introduction](http://www.haskell.org/haskellwiki/?title=FFI_Introduction&oldid=33660):'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 考虑以下来自旧版Haskellwiki的[FFI介绍示例](http://www.haskell.org/haskellwiki/?title=FFI_Introduction&oldid=33660)：
 - en: '[PRE0]'
+  id: totrans-9
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: The comment blithely notes that the function can’t “callback to Haskell.” Someone
     first learning about the FFI might think, “Oh, that means I can put most `unsafe`
     on most of my FFI declarations, since I’m not going to do anything advanced like
     call back to Haskell.”
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 评论轻松指出该函数无法“回调到Haskell”。初学FFI的人可能会想：“哦，这意味着我可以在大多数FFI声明上使用大多数`unsafe`，因为我不会做任何像回调到Haskell那样高级的事情。”
 - en: Oh my friend, if only it were that simple!
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 哦，朋友，如果事情能这么简单就好了！
 - en: 'Recall that when you create a thread in Haskell with `forkIO`, you’re not creating
     a real operating system thread; you’re creating a green thread that Haskell’s
     runtime system manages across its pool of operating system threads. This is usually
     very good: real threads are heavyweight, but Haskell threads are light and you
     can use a lot of them without paying too much. But here’s the rub:'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 请记住，在Haskell中使用`forkIO`创建线程时，并不是真正创建操作系统线程；你创建的是一个绿色线程，由Haskell的运行时系统在其操作系统线程池中管理。这通常是很好的：真正的线程很重，但Haskell线程很轻，你可以使用很多而不用付出太多代价。但问题来了：
 - en: The runtime system cannot preempt unsafe FFI calls!
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 运行时系统无法抢占不安全的FFI调用！
 - en: 'In particular, when you invoke an `unsafe` FFI import, you effectively suspend
     everything else going on in the system: Haskell is not able to preempt it (in
     particular `unsafe` indicated that there was no need to save the state of the
     RTS), and the foreign code will keep running by itself until it finishes.'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 特别是，当你调用一个`unsafe`的FFI导入时，你实际上暂停了系统中的其他所有操作：Haskell无法抢占它（特别是`unsafe`表示不需要保存运行时系统的状态），并且外部代码将独自运行，直到完成。
 - en: 'Don’t believe me? Try it out yourself (I conducted my tests on 6.12.1). You’ll
     need a few files:'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 不相信？自己试试（我在6.12.1上进行了测试）。你需要一些文件：
 - en: '[PRE1]'
+  id: totrans-16
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: '[PRE2]'
+  id: totrans-17
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'And `UnsafeFFITest.hs`:'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 还有`UnsafeFFITest.hs`：
 - en: '[PRE3]'
+  id: totrans-19
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'Compile and run the relevant files with:'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用以下命令编译和运行相关文件：
 - en: '[PRE4]'
+  id: totrans-21
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: 'The output you see should be similar to this:'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 你看到的输出应该类似于这样：
 - en: '[PRE5]'
+  id: totrans-23
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: The first call played nice and let Haskell move along, but the second call didn’t.
     Some things to try for yourself include swapping the order of the forks, using
     `forkOS` (which many people, including myself, incorrectly assumed creates another
     operating system call) and changing the RTS option `-N`.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 第一个调用友好，允许Haskell继续前进，但第二个调用没有。一些值得尝试的事情包括交换fork的顺序，使用`forkOS`（许多人，包括我自己，错误地认为它会创建另一个操作系统调用），以及更改RTS选项`-N`。
 - en: What does this mean? Essentially, only if you’re *really* sure Haskell will
     never have to preempt your C call (which I would not be comfortable saying except
     for the smallest, purest C functions), don’t use `unsafe`. It’s not worth it.
     Safety first!
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 这意味着什么？本质上，只有当你*非常*确定Haskell永远不会中断你的C调用时（我不会对除了最小、最纯净的C函数以外的情况做出这种断言），才不要使用`unsafe`。不值得冒险。安全第一！
 - en: '*Postscript.* Thanks `#haskell` for helping me hash out this line of thought
     (I’d run into this behavior earlier, but it hadn’t occurred to me that it was
     bloggable.)'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: '*附录。* 感谢`#haskell`帮助我梳理这条思路（我之前遇到过这种行为，但没想到可以写成博客。）'
 - en: '*Postscript 2.* Thanks to Simon Marlow for clarifying some mistakes that I
     made in my original treatment of the topic. If you’re interested in more details
     about the interaction of concurrency and the FFI, check out the paper he pointed
     to: [Extending the Haskell Foreign Function Interface with Concurrency](http://www.haskell.org/~simonmar/bib/concffi04_abstract.html).'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: '*附录 2.* 感谢Simon Marlow在澄清我在原始处理该主题时所犯的一些错误时提供的帮助。如果你对并发和外部函数接口（FFI）的相互作用更多细节感兴趣，请查阅他指向的论文：[扩展
+    Haskell 外部函数接口与并发性](http://www.haskell.org/~simonmar/bib/concffi04_abstract.html)。'

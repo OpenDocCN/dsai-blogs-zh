@@ -1,35 +1,51 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:18:20'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:18:20
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Refactoring Haskell code? : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 重构Haskell代码？：ezyang's博客
 - en: 来源：[http://blog.ezyang.com/2010/05/refactoring-haskell-code/](http://blog.ezyang.com/2010/05/refactoring-haskell-code/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/05/refactoring-haskell-code/](http://blog.ezyang.com/2010/05/refactoring-haskell-code/)
 - en: Refactoring Haskell code?
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 重构Haskell代码？
 - en: 'I have to admit, refactoring Haskell code (or perhaps even just functional
     code) is a bit of a mystery to me. A typical refactoring session for me might
     look like this: *sit down in front of code, reread code. Run hlint on the code,
     fix the problems it gives you. Look at the code some more. Make some local transformations
     to make a pipeline tighter or give a local subexpression a name. Decide the code
     is kind of pretty and functional and go do something else.*'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 我必须承认，重构Haskell代码（或者甚至只是函数式代码）对我来说有点神秘。对我来说，典型的重构会话可能会是这样的：*坐在代码前，重新阅读代码。对代码运行hlint，修复它给你的问题。再多看一些代码。进行一些局部转换，使管道更紧凑或者给局部子表达式起个名字。认为代码看起来相当漂亮和功能齐备，然后去做其他事情。*
 - en: 'Part of the problem is that I haven''t developed the nose for common code smells
     for functional programs. The odors I might detect in code written in other languages,
     such as overly long functions and methods, duplicate code and overly coupled code,
@@ -42,22 +58,29 @@
     tricks to scrap, and it''s very convenient and tempting to simply shove everything
     into the IO monad. But the level of these problems seems low enough that they
     can be brushed aside.'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 部分问题在于我尚未培养出对函数式程序常见代码异味的敏感。我在Haskell程序中可能会探测到的代码异味，如过长的函数和方法、重复的代码以及过度耦合的代码，在我的程序中明显较少。我编写的大多数函数只有几行（尽管密度很高），轻量级的一阶辅助函数使得临时代码共享变得非常容易，而默认的纯度则鼓励状态的松耦合。这并不是说我的代码没有问题：在do块中编写的代码很快就会膨胀到几十行（如果你在gtk2hs上编程，这似乎是不可避免的），更高级别的样板代码需要更高级的技巧来消除，而且将所有东西简单地塞进IO单子中非常方便且诱人。但这些问题的程度似乎低到可以被忽略不计。
 - en: 'I can write code that really bothers me when I come back, either to understand
     it again or to extend it to do other things. On an ad hoc basis, I''ve discovered
     some things that can make long term maintenance a little more troublesome:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 我可以编写代码，但当我回来时，这些代码真的让我很困扰，要么是为了再次理解它，要么是为了扩展它以执行其他任务。在临时基础上，我发现了一些可以使长期维护变得更加麻烦的问题：
 - en: '*Insufficiently general types.* Explicitly writing out your type signatures
     is a good thing to do when you''re debugging type errors, but often if you let
     the function be inferred you might find that your function can be far more general
     than the obvious signature suggests. Code that has `State ()` as its type usually
     can be generalized to be `MonadState m => m ()`, and in many cases (such as error
     handling) you will almost certainly want this generalization down the road.'
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*类型不够通用.* 在调试类型错误时，明确写出你的类型签名是一个好习惯，但通常情况下，如果你让函数被推断，你可能会发现你的函数比明显的签名更通用。像
+    `State ()` 这样的类型的代码通常可以泛化为 `MonadState m => m ()`，在许多情况下（如错误处理），你几乎肯定会希望这样泛化。'
 - en: '*Monolithic functions.* If you''re writing a piece of functionality top-to-bottom,
     it''s really easy to say, "Hmm, I need a function of type `FilePath -> String
     -> IO [FilePath]`" in several places and forget that the internal code may be
@@ -66,9 +89,12 @@
     or too much code in a monad that didn''t need to be, but even then you still have
     to choose names for all of the sub-functions, and in some cases, the division
     isn''t even clear.'
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*庞大的函数.* 如果你按照功能从上到下编写代码片段，很容易在几个地方写上类似 `FilePath -> String -> IO [FilePath]`
+    类型的函数，却忘记内部代码可能对程序的某些未来用途有用。有时这很容易解决，因为你原本应该有三行代码，却写了三个单行代码，或者在不需要的单子中写了太多代码，但即使如此，你仍然必须为所有子函数选择名称，并且在某些情况下，划分甚至不够清晰。'
 - en: '*Insufficiently general data structures* or *recursion duplication.* When you''re
     reducing a complex recursive structure, it''s quite easy to pick just precisely
     the data structure that will contain the data you want. But if you then decide
@@ -79,24 +105,33 @@
     functions, this can be a fairly large set of pattern matches that need to be handled.
     (Yes, I know you can Scrap Your Boilerplate, but in some cases it feels slightly
     too heavy a weapon to wield on code.)'
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*数据结构不够通用*或*递归重复*。当你在简化一个复杂的递归结构时，很容易精确地选择包含你想要的数据的数据结构。但如果你后来决定要一些不能强行塞进你结构中的其他信息，你就有两个选择：修改所有已经为递归编写的现有代码，以使其包含你寻找的额外信息，或者编写一整套新的函数来递归遍历数据结构。对于复杂的函数而言，这可能是一大堆需要处理的模式匹配。（是的，我知道你可以
+    Scrap Your Boilerplate，但在某些情况下，它感觉稍微有些沉重，不适合在代码中使用。）'
 - en: '*Orphan instances.* Sometimes the library writer just didn''t put the instance
     you wanted into their code, and you''re faced with a choice: the easy, sinful
     route of defining an orphan instance, or being a good citizen and newtype''ing,
     and eating the extra verbosity of wrapping and unwrapping. Then a library update
     comes along and breaks your code.'
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*孤儿实例*。有时候库的作者并没有在他们的代码中放入你想要的实例，于是你面临选择：采取简单而不道德的方式定义一个孤儿实例，还是像一个好公民一样使用新类型，并且承受额外的包装和解包的复杂性。然后库更新来了，你的代码就崩了。'
 - en: '*Ad-hoc parsing.* While extremely convenient, *read* and *show* were not actually
     designed for production. I''ve spent time crafting Read instances long after I
     should have switched to using a parsing library.'
+  id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*即席解析*。虽然非常方便，*读*和*显示*实际上并不是为生产而设计的。我花了很多时间来制作读取实例，但其实早该转而使用解析库了。'
 - en: But I'm really curious what you look for in code that you know is going to bite
     you in the future, and what steps you take to mitigate the risk.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 但我真的很好奇，你在寻找代码中将来可能会让你感到头疼的问题时，会寻找什么，并采取什么措施来降低风险。

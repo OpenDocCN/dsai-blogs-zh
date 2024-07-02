@@ -1,30 +1,46 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:06'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:06'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Quote Day : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 'Quote Day : ezyang’s blog'
 - en: 来源：[http://blog.ezyang.com/2010/10/quote-day/](http://blog.ezyang.com/2010/10/quote-day/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/10/quote-day/](http://blog.ezyang.com/2010/10/quote-day/)
 - en: Quote Day
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 引语日
 - en: Unattributed to protect the innocent. (But you can probably guess.)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: Unattributed to protect the innocent. (But you can probably guess.)
 - en: “And so these poor programmers, they had to drink this much whiskey to get the
     job done.” [triumphantly produces a bottle of whiskey and places it on the table.]
     “And this group of programmers did X, and how hard was that? Two bottles of whiskey.”
@@ -32,34 +48,53 @@
     And so this group of programmers did Y. Four bottles of whiskey.” [four more bottles
     appear] “As you can see, this is requiring an exponentially increasing amount
     of whiskey.”
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: “于是这些可怜的程序员，他们不得不喝这么多威士忌来完成工作。” [得意洋洋地拿出一瓶威士忌放在桌子上。] “这组程序员做了 X，这有多难呢？两瓶威士忌。”
+    [又放上两瓶威士忌] “但这还不够快。于是这组程序员做了 Y。四瓶威士忌。” [又出现四瓶威士忌] “你看，这需要的威士忌量呈指数增长。”
 - en: “Locks and semaphores are Soviet-era technology.”
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: “锁和信号量是苏联时代的技术。”
 - en: 'On the subject of optimizing algorithms by porting them to lower level hardware
     description languages: “There are much more productive things for you young PhD
     students to be doing.”'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 关于通过将算法移植到低级硬件描述语言来优化算法的主题：“有更多值得年轻博士生去做的事情。”
 - en: 'On Tycho Brahe: “Drunk. Irascible. Fat. Brilliant. Definitely a role model.”'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 关于 Tycho Brahe：“醉酒。易怒。肥胖。聪明。绝对是一个榜样。”
 - en: “One of the benefits of Hindley-Milner inference is that it’s quite efficient.”
     “You mean EXPTIME-complete.”
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: “Hindley-Milner 推理的一个好处是它非常高效。” “你是说 EXPTIME-complete。”
 - en: “Any god-fearing man should write his type signatures.”
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: “任何敬畏神明的人都应该写上他的类型签名。”
 - en: 'On the absence of let generalization in GHC 7.0: “It’s not a feature, it’s
     a bug with benefits.”'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 关于 GHC 7.0 中 let 泛化的缺失：“这不是一个特性，而是一个带有好处的 bug。”
 - en: “You would think that explicit type signatures would make the type checker’s
     job easier, but actually they are making the checker’s job harder.”
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: “你可能会认为显式类型签名会让类型检查器的工作更轻松，但实际上它们使检查器的工作更加困难。”
 - en: “I strongly recommend this paper, but do carry along a jar of aspirin.”
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: “我强烈推荐这篇论文，但带上一罐阿司匹林。”

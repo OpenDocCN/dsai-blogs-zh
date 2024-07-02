@@ -1,27 +1,41 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:44'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:44'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Scheduling IVars : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: IVars调度：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2011/07/scheduling-ivar/](http://blog.ezyang.com/2011/07/scheduling-ivar/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/07/scheduling-ivar/](http://blog.ezyang.com/2011/07/scheduling-ivar/)
 - en: Scheduling IVars
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: IVars调度
 - en: 'One downside to the stupid scheduler I mentioned in the previous [IVar monad
     post](http://blog.ezyang.com/2011/06/the-iva-monad/) was that it would easily
     stack overflow, since it stored all pending operations on the stack. We can explicitly
@@ -29,21 +43,32 @@
     This involves adding `Schedule` state to our monad (I’ve done so with `IORef Schedule`).
     Here is a only slightly more clever scheduler (I''ve also simplified some bits
     of code, and added a new `addCallback` function):'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 我在先前的[IVar monad post](http://blog.ezyang.com/2011/06/the-iva-monad/)中提到的愚蠢调度程序的一个缺点是，由于它将所有待处理操作存储在堆栈上，因此很容易堆栈溢出。我们可以通过实现执行计划来明确地将所有这些待处理的回调移动到堆上。这涉及在我们的单子中添加`Schedule`状态（我已经用`IORef
+    Schedule`这样做了）。这里是一个稍微聪明一些的调度程序（我还简化了一些代码片段，并添加了一个新的`addCallback`函数）：
 - en: '[PRE0]'
+  id: totrans-8
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'Here is some sample code that demonstrates the basic idea:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里是演示基本思想的一些示例代码：
 - en: '[PRE1]'
+  id: totrans-10
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: Actually, this simple infinite loop leaks space. (The reader is invited to try
     it out themselves.) This is precisely the problem the authors of LWT ran into.
     I hate chopping blog posts into little pieces, but getting this code right took
     a little longer than I expected and I ran out of time—so please wait till next
     time for more treatment!
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 实际上，这个简单的无限循环会泄漏空间。（读者可以自行尝试。）这正是LWT的作者们遇到的问题。我不喜欢把博客文章分成小块，但是这段代码的正确编写花了比我预期的时间长一些，而我也没有时间了——所以请等下次再详细处理吧！

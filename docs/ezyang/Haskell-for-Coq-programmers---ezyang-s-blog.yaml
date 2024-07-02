@@ -1,23 +1,35 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:15'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:15'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Haskell for Coq programmers : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '[Coq程序员的Haskell](http://blog.ezyang.com/2014/03/haskell-for-coq-programmers/)：ezyang的博客'
 - en: 来源：[http://blog.ezyang.com/2014/03/haskell-for-coq-programmers/](http://blog.ezyang.com/2014/03/haskell-for-coq-programmers/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2014/03/haskell-for-coq-programmers/](http://blog.ezyang.com/2014/03/haskell-for-coq-programmers/)
 - en: So you may have heard about this popular new programming language called Haskell.
     What's Haskell? Haskell is a non-dependently typed programming language, sporting
     general recursion, type inference and built-in side-effects. It is true that dependent
@@ -25,39 +37,57 @@
     However, giving up dependence can result in certain benefits for other aspects
     of software engineering, and in this article, we'd like to talk about the omissions
     that Haskell makes to support these changes.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以你可能听说过这个流行的新编程语言叫做Haskell。Haskell是什么？Haskell是一种非依赖类型的编程语言，支持一般递归、类型推断和内置副作用。诚然，依赖类型被认为是现代、表现力强的类型系统的一个基本组成部分。然而，放弃依赖性可能会对软件工程的其他方面带来某些好处，本文将讨论Haskell为支持这些变化而做出的省略。
 - en: Syntax
+  id: totrans-7
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 语法
 - en: 'There are a number of syntactic differences between Coq and Haskell, which
     we will point out as we proceed in this article. To start with, we note that in
     Coq, typing is denoted using a single colon (`false : Bool`); in Haskell, a double
     colon is used (`False :: Bool`). Additionally, Haskell has a syntactic restriction,
     where constructors must be capitalized, while variables must be lower-case.'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: '在本文中，我们将指出Coq和Haskell之间的一些句法差异。首先，我们注意到在Coq中，类型用单冒号表示（`false : Bool`）；而在Haskell中，使用双冒号（`False
+    :: Bool`）。此外，Haskell有一个句法限制，构造子必须大写，而变量必须小写。'
 - en: 'Similar to my [OCaml for Haskellers](http://blog.ezyang.com/2010/10/ocaml-for-haskellers/)
     post, code snippets will have the form:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 类似于我的[OCaml for Haskellers](http://blog.ezyang.com/2010/10/ocaml-for-haskellers/)文章，代码片段将采用以下形式：
 - en: '[PRE0]'
+  id: totrans-10
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: '[PRE1]'
+  id: totrans-11
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: Universes/kinding
+  id: totrans-12
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 宇宙/类型分类
 - en: 'A universe is a type whose elements are types. They were originally introduced
     to constructive type theory by Per Martin-Löf. Coq sports an infinite hierarchy
     of universes (e.g. `Type (* 0 *) : Type (* 1 *)`, `Type (* 1 *) : Type (* 2 *)`,
     and so forth).'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: '宇宙是一种其元素为类型的类型。最初由Per Martin-Löf引入构造型理论。Coq拥有无限的宇宙层次结构（例如，`Type (* 0 *) : Type
+    (* 1 *)`，`Type (* 1 *) : Type (* 2 *)`等）。'
 - en: 'Given this, it is tempting to draw an analogy between universes and Haskell’s
     kind of types `*` (pronounced “star”), which classifies types in the same way
     `Type (* 0 *)` classifies primitive types in Coq. Furthermore, the sort *box*
@@ -65,8 +95,11 @@
     be written in the source language). However, the resemblance here is only superficial:
     it is misleading to think of Haskell as a language with only two universes. The
     differences can be summarized as follows:'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: '因此，很容易将宇宙与Haskell类型的`*`（发音为“star”）之间的类比，这种类型分类方式与Coq中的`Type (* 0 *)`类似原始类型。此外，*box*类别也可以分类种类（`*
+    : BOX`），尽管这种类别严格来说是内部的，不能在源语言中书写。然而，这里的相似之处仅仅是表面的：把Haskell看作只有两个宇宙的语言是误导性的。这些差异可以总结如下：'
 - en: 'In Coq, universes are used purely as a sizing mechanism, to prevent the creation
     of types which are too big. In Haskell, types and kinds do double duty to enforce
     the *phase distinction*: if `a` has kind `*`, then `x :: a` is guaranteed to be
@@ -75,9 +108,13 @@
     languages, although knowledgeable folks like [Conor McBride](https://twitter.com/pigworker/status/446784239754022912)
     think that ultimately this is a design error, since one doesn’t [really need a
     kinding system to have type erasure.](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.105.788&rep=rep1&type=pdf)'
+  id: totrans-15
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '在Coq中，宇宙纯粹作为一个尺寸机制使用，以防止创建过大的类型。在Haskell中，类型和种类兼具以强制*阶段区分*：如果`a`的种类是`*`，那么`x
+    :: a`保证是一个运行时值；同样地，如果`k`具有box类别，那么`a :: k`保证是一个编译时值。这种结构是传统编程语言中的常见模式，尽管像[Conor
+    McBride](https://twitter.com/pigworker/status/446784239754022912)这样的知识渊博的人认为，最终这是一个设计错误，因为不真正需要种类化系统来进行类型擦除。'
 - en: 'In Coq, universes are cumulative: a term which has type `Type (* 0 *)` also
     has type `Type (* 1 *)`. In Haskell, there is no cumulativity between between
     types and kinds: if `Nat` is a type (i.e. has the type `*`), it is not automatically
@@ -86,27 +123,36 @@
     which constructs a separate kind-level replica of a type, where the data constructors
     are now type-level constructors. Promotion is also capable of promoting type constructors
     to kind constructors.'
+  id: totrans-16
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在 Coq 中，宇宙是累积的：具有类型`Type (* 0 *)`的术语也具有类型`Type (* 1 *)`。在 Haskell 中，类型和种类之间没有累积性：如果`Nat`是一个类型（即具有类型`*`），它不会自动成为一种。然而，在某些情况下，可以使用[datatype
+    promotion](http://www.haskell.org/ghc/docs/latest/html/users_guide/promotion.html)实现部分累积性，它构造了类型级别的构造函数的独立种级别副本，其中数据构造函数现在是类型级别的构造函数。提升还能够将类型构造函数提升为种构造函数。
 - en: 'In Coq, a common term language is used at all levels of universes. In Haskell,
     there are three distinct languages: a language for handling base terms (the runtime
     values), a language for handling type-level terms (e.g. types and type constructors)
     and a language for handling kind-level terms. In some cases this syntax is overloaded,
     but in later sections, we will often need to say how a construct is formulated
     separately at each level of the kinding system.'
+  id: totrans-17
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在 Coq 中，所有级别的宇宙都使用共同的术语语言。在 Haskell 中，有三种不同的语言：用于处理基本术语（运行时值）的语言，用于处理类型级术语（例如类型和类型构造函数）的语言，以及用于处理种级术语的语言。在某些情况下，此语法是重载的，但在后续章节中，我们经常需要说明如何在种系统的每个级别上单独制定构造。
 - en: 'One further remark: `Type` in Coq is predicative; in Haskell, `*` is *impredicative*,
     following the tradition of System F and other languages in the lambda cube, where
     kinding systems of this style are easy to model.'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 进一步说明：在 Coq 中，`Type`是预测的；在 Haskell 中，`*`是*非预测的*，遵循 System F 和 lambda 立方体中其他语言的传统，在这些风格的种系统中，这种类型的系统易于建模。
 - en: Function types
+  id: totrans-19
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 函数类型
 - en: 'In Coq, given two types `A` and `B`, we can construct the type `A -> B` denoting
     functions from A to B (for A and B of any universe). Like Coq, functions with
     multiple arguments are natively supported using currying. Haskell supports function
@@ -115,65 +161,98 @@
     pi types, however, we defer this discussion for later.) However, Haskell has some
     restrictions on how one may construct functions, and utilizes different syntax
     when handling types and kinds:'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 Coq 中，给定两种类型`A`和`B`，我们可以构造类型`A -> B`表示从 A 到 B 的函数（对于任何宇宙的 A 和 B）。与 Coq 类似，使用柯里化本地支持具有多个参数的函数。Haskell
+    支持类型（`Int -> Int`）和种类（`* -> *`，通常称为*类型构造器*）的函数类型，并通过并置应用（例如`f x`）。（函数类型被 pi 类型所包含，但我们将此讨论推迟到以后。）然而，Haskell
+    对如何构造函数有一些限制，并在处理类型和种类时使用不同的语法：
 - en: 'For *expressions* (with type `a -> b` where `a, b :: *`), both direct definitions
     and lambdas are supported. A direct definition is written in an equational style:'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: '对于*表达式*（类型为`a -> b`，其中`a, b :: *`），支持直接定义和lambda。直接定义以等式风格书写：'
 - en: '[PRE2]'
+  id: totrans-22
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: '[PRE3]'
+  id: totrans-23
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'while a lambda is represented using a backslash:'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 而 lambda 使用反斜杠表示：
 - en: '[PRE4]'
+  id: totrans-25
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: '[PRE5]'
+  id: totrans-26
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: For *type families* (with type `k1 -> k2` where `k1` and `k2` are kinds), the
     lambda syntax is not supported. In fact, no higher-order behavior is permitted
     at the type-level; while we can directly define appropriately kinded type functions,
     at the end of the day, these functions must be fully applied or they will be rejected
     by the type-checker. From an implementation perspective, the omission of type
     lambdas makes type inference and checking much easier.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于*类型族*（类型为`k1 -> k2`，其中`k1`和`k2`是种类），不支持 lambda 语法。实际上，在类型级别不允许高阶行为；虽然我们可以直接定义适当种类的类型函数，但最终，这些函数必须完全应用，否则它们将被类型检查器拒绝。从实现的角度来看，省略类型
+    lambda 使得类型推断和检查变得更容易。
 - en: '*Type synonyms*:'
+  id: totrans-28
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*类型同义词*：'
 - en: '[PRE6]'
+  id: totrans-29
   prefs:
   - PREF_IND
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: '[PRE7]'
+  id: totrans-30
   prefs:
   - PREF_IND
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: Type synonyms are judgmentally equal to their expansions. As mentioned in the
     introduction, they cannot be partially applied. They were originally intended
     as a limited syntactic mechanism for making type signatures more readable.
+  id: totrans-31
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 类型同义词在语义上等同于它们的扩展。正如在介绍中提到的，它们不能被部分应用。最初，它们旨在作为一种有限的语法机制，使类型签名更易读。
 - en: '*Closed type (synonym) families*:'
+  id: totrans-32
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*封闭类型（同义词）族*：'
 - en: '[PRE8]'
+  id: totrans-33
   prefs:
   - PREF_IND
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: '[PRE9]'
+  id: totrans-34
   prefs:
   - PREF_IND
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: While closed type families look like the addition of typecase (and would violate
     parametricity in that case), this is not the case, as closed type families can
     only return types. In fact, closed type families correspond to a well-known design
@@ -183,9 +262,11 @@
     functions on types, so this useful pattern had to be supported directly in the
     type families functionality. Once again, closed type families cannot be partially
     applied.
+  id: totrans-35
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 尽管封闭类型家族看起来像是类型案例的添加（并且可能会违反参数性），但实际情况并非如此，因为封闭类型家族只能返回类型。事实上，封闭类型家族对应于Coq中的一个众所周知的设计模式，其中编写表示类型*代码*的归纳数据类型，然后具有解释函数，将代码解释为实际类型。正如我们之前所述，Haskell没有直接的机制来定义类型上的函数，因此必须直接在类型家族功能中支持这种有用的模式。再次强调，封闭类型家族不能部分应用。
 - en: In fact, the closed type family functionality is a bit more expressive than
     an inductive code. In particular, closed type families support *non-linear pattern
     matches* (`F a a = Int`) and can sometimes reduce a term when no iota reductions
@@ -196,82 +277,116 @@
     just constraint solving. Closed type families are not available in a released
     version of GHC (yet), but there is a [Haskell wiki page describing closed type
     families in more detail](http://www.haskell.org/haskellwiki/GHC/Type_families#Closed_family_simplification).
+  id: totrans-36
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 实际上，封闭类型家族的功能性比归纳代码更具表现力。特别是，封闭类型家族支持*非线性模式匹配*（`F a a = Int`），有时可以在没有 iota 缩减可用时减少术语，因为一些输入是未知的。其原因是封闭类型家族使用统一和约束求解进行“评估”，而不是像Coq中的代码那样进行普通术语缩减。事实上，在Haskell中进行的几乎所有“类型级计算”实际上只是约束求解。封闭类型家族尚未在GHC的发布版本中可用，但有一篇[Haskell维基页面详细描述了封闭类型家族](http://www.haskell.org/haskellwiki/GHC/Type_families#Closed_family_simplification)。
 - en: '*Open type (synonym) families*:'
+  id: totrans-37
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*开放类型（同义词）家族*：'
 - en: '[PRE10]'
+  id: totrans-38
   prefs:
   - PREF_IND
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: '[PRE11]'
+  id: totrans-39
   prefs:
   - PREF_IND
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: Unlike closed type families, open type families operate under an open universe,
     and have no analogue in Coq. Open type families do not support nonlinear matching,
     and must completely unify to reduce. Additionally, there are number of restrictions
     on the left-hand side and right-hand side of such families in order maintain decidable
     type inference. The section of the GHC manual [Type instance declarations](http://www.haskell.org/ghc/docs/latest/html/users_guide/type-families.html#type-instance-declarations)
     expands on these limitations.
+  id: totrans-40
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 与封闭类型家族不同，开放类型家族在开放的宇宙中运行，在Coq中没有类似物。开放类型家族不支持非线性匹配，并且必须完全统一以减少。此外，在维持可决定类型推断的情况下，左侧和右侧的这类家族还有一些限制。GHC手册的部分[类型实例声明](http://www.haskell.org/ghc/docs/latest/html/users_guide/type-families.html#type-instance-declarations)详细说明了这些限制。
 - en: 'Both closed and type-level families can be used to implement computation at
     the type-level of data constructors which were lifted to the type-level via promotion.
     Unfortunately, any such algorithm must be implemented twice: once at the expression
     level, and once at the type level. Use of metaprogramming can alleviate some of
     the boilerplate necessary; see, for example, the [singletons](https://hackage.haskell.org/package/singletons)
     library.'
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 封闭和类型级家族均可用于在数据构造函数的类型级别上实现计算，这些函数通过提升转换到了类型级别。不幸的是，任何此类算法必须实现两次：一次在表达级别，一次在类型级别。使用元编程可以减少一些必要的样板代码；例如，请参阅[singletons](https://hackage.haskell.org/package/singletons)库。
 - en: Dependent function types (Π-types)
+  id: totrans-42
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 依赖函数类型（Π-类型）
 - en: 'A Π-type is a function type whose codomain type can vary depending on the element
     of the domain to which the function is applied. Haskell does not have Π-types
     in any meaningful sense. However, if you only want to use a Π-type solely for
     polymorphism, Haskell does have support. For polymorphism over types (e.g. with
     type `forall a : k, a -> a`, where `k` is a kind), Haskell has a twist:'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Π-类型是一个函数类型，其目标类型可以根据应用函数的域中的元素而变化。在任何有意义的意义上，Haskell都没有Π-类型。然而，如果您仅想单纯地使用Π-类型进行多态性，Haskell确实支持。对于类型的多态性（例如具有类型`forall
+    a : k, a -> a`，其中`k`是一种类型），Haskell有一个技巧：'
 - en: '[PRE12]'
+  id: totrans-44
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: '[PRE13]'
+  id: totrans-45
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: 'In particular, the standard notation in Haskell is to omit both the type-lambda
     (at the expression level) and the quantification (at the type level). The quantification
     at the type level can be recovered using the explicit universal quantification
     extension:'
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 特别是，在 Haskell 中，标准的表示法是省略类型 lambda（在表达级别）和量化（在类型级别）。可以使用显式的全称量化扩展来恢复类型级别的量化：
 - en: '[PRE14]'
+  id: totrans-47
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE14]'
 - en: 'However, there is no way to directly explicitly state the type-lambda. When
     the quantification is not at the top-level, Haskell requires an explicit type
     signature with the quantification put in the right place. This requires the rank-2
     (or rank-n, depending on the nesting) polymorphism extension:'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，没有办法直接显式地声明类型 lambda。当量化不在顶层时，Haskell 需要一个明确的类型签名，并在正确的位置放置量化。这需要排名-2（或排名-n，取决于嵌套）多态性扩展：
 - en: '[PRE15]'
+  id: totrans-49
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE15]'
 - en: '[PRE16]'
+  id: totrans-50
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE16]'
 - en: Polymorphism is also supported at the kind-level using the [kind polymorphism
     extension](http://www.haskell.org/ghc/docs/latest/html/users_guide/kind-polymorphism.html).
     However, there is no explicit forall for kind variables; you must simply mention
     a kind variable in a kind signature.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 类型级别的多态性也可以使用 [kind polymorphism extension](http://www.haskell.org/ghc/docs/latest/html/users_guide/kind-polymorphism.html)
+    支持。然而，对于种类变量，没有显式的 forall；你只需在种类签名中提到一种种类变量。
 - en: 'Proper dependent types cannot be supported directly, but they can be simulated
     by first promoting data types from the expression level to the type-level. A runtime
     data-structure called a *singleton* is then used to refine the result of a runtime
@@ -280,32 +395,51 @@
     it. One particularly good one is [Hasochism: The Pleasure and Pain of Dependently
     Typed Haskell Program](https://personal.cis.strath.ac.uk/conor.mcbride/pub/hasochism.pdf),
     by Sam Lindley and Conor McBride.'
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: '不能直接支持适当的依赖类型，但可以通过首先将数据类型从表达级别提升到类型级别来模拟它们。然后使用运行时数据结构称为*单例*来将运行时模式匹配的结果细化为类型信息。这种在
+    Haskell 中的编程模式并不标准，尽管最近有学术论文描述了如何使用它。其中特别好的一篇是 [Hasochism: The Pleasure and Pain
+    of Dependently Typed Haskell Program](https://personal.cis.strath.ac.uk/conor.mcbride/pub/hasochism.pdf)，由
+    Sam Lindley 和 Conor McBride 编写。'
 - en: Product types
+  id: totrans-53
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 乘积类型
 - en: 'Coq supports cartesian product over types, as well as a nullary product type
     called unit. Very similar constructs are also implemented in the Haskell standard
     library:'
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: Coq 支持类型之间的笛卡尔乘积，以及一个称为空元的空乘类型。非常类似的构造也实现在 Haskell 标准库中：
 - en: '[PRE17]'
+  id: totrans-55
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE17]'
 - en: '[PRE18]'
+  id: totrans-56
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE18]'
 - en: 'Pairs can be destructed using pattern-matching:'
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 对偶可以通过模式匹配来解构：
 - en: '[PRE19]'
+  id: totrans-58
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE19]'
 - en: '[PRE20]'
+  id: totrans-59
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE20]'
 - en: 'Red-blooded type theorists may take issue with this identification: in particular,
     Haskell’s default pair type is what is considered a *negative* type, as it is
     lazy in its values. (See more on [polarity](http://existentialtype.wordpress.com/2012/08/25/polarity-in-type-theory/).)
@@ -316,33 +450,49 @@
     not distinguish between them. (As a total language, it is indifferent to choice
     of evaluation strategy.) Furthermore, it''s relatively common practice to extract
     pairs into their lazy variants when doing code extraction.'
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 有血性的类型理论家可能会对这种认同提出异议：特别是，Haskell 的默认对偶类型被认为是一个*负*类型，因为它对其值是惰性的。（更多内容请参阅[polarity](http://existentialtype.wordpress.com/2012/08/25/polarity-in-type-theory/)。）由于
+    Coq 的对偶类型是归纳定义的，即正的，更准确的认同应该是与严格对偶类型，定义为 `data SPair a b = SPair !a !b`；即，在构造时，两个参数都被评估。这种区别在
+    Coq 中很难看到，因为正对偶和负对偶在逻辑上是等价的，而 Coq 并不区分它们。（作为一种总语言，它对评估策略的选择是漠不关心的。）此外，在进行代码提取时，将对偶类型提取为它们的惰性变体是相对常见的做法。
 - en: Dependent pair types (Σ-types)
+  id: totrans-61
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 依赖对偶类型（Σ-类型）
 - en: 'Dependent pair types are the generalization of product types to be dependent.
     As before, Σ-types cannot be directly expressed, except in the case where the
     first component is a type. In this case, there is an encoding trick utilizing
     data types which can be used to express so-called *existential types*:'
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 依赖对偶类型是将乘积类型推广为依赖形式的一般化。与之前一样，Σ-类型不能直接表达，除非第一个分量是一个类型。在这种情况下，有一种利用数据类型的编码技巧，可以用来表达所谓的*存在类型*：
 - en: '[PRE21]'
+  id: totrans-63
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE21]'
 - en: '[PRE22]'
+  id: totrans-64
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE22]'
 - en: As was the case with polymorphism, the type argument to the dependent pair is
     implicit. It can be specified explicitly by way of an appropriately placed type
     annotation.
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如在多态性的情况下一样，依赖对的类型参数是隐式的。可以通过适当放置的类型注释来显式指定它。
 - en: Recursion
+  id: totrans-66
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 递归
 - en: In Coq, all recursive functions must have a structurally decreasing argument,
     in order to ensure that all functions terminate. In Haskell, this restriction
     is lifted for the expression level; as a result, expression level functions may
@@ -352,74 +502,115 @@
     a violation of type safety, as nonterminating instances would simply cause the
     compiler to loop infinitely, and due to the fact that in Haskell, types cannot
     (directly) cause a change in runtime behavior.
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 Coq 中，所有递归函数必须有一个结构上递减的参数，以确保所有函数都终止。在 Haskell 中，这个限制在表达级别上被解除了；结果是，表达级函数可能不会终止。在类型级别上，默认情况下，Haskell
+    强制执行类型级计算是可判定的。但是，可以使用`UndecidableInstances`标志解除此限制。通常认为不可判定的实例不能用于违反类型安全性，因为非终止实例只会导致编译器无限循环，并且由于在
+    Haskell 中，类型不能（直接）引起运行时行为的改变。
 - en: Inductive types/Recursive types
+  id: totrans-68
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 归纳类型/递归类型
 - en: In Coq, one has the capacity to define inductive data types. Haskell has a similar-looking
     mechanism for defining data types, but there are a number of important differences
     which lead many to avoid using the moniker *inductive data types* for Haskell
     data types (although it’s fairly common for Haskellers to use the term anyway.)
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 Coq 中，可以定义归纳数据类型。Haskell 有一个类似的机制来定义数据类型，但是有许多重要的区别，这导致许多人避免在 Haskell 数据类型中使用
+    *归纳数据类型* 这个术语（尽管对于 Haskeller 来说使用这个术语是相当普遍的）。
 - en: 'Basic types like boolean can be defined with ease in both languages (in all
     cases, we will use the [GADT syntax](http://www.haskell.org/ghc/docs/latest/html/users_guide/data-type-extensions.html#gadt)
     for Haskell data-types, as it is closer in form to Coq’s syntax and strictly more
     powerful):'
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 在两种语言中都可以轻松定义基本类型，例如布尔值（在所有情况下，我们将使用[Haskell 数据类型扩展中的 GADT 语法](http://www.haskell.org/ghc/docs/latest/html/users_guide/data-type-extensions.html#gadt)，因为它更接近
+    Coq 的语法形式，且严格更强大）：
 - en: '[PRE23]'
+  id: totrans-71
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE23]'
 - en: '[PRE24]'
+  id: totrans-72
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE24]'
 - en: 'Both also support recursive occurrences of the type being defined:'
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 两者也支持正在定义的类型的递归出现：
 - en: '[PRE25]'
+  id: totrans-74
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE25]'
 - en: '[PRE26]'
+  id: totrans-75
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE26]'
 - en: 'One has to be careful though: our definition of `Nat` in Haskell admits one
     more term: infinity (an infinite chain of successors). This is similar to the
     situation with products, and stems from the fact that Haskell is lazy.'
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 但是必须小心：我们在 Haskell 中对 `Nat` 的定义接受了一个额外的术语：无穷大（一个无限的后继链）。这类似于产品的情况，并且源于 Haskell
+    是惰性的这一事实。
 - en: 'Haskell’s data types support parameters, but these parameters may only be types,
     and not values. (Though, recall that data types can be promoted to the type level).
     Thus, the standard type family of vectors may be defined, assuming an appropriate
     type-level nat (as usual, explicit forall has been omitted):'
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: Haskell 的数据类型支持参数，但这些参数只能是类型，而不能是值。（尽管，记住数据类型可以提升到类型级别）。因此，可以定义向量的标准类型族，假设适当的类型级
+    nat（通常情况下，显式的 forall 已被省略）：
 - en: '[PRE27]'
+  id: totrans-78
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE27]'
 - en: '[PRE28]'
+  id: totrans-79
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE28]'
 - en: As type-level lambda is not supported but partial application of data types
     is (in contrast to type families), the order of arguments in the type must be
     chosen with care. (One could define a type-level flip, but they would not be able
     to partially apply it.)
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于类型级λ不支持，但数据类型的部分应用是支持的（与类型族相反），因此必须谨慎选择类型中参数的顺序。（可以定义类型级的flip，但不能部分应用它。）
 - en: 'Haskell data type definitions do not have the [strict positivity requirement,](http://blog.ezyang.com/2012/09/y-combinator-and-strict-positivity/)
     since we are not requiring termination; thus, peculiar data types that would not
     be allowed in Coq can be written:'
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: Haskell 数据类型定义不具有 [严格正性要求](http://blog.ezyang.com/2012/09/y-combinator-and-strict-positivity/)，因为我们不要求终止；因此，可以编写在
+    Coq 中不允许的奇怪的数据类型：
 - en: '[PRE29]'
+  id: totrans-82
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE29]'
 - en: Inference
+  id: totrans-83
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 推断
 - en: Coq has support for requesting that a term be inferred by the unification engine,
     either by placing an underscore in a context or by designating an argument as
     *implicit* (how one might implement in Coq the omission of type arguments of polymorphic
@@ -427,8 +618,11 @@
     in a dependently typed language to be solvable, and the inner-workings of Coq’s
     unification engines (plural!) are considered a black art (no worry, as the trusted
     kernel will verify that the inferred arguments are well-typed).
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: Coq 支持请求通过统一引擎推断术语，可以通过在上下文中放置下划线或将参数指定为 *implicit*（在 Coq 中实现像 Haskell 中看到的省略多态函数的类型参数）。通常不可能期望在依赖类型语言中解决所有推断问题，Coq
+    的统一引擎（复数！）的内部工作被认为是黑魔法（别担心，受信任的内核将验证推断的参数是类型良好的）。
 - en: Haskell as specified in Haskell'98 enjoys principal types and full type inference
     under Hindley-Milner. However, to recover many of the advanced features enjoyed
     by Coq, Haskell has added numerous extensions which cannot be easily accomodated
@@ -437,12 +631,18 @@
     With these features, there are no completeness guarantee. However, if the inference
     algorithm accepts a definition, then that definition has a principal type and
     that type is the type the algorithm found.
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: Haskell 如同 Haskell'98 规定的那样，在 Hindley-Milner 下享有主类型和完整类型推断。然而，为了恢复 Coq 所享有的许多高级特性，Haskell
+    添加了许多扩展，这些扩展不易适应于 Hindley-Milner，包括类型类约束、多参数类型类、GADTs 和类型族。当前的最新算法是一种名为 [OutsideIn(X)](http://research.microsoft.com/en-us/um/people/simonpj/papers/constraints/jfp-outsidein.pdf)
+    的算法。使用这些特性，没有完整性保证。然而，如果推断算法接受一个定义，那么该定义具有一个主类型，并且该类型就是算法找到的类型。
 - en: Conclusion
+  id: totrans-86
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 结论
 - en: This article started as a joke over in OPLSS'13, where I found myself explaining
     some of the hairier aspects of Haskell’s type system to Jason Gross, who had internalized
     Coq before he had learned much Haskell. Its construction was iced for a while,
@@ -452,30 +652,44 @@
     organizing many of Haskell’s more intricate type-system features. Are proper dependent
     types simpler? Hell yes. But it’s also worth thinking about where Haskell goes
     further than most existing dependently typed languages...
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 这篇文章最初是在 OPLSS'13 开玩笑时开始的，我在那里发现自己向 Jason Gross 解释了 Haskell 类型系统的一些复杂方面。它的构建曾经中断了一段时间，但后来我意识到我可以按照同伦类型论书的第一章的模式来构建这篇文章。虽然我不确定这篇文档对学习
+    Haskell 有多大帮助，但我认为它提出了一种非常有趣的方式来组织 Haskell 更复杂的类型系统特性。合适的依赖类型更简单吗？当然是。但考虑到 Haskell
+    在大多数现有依赖类型语言之外的地方更进一步，这也值得思考。
 - en: Postscript
+  id: totrans-88
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 后记
 - en: 'Bob Harper [complained over Twitter](http://storify.com/ezyang/bob-harper-comments-on-haskell-for-coq-programmers)
     that this post suggested misleading analogies in some situations. I''ve tried
     to correct some of his comments, but in some cases I wasn''t able to divine the
     full content of his comments. I invite readers to see if they can answer these
     questions:'
+  id: totrans-89
   prefs: []
   type: TYPE_NORMAL
+  zh: Bob Harper [在 Twitter 上抱怨](http://storify.com/ezyang/bob-harper-comments-on-haskell-for-coq-programmers)，指出这篇文章在某些情况下提出了误导性的类比。我尝试修正了他的一些评论，但在某些情况下我无法推测出他评论的全部内容。我邀请读者看看是否能回答以下问题：
 - en: Because of the phase distinction, Haskell’s *type families* are not actually
     type families, in the style of Coq, Nuprl or Agda. Why?
+  id: totrans-90
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 由于阶段区分，Haskell 的 *类型族* 实际上不是像 Coq、Nuprl 或 Agda 那样的类型族。为什么？
 - en: This post is confused about the distinction between elaboration (type inference)
     and semantics (type structure). Where is this confusion?
+  id: totrans-91
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 这篇文章对推导（类型推断）和语义（类型结构）之间的区别感到困惑。这种困惑出现在哪里？
 - en: Quantification over kinds is not the same as quantification over types. Why?
+  id: totrans-92
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 对种类的量化不同于对类型的量化。为什么？

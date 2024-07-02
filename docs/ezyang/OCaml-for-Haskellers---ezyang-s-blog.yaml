@@ -1,239 +1,384 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:05'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:05'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'OCaml for Haskellers : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Haskell程序员的OCaml：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2010/10/ocaml-for-haskellers/](http://blog.ezyang.com/2010/10/ocaml-for-haskellers/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/10/ocaml-for-haskellers/](http://blog.ezyang.com/2010/10/ocaml-for-haskellers/)
 - en: I’ve started formally learning OCaml (I’ve been reading ML since Okasaki, but
     I’ve never written any of it), and here are some notes about differences from
     Haskell from Jason Hickey's *Introduction to Objective Caml*. The two most notable
     differences are that OCaml is *impure* and *strict.*
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 我开始正式学习OCaml（我一直在阅读ML，自Okasaki以来，但从未实际写过），这里是关于与Haskell不同的一些笔记，来源于Jason Hickey的《Objective
+    Caml简介》。最显著的两个区别是OCaml是*不纯的*和*严格的*。
 - en: '* * *'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Features.* Here are some features OCaml has that Haskell does not:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: '*特性.* 这里是OCaml具有而Haskell没有的一些特性：'
 - en: OCaml has named parameters (`~x:i` binds to `i` the value of named parameter
     `x`, `~x` is a shorthand for `~x:x`).
+  id: totrans-9
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: OCaml有命名参数（`~x:i` 绑定到命名参数 `x` 的值 `i`，`~x` 是 `~x:x` 的简写）。
 - en: OCaml has optional parameters (`?(x:i = default)` binds `i` to an optional named
     parameter `x` with default `default`).
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: OCaml有可选参数（`?(x:i = default)` 将 `i` 绑定到带有默认值 `default` 的可选命名参数 `x`）。
 - en: OCaml has open union types (`[> 'Integer of int | 'Real of float]` where the
     type holds the implementation; you can assign it to a type with `type 'a number
     = [> 'Integer of int | 'Real of float] as a`). Anonymous closed unions are also
     allowed (`[< 'Integer of int | 'Real of float]`).
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: OCaml有开放联合类型（`[> 'Integer of int | 'Real of float]`，其中类型保存了实现；你可以将其分配给具有 `type
+    'a number = [> 'Integer of int | 'Real of float] as a` 的类型。匿名闭合联合类型也被允许（`[< 'Integer
+    of int | 'Real of float]`）。
 - en: OCaml has mutable records (preface record field in definition with `mutable`,
     and then use the `<-` operator to assign values).
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: OCaml有可变记录（在定义中用`mutable`作为字段的前缀，然后使用`<-`运算符赋值）。
 - en: OCaml has a module system (only briefly mentioned today).
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: OCaml有一个模块系统（今天只是简单提及）。
 - en: OCaml has native objects (not covered in this post).
+  id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: OCaml有本地对象（本文未涵盖）。
 - en: '* * *'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Syntax.* Omission means the relevant language feature works the same way (for
     example, let `f x y = x + y` is the same)'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: '*语法.* 省略意味着相关语言特性的工作方式相同（例如，`let f x y = x + y` 是相同的）'
 - en: 'Organization:'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 组织：
 - en: '[PRE0]'
+  id: totrans-18
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'Types:'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 类型：
 - en: '[PRE1]'
+  id: totrans-20
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'Operators:'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 运算符：
 - en: '[PRE2]'
+  id: totrans-22
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: (arithmetic versus logical shift in Haskell depends on the type of the Bits.)
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: （在Haskell中，算术与逻辑移位取决于位的类型。）
 - en: 'Float operators in OCaml: affix period (i.e. `+.`)'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: OCaml中的浮点运算符：用点号作为前缀（即`+.`）
 - en: 'Float casting:'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 浮点数转换：
 - en: '[PRE3]'
+  id: totrans-26
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'String operators:'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 字符串操作符：
 - en: '[PRE4]'
+  id: totrans-28
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: 'Composite types:'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 复合类型：
 - en: '[PRE5]'
+  id: totrans-30
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 'Lists:'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 列表：
 - en: '[PRE6]'
+  id: totrans-32
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'Data types:'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 数据类型：
 - en: '[PRE7]'
+  id: totrans-34
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: (note that in OCaml you'd need `Node (v,l,r)` to match, despite there not actually
     being a tuple)
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: （请注意，在OCaml中，你需要 `Node (v,l,r)` 来匹配，尽管实际上并不存在这样的元组。）
 - en: 'Records:'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 记录：
 - en: '[PRE8]'
+  id: totrans-37
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: (OCaml records also have destructive update.)
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: （OCaml记录也支持破坏性更新。）
 - en: 'Maybe:'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: Maybe：
 - en: '[PRE9]'
+  id: totrans-40
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: 'Array:'
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 数组：
 - en: '[PRE10]'
+  id: totrans-42
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: 'References:'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 引用：
 - en: '[PRE11]'
+  id: totrans-44
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: 'Top level definition:'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 顶层定义：
 - en: '[PRE12]'
+  id: totrans-46
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: 'Lambda:'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: Lambda：
 - en: '[PRE13]'
+  id: totrans-48
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: 'Recursion:'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 递归：
 - en: '[PRE14]'
+  id: totrans-50
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE14]'
 - en: 'Mutual recursion (note that Haskell let is always recursive):'
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 互递归（请注意，Haskell中的`let`始终是递归的）：
 - en: '[PRE15]'
+  id: totrans-52
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE15]'
 - en: 'Function pattern matching:'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 函数模式匹配：
 - en: '[PRE16]'
+  id: totrans-54
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE16]'
 - en: '(note: you can put pattern matches in the arguments for OCaml, but lack of
     an equational function definition style makes this not useful)'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: （注意：你可以在OCaml的参数中放置模式匹配，但由于缺乏等式函数定义风格，这种方式并不实用）
 - en: 'Case:'
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: Case：
 - en: '[PRE17]'
+  id: totrans-57
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE17]'
 - en: 'Exceptions:'
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 异常：
 - en: '[PRE18]'
+  id: totrans-59
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE18]'
 - en: 'Build:'
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: Build：
 - en: '[PRE19]'
+  id: totrans-61
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE19]'
 - en: 'Run:'
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 运行：
 - en: '[PRE20]'
+  id: totrans-63
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE20]'
 - en: '* * *'
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Type signatures.* Haskell supports specifying a type signature for an expression
     using the double colon. OCaml has two ways of specifying types, they can be done
     inline:'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: '*类型签名.* Haskell支持使用双冒号为表达式指定类型签名。OCaml有两种指定类型的方式，可以内联进行：'
 - en: '[PRE21]'
+  id: totrans-66
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE21]'
 - en: 'or they can be placed in an interface file (extension `mli`):'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 或者它们可以放置在接口文件中（扩展名为 `mli`）：
 - en: '[PRE22]'
+  id: totrans-68
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE22]'
 - en: The latter method is preferred, and is analogous to an `hs-boot` file as [supported
     by GHC](http://www.haskell.org/ghc/docs/6.10.2/html/users_guide/separate-compilation.html#mutual-recursion).
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 后一种方法更为推荐，类似于GHC支持的`hs-boot`文件（http://www.haskell.org/ghc/docs/6.10.2/html/users_guide/separate-compilation.html#mutual-recursion）。
 - en: '* * *'
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Eta expansion.* Polymorphic types in the form of `''_a` can be thought to
     behave like Haskell’s monomorphism restriction: they can only be instantiated
     to one concrete type. However, in Haskell the monomorphism restriction was intended
@@ -247,24 +392,37 @@
     type variables are ever shown to you. But OCaml requires monomorphic type variables
     to not escape from compilation units, so there is a bit of similarity. Did this
     make no sense? Don’t panic.)'
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: '*Eta 展开。* 以`''_a`形式的多态类型可以被视为类似于 Haskell 的单态化限制：它们只能被实例化为一个具体类型。然而，在 Haskell
+    中，单态化限制旨在避免用户不期望的额外重新计算值；在 OCaml 中，值限制要求在面对副作用时保持类型系统的完整性，并且也适用于函数（只需查找签名中的`''_a`）。更根本地，`''a`表示广义类型，而`''_a`表示一个在此时未知的具体类型—在
+    Haskell 中，所有类型变量都是隐式地普遍量化的，因此前者始终成立（除非单态化限制介入，即使这时也不会显示任何类型变量给你看。但 OCaml 要求单态类型变量不会从编译单元中逃逸，因此存在一些相似性。这听起来没有意义吗？不要惊慌。）'
 - en: In Haskell, we’d make our monomorphic value polymorphic again by specifying
     an explicit type signature. In OCaml, we generalize the type by eta expanding.
     The canonical example is the `id` function, which when applied to itself (`id
     id`) results in a function of type `'_a -> '_a` (that is, restricted.) We can
     recover `'a -> 'a` by writing `fun x -> id id x`.
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 Haskell 中，我们可以通过指定显式类型签名来使我们的单态值再次变成多态。在 OCaml 中，我们通过 eta 展开来泛化类型。典型的例子是 `id`
+    函数，当应用于自身 (`id id`) 时，结果是一个类型为 `'_a -> '_a` 的函数（即受限制的）。我们可以通过编写 `fun x -> id id
+    x` 来恢复 `'a -> 'a`。
 - en: 'There is one more subtlety to deal with OCaml’s impurity and strictness: eta
     expansion acts like a thunk, so if the expression you eta expand has side effects,
     they will be delayed. You can of course write `fun () -> expr` to simulate a classic
     thunk.'
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 还有一个细微之处需要处理 OCaml 的不纯和严格性：eta 展开类似于一个延迟计算，因此如果你 eta 展开的表达式具有副作用，它们将被延迟执行。当然，你可以编写
+    `fun () -> expr` 来模拟一个经典的延迟计算。
 - en: '* * *'
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Tail recursion.* In Haskell, you do not have to worry about tail recursion
     when the computation is lazy; instead you work on putting the computation in a
     data structure so that the user doesn''t force more of it than they need (guarded
@@ -272,8 +430,10 @@
     into the structure. However, if you are implementing something like `foldl''`,
     which is strict, you’d want to pay attention to this (and not build up a really
     big thunk.)'
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: '*尾递归。* 在 Haskell 中，当计算是惰性时，你不必担心尾递归；相反，你要努力将计算放入数据结构中，以便用户不会强制获取比他们所需更多的计算（受限递归），并且“堆栈帧”在你深入模式匹配结构时会被高兴地丢弃。然而，如果你正在实现像`foldl''`这样的严格函数，你需要注意这一点（并且不要建立一个非常大的延迟计算。）'
 - en: Well, OCaml is strict by default, so you always should pay attention to making
     sure you have tail calls. One interesting place this comes up is in the [implementation
     of map](http://ocaml.janestreet.com/?q=node/71), the naive version of which cannot
@@ -283,51 +443,79 @@
     exhausting stack space when you get big lists. (Note that a strict map function
     in Haskell would have the same problem; this is a difference between laziness
     and strictness, and not Haskell and OCaml.)
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 好吧，OCaml 默认是严格的，所以你总是要注意确保有尾调用。一个有趣的地方是在 [map 的实现中](http://ocaml.janestreet.com/?q=node/71)，其中的简单版本无法进行尾调用优化。在
+    Haskell 中，这不是问题，因为我们的 map 是惰性的，并且递归隐藏在 cons 构造函数中；在 OCaml 中，存在一个权衡：复制整个列表以实现尾调用优化，或者不复制并在处理大列表时可能耗尽堆栈空间。（注意，Haskell
+    中的严格 map 函数也会遇到相同的问题；这是惰性和严格性之间的区别，而不是 Haskell 和 OCaml 的区别。）
 - en: '* * *'
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*File organization.* A single file OCaml script contains a list of statements
     which are executed in order. (There is no `main` function).'
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: '*文件组织。* 单个文件的 OCaml 脚本包含一系列按顺序执行的语句（没有 `main` 函数）。'
 - en: The moral equivalent of Haskell modules are called *compilation units* in OCaml,
     with the naming convention of `foo.ml` (lower case!) corresponding to the `Foo`
     module, or `Foo.foo` referring to the `foo` function in `Foo`.
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: Haskell模块的道德等价物在OCaml中被称为*编译单元*，命名约定为`foo.ml`（小写！）对应于`Foo`模块，或者`Foo.foo`指的是`Foo`中的`foo`函数。
 - en: It is considered good practice to write interface files, `mli`, as described
     above; these are like export lists. The interface file will also contain data
     definitions (with the constructors omitted to implement hiding).
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 按照上述描述编写接口文件`mli`被认为是一种良好的实践；这些文件类似于导出列表。接口文件还将包含数据定义（构造函数被省略以实现隐藏）。
 - en: By default all modules are automatically “imported” like `import qualified Foo`
     (no import list necessary). Traditional `import Foo` style imports (so that you
     can use names unqualified) can be done with `open Foo` in OCaml.
+  id: totrans-81
   prefs: []
   type: TYPE_NORMAL
+  zh: 默认情况下，所有模块都像`import qualified Foo`一样自动“导入”（无需导入列表）。在OCaml中，可以通过`open Foo`进行传统的`import
+    Foo`风格的导入（以便可以不加限定地使用名称）。
 - en: '* * *'
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Module system.* OCaml does not have type classes but it does have modules
     and you can [achieve fairly similar effects with them](http://okmij.org/ftp/ML/ML.html#typeclass).
     (Another classic way of getting type class style effects is to use objects, but
     I’m not covering them today.) I was going to talk about this today but this post
     is getting long so maybe I’ll save it for another day.'
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: '*模块系统。* OCaml没有类型类，但它有模块系统，您可以通过它们[实现相似的效果](http://okmij.org/ftp/ML/ML.html#typeclass)。
+    （获得类型类风格效果的另一种经典方法是使用对象，但我今天不涵盖它们。）我本来想今天讨论这个问题，但这篇文章变得很长，所以也许我会把它留到另一天。'
 - en: '* * *'
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Open question.* I’m not sure how much of this is OCaml specific, and how much
     generalizes to all ML languages.'
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: '*开放问题。* 我不确定这些内容在OCaml特定情况下有多少通用性，以及它们如何推广到所有ML语言。'
 - en: '*Update.* ocamlrun is not the same as runghc; I''ve updated the article accordingly.'
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: '*更新。* ocamlrun并不同于runghc；我已经相应地更新了文章。'
 - en: '*Update 2.* Raphael Poss has written a nice article in reverse: [Haskell for
     OCaml programmers](http://staff.science.uva.nl/~poss/haskell-for-ocaml-programmers.html)'
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: '*更新2。* Raphael Poss写了一篇反向的好文章：[Haskell for OCaml programmers](http://staff.science.uva.nl/~poss/haskell-for-ocaml-programmers.html)'

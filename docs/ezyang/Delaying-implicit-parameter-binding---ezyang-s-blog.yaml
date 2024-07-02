@@ -1,23 +1,35 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:13'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:13'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Delaying implicit parameter binding : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 延迟隐式参数绑定：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2010/07/delaying-implicit-parameter-binding/](http://blog.ezyang.com/2010/07/delaying-implicit-parameter-binding/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/07/delaying-implicit-parameter-binding/](http://blog.ezyang.com/2010/07/delaying-implicit-parameter-binding/)
 - en: 'Today, we talk in more detail at some points about dynamic binding that Dan
     Doel brought up in the comments of [Monday’s post](http://blog.ezyang.com/2010/07/implicit-parameters-in-haskell/).
     Our first step is to solidify our definition of dynamic binding as seen in a lazy
@@ -29,8 +41,10 @@
     the answer is yes.) And finally, we show how to combine the convenience of implicit
     parameters with the explicitness of the Reader monad using a standard trick that
     Oleg uses in his monadic regions.'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 今天，我们将更详细地讨论丹·多尔在[周一的文章](http://blog.ezyang.com/2010/07/implicit-parameters-in-haskell/)评论中提到的动态绑定的一些要点。我们的第一步是巩固我们对延迟绑定的定义，如在惰性语言（使用Reader单子的Haskell）和严格语言（使用有错误的元循环评估器的Scheme）中所见。然后我们回到隐式参数，并问一个问题：隐式参数执行动态绑定吗？（忽略单型限制，[奥列格说不](http://okmij.org/ftp/Computation/dynamic-binding.html#implicit-parameter-neq-dynvar)，但在GHC可能存在bug的情况下，答案是肯定的。）最后，我们展示如何将隐式参数的方便性与Reader单子的显式性结合起来，使用奥列格在他的单子区域中使用的标准技巧。
 - en: '*Aside.* For those of you with short attention span, the gist is this: the
     type of an expression that uses an implicit parameter determines when the binding
     for the implicit parameter gets resolved. For most projects, implicit parameters
@@ -38,63 +52,91 @@
     off the monomorphism restriction will result in much more dynamic behavior. You
     won’t see very many differences if you only set your implicit parameters once
     and don’t touch them again.'
+  id: totrans-7
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '*旁注.* 对于那些注意力不集中的人，要点是：使用隐式参数的表达式的类型确定了隐式参数绑定的时间。对于大多数项目，隐式参数往往会尽快解析，这并不是很动态；关闭单型限制将导致更加动态的行为。如果您只设置一次隐式参数并且不再更改它们，您将看不到太多差异。'
 - en: 'At risk of sounding like a broken record, I would like to review an important
     distinction about the Reader monad. In the Reader monad, there is a great difference
     between the following two lines:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 冒着听起来像是一个破碎的记录的风险，我想复习有关Reader单子的一个重要区别。在Reader单子中，以下两行之间存在很大的区别：
 - en: '[PRE0]'
+  id: totrans-9
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'If we are in the `Reader r` monad, the first `x` would have the type `r`, while
     the second `x` would have the type `Reader r r`; one might call the second `x`
     “delayed”, because we haven’t used `>>=` to peek into the proverbial monad wrapper
     and act on its result. We can see what is meant by this in the following code:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们在`Reader r`单子中，第一个`x`将具有类型`r`，而第二个`x`将具有类型`Reader r r`；可以称第二个`x`为“延迟”，因为我们尚未使用`>>=`来查看谚语单子包装器并在其结果上采取行动。我们可以通过以下代码看到这意味着什么：
 - en: '[PRE1]'
+  id: totrans-11
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'which outputs:'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 'which outputs:'
 - en: '[PRE2]'
+  id: totrans-13
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: Though we changed the underlying environment with the call to `local`, the original
     `x` stayed unchanged, while when we forced the value of `m` into `y`, we found
     the new environment. `m2` acted analogously, though in the reverse direction (declared
     in the inner `ReaderT`, but took on the outer `ReaderT` value). The semantics
     are different, and the syntax is different accordingly.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然我们通过调用`local`改变了底层环境，但原始的`x`保持不变，而当我们将`m`的值强制到`y`时，我们发现了新的环境。`m2`表现类似，但方向相反（在内部`ReaderT`声明，但采用外部`ReaderT`的值）。语义不同，因此语法也不同。
 - en: Please keep this in mind, as we are about to leave the (dare I say “familiar”?)
     world of monads to the lands of Lisp, where most code is *not* monadic, where
     dynamic binding was accidentally invented.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 请记住这一点，因为我们即将离开（我敢说“熟悉的”？）单子的世界，转向Lisp的领域，那里大部分代码*不*是单子的，动态绑定是意外发明的。
 - en: 'Here, I have the pared-down version of the metacircular evaluator found in
     SICP (with mutation and sequencing ripped out; the [theory is sound](http://okmij.org/ftp/Computation/dynamic-binding.html#DDBinding)
     if these are added in but we’re ignoring them for the purpose of this post):'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里，我有在 SICP 中找到的精简版元循环评估器（去除了变异和顺序控制；如果添加这些内容，[理论是可行的](http://okmij.org/ftp/Computation/dynamic-binding.html#DDBinding)，但我们在此帖子中忽略它们）：
 - en: '[PRE3]'
+  id: totrans-17
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'Here’s another version of the evaluator:'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里是另一个版本的评估器：
 - en: '[PRE4]'
+  id: totrans-19
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: If your SICP knowledge is a little rusty, before [consulting the source](http://mitpress.mit.edu/sicp/full-text/book/book-Z-H-26.html#%_sec_4.1),
     try to figure out which version implements lexical scoping, and which version
     implements dynamic scoping.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你对 SICP 的知识有点生疏，在[查阅源代码](http://mitpress.mit.edu/sicp/full-text/book/book-Z-H-26.html#%_sec_4.1)之前，试着弄清楚哪个版本实现了词法作用域，哪个版本实现了动态作用域。
 - en: 'The principal difference between these two versions lie in the definition of
     `make-procedure`. The first version is essentially a verbatim copy of the lambda
     definition, taking only the parameters and body, while the second adds an extra
@@ -106,22 +148,32 @@
     lambda-model beaten into their head, both choices seem plausible, and they would
     probably just go along with the definition of `make-procedure` (nota bene: giving
     students an incorrect `make-procedure` would be very evil!)'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 这两个版本之间的主要区别在于 `make-procedure` 的定义。第一个版本本质上是 lambda 定义的直译，只接受参数和主体，而第二个版本添加了额外的信息，即
+    lambda 创建时的环境。相反，当 `apply` 解开过程以运行其内部时，第一个版本需要额外的信息——当前环境——作为我们将使用 `eval` 运行时的基础环境，而第二个版本则只使用过程中存储的环境。对于没有被“双泡泡”
+    lambda 模型击败的学生来说，这两种选择都似乎是合理的，他们可能会简单地遵循 `make-procedure` 的定义（请注意：给学生一个不正确的 `make-procedure`
+    是非常邪恶的！）
 - en: 'The first version is dynamically scoped: if I attempt to reference a variable
     that is not defined by the lambda’s arguments, I look for it in the environment
     that is *calling* the lambda. The second version is lexically scoped: I look for
     a missing variable in the environment that *created* the lambda, which happens
     to be where the lambda’s source code is, as well.'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 第一个版本是动态作用域的：如果我尝试引用一个未在 lambda 参数中定义的变量，我会在调用 lambda 的环境中寻找它。第二个版本是词法作用域的：我会在创建
+    lambda 的环境中寻找缺失的变量，这恰好是 lambda 源代码所在的地方。
 - en: 'So, what does it mean to “delay” a reference to a variable? If it is lexically
     scoped, not much: the environment that the procedure is to use is set in stone
     from the moment it was created, and if the environment is immutable (that is,
     we disallow `set!` and friends), it doesn’t matter at all when we attempt to dereference
     a variable.'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 那么，“延迟”变量引用意味着什么？如果是词法作用域，意义不大：过程要使用的环境从创建时就已经确定，如果环境是不可变的（即我们不允许 `set!` 等操作），则在尝试解引用变量时根本不重要。
 - en: On the other hand, if the variable is dynamically scoped, the time when we call
     the function that references the variable is critical. Since Lisps are strictly
     evaluated, a plain `variable` expression will immediately cause a lookup in the
@@ -129,28 +181,42 @@
     will delay looking up the variable until we force the `thunk` with `(thunk)`.
     `variable` is directly analogous to a value typed `r` in Haskell, while `(lambda
     () variable)` is analogous to a value typed `Reader r r`.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一方面，如果变量是动态作用域的，则调用引用变量的函数的时间至关重要。由于 Lisp 是严格评估的，一个简单的 `variable` 表达式将立即导致在当前调用环境中查找，但是以
+    `(lambda () variable)` 形式的“惰性求值”将延迟查找变量，直到我们使用 `(thunk)` 强制求值 `thunk` 为止。`variable`
+    在 Haskell 中直接类比于类型为 `r` 的值，而 `(lambda () variable)` 类比于类型为 `Reader r r` 的值。
 - en: 'Back to Haskell, and to implicit parameters. The million dollar question is:
     can we distinguish between forcing and delaying an implicit parameter? If we attempt
     a verbatim translation of the original code, we get stuck very quickly:'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 回到 Haskell，再谈隐式参数。百万美元问题是：我们能区分强制和延迟隐式参数吗？如果我们尝试直译原始代码，我们很快就会陷入困境：
 - en: '[PRE5]'
+  id: totrans-26
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: The syntax for implicit parameters doesn’t appear to have any built-in syntax
     for distinguishing `x` and `m`. Thus, one must wonder, what is the default behavior,
     and can the other way be achieved?
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 隐式参数的语法似乎没有任何区分`x`和`m`的内置语法。因此，人们必须要问，什么是默认行为，另外一种方法可以实现吗？
 - en: 'In what is a rarity for Haskell, the *types* in fact change the semantics of
     the expression. Consider this annotated version:'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于 Haskell 来说，这是一种罕见的情况，*类型*实际上改变了表达式的语义。考虑这个带注释的版本：
 - en: '[PRE6]'
+  id: totrans-29
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'The type of `x` is `Int`. Recall that the `(?x :: t)` constraint indicates
     that an expression uses that implicit variable. How can this be: aren’t we illegally
     using an implicit variable when we agreed not to? There is one way out of this
@@ -158,14 +224,18 @@
     since we’ve already resolved `?x`, there is no need to require it wherever `x`
     may be used. Thus, *removing the implicit variables from the type constraint of
     an expression forces the implicit variables in that expression.*'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: '`x`的类型是`Int`。回顾一下，`(?x :: t)`约束指示表达式使用该隐式变量。这怎么可能：当我们约定不使用隐式变量时，我们是否在非法地使用隐式变量？在这个困境中有一种解决办法：我们强制`?x`的值，并将其赋给`x`，这样我们就已经解析了`?x`，不需要在使用`x`的任何地方要求它。因此，*从表达式的类型约束中移除隐式变量会强制该表达式中的隐式变量。*'
 - en: '`m`, on the other hand, performs no such specialization: it proclaims that
     you need `?x` in order to use the expression `m`. Thus, evaluation of the implicit
     variable is delayed. *Keeping an implicit variable in the type constraint delays
     that variable.*'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一方面，`m`不执行这种特化：它声明你需要`?x`才能使用表达式`m`。因此，推迟隐式变量的评估。*在类型约束中保持隐式变量会延迟该变量。*
 - en: 'So, if one simply writes `let mystery = ?x`, what is the type of mystery? Here,
     the dreaded [monomorphism restriction](http://www.haskell.org/ghc/docs/6.12.2/html/users_guide/monomorphism.html)
     kicks in. You may have seen the monomorphism restriction before: in most cases,
@@ -175,8 +245,10 @@
     it will merely change it’s behavior. My recommendation is to not guess, and explicitly
     specify your type signatures when using implicit parameters. This gives clear
     visual cues on whether or not the implicit parameter is being forced or delayed.'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，如果简单地写`let mystery = ?x`，那么mystery的类型是什么？在这里，可怕的[单型限制](http://www.haskell.org/ghc/docs/6.12.2/html/users_guide/monomorphism.html)就出现了。你可能已经见过单型限制：在大多数情况下，它使得你的函数比你想要的更不通用。然而，这是非常明显的——你的程序无法通过类型检查。在这里，无论单型限制是否开启，都不会导致你的程序无法通过类型检查；它只会改变其行为。我建议不要猜测，在使用隐式参数时明确指定你的类型签名。这样可以清楚地显示出隐式参数是被强制还是推迟的视觉线索。
 - en: '*Aside.* For the morbidly curious, if the monomorphism restriction is enabled
     (as it is by default) and your expression is eligible (if it takes no arguments,
     it is definitely eligible, otherwise, [consult your nearest Haskell report](http://www.haskell.org/onlinereport/decls.html#sect4.5.5)),
@@ -188,66 +260,102 @@
     parameters, delaying them until they are used in a specialized context without
     the implicit parameters. GHC also experimentally makes pattern bindings monomorphic,
     which is tweaked by `NoMonoPatBinds`.'
+  id: totrans-33
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '*旁注.* 对于那些好奇的人，如果单型限制被启用（默认情况下是启用的），并且你的表达式是合格的（如果它不带参数，它肯定是合格的，否则，请[查阅你最近的
+    Haskell 报告](http://www.haskell.org/onlinereport/decls.html#sect4.5.5)），所有隐式参数将从你的类型中特化出来，所以`let
+    mystery = ?x`将立即强制`?x`。即使你已经为你的隐式参数精心编写了类型，单型 Lambda 或函数也可能导致你的表达式变为单型化。如果通过`NoMonomorphismRestriction`禁用单型限制，推断算法将保留你的隐式参数，直到它们在一个特殊化的上下文中使用而没有隐式参数。
+    GHC 也试验性地使模式绑定单型化，可以通过`NoMonoPatBinds`进行调整。'
 - en: 'The story’s not complete, however: I’ve omitted `m2` and `m3`!'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，这个故事并没有完全结束：我忽略了`m2`和`m3`！
 - en: '[PRE7]'
+  id: totrans-35
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: 'But `m3` prints `3` not `2`! We’ve specified our full signature, as we were
     supposed to: what’s gone wrong?'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 但是`m3`打印的是`3`而不是`2`！我们已经指定了完整的签名，正如我们应该做的那样：出了什么问题？
 - en: 'The trouble is, the *moment* we try to use `m2` to pass it out of the inner
     scope back out to the outer scope, we force the implicit parameter, and the `m3`
     that emerges is nothing more than an `m3 :: Int`. Even if we try to specify that
     `m3` is supposed to take an implicit parameter `?x`, the parameter gets ignored.
     You can liken it to the following chain:'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: '麻烦的是，**一旦我们试图使用 `m2` 将其从内部作用域传递回外部作用域，我们强制隐式参数，并且出现的 `m3` 只不过是一个 `m3 :: Int`。即使我们尝试指定
+    `m3` 应该使用隐式参数 `?x`，该参数也会被忽略。你可以将其类比为以下链条：**'
 - en: '[PRE8]'
+  id: totrans-38
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: '`g` is monomorphic: no amount of coaxing will make `?x` unbound again.'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: '`g` 是单态的：再怎么劝说，`?x` 也不会再次未绑定。'
 - en: 'Our brief trip in Scheme-land, however, suggests a possible way to prevent
     `m2` from being used prematurely: put it in a thunk.'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们在 Scheme 世界的简短旅行中，然而，暗示了一种防止 `m2` 过早使用的可能方法：将其放在一个 thunk 中。
 - en: '[PRE9]'
+  id: totrans-41
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: But we find that when we run `f2 ()`, the signature goes monomorphic, once again
     too early. While in Scheme, creating a thunk worked because dynamic binding was
     intimately related to *execution model*, in Haskell, implicit parameters are ruled
     by the types, and the types are not right.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 但我们发现当我们运行 `f2 ()` 时，签名再次变成了单态，时间点太早了。虽然在 Scheme 中，创建一个 thunk 起作用是因为动态绑定与 *执行模型*
+    密切相关，但在 Haskell 中，隐式参数由类型控制，而类型却不对。
 - en: 'Dan Doel [discovered](http://hackage.haskell.org/trac/ghc/ticket/4226) that
     there is a way to make things work: move the `?x` constraint to the right hand
     side of the signature:'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: Dan Doel [发现](http://hackage.haskell.org/trac/ghc/ticket/4226) 有一种方法使事情工作：将
+    `?x` 约束移到签名的右侧：
 - en: '[PRE10]'
+  id: totrans-44
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: In the style of higher ranks, this is very brittle (the slightest touch, such
     as an `id` function, can cause the higher-rank to go away). Simon Peyton Jones
     was surprised by this behavior, so don’t get too attached to it.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 以高阶等级的风格来说，这非常脆弱（最微小的触碰，比如一个 `id` 函数，可能使高阶特性消失）。Simon Peyton Jones 对此行为感到惊讶，所以不要对它太过依赖。
 - en: Here is another way to get “true” dynamic binding, as well as a monadic interface
     that, in my opinion, makes bind time much clearer. It is patterned after Oleg’s
     [monadic regions](http://okmij.org/ftp/Haskell/regions.html).
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里有另一种获得“真正”动态绑定的方法，以及一个在我看来使绑定时机更加清晰的单子接口。它的模式是基于 Oleg 的 [单子区域](http://okmij.org/ftp/Haskell/regions.html)。
 - en: '[PRE11]'
+  id: totrans-47
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: 'This is a hybrid approach: every time we add a new parameter in the form of
     a `ReaderT` monad, we generate a “label” which will allow us to refer back to
     that monad (this is done by using the type of the label to lift our way back to
@@ -255,30 +363,44 @@
     in implicit parameters. There is then a custom `askl` function, which takes a
     label as an argument and returns the environment corresponding to that monad.
     The handle works even if you change the environment with `local`:'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是一种混合方法：每次我们以 `ReaderT` 单子的形式添加新参数时，我们生成一个“标签”，这个标签允许我们回到那个单子（通过使用标签的类型来提升我们回到原始单子的方式）。然而，不是通过词法传递标签，而是将它们塞进隐式参数中。然后有一个定制的
+    `askl` 函数，它以标签作为参数，并返回对应于那个单子的环境。即使你用 `local` 改变环境，这个处理也能正常工作：
 - en: '[PRE12]'
+  id: totrans-49
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: Explaining this mechanism in more detail might be the topic of another post;
     it’s quite handy and very lightweight.
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 更详细地解释这个机制可能是另一篇文章的主题；它非常方便且非常轻量级。
 - en: '*Conclusion.* If you plan on using implicit variables as nothing more than
     glorified static variables that happen to be changeable at runtime near the very
     top of your program, the monomorphism restriction is your friend. However, to
     be safe, force all your implicit parameters. You don’t need to worry about the
     difficulty of letting implicit variables escape through the output of a function.'
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: '*结论.* 如果你计划将隐式变量仅仅用作更接近程序顶部的可变静态变量，单态性限制是你的朋友。然而，为了安全起见，强制所有隐式参数。你不需要担心让隐式变量通过函数输出逃逸的困难。'
 - en: If you plan on using dynamic scoping for fancier things, you may be better off
     using [Oleg-style dynamic binding](http://okmij.org/ftp/Computation/dynamic-binding.html#DDBinding)
     and using implicit parameters as a convenient way to pass around labels.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你计划为更复杂的事情使用动态作用域，使用 [Oleg 风格的动态绑定](http://okmij.org/ftp/Computation/dynamic-binding.html#DDBinding)
+    并使用隐式参数作为传递标签的便捷方式可能更好。
 - en: '*Postscript.* Perhaps the fact that explaining the interaction of monomorphism
     and implicit parameters took so long may be an indication that advanced use of
     both may not be for the casual programmer.'
+  id: totrans-53
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '*后记.* 或许解释单态性和隐式参数交互如此久，可能表明对两者的高级使用可能并非普通程序员的菜。'

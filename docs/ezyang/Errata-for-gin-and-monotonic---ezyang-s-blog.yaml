@@ -1,77 +1,114 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:01'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:01'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Errata for gin and monotonic : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: “gin and monotonic”的勘误：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2010/12/errata-for-gin-and-monotonic/](http://blog.ezyang.com/2010/12/errata-for-gin-and-monotonic/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/12/errata-for-gin-and-monotonic/](http://blog.ezyang.com/2010/12/errata-for-gin-and-monotonic/)
 - en: Errata for gin and monotonic
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Errata for gin and monotonic
 - en: Between packing and hacking on GHC, I didn’t have enough time to cough up the
     next post of the series or edit the pictures for the previous post, so all you
     get today is a small errata post.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 在忙于 GHC 的打包和黑客之间，我没有足够的时间来准备系列的下一篇文章或编辑上一篇文章的图片，所以今天只有一个小勘误贴。
 - en: 'The full list diagram is missing some orderings: ★:⊥ ≤ ★:⊥:⊥ and so on.'
+  id: totrans-8
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 完全列表图表缺少一些排序：★:⊥ ≤ ★:⊥:⊥ 等等。
 - en: In usual denotational semantics, you can’t distinguish between ⊥ and `λ_.⊥`.
     However, as Anders Kaseorg and the Haskell Report point out, with `seq` you can
     distinguish them. This is perhaps the true reason why seq is a kind of nasty function.
     I’ve been assuming the stronger guarantee (which is what zygoloid pointed out)
     when it’s not actually true for Haskell.
+  id: totrans-9
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在通常的指称语义中，你无法区分 ⊥ 和 `λ_.⊥`。然而，正如 Anders Kaseorg 和 Haskell 报告指出的那样，使用 `seq` 你可以区分它们。这或许是为何
+    `seq` 是一种不好的函数的真正原因。我一直假设它有更强的保证（这是 zygoloid 指出的），但对于 Haskell 实际上并非如此。
 - en: The “ought to exist” arrow in the halts diagram goes the wrong direction.
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: “停滞”图表中的“应该存在”箭头方向错误。
 - en: In the same fashion of the full list diagram, `head` is missing some orderings,
     so in fact they gray blob is entirely connected. There are situations when we
     can have disconnected blobs, but not for a domain with only one maximum.
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在完全列表图表的相同方式中，`head` 缺少一些排序，因此实际上灰色的 blob 是完全连接的。在某些情况下，我们可以有断开的 blob，但对于只有一个最大值的域来说不行。
 - en: Obvious typo for fst.
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: fst 明显的拼写错误。
 - en: 'The formal partial order on functions was not defined correctly: it originally
     stated that for f ≤ g, f(x) = g(x); actually, it’s weaker than that: f(x) ≤ g(x).'
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 函数的正式偏序没有正确定义：最初它声明对于 f ≤ g，有 f(x) = g(x)；实际上，它比这弱：f(x) ≤ g(x)。
 - en: 'A non-erratum: the right-side of the head diagram is omitted because... adding
     all the arrows makes it look pretty ugly. Here is the sketch I did before I decided
     it wasn’t a good picture.'
+  id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 非勘误：头部图表的右侧被省略了，因为……添加所有箭头使其看起来相当难看。这是我在决定它不是一个好图之前所做的草图。
 - en: Thanks Anders Kaseorg, zygoloid, polux, and whoever pointed out the mistake
     in the partial order on functions (can’t find that correspondence now) for corrections.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 感谢 Anders Kaseorg、zygoloid、polux 和指出函数偏序错误的其他人（现在找不到那些信件了）的更正。
 - en: '*Non sequitur.* Here is a *really* simple polyvariadic function. The same basic
     idea is how Text.Printf works. May it help you in your multivariadic travels.'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: '*不合逻辑的推论*。这是一个*真的*很简单的多变函数。相同的基本思想是 Text.Printf 的工作原理。希望它能帮助你在多变的旅程中。'
 - en: '[PRE0]'
+  id: totrans-17
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'

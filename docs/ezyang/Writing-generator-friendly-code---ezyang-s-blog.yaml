@@ -1,49 +1,74 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:26'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:18:26
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Writing generator friendly code : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 编写生成器友好的代码：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2010/03/writing-generator-friendly-code/](http://blog.ezyang.com/2010/03/writing-generator-friendly-code/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/03/writing-generator-friendly-code/](http://blog.ezyang.com/2010/03/writing-generator-friendly-code/)
 - en: Writing generator friendly code
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 编写生成器友好的代码
 - en: I've come a long ways from [complaining to the html5lib list that the Python
     version gratuitously used generators, making it hard to port to PHP](http://www.mail-archive.com/html5lib-discuss@googlegroups.com/msg00241.html).
     Having now drunk the laziness kool-aid in Haskell, I enjoy trying to make my code
     fit the generator idiom. While Python generators have notable downsides compared
     to infinite lazy lists (for example, forking them for multiple use is nontrivial),
     they're pretty nice.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 我从[向html5lib列表抱怨Python版本过度使用生成器，导致难以移植到PHP](http://www.mail-archive.com/html5lib-discuss@googlegroups.com/msg00241.html)走了很远。
+    现在已经沉迷于Haskell的惰性编程，我喜欢尝试使我的代码符合生成器习惯。 虽然Python生成器与无限惰性列表相比有显著缺点（例如，将它们分叉以供多次使用并不简单），但它们非常不错。
 - en: Unfortunately, the majority of code I see that expects to see lists isn't robust
     enough to accept generators too, and it breaks my heart when I have to say `list(generator)`.
     I'll forgive you if you're expecting O(1) accesses of arbitrary indexes in your
     internal code, but all too often I see code that only needs sequential access,
     only to botch it all up by calling `len()`. Duck typing won't save you there.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 不幸的是，我看到的大多数期望看到列表的代码对生成器的接受程度不够高，当我不得不说`list(generator)`时，我很伤心。 如果你的内部代码期望O(1)访问任意索引，我会原谅你，但我经常看到的是只需要顺序访问却因为调用`len()`而搞砸一切。
+    鸭子类型在这种情况下救不了你。
 - en: 'The trick for making code generator friendly is simple: **use the iteration
     interface.** Don''t mutate the list. Don''t ask for arbitrary items. Don''t ask
     for the length. This also is a hint that `for range(0, len(l))` is *absolutely*
     the wrong way to traverse a list; if you need indices, use `enumerate`.'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 制作代码生成器友好的技巧很简单：**使用迭代接口。** 不要改变列表。 不要请求任意项。 不要请求长度。 这也是`for range(0, len(l))`是*绝对*错误遍历列表的提示；
+    如果你需要索引，请使用`enumerate`。
 - en: '**Update (September 1, 2012).** Hilariously enough, PHP has [finally gotten
     generators.](https://wiki.php.net/rfc/generators#vote)'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: '**更新（2012年9月1日）。** 令人发笑的是，PHP **终于引入了生成器**。'

@@ -1,26 +1,41 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:17:26'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:17:26
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Duality for Haskellers : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Haskeller 的对偶：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2012/10/duality-for-haskellers/](http://blog.ezyang.com/2012/10/duality-for-haskellers/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2012/10/duality-for-haskellers/](http://blog.ezyang.com/2012/10/duality-for-haskellers/)
 - en: '*This post is the spiritual predecessor to* [Flipping Burgers in coBurger King](http://blog.ezyang.com/2010/07/flipping-arrows-in-coburger-king/).'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: '*这篇文章是* [在 coBurger King 中翻转汉堡](http://blog.ezyang.com/2010/07/flipping-arrows-in-coburger-king/)
+    的精神前身。'
 - en: What does it mean for something to be *dual*? A category theorist would say,
     “It’s the same thing, but with all the arrows flipped around.” This answer seems
     frustratingly vague, but actually it’s quite precise. The only thing missing is
@@ -28,12 +43,17 @@
     dualize. In this post, I’d like to take a few structures that are well known to
     Haskellers, describe what the arrows for this structure look like, and then show
     that when we flip the arrows, we get a dual concept.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 什么是*对偶*？一个范畴论者会说，“它是相同的东西，只是所有箭头都反过来了。”这个答案似乎令人沮丧地模糊，但实际上它是相当精确的。唯一缺少的就是知道*哪些*箭头要反转！如果你知道这些箭头，那么你就知道如何对偶化。在这篇文章中，我想介绍一些对于
+    Haskeller 而言很好知道的结构，描述这些结构的箭头是什么样子的，然后展示当我们反转这些箭头时，我们得到了一个对偶的概念。
 - en: Products and sums
+  id: totrans-8
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 产品与总和
 - en: 'Suppose you have some data of the type `Either a b`. With all data, there are
     two fundamental operations we would like to perform on them: we’d like to be able
     to *construct* it and *destruct* it. The constructors of Either are the `Left
@@ -41,43 +61,64 @@
     of destructor might be `either :: (a -> r) -> (b -> r) -> Either a b -> r` (case
     analysis, where the first argument is the Left case, and the second argument is
     the Right case). Let’s draw a diagram:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: '假设你有一些类型为 `Either a b` 的数据。对于所有的数据，我们希望能够执行两个基本操作：我们想能够*构造*它和*解构*它。Either 的构造函数是
+    `Left :: a -> Either a b` 和 `Right :: b -> Either a b`，而一个合理的解构函数选择可能是 `either
+    :: (a -> r) -> (b -> r) -> Either a b -> r`（情况分析，其中第一个参数是左侧情况，第二个参数是右侧情况）。让我们画个图：'
 - en: 'I’ve added in two extra arrows: the represent the fact that `either f g . Left
     == f` and `either f g . Right == g`; these equations in some sense characterize
     the relationship between the constructor and destructor.'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 我添加了两个额外的箭头：它们表示 `either f g . Left == f` 和 `either f g . Right == g`；这些方程在某种意义上表征了构造函数和解构函数之间的关系。
 - en: 'OK, so what happens when we flip these arrows around? The title of this section
     has given it away, but let’s look at it:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 好的，那么当我们反转这些箭头时会发生什么？这一节的标题已经透露了答案，但让我们来看看：
 - en: 'Some of these arrows are pretty easy to explain. What used to be our constructors
     (`Left` and `Right`) are now our *destructors* (`fst` and `snd`). But what of
     f and g and our new constructor? In fact, `\x -> (f x, g x)` is in some sense
     a *generalized constructor* for pairs, since if we set `f = const a` and `g =
     const b` we can easily get a traditional constructor for a pair (where the specification
     of the pair itself is the arrow—a little surprising, when you first see it):'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些箭头中的一些很容易解释。曾经是我们的构造函数（`Left` 和 `Right`）现在是我们的*解构函数*（`fst` 和 `snd`）。但是 f 和
+    g 以及我们的新构造函数呢？实际上，`\x -> (f x, g x)` 在某种意义上是对于成对值的*广义构造函数*，因为如果我们设置 `f = const
+    a` 和 `g = const b`，我们可以轻松地获得成对值的传统构造函数（其中成对值的规范本身是箭头——当你第一次看到它时会有点惊讶）：
 - en: So, sums and products are dual to each other. For this reason, sums are often
     called *coproducts*.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，总和和乘积在彼此之间是对偶的。因此，总和经常被称为*余积*。
 - en: (Keen readers may have noticed that this presentation is backwards. This is
     mostly to avoid introducing `\x -> (f x, g x)`, which seemingly comes out of nowhere.)
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: （敏锐的读者可能已经注意到这个演示是颠倒的。这主要是为了避免引入似乎突如其来的 `\x -> (f x, g x)`。）
 - en: Top and bottom
+  id: totrans-15
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 顶部和底部
 - en: 'The unit type (referred to as top) and the bottom type (with no inhabitants)
     exhibit a duality between one another. We can see this as follows: for any Haskell
     type, I can trivially construct a function which takes a value of that type and
     produces unit; it’s `const ()`:'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 单元类型（称为顶）和底类型（没有元素的类型）在彼此之间表现出对偶关系。我们可以这样看待：对于任何 Haskell 类型，我都可以轻松地构造一个函数，它接受该类型的值并产生单元；它是
+    `const ()`：
 - en: 'Furthermore, ignoring laziness, this is the *only* function which does this
     trick: it’s unique. Let’s flip these arrows around: does there exist a type A
     for which for any type B, there exists a function `A -> B`? At first glance, this
@@ -85,13 +126,18 @@
     which case we’d be hard pressed to produce anything of the appropriate value.
     But wait: if A is uninhabited, then I don’t have to do anything: it’s impossible
     for the function to be invoked!'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，忽略惰性计算，这是唯一可以完成这一技巧的*函数*：它是唯一的。让我们反转这些箭头：是否存在一种类型 A，对于任何类型 B，都存在一个函数 `A ->
+    B`？乍一看，这似乎是不可能的。B 可以是任何东西，包括一个不可居住的类型，在这种情况下，我们很难生成适当值。但等等：如果 A 是不可居住的，那么我什么也不用做：函数不可能被调用！
 - en: Thus, top and bottom are dual to one another. In fact, they correspond to the
     concepts of a *terminal object* and an *initial object* (respectively) in the
     category **Hask**.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，**上**和**下**相互对偶。实际上，它们对应于类别**Hask**中的*终端对象*和*初始对象*的概念（分别）。
 - en: 'One important note about terminal objects: is `Int` a terminal object? It is
     certainly true that there are functions which have the type `forall a. a -> Int`
     (e.g. `const 2`). However, this function is not unique: there''s `const 0`, `const
@@ -99,43 +145,63 @@
     theorem that states that all terminal objects are isomorphic to one another (dualized:
     all initial objects are isomorphic to one another), and `Int` and `()` are very
     obviously not isomorphic!'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 关于终端对象的一个重要说明：`Int` 是一个终端对象吗？可以肯定的是，有些函数的类型为 `forall a. a -> Int`（例如 `const
+    2`）。然而，这个函数并不唯一：还有 `const 0`，`const 1` 等。因此，`Int` 不是终端对象。也有很好的理由：有一个易于证明的定理表明所有终端对象彼此同构（对偶地：所有初始对象彼此同构），而
+    `Int` 和 `()` 显然不是同构的！
 - en: Folds and unfolds
+  id: totrans-20
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 折叠和展开
 - en: One of the most important components of a functional programming language is
     the recursive data structure (also known as the inductive data structure). There
     are many ways to operate on this *data*, but one of the simplest and most well
     studied is the fold, possibly the simplest form a recursion one can use.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 函数式编程语言中最重要的组成部分之一是递归数据结构（也称为归纳数据结构）。有许多方法可以操作这些*数据*，但其中最简单且最广为人知的是折叠，可能是可以使用的最简单的递归形式之一。
 - en: 'The diagram for a fold is a bit involved, so we’ll derive it from scratch by
     thinking about the most common fold known to functional programmers, the fold
     on lists:'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 折叠的图表稍微复杂一些，所以我们将从头开始推导，思考函数式程序员最常见的折叠，即列表的折叠：
 - en: '[PRE0]'
+  id: totrans-23
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'The first two arguments “define” the fold, while the third argument simply
     provides the list to actually fold over. We could try to draw a diagram immediately:'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 前两个参数“定义”了折叠，而第三个参数只是提供了实际要折叠的列表。我们可以尝试立即绘制一个图表：
 - en: 'But we run into a little bit of trouble: our diagram is a bit boring, mostly
     because the pair `(a -> r -> r, r)` doesn’t really have any good interpretation
     as an arrow. So what are we to do? What we’d really like is a single function
     which encodes all of the information that our pair originally encoded.'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 但是我们遇到了一点小麻烦：我们的图表有点无聊，主要是因为对偶 `(a -> r -> r, r)` 并没有一个好的解释作为箭头。那么我们该怎么办呢？我们真正想要的是一个单一的函数，它能编码我们最初编码的所有信息。
 - en: 'Well, here’s one: `g :: Maybe (a, r) -> r`. Supposing we originally had the
     pair `(f, z)`, then define `g` to be the following:'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: '好吧，这里有一个例子：`g :: Maybe (a, r) -> r`。假设我们最初有一对 `(f, z)`，然后定义 `g` 如下：'
 - en: '[PRE1]'
+  id: totrans-27
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'Intuitively, we’ve jammed the folding function and the initial value into one
     function by replacing the input argument with a sum type. To run `f`, we pass
     a `Just`; to get `z`, we pass a `Nothing`. Generalizing a bit, any fold function
@@ -146,59 +212,93 @@
     a r | NilF`. Compared to our original `List` definition (`Cons a (List a) | Nil`),
     it’s identical, but with all the recursive occurrences of `List a` replaced with
     `r`.'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: '直观地说，我们通过用一个和类型替换输入参数将折叠函数和初始值合并为一个函数。为了运行 `f`，我们传递一个 `Just`；为了获取 `z`，我们传递一个
+    `Nothing`。稍微概括一下，任何折叠函数都可以通过一个函数 `g :: F a r -> r` 来指定，其中 `F a` 是适合问题中的数据类型的函子（在列表的情况下，`type
+    F a r = Maybe (a, r)`）。我们重复使用 `Maybe`，这样我们就不必定义一个新的数据类型，但我们可以更有启发性地重命名 `Just`
+    和 `Nothing`，作为 `data ListF a r = ConsF a r | NilF`。与我们原始的 `List` 定义 (`Cons a (List
+    a) | Nil`) 相比，它是相同的，但所有递归出现的 `List a` 都用 `r` 替换了。'
 - en: 'With this definition in hand, we can build out our diagram a bit more:'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 有了这个定义，我们可以更详细地构建我们的图表：
 - en: 'The last step is to somehow relate `List a` and `ListF a r`. Remember how `ListF`
     looks a lot like `List`, just with `r` replacing `List a`. So what if we had `ListF
     a (List a)`—literally substituting `List a` back into the functor. We’d expect
     this to be related to `List a`, and indeed there’s a simple, unique function which
     converts one to the other:'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后一步是以某种方式关联 `List a` 和 `ListF a r`。记得 `ListF` 看起来很像 `List`，只是用 `r` 替换了 `List
+    a`。所以如果我们有 `ListF a (List a)` —— 简单地将 `List a` 替换回函子中。我们预计这与 `List a` 有关系，确实有一个简单而独特的函数可以将一个转换为另一个：
 - en: '[PRE2]'
+  id: totrans-31
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'There’s one last piece to the puzzle: how do we convert from `ListF a (List
     a)` to `ListF a r`? Well, we already have a function `fold g :: List a -> r`,
     so all we need to do is lift it up with `fmap`.'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: '谜题的最后一块是：我们如何从 `ListF a (List a)` 转换到 `ListF a r`？嗯，我们已经有一个函数 `fold g :: List
+    a -> r`，所以我们需要做的就是用 `fmap` 将其提升起来。'
 - en: We have a commuting diagram, and require that `g . fmap (fold g) = fold g .
     in`.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们有一个交换图表，并要求 `g . fmap (fold g) = fold g . in`。
 - en: 'All that’s left now is to generalize. In general, `ListF` and `List` are related
     using little trick called the `Mu` operator, defined `data Mu f = Mu (f (Mu f))`.
     `Mu (ListF a)` is isomorphic to `List a`; intuitively, it replaces all instances
     of `r` with the data structure you are defining. So in general, the diagram looks
     like this:'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在剩下的就是泛化了。一般来说，`ListF` 和 `List` 使用一个叫做 `Mu` 的小技巧相关联，定义为 `data Mu f = Mu (f
+    (Mu f))`。`Mu (ListF a)` 和 `List a` 是同构的；直观地说，它用所定义的数据结构替换了所有的 `r`。所以一般来说，图表看起来像这样：
 - en: Now that all of these preliminaries are out of the way, let’s dualize!
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在所有这些初步工作都已经完成，让我们来对偶化！
 - en: 'If we take a peek at the definition of unfold in Prelude: `unfold :: (b ->
     Maybe (a, b)) -> b -> [a]`; the `Maybe (a, b)` is exactly our `ListF`!'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: '如果我们来看一下 Prelude 中 unfold 的定义：`unfold :: (b -> Maybe (a, b)) -> b -> [a]`；那么
+    `Maybe (a, b)` 正好对应我们的 `ListF`！'
 - en: 'The story here is quite similar to the story of sums and products: in the recursive
     world, we were primarily concerned with how to *destruct* data. In the corecursive
     world, we are primarily concerned with how to *construct* data: `g :: r -> F r`,
     which now tells us how to go from `r` into a larger `Mu F`.'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: '这里的情况与和积的故事非常相似：在递归世界中，我们主要关注如何 *析构* 数据。在核递归世界中，我们主要关注如何 *构造* 数据：`g :: r ->
+    F r`，现在告诉我们如何从 `r` 进入更大的 `Mu F`。'
 - en: Conclusion
+  id: totrans-38
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 结论
 - en: Dualization is an elegant mathematical concept which shows up everywhere, once
     you know where to look for it! Furthermore, it is quite nice from the perspective
     of a category theorist, because when you know two concepts are dual, all the theorems
     you have on one side flip over to the other side, for free! (This is because all
     of the fundamental concepts in category theory can be dualized.) If you’re interested
     in finding out more, I recommend [Dan Piponi’s article on data and codata](http://blog.sigfpe.com/2007/07/data-and-codata.html).
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 对偶化是一个优雅的数学概念，在你知道去哪里找到它后，它就随处可见！此外，从范畴论学家的角度来看，它非常好，因为当你知道两个概念是对偶的时候，你所拥有的所有定理都会自动翻转到另一侧！（这是因为范畴论中的所有基本概念都可以对偶化。）如果你有兴趣了解更多信息，我建议阅读
+    [Dan Piponi 关于数据和余数据的文章](http://blog.sigfpe.com/2007/07/data-and-codata.html)。

@@ -1,47 +1,70 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:18'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:18'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'OPLSS lecture notes : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: OPLSS 讲座笔记：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2013/07/oplss-lecture-notes/](http://blog.ezyang.com/2013/07/oplss-lecture-notes/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2013/07/oplss-lecture-notes/](http://blog.ezyang.com/2013/07/oplss-lecture-notes/)
 - en: OPLSS lecture notes
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: OPLSS 讲座笔记
 - en: I write in from sunny Oregon, where the sun floods into your room at seven in
     the morning and the [Oregon Programming Languages Summer School](http://www.cs.uoregon.edu/research/summerschool/summer13/index.html)
     is in session. So far, it’s been a blast—with lectures covering Coq, Agda, homotopy
     type theory, linear logic, logical relations—and we’ve still got another week
     to go!
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 我从阳光明媚的俄勒冈写信过来，早上七点阳光洒进你的房间，而[俄勒冈编程语言暑期学校](http://www.cs.uoregon.edu/research/summerschool/summer13/index.html)正在进行中。到目前为止，一切进展顺利——讲座涵盖了Coq、Agda、同伦类型论、线性逻辑、逻辑关系等内容，我们还有一周的时间！
 - en: 'If you were not able to make it, fear not: you can go to the [curriculum](http://www.cs.uoregon.edu/research/summerschool/summer13/curriculum.html)
     page and pick up not only videos (I hear they are still quite large; we’ve been
     trying to convince the organizers to upload them to YouTube) but **lecture notes**
     from yours truly. ([Sample from the logical relations lectures](http://www.cs.uoregon.edu/research/summerschool/summer13/lectures/ahmed-1.pdf).)
     The earlier notes are a little iffy, but I get a bit more detailed on the later
     ones.'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你未能参加，不要担心：你可以访问[课程表](http://www.cs.uoregon.edu/research/summerschool/summer13/curriculum.html)页面，不仅可以获取视频（听说它们仍然相当庞大；我们一直在努力说服组织者将它们上传到
+    YouTube），还可以获取本人的**讲座笔记**。([逻辑关系讲座的样例](http://www.cs.uoregon.edu/research/summerschool/summer13/lectures/ahmed-1.pdf)。)
+    早期的笔记可能有些问题，但我在后来的笔记中详细了一些。
 - en: 'One technical note: I have heard that some folks on Macs are having trouble
     viewing the PDFs on the default PDF viewers; the text doesn’t show up. I have
     also heard that Chrome’s PDF viewer as well as Acrobat Reader are able to read
     the PDFs. Whatever the problem is, it is likely some trouble with Xournal’s PDF
     export functionality. If someone has a method of fixing this without losing metadata
     (e.g. the ability to copy/paste the text), I’d be all ears.'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 技术说明：我听说一些使用 Mac 的朋友在默认的 PDF 阅读器上无法查看 PDF 文档，文字不显示。我也听说 Chrome 的 PDF 阅读器以及 Acrobat
+    Reader 能够正常阅读这些 PDF 文档。无论问题出在何处，可能是 Xournal 的 PDF 导出功能出了些问题。如果有人有办法在不丢失元数据的情况下解决这个问题（例如能够复制/粘贴文本的功能），我将拭目以待。

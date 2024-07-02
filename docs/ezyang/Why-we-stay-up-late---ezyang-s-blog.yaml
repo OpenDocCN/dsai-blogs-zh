@@ -1,27 +1,42 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:27'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:27'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Why we stay up late : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '[为什么我们熬夜](http://blog.ezyang.com/2010/02/why-mit-students-stay-up-late/) :
+    ezyang的博客'
 - en: 来源：[http://blog.ezyang.com/2010/02/why-mit-students-stay-up-late/](http://blog.ezyang.com/2010/02/why-mit-students-stay-up-late/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/02/why-mit-students-stay-up-late/](http://blog.ezyang.com/2010/02/why-mit-students-stay-up-late/)
 - en: Why we stay up late
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 为什么我们熬夜
 - en: 'I was having a discussion a few nights ago about *attention*, and someone mentioned
     the fact that [contiguous blocks of time are precious](http://www.paulgraham.com/makersschedule.html).
     It''s obvious once it''s been pointed out to you, and with it in mind I''ve noticed
@@ -31,8 +46,10 @@
     into the "more than an hour, preferably several hours" time bucket. I''ve recognized
     that attempting to tackle the "more than an hour" bucket in the snatches of time
     between classes and extracurriculars is simply wasteful.'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 几晚前我在讨论*注意力*时，有人提到了[连续时间块的珍贵](http://www.paulgraham.com/makersschedule.html)这个事实。一旦有人指出，这显而易见，我就注意到我的倾向将有用的活动分成不同的类别：查邮件、阅读新闻源和简单任务归入“不到一小时”时间段，而真正创造软件、解决难题或阅读代码则属于“一小时以上，最好是几个小时”的时间段。我意识到，在课间和课外活动之间抓住“一小时以上”时间段，简直是在浪费时间。
 - en: 'But unlike the programmer working a day job that Paul Graham describes in his
     essay, I am a college student. I mostly don''t do my work during the day; that''s
     the time to imbibe information from lectures and recitations. In particular, I''m
@@ -43,13 +60,17 @@
     something else on someone else''s schedule. And throw in orchestra rehearsal from
     7:30-10PM or small ensemble rehearsal from 5-7PM or SIPB meetings from 7:30-8:30PM
     and you''ve got a recipe for fragmentation.'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 但与Paul Graham在他的文章中描述的白天工作的程序员不同，我是一名大学生。我大部分时间不在白天做事；那是从讲座和课外讲解中吸取信息的时间。特别是，我是麻省理工学院的学生，这意味着没有5点“哦，是时候回家放松了”的时期；这是全天候工作（你只能在空闲时刻进行拖延的飞行来获得宝贵的解脱感。）我的早晨和晚上被会议*充斥*着：它们要求我在别人的时间表上物理上重新定位自己并注意别的事情。加上从7:30-10PM的管弦乐排练或从5-7PM的小合奏排练或从7:30-8:30PM的SIPB会议，你就得到了一个碎片化的配方。
 - en: 'When can you get that uninterrupted time? Only late at night, because when
     you are working on that problem set at two in the morning, there is one good thing:
     no one has scheduled a meeting at 2:30 AM. And while it''s definitely a shame
     that these benefits may be outweighed by the intoxication of sleep deprivation,
     you''re not going to find this sort of contiguous block of time anywhere else.
     And that''s why we stay up late.'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 你什么时候才能得到那段不间断的时间呢？只有深夜，因为当你在凌晨两点做题时，有一件好事：没有人安排在凌晨2:30开会。虽然显然这些好处可能被睡眠剥夺的醉人效应所抵消，但你在其他地方找不到这样的连续时间块。这就是为什么我们熬夜。

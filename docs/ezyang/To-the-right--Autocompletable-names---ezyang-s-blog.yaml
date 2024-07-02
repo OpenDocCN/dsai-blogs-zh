@@ -1,59 +1,87 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:29'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:29'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'To the right! Autocompletable names : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 向右！可自动完成的名称：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2010/01/to-the-right-autocompletable-names/](http://blog.ezyang.com/2010/01/to-the-right-autocompletable-names/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/01/to-the-right-autocompletable-names/](http://blog.ezyang.com/2010/01/to-the-right-autocompletable-names/)
 - en: To the right! Autocompletable names
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 向右！可自动完成的名称
 - en: 'In my younger days, the stylistic convention of MM/DD/YYYY confused me; why
     on earth would people opt for such an illogical system that placed months, days
     and years in non-hierarchical order? Surely something on order of YYYY-MM-DD would
     make far more sense: this format is sortable and, all-in-all, quite logical.'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我年轻的时候，MM/DD/YYYY的风格约定曾经让我困惑；为什么人们会选择这样一个不合逻辑的系统，将月份、日期和年份放在非层次化的顺序中？显然像YYYY-MM-DD这样的顺序会更合理：这种格式可以排序，总体来说相当合理。
 - en: Eventually, though, I grudgingly accepted that MM/DD/YYYY, trades machine-friendliness
     for human-friendliness; after all, the year entry rarely changes, and for humans
     the month and date are the most important pieces of information. Context is usually
     more than enough to implicity specify what the year is.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 不过，最终我不情愿地接受了MM/DD/YYYY，它为了人性化牺牲了机器友好性；毕竟，年份条目很少改变，对人类来说，月份和日期是最重要的信息。通常情况下，上下文足以隐含地指定年份是多少。
 - en: 'But as a auto-complete user, I''ve come to appreciate that this sort of ordering
     can come in handy even when computers are involved. Consider the hierarchically
     named and non-hierarchally named list of files:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 但作为一个自动完成用户，我已经意识到，即使涉及计算机时，这种排序方式也能派上用场。考虑一下按层次命名和非按层次命名的文件列表：
 - en: '[PRE0]'
+  id: totrans-10
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: In the hierarchal case, to auto-complete `test-algorithms.sh`, I need to type
     `t<tab>a<tab>`; a total of four keystrokes. In the non-hierarchal case, however,
     I only need to type `a<tab>`. If I'm frequently accessing these files, the extra
     keystrokes add up.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 在层次化情况下，要自动完成`test-algorithms.sh`，我需要输入`t<tab>a<tab>`；总共四个按键。然而，在非层次化情况下，我只需要输入`a<tab>`。如果我经常访问这些文件，额外的按键会累积起来。
 - en: 'So here''s my plea: the next time you''re coming up with a naming convention
     for files you''re sticking in a directory, consider both moving the "category"
     component to the end, and thinking of autocomplete friendly names. Your fingers
     will thank you for it.'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，我提出一个请求：下次你考虑为存放在目录中的文件制定命名规范时，请考虑将“category”组件移动到末尾，并考虑友好的自动完成名称。你的手指会感谢你的这一举措。
 - en: (Hat-tip to GameTeX for showing me the light.)
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: （感谢GameTeX给我指引。）

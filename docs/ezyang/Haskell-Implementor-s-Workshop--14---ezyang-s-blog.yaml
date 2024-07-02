@@ -1,42 +1,63 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:11'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:11'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Haskell Implementor’s Workshop ’14 : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 'Haskell Implementor’s Workshop ’14 : ezyang的博客'
 - en: 来源：[http://blog.ezyang.com/2014/09/haskell-implementors-workshop-14/](http://blog.ezyang.com/2014/09/haskell-implementors-workshop-14/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2014/09/haskell-implementors-workshop-14/](http://blog.ezyang.com/2014/09/haskell-implementors-workshop-14/)
 - en: Haskell Implementor’s Workshop ’14
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Haskell Implementor’s Workshop ’14
 - en: This year at ICFP, we had some blockbuster attendance to the [Haskell Implementor's
     Workshop](http://www.haskell.org/haskellwiki/HaskellImplementorsWorkshop/2014)
     (at times, it was standing room only). I had the pleasure of presenting the work
     I had done over the summer on Backpack.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 今年在ICFP上，我们对[Haskell实现者工作坊](http://www.haskell.org/haskellwiki/HaskellImplementorsWorkshop/2014)的参与人数非常多（有时甚至是站立空间不足）。我很荣幸能够介绍我在夏季关于Backpack的工作。
 - en: You can [grab the slides](http://web.mit.edu/~ezyang/Public/hiw14-backpack-slides.pdf)
     or [view the presentation itself](https://www.youtube.com/watch?v=0dF9zuwTSTc)
     (thank you ICFP organizers for being incredibly on-the-ball with videos this year!)
     The talk intersects a little bit with my blog post [A taste of Cabalized Backpack](http://blog.ezyang.com/2014/08/a-taste-of-cabalized-backpack/),
     but there are more pictures, and I also emphasize (perhaps a little too much)
     the long term direction we are headed in.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可以[获取幻灯片](http://web.mit.edu/~ezyang/Public/hiw14-backpack-slides.pdf)或者[观看演示本身](https://www.youtube.com/watch?v=0dF9zuwTSTc)（感谢ICFP组织者今年在视频上的高效率！）这次讲座在某种程度上与我的博文[A
+    taste of Cabalized Backpack](http://blog.ezyang.com/2014/08/a-taste-of-cabalized-backpack/)有交集，但有更多图片，并且我也强调了我们未来发展的长期方向（也许有点过头了）。
 - en: 'There were a lot of really nice talks at HiW. Here are some of my personal
     highlights:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: HiW上有很多非常好的讲座。以下是我个人的一些亮点：

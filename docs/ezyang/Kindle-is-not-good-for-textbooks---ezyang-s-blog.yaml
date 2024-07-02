@@ -1,57 +1,82 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:21'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:21'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Kindle is not good for textbooks : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Kindle 不适合教科书：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2013/04/kindle-is-not-good-for-textbooks/](http://blog.ezyang.com/2013/04/kindle-is-not-good-for-textbooks/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2013/04/kindle-is-not-good-for-textbooks/](http://blog.ezyang.com/2013/04/kindle-is-not-good-for-textbooks/)
 - en: Kindle is not good for textbooks
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Kindle 不适合教科书阅读
 - en: 'Having attempted to read a few textbooks on my Kindle, I have solemnly concluded
     that the Kindle is in fact a terrible device for reading textbooks. The fundamental
     problem is that, due to technological limitations, the Kindle is optimized for
     *sequential* reading. This can be seen in many aspects:'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我的 Kindle 上尝试阅读了几本教科书后，我郑重其事地得出结论，事实上 Kindle 对于阅读教科书来说是一个非常糟糕的设备。根本问题在于，由于技术限制，Kindle
+    主要优化了*顺序*阅读。这可以从许多方面看出：
 - en: Flipping a page in the Kindle is not instantaneous (I don't have a good setup
     to time how long the screen refresh takes, but there is definitely a perceptible
     lag before when you swipe, and when the Kindle successfully redraws the screen—and
     it’s even worse if you try to flip backwards).
+  id: totrans-8
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在 Kindle 上翻页不是即时的（我没有一个良好的设置来计算屏幕刷新需要多长时间，但确实在你滑动时有可感知的延迟，在 Kindle 成功重新绘制屏幕之间有明显的延迟—如果你尝试往回翻更糟）。
 - en: Rapidly flipping through pages in order to scan for a visual feature compounds
     the delay problem.
+  id: totrans-9
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 为了扫描视觉特征而快速翻页，加剧了延迟问题。
 - en: There is no way to take the “finger” approach to random access (i.e. wedge your
     finger between two pages to rapidly switch between them); jumping between bookmarks
     requires *four* presses with the current Kindle interface!
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 无法采用“指头”方法进行随机访问（即用手指夹在两页之间以快速切换）；使用当前的 Kindle 界面在书签之间跳转需要*四次*按键！
 - en: The screen size of the Kindle is dramatically smaller than that of an average
     textbook, which reduces the amount of information content that can be placed on
     one screen and further exacerbates slow page turns.
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Kindle 的屏幕尺寸显著小于普通教科书的尺寸，这导致在一个屏幕上显示的信息量减少，并进一步加剧了翻页的缓慢问题。
 - en: A textbook cannot be read as a light novel. So, while the Kindle offers the
     tantalizing possibility of carrying a stack of textbooks with you everywhere,
     in fact, you’re better off getting the actual dead tree version if you’re planning
@@ -59,5 +84,7 @@
     not useful; in fact, having a searchable textbook on your laptop is seriously
     awesome—but this is when you’re using the textbook as a reference material, and
     *not* when you’re trying to actually learn the material.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 教科书不能像轻小说那样阅读。因此，虽然 Kindle 提供了随身携带一堆教科书的诱人可能性，但实际上，如果你打算从中认真学习，最好还是获得实体版本。这并不是说电子教科书没有用；事实上，在笔记本电脑上拥有可搜索的教科书确实非常棒—但这是当你把教科书作为参考资料使用时，并*不*是当你试图真正学习材料时。

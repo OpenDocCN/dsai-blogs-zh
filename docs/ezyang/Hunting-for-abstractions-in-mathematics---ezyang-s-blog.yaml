@@ -1,83 +1,118 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:24'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:24'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Hunting for abstractions in mathematics : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 寻找数学中的抽象：[ezyang's 博客](http://blog.ezyang.com/2010/03/abstractions-in-mathematics/)
 - en: 来源：[http://blog.ezyang.com/2010/03/abstractions-in-mathematics/](http://blog.ezyang.com/2010/03/abstractions-in-mathematics/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/03/abstractions-in-mathematics/](http://blog.ezyang.com/2010/03/abstractions-in-mathematics/)
 - en: '**Abstraction** (n.) The act or process of separating in thought, of considering
     a thing independently of its associations; or a substance independently of its
     attributes; or an attribute or quality independently of the substance to which
     it belongs. (Oxford English Dictionary)'
+  id: totrans-6
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '**抽象**（名词）思想上的分离或独立考虑某物，不考虑其关联；或独立考虑某物质，不考虑其属性；或独立考虑某属性或质量，不考虑其隶属的物质。 （牛津英语词典）'
 - en: 'Abstraction is one of the most powerful beasts in the landscape of programming,
     but it is also one of the most elusive to capture. The places where abstraction
     may be found are many:'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 抽象是编程领域中最强大的工具之一，但也是最难捉摸的。可能找到抽象的地方有很多：
 - en: '*Good artists copy. Great artists steal.* Abstractions that other people have
     (re)discovered, (re)used and (re)implemented are by far the easiest to find.'
+  id: totrans-8
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*优秀的艺术家模仿。伟大的艺术家偷窃。* 其他人发现（重新）使用和（重新）实现的抽象远比其他方式更容易找到。'
 - en: '*First time you do something, just do it. Second time, wince at duplication.
     Third time, you refactor.* Refactoring introduces small pieces of ad hoc abstraction.
     The quality varies though: the result might be something deeper, but it might
     just be mundane code reuse.'
+  id: totrans-9
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*第一次做某事，只要去做。第二次，对重复感到不悦。第三次，进行重构。* 重构引入了小片段的临时抽象。质量各异：结果可能更深刻，但也可能只是平庸的代码复用。'
 - en: '*Grow your framework.* A lengthy process where you build the abstraction and
     the application, build another distinct application on the abstraction, and reconcile.
     This takes a lot of time, and is entirely dependent on people''s willingness to
     break BC and make sweeping changes.'
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*Grow your framework.* 一个漫长的过程，你在其中建立抽象和应用，为抽象构建另一个独特的应用，并进行调和。这需要很多时间，完全依赖于人们愿意打破
+    BC（向后兼容性）并进行全面变革。'
 - en: '*Give the problem to a really smart person.* Design is a creative process,
     [design by committee](http://en.wikipedia.org/wiki/Design_by_committee) results
     in moldy code. A single person unifies the abstraction and picks the battles to
     fight when an abstraction needs to change.'
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*把问题交给一个真正聪明的人。* 设计是一个创造性的过程，[委员会设计](http://en.wikipedia.org/wiki/Design_by_committee)会导致过时的代码。一个人统一了抽象并选择在抽象需要改变时要争论的问题。'
 - en: '*Turn to nature.* User interfaces often introduce a form of abstraction, and
     it''s common to turn to real life and see what''s there. Note that there are really
     good abstractions that don''t exist in real-life: the concept of undo is positively
     ridiculous in the real world, but probably one of the best inventions in computers.'
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*转向自然。* 用户界面经常引入一种形式的抽象，通常会转向现实生活并看看那里有什么。请注意，有些非常好的抽象在现实生活中是不存在的：撤销的概念在现实世界中完全荒谬，但可能是计算机中最好的发明之一。'
 - en: 'I''d like to propose one other place to turn when you''re hunting for abstractions:
     pure mathematics.'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 我想提出另一个在寻找抽象时可以转向的地方：纯数学。
 - en: '*"Pure mathematics?"*'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: '*"纯数学？"*'
 - en: Yes, pure mathematics. Not applied mathematics, which easily finds its place
     in a programmers toolbox for tackling specific classes of problems.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 是的，纯数学。不是应用数学，后者很容易在程序员工具箱中找到用于解决特定类别的问题。
 - en: '*"Ok, mathematicians may do neat things... but they''re too theoretical for
     my taste."*'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: '*"好吧，数学家可能会做出巧妙的事情... 但他们对我来说太理论化了。"*'
 - en: 'But that''s precisely what we''re looking for! Pure mathematics is all about
     manipulating abstract objects and deductively proving properties about them. The
     mathematicians aren''t talking about a different kind of abstraction, they''re
@@ -90,15 +125,19 @@
     for abstracting concepts way beyond what any "normal" person would tolerate: Lewis
     Carroll is one prominent figure known for satirizing what he saw as ridiculous
     ideas in mid-19th century mathematics.'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 但这正是我们正在寻找的！纯数学就是关于操纵抽象对象并通过演绎推证它们的性质。数学家们并不谈论一种不同类型的抽象，他们只是从程序员可能选择的不同具体对象开始。数学家在这方面做得比程序员更久（将时间设定在公元前约600年的希腊人）。在这段时间里，数学家们已经非常擅长创造抽象、处理抽象、推断抽象的性质、找到抽象之间的关系等等。事实上，他们非常擅长将概念抽象化，超出了任何“正常”人所能忍受的范围：刘易斯·卡罗尔就因讽刺19世纪中期数学中他认为荒谬的想法而闻名。
 - en: Of course, you can't take an arbitrary mathematical concept and attempt to shoehorn
     it into your favorite programming language. The very first step is looking at
     some abstract object and looking for concrete instances of that object that programmers
     care about. Even structures that have obvious concrete instances have more subtle
     instances that are just as useful.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 当然，你不能拿一个任意的数学概念，试图把它塞进你喜欢的编程语言中。第一步是看一些抽象对象，并寻找程序员关心的具体实例。即使是具有明显具体实例的结构也有更微妙的实例，它们同样有用。
 - en: 'It is also the case that many powerful mathematical abstractions are also unintuitive.
     Programmers naturally shy away from unintuitive ideas: it is an example of being
     overly clever. The question of what is intuitive has shaped discussions in mathematics
@@ -112,20 +151,27 @@
     regarding the undecidability of halting problems. The Turing machine is much simpler
     to understand; it maps more cleanly to the mental model of a mathematician furiously
     scribbling away a computation.'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 同样，许多强大的数学抽象也是不直观的。程序员自然会避开不直观的想法：这是过于聪明的一个例子。直觉性是数学讨论的一个塑造因素：在可计算性理论发展时，有许多竞争的计算模型争夺计算机科学家的注意力。阿隆佐·邱奇创立了λ演算，这是一种高度象征性和抽象的计算概念；艾伦·图灵创立了图灵机，这是一种非常物理和具体的计算概念。在教学中，图灵机占了上风：打开任何介绍性的可计算性教科书（比如我的情况下，[Sipser's](http://www.amazon.com/Introduction-Theory-Computation-Michael-Sipser/dp/053494728X)
+    教科书），你只会看到图灵机被用来讲述关于停机问题不可判定性的经典证明。图灵机更容易理解；它更干净地映射到数学家急切地进行计算的心理模型。
 - en: But no computer scientist (and certainly not Alonzo Church) would claim that
     Turing machines are the only useful model to study. Lambda calculus is elegant;
     after you've wrapped your head around it, you can express ideas and operations
     concisely which, with Turing machines, would have involved mucking around with
     encodings and sweeping the head around and a lot of bookkeeping. Writing Turing
     machines, put bluntly, is a pain in the ass.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 但没有计算机科学家（尤其不是阿隆佐·邱奇）会声称图灵机是研究的唯一有用模型。λ演算很优雅；一旦你理解了它，你可以简洁地表达想法和操作，而在图灵机中，这些则需要涉及编码、头部扫描和大量繁琐的记录。坦率地说，编写图灵机是一件麻烦事。
 - en: I now present two examples of good ideas in mathematics resulting in good ideas
     in programming.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，我展示两个数学中好的想法导致了编程中好的想法的例子。
 - en: 'The first involves the genesis of Lisp. As Sussman tells me, Lisp was originally
     created so that McCarthy could prove Gödel''s incompleteness theorem without having
     to resort to number theory. (McCarthy is quoted as saying something a little weaker:
@@ -141,8 +187,14 @@
     to actually implement Lisp. Through Gödel''s incompleteness theorem, the powerful
     notion of code as data was born: no other language at the time had been thinking
     about programs in this way.'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 第一个涉及到 Lisp 的起源。正如 Sussman 告诉我的，Lisp 最初是为了 McCarthy 能够证明哥德尔的不完全性定理而创建的，而无需诉诸数论。（McCarthy
+    曾说过略微弱化的话：Lisp 是一种比起图灵机或递归函数理论中使用的一般递归定义更为整洁地描述可计算函数的方法。）与其严谨地将"这个陈述不能被证明"编码成严格的数学形式，[可以简单地在
+    Lisp 中描述它（PDF）](http://publications.csail.mit.edu/lcs/pubs/pdf/MIT-LCS-TR-131.pdf)。因此，其最初的构想包括了
+    m-表达式，看起来有点像 `function[arg1 arg2]`，代表实际的机器，而不是象征性的 s-表达式。直到后来，一些研究生才想到，“嗯，这实际上会是一种有用的编程语言”，并着手实现
+    Lisp。通过哥德尔的不完全性定理，代码即数据的强大概念应运而生：当时没有其他语言像这样思考程序。
 - en: The second is the success of Category Theory in Haskell. The canonical example
     is monads, the mathematical innovation that made input/output in lazy languages
     not suck (although a mathematical friend of mine tells me monads are not actually
@@ -155,14 +207,22 @@
     to get element-by-element operations. The interface is usable enough, but it lacks
     the simplicity, elegance and consistency that you get from actually realizing,
     "Hey, that's just a functor..."
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 第二个是 Category Theory 在 Haskell 中的成功。典型的例子是单子（monads），这一数学创新使得惰性语言中的输入/输出操作不那么糟糕（尽管我的数学朋友告诉我，单子实际上并不有趣，因为它们并不足够通用）。但是，函子和应用函子背后的思想包括了所有编程语言中普遍存在的模式。这个概念的重新表述的一个例子可以在
+    numpy 的 [universal functions](http://docs.scipy.org/doc/numpy/reference/ufuncs.html)
+    中看到。他们并不称之为函子，而是使用诸如“广播”和“类型转换”之类的术语，并讨论了在 numpy 数组上使用特殊的通用函数版本进行逐元素操作的必要性。接口足够可用，但缺乏从实际意识到，“嘿，这只是一个函子…”时得到的简单性、优雅性和一致性。
 - en: Those mathematicians, they're smart folk. Perhaps we programmers could learn
     a thing or two from them.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 那些数学家，他们可真是聪明的人。也许我们程序员也能从他们身上学到一些东西。
 - en: '*Postscript.* Thanks to [Daniel Kane](http://www.math.harvard.edu/~dankane/)
     for answering my impromptu question "What is mathematics about?" and suggesting
     a few of the examples of mathematics leaking back into computer engineering.'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: '*后记.* 感谢 [Daniel Kane](http://www.math.harvard.edu/~dankane/) 回答我即兴提出的“数学究竟是关于什么？”并建议了一些数学渗透回计算机工程中的例子。'

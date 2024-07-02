@@ -1,49 +1,71 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:47'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:47'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Reified laziness : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '**Reified laziness**：ezyang 的博客'
 - en: 来源：[http://blog.ezyang.com/2011/05/reified-laziness/](http://blog.ezyang.com/2011/05/reified-laziness/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/05/reified-laziness/](http://blog.ezyang.com/2011/05/reified-laziness/)
 - en: Reified laziness
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Reified laziness
 - en: Short post, longer ones in progress.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 短篇，长篇正在进行中。
 - en: One of the really neat things about the [Par monad](http://hackage.haskell.org/packages/archive/monad-par/0.1.0.1/doc/html/Control-Monad-Par.html)
     is how it explicitly reifies laziness, using a little structure called an `IVar`
     (also known in the literature as *I-structures*). An `IVar` is a little bit like
     an `MVar`, except that once you’ve put a value in one, you can never take it out
     again (and you’re not allowed to put another value in.) In fact, this precisely
     corresponds to lazy evaluation.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Par monad](http://hackage.haskell.org/packages/archive/monad-par/0.1.0.1/doc/html/Control-Monad-Par.html)中真正的亮点之一是它如何显式地实现了惰性，使用了一个被称为`IVar`的小结构（文献中也称为*I-structures*）。一个`IVar`有点像`MVar`，但是一旦你把一个值放进去，就再也取不出来了（也不允许放入另一个值）。事实上，这恰恰对应于惰性求值。'
 - en: The key difference is that an `IVar` splits up the naming of a lazy variable
     (the creation of the `IVar`), and specification of whatever code will produce
     the result of the variable (the `put` operation on an `IVar`). Any `get` to an
     empty `IVar` will block, much the same way a second attempt to evaluate a thunk
     that is being evaluated will block (a process called blackholing), and will be
     fulfilled once the “lazy computation” completes (when the `put` occurs.)
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 关键区别在于`IVar`将一个惰性变量的命名（创建`IVar`）和指定将产生该变量结果的代码（在`IVar`上执行`put`操作）分开。对空`IVar`的任何`get`操作都会阻塞，就像再次尝试评估正在评估的thunk会阻塞一样（这个过程称为blackholing），并且一旦“惰性计算”完成（即发生`put`时），就会被满足。
 - en: 'It is interesting to note that this construction was adopted precisely because
     laziness was making it really, really hard to reason about parallelism. It also
     provides some guidance for languages who might want to provide laziness as a built-in
     construct (hint: implementing it as a memoized thunk might not be the best idea!)'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 有趣的是，这种构造方式之所以被采纳，正是因为惰性使得并行性的推理变得非常困难。它还为那些希望提供惰性作为内置结构的语言提供了一些指导（提示：将其实现为记忆化的thunk可能不是最佳想法！）

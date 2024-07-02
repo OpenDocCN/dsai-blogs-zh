@@ -1,46 +1,68 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 分类：未分类
 - en: 'date: 2024-07-01 18:17:18'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:17:18
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'HoTT exercises in Coq (in progress) : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: HoTT 在 Coq 中的练习（正在进行中）：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2013/07/hott-exercises-in-coq-in-progress/](http://blog.ezyang.com/2013/07/hott-exercises-in-coq-in-progress/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2013/07/hott-exercises-in-coq-in-progress/](http://blog.ezyang.com/2013/07/hott-exercises-in-coq-in-progress/)
 - en: I spent some of my plane ride yesterday working on Coq versions of the exercises
     in [The HoTT book](http://homotopytypetheory.org/book/). I got as far as 1.6 (yeah,
     not very far, perhaps I should make a GitHub repo if other folks are interested
     in contributing skeletons. Don't know what to do about the solutions though).
     All of these have been test solved.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 昨天在飞机上，我花了些时间用 Coq 实现了《HoTT 书》中的练习。我完成了 1.6 部分（是的，进展不大，也许我应该建一个 GitHub 仓库，如果其他人有兴趣贡献框架的话。不过，对于解决方案我还不知道该怎么办）。所有这些都已经测试求解了。
 - en: You will need HoTT/coq in order to run this development; instructions on [how
     to install it are here.](https://github.com/HoTT/HoTT/blob/master/INSTALL.txt)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了运行这个开发，你需要 HoTT/coq；安装说明在[这里。](https://github.com/HoTT/HoTT/blob/master/INSTALL.txt)
 - en: '**Update.** Solutions and more exercises can be found at the [HoTT-coqex](https://github.com/ezyang/HoTT-coqex)
     repository. I’ve done all of the nontrivial homotopy-specific exercises, and left
     out some of the more standard type theory exercises (which aren’t really homotopy
     specific). Some of the solutions are really terrible and could use some sprucing
     up.'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: '**更新。** 可以在[HoTT-coqex](https://github.com/ezyang/HoTT-coqex)存储库中找到解决方案和更多练习。我完成了所有非平凡的同伦特定练习，并略过了一些更标准的类型理论练习（这些并不真正是同伦特定的）。有些解决方案实在太糟糕了，需要一些改进。'
 - en: '[PRE0]'
+  id: totrans-9
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: Actually, I lied. I haven't proved the last goal in exercise 1.6; my trouble
     is I don't know how to get function extensionality to compute, but I’m sure it’s
     something simple...
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 实际上，我撒了个谎。我还没有证明练习 1.6 中的最后一个目标；我的困难在于我不知道如何让函数外延性计算，但我确信这是一些简单的事情...

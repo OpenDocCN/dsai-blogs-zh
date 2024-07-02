@@ -1,41 +1,63 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:16:59'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:16:59'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Backpack for deep learning : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 深度学习的背包：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2017/08/backpack-for-deep-learning/](http://blog.ezyang.com/2017/08/backpack-for-deep-learning/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2017/08/backpack-for-deep-learning/](http://blog.ezyang.com/2017/08/backpack-for-deep-learning/)
 - en: '*This is a guest post by Kaixi Ruan.*'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: '*这是由阮开曦撰写的客座文章。*'
 - en: '[Backpack](https://ghc.haskell.org/trac/ghc/wiki/Backpack) is a module system
     for Haskell, released recently in [GHC 8.2.1](https://ghc.haskell.org/trac/ghc/blog/ghc-8.2.11-released).
     As this is a new feature, I wanted to know how people use it. So I searched Twitter
     every day, and the other day I saw [this tweet](https://twitter.com/Profpatsch/status/897993951852015616):'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '[背包](https://ghc.haskell.org/trac/ghc/wiki/Backpack) 是 Haskell 的一个模块系统，最近在
+    [GHC 8.2.1](https://ghc.haskell.org/trac/ghc/blog/ghc-8.2.11-released) 中发布。作为一项新功能，我想知道人们如何使用它。因此，我每天在
+    Twitter 上搜索，前些天看到了 [这条推文](https://twitter.com/Profpatsch/status/897993951852015616)：'
 - en: Are there other examples than String/Bytestring/Text? So far I haven’t seen
     any; it seems like backpack is just for glorified string holes.
+  id: totrans-8
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 除了 String/Bytestring/Text 外，还有其他的示例吗？到目前为止我还没有看到任何其他示例；看起来背包只是用来赞美的字符串洞。
 - en: There were a number of [good responses](https://twitter.com/ezyang/status/897999430196101120),
     but I want to give another use case from deep learning.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 有一些 [良好的回应](https://twitter.com/ezyang/status/897999430196101120)，但我想给出另一个来自深度学习的用例。
 - en: 'In deep learning, people are interested in doing computations on *tensors*.
      Tensors can have different value types: int, float, double etc. Additionally,
     ensor computations can be done on the CPU or GPU. Although there many different
@@ -43,41 +65,59 @@
     they share the same interface. Since Backpack lets you program against one interface
     which can have multiple implementations, it is the perfect tool for implementing
     a tensor library.'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 在深度学习中，人们对在 *张量* 上进行计算感兴趣。张量可以具有不同的值类型：整数、浮点数、双精度等。此外，张量计算可以在 CPU 或 GPU 上进行。尽管有许多不同类型的张量，但每种类型的张量计算是相同的，即它们共享相同的接口。由于背包允许您针对可以有多个实现的单个接口进行编程，因此它是实现张量库的理想工具。
 - en: 'Torch is a widely used library, implemented in C, for deep learning. Adam Paszke
     has a nice [article about Torch](https://apaszke.github.io/torch-internals.html).
     We can write some Haskell bindings for Torch, and then use Backpack to switch
     between implementations of float and int tensors. Here is a program that uses
     tensors via a Backpack signature:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: Torch 是一个广泛使用的用于深度学习的库，用 C 实现。亚当·帕什克有一篇关于 Torch 的好文章 [文章](https://apaszke.github.io/torch-internals.html)。我们可以为
+    Torch 编写一些 Haskell 绑定，然后使用背包在浮点和整数张量之间切换实现。这是一个通过背包签名使用张量的程序：
 - en: '[PRE0]'
+  id: totrans-12
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: We have a simple main function which reads two 1D tensors from files, does dot
     product of the two, sums all entries of the first tensor, and then finally prints
     out the sum of these two values. (This program is transcribed from Adam’s article,
     the difference is that Adam’s program uses Float Tensor, and we keep the Tensor
     type abstract so with Backpack we can do both float and int). The program uses
     functions like dot, which are defined in the signature.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们有一个简单的主函数，从文件中读取两个一维张量，计算两者的点积，对第一个张量的所有条目求和，然后最后打印出这两个值的和。（这个程序是从亚当的文章中转录的，不同之处在于亚当的程序使用浮点张量，而我们保持张量类型抽象，因此使用背包可以同时处理浮点数和整数）。程序使用像点积这样的函数，在签名中定义。
 - en: 'Here is an implementation of `dot` and types for float tensors. The C functions
     are called using Haskell’s FFI:'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里是 `dot` 的实现以及浮点张量的类型。使用 Haskell 的 FFI 调用 C 函数：
 - en: '[PRE1]'
+  id: totrans-15
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: As you can see, Backpack can be used to structure a deep learning library which
     has multiple implementations of operations for different types. If you wrote bindings
     for all of the functions in Torch, you would have a deep learning library for
     Haskell; with Backpack, you could easily write models that were agnostic to the
     types of tensors they operate on and the processing unit (CPU or GPU) they run
     on.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如您所见，背包可以用于构建一个深度学习库，该库具有多个不同类型操作的实现。如果您为 Torch 中的所有函数编写绑定，您将拥有一个用于 Haskell
+    的深度学习库；通过背包，您可以轻松编写对张量类型和处理单元（CPU 或 GPU）不可知的模型。
 - en: You can find the full sample code [on GitHub](https://github.com/ezyang/backpack-examples/tree/master/torch).
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可以在 [GitHub 上找到完整的示例代码](https://github.com/ezyang/backpack-examples/tree/master/torch)。

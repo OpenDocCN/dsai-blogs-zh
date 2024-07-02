@@ -1,78 +1,110 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:17:17'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 时间：2024-07-01 18:17:17
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'When a lock is better than an MVar : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 当锁优于MVar：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2014/01/when-a-lock-is-better-than-an-mvar/](http://blog.ezyang.com/2014/01/when-a-lock-is-better-than-an-mvar/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2014/01/when-a-lock-is-better-than-an-mvar/](http://blog.ezyang.com/2014/01/when-a-lock-is-better-than-an-mvar/)
 - en: MVars are an amazingly flexible synchronization primitive, which can serve as
     locks, one-place channels, barriers, etc. or be used to form higher-level abstractions.
     As far as flexibility is concerned, MVars are the superior choice of primitive
     for the runtime system to implement—as opposed to just implementing, say, a lock.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: MVars 是一种非常灵活的同步原语，可以用作锁、单位置通道、屏障等，或用于构建更高级别的抽象。就灵活性而言，MVars 是实现运行时系统的首选原语，而不仅仅是实现锁的选择。
 - en: However, I was recently thinking about [GHC's BlockedIndefinitelyOnMVar exception](http://blog.ezyang.com/2011/07/blockedindefinitelyonmvar/),
     and it occurred to me that a native implementation of locks could allow *perfect*
     deadlock detection, as opposed to the approximate detection for MVars we currently
     provide. (I must emphasize, however, that here, I define deadlock to mean a circular
     waits-for graph, and not “thread cannot progress further.”)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，最近我在思考[GHC的BlockedIndefinitelyOnMVar异常](http://blog.ezyang.com/2011/07/blockedindefinitelyonmvar/)，我意识到使用锁的本地实现可以允许*完美*的死锁检测，与我们当前针对MVars提供的近似检测不同。（我必须强调，然而，在这里，我定义死锁是指一个循环的等待图，而不是“线程无法进一步前进”。）
 - en: 'Here is how the new primitive would behave:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面是新原语的行为方式：
 - en: 'There would be a new type `Lock`, with only one function `withLock :: Lock
     -> IO a -> IO a`. (For brevity, we do not consider the generalization of Lock
     to also contain a value.)'
+  id: totrans-9
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '将会有一个新类型`Lock`，只有一个函数`withLock :: Lock -> IO a -> IO a`。（出于简洁起见，我们不考虑将锁通用化以包含值。）'
 - en: At runtime, the lock is represented as two closure types, indicating locked
     and unlocked states. The locked closure contains a waiting queue, containing threads
     which are waiting for the lock.
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在运行时，锁被表示为两种闭包类型，分别表示锁定和解锁状态。锁定的闭包包含一个等待队列，其中包含等待锁的线程。
 - en: When a thread takes out a free lock, it adds the lock to a (GC'd) held locks
     set associated with the thread. When it returns the lock, the lock is removed
     from this set.
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 当线程获取一个空闲锁时，它将锁添加到与线程关联的（GC的）持有锁集合中。当它释放锁时，锁将从此集合中移除。
 - en: When a thread attempts to take a busy lock, it blocks itself (waiting for a
     lock) and adds itself to the waiting queue of the locked closure.
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 当线程试图获取一个忙碌的锁时，它会阻塞自己（等待锁），并将自己添加到被锁定闭包的等待队列中。
 - en: Critically, references to the lock are treated as *weak pointers* when the closure
     is locked. (Only the pointer from the held lock set is strong.) Intuitively, just
     because a pointer to the lock doesn’t mean you can unlock; the only person who
     can unlock it is the thread who has the lock in their held locks set.
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 关键是，在闭包被锁定时，对锁的引用被视为*弱指针*。（只有从持有的锁集合中的指针是强的。）直观地说，仅仅因为有锁的指针并不意味着你可以解锁；唯一可以解锁的人是持有锁的线程。
 - en: If a thread attempts to take out a lock on a dead weak pointer, it is deadlocked.
+  id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如果一个线程试图在一个已经无效的弱指针上获取锁，那么它将会发生死锁。
 - en: '**Theorem.** *Any set of threads in a waits-for cycle is unreachable, if there
     are no other pointers to thread besides the pointer from the waiting queue of
     the locks in the cycle.*'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: '**定理。** *在等待循环中的任何一组线程是不可达的，如果除了在循环中的锁的等待队列中的指针以外，没有其他指向线程的指针。*'
 - en: '**Proof.** Consider a single thread in the cycle: we show that the only (strong)
     pointer to it is from the previous thread in the cycle. When a thread is blocked,
     it is removed from the run queue (which counts as a GC root). Given the assumption,
@@ -80,14 +112,18 @@
     on. We now consider pointers to the lock it is blocked on. As this lock is busy,
     all pointers to it are weak, except for the pointer from the thread which is holding
     the lock. But this is exactly the previous thread in the cycle. ■'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: '**证明。** 考虑一个在循环中的单个线程：我们展示唯一（强）指向它的指针来自于循环中前一个线程。当线程被阻塞时，它会从运行队列中移除（这算作一个GC根）。根据假设，指向线程的唯一指针来自于它所阻塞的锁的等待队列。现在我们考虑指向它所阻塞的锁的指针。由于这个锁正在被使用，指向它的所有指针都是弱的，除了来自于持有锁的线程的指针。但这恰恰是循环中的前一个线程。■'
 - en: At the cost of a weak-pointer dereference when a lock is taken out, we can now
     achieve perfect deadlock detection. Deadlock will be detected as soon as a garbage
     collection runs that detects the dead cycle of threads. (At worst, this will be
     the next major GC.)
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 当锁定时进行弱引用解引用的成本，我们现在可以实现完美的死锁检测。死锁将在下次运行垃圾收集时检测到，该收集会检测到线程的死循环。（最坏情况下，这将是下一个主要的GC。）
 - en: 'Why might this be of interest? After all, normally, it is difficult to recover
     from a deadlock, so while accurate deadlock reporting might be nice-to-have, it
     is by no means necessary. One clue comes from a sentence in Koskinen and Herlihy''s
@@ -98,9 +134,14 @@
     one does not take out locks in ordinary use of STM, but this can occur when you
     are using a technique like transactional boosting (from the same authors; the
     relationship between the two papers is no coincidence!)'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: '为什么这会引起兴趣？毕竟，通常情况下，从死锁中恢复是困难的，因此，虽然准确的死锁报告可能是件好事，但并不是必需的。一个线索来自Koskinen和Herlihy的论文[Dreadlocks:
+    Efficient Deadlock Detection](http://www.cs.nyu.edu/~ejk/papers/dreadlocks-spaa08.pdf)中的一句话：“一个本质上能够处理可中止锁请求的应用程序……是软件事务内存（STM）。如果你在STM事务中，死锁根本不是问题；只需回滚一个事务，打破循环即可。通常情况下，在普通的STM使用中不会锁定，但当你使用像事务提升这样的技术时，就可能会发生这种情况（来自同一作者；这两篇论文之间的关系并非巧合！）'
 - en: '*Exercise for the reader, formulate a similar GC scheme for MVars restricted
     to be 1-place channels. (Hint: split the MVar into a write end and a read end.)*'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: '*读者的练习，为限制为单一位置通道的MVar制定类似的GC方案。（提示：将MVar分为写入端和读取端。）*'

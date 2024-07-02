@@ -1,27 +1,41 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:18'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:18'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Cost semantics for STG in modern GHC : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 现代GHC中的STG成本语义：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2013/09/cost-semantics-for-stg-in-modern-ghc/](http://blog.ezyang.com/2013/09/cost-semantics-for-stg-in-modern-ghc/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2013/09/cost-semantics-for-stg-in-modern-ghc/](http://blog.ezyang.com/2013/09/cost-semantics-for-stg-in-modern-ghc/)
 - en: Cost semantics for STG in modern GHC
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 现代GHC中的STG成本语义
 - en: One of the problems with academic publishing is that it’s hard to keep old papers
     up-to-date. This is the certainly case for this [1995 Sansom paper on profiling
     non-strict, higher-order functional languages](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.43.6277).
@@ -30,19 +44,25 @@
     the introduction of cost center stacks. So while the old paper is good for giving
     you the basic idea of how profiling in GHC works, if you really want to know the
     details, the paper offers little guidance.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 学术出版的一个问题是难以使旧论文保持最新。这对于这篇[1995年Sansom关于非严格高阶函数式语言剖析的论文](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.43.6277)来说显然也是如此。尽管论文的基本思想仍然成立，但在GHC中成本中心的实际实现已经发生了相当大的变化，也许最显著的变化是成本中心栈的引入。因此，虽然旧论文很好地向你介绍了GHC中剖析的基本思想，但如果你真的想了解详情，这篇论文提供的指导有限。
 - en: So what do you do when your cost semantics are out-of-date? Why, update them
     of course! I present an [updated cost-semantics for STG in modern GHC (PDF)](https://github.com/ezyang/stg-spec/raw/master/stg-spec.pdf)
     ([GitHub](https://github.com/ezyang/stg-spec)). Eventually these will go in the
     GHC repository proper, alongside [core-spec](http://typesandkinds.wordpress.com/2012/12/03/a-formalization-of-ghcs-core-language/)
     which is a similar document for Core. However, I haven't done any proofs with
     these semantics yet, so they are probably a little buggy.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 当你的成本语义过时时，你会怎么做？当然是更新它们！我呈现了一份[现代GHC中STG的更新成本语义（PDF）](https://github.com/ezyang/stg-spec/raw/master/stg-spec.pdf)（[GitHub](https://github.com/ezyang/stg-spec)）。最终，这些将会放入GHC代码库中，与[core-spec](http://typesandkinds.wordpress.com/2012/12/03/a-formalization-of-ghcs-core-language/)类似，后者是Core语言的类似文档。然而，我还没有用这些语义做过任何证明，所以它们可能还有些bug。
 - en: 'Despite the lack of proofs, the formalization has been helpful already: I’ve
     already spotted one bug in the current implementation (remarked upon in the document).
     I’ve also identified a potential refactoring based on the way the rules are currently
     setup. Please let me know about any other bugs you find!'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管没有证明，但形式化已经非常有帮助：我已经发现了当前实现中的一个bug（在文档中有所记录）。我还根据当前规则的设置方式，确定了一次潜在的重构。请告诉我你发现的其他任何bug！

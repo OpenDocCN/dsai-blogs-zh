@@ -1,31 +1,47 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:52'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:52'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'How Aristotle got it WrongOn the importance of conceptual frameworks : ezyang’s
     blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 亚里士多德为何错误地理解概念框架的重要性：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2011/05/how-aristotle-got-it-wrongon-the-importance-of-conceptual-frameworks/](http://blog.ezyang.com/2011/05/how-aristotle-got-it-wrongon-the-importance-of-conceptual-frameworks/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/05/how-aristotle-got-it-wrongon-the-importance-of-conceptual-frameworks/](http://blog.ezyang.com/2011/05/how-aristotle-got-it-wrongon-the-importance-of-conceptual-frameworks/)
 - en: How Aristotle got it Wrong
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 亚里士多德为何错误地理解概念框架
 - en: On the importance of conceptual frameworks
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 关于概念框架的重要性
 - en: 'One of the persistent myths about Aristotelean physics—the physics that was
     proposed by the Ancient Greeks and held up until Newton and Galileo came along—is
     that Aristotle thought that “heavier objects fall more quickly than light objects”,
@@ -34,24 +50,32 @@
     far more subtle and well-thought out view on the matter. If you don’t believe
     me, [an English translation of his original text (Part 8)](http://classics.mit.edu/Aristotle/physics.4.iv.html)
     adequately gives off this impression. Here is a relevant quote (emphasis mine):'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 关于亚里士多德物理学的一个持久的神话——古希腊人提出的物理学，直到牛顿和伽利略出现之前都被认为是亚里士多德认为“更重的物体下降得比轻的更快”的一个例子，典型的例子是大炮弹和羽毛。尽管当今人类社会中的某些人确实相信这个“事实”，但是亚里士多德对这个问题有一个更加微妙和深思熟虑的观点。如果你不信，[他原始文本的英文翻译（第8部分）](http://classics.mit.edu/Aristotle/physics.4.iv.html)能够充分传达这种印象。这里是一个相关的引用（重点在我自己）：
 - en: We see the same weight or body moving faster than another for two reasons, either
     because there is a difference in what it moves through, as between water, air,
     and earth, or because, *other things being equal*, the moving body differs from
     the other owing to excess of weight or of lightness.
+  id: totrans-9
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 我们看到同样重量或体积的物体之间移动快慢有两个原因，要么是因为它们穿过的介质不同，比如水、空气和地球，要么是因为在“其他条件相等”的情况下，运动体与其他物体之间的差异来自于重量或轻重的过剩。
 - en: 'The “other things being equal” is a critical four words that are left out even
     of Roman accounts of the theory. See for example Roman philosopher Lucretius:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: “其他条件相等”是关键的四个词，甚至在对这个理论的罗马账户中也被遗漏。例如罗马哲学家卢克莱修斯：
 - en: For whenever bodies fall through water and thin air, they quicken their descents
     in proportion to their weights...
+  id: totrans-11
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 因为无论物体通过水和稀薄的空气下降，它们加速下降的速度与它们的重量成比例...
 - en: 'While I do not mean to imply the Aristotle was correct or at all near a Newtonian
     conception of physics, Aristotle was cognizant of the fact that the shape of the
     falling object could affect its descent (“For a moving thing cleaves the medium
@@ -61,8 +85,10 @@
     this statement got misinterpreted into a myth that the majority of Westerners
     believed up until the advent of Galilean physics. Where did all of these essential
     details go?'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然我并不是说亚里士多德是正确的，或者接近牛顿的物理学概念，亚里士多德确实意识到下落物体的形状可能影响其下降（“因为运动物体通过其形状与介质结合”），事实上，这些引用的背景不是关于物体如何移动的论文，而是关于物体如何通过介质移动的：特别是，亚里士多德试图论证物体如何在“空无”中移动。但是，这种表述不知何故被误解为西方大多数人直到伽利略物理学的出现之前的神话。所有这些关键细节到底去了哪里？
 - en: 'My belief is that Aristotle lacked the crucial conceptual framework—Newtonian
     physics—to fit these disparate facts together. Instead, Aristotle believed in
     the teleological principal, that all bodies had natural places which they natural
@@ -74,8 +100,10 @@
     extremely easy to make the same mistakes that our historic predecessors made:
     the facts of the matter may all “be in Newton’s laws”, but it’s not necessarily
     obvious that this is the case!'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 我的信念是，亚里士多德缺乏关键的概念框架——牛顿物理学——来将这些不同的事实整合起来。相反，亚里士多德相信目的论原则，即所有物体都有它们自然移动向的自然位置，这在许多物理经验实例中都无法提供任何解释力。他能够做出的一般化归纳都充满了特例和需要仔细思考的地方，这使得这些想法难以在传达中不失其精华。这并不是说仔细思考不重要：即使在今天教授物理时，我们也极易犯与我们历史前辈相同的错误：事实上可能都“包含在牛顿的法则中”，但这并不一定显而易见！
 - en: But as you learn about the applications of a theory, about the places where
     it easily can go wrong, it is critical to remember that these thoughts and intuitions
     are to be hung on the grander tree of the unifying and adequate theory. Those
@@ -83,8 +111,12 @@
     and disjoint facts and cursed with the inability to concisely express their ideas.
     And though I have not the space to argue it here, I also claim that this applies
     for every other sort of discipline for which you must accumulate knowledge.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 但当你了解理论的应用及其易出错的地方时，重要的是要记住，这些思想和直觉必须依附于更大的、统一且充分的理论树上。那些不这样做的人永远注定要摆弄令人困惑的各种特例和分散的事实，并且无法简洁地表达他们的想法。虽然我在这里没有足够的空间来论证这一点，但我也认为这适用于你必须积累知识的任何其他学科。
 - en: '**tl;dr** — Facts without structure are facts easily forgotten.'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: '**tl;dr** — 无结构的事实容易被遗忘。'

@@ -1,31 +1,47 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:17:30'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:17:30
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Thoughts on gamifying textbooks : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 关于将教科书变成游戏的思考：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2012/05/thoughts-on-gamifying-textbooks/](http://blog.ezyang.com/2012/05/thoughts-on-gamifying-textbooks/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2012/05/thoughts-on-gamifying-textbooks/](http://blog.ezyang.com/2012/05/thoughts-on-gamifying-textbooks/)
 - en: 'Earlier this year, Woodie Flowers wrote this [criticism of MITx](http://web.mit.edu/fnl/volume/243/flowers.html):'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 今年早些时候，伍迪·弗拉尔斯写了对[MITx的批评](http://web.mit.edu/fnl/volume/243/flowers.html)：
 - en: We seem to have decided to offer “courses” rather than participate in the exciting
     new process of replacing textbooks with more effective training tools.
+  id: totrans-7
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 我们似乎决定提供“课程”，而不是参与将教科书替换为更有效的培训工具的激动人心的新过程。
 - en: '[Logitext](http://logitext.ezyang.scripts.mit.edu/logitext.fcgi/tutorial),
     true to its name, was intended to explore what a chapter from a next-generation
     textbook on formal logic might look like. But if you asked anyone what subjects
@@ -33,30 +49,40 @@
     be particularly high on anyone’s list. In terms of relevance, Logitext misses
     the mark. But I do think there are some design principles that Logitext helps
     elucidate.'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Logitext](http://logitext.ezyang.scripts.mit.edu/logitext.fcgi/tutorial)，忠于其名，旨在探索下一代形式逻辑教科书的章节会是什么样子。但如果你问任何人这个世纪最重要的教科书会涉及什么学科，我怀疑逻辑不会特别高在任何人的列表上。就相关性而言，Logitext未能达到预期。但我确实认为Logitext有助于阐明一些设计原则。'
 - en: On interactivity
+  id: totrans-9
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 关于互动性
 - en: It is a good thing that the quality of the Metropolitan Opera's productions
     is not correlated with the quality of [their website pages](http://ringcycle.metoperafamily.org/characters).
     Here, we have an egregious example of interactivity for the sake of interactivity,
     with no real benefit to the presentation of information.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 大都会歌剧院制作的作品质量与[他们的网页页面](http://ringcycle.metoperafamily.org/characters)的质量无关，这里是一个明显的互动性为互动性而互动性的例子，对信息呈现没有真正的好处。
 - en: 'There are many things that interactivity can bring the table. However, **interactive
     textbooks should still look like textbooks.** The conventional textbook is a masterwork
     of design for the static medium: it is skimmable, supports random access and easily
     searched. You *cannot* beat this format at its own game, no matter how well designed
     your [video game levels may be](http://tryruby.org/).'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 互动性能够带来许多东西。但是，**互动教科书仍应该看起来像教科书**。传统教科书是静态媒介的设计杰作：可以快速浏览，支持随机访问和轻松搜索。你*无法*在其自身的游戏中击败这种格式，无论你的[视频游戏关卡有多么出色](http://tryruby.org/)。
 - en: 'In order to apply interactivity tastefully, you must consider what the *limitations*
     of the static medium were: it is precisely here where interactivity can bring
     something to the table. Here are some examples:'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 要谨慎地应用互动性，必须考虑静态媒介的*限制*：正是在这里，互动性能够带来一些新的东西。以下是一些例子：
 - en: 'Every field of study has its jargon, which assists people versed with the language
     but impedes those who are not. In a static medium, you can only define jargon
     a limited number of times: it clutters up a text to redefine it a term every time
@@ -65,9 +91,11 @@
     not start off with tooltips, but I quickly learned readers were getting confused
     about the meanings of “conjunction”, “disjunction” and “turnstile”. Tooltips let
     us easily **extend the possible audience of a single work**.'
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 每个学科都有自己的行话，这有助于精通语言的人，但妨碍不熟悉的人。在静态媒介中，你只能有限次地定义术语：每次术语出现在文本中，重新定义它会使文本混乱，即使你知道你的学生经常忘记术语的含义。在动态媒介中，解决方案很简单：工具提示。Logitext最初没有工具提示，但我很快学会了读者对“合取”、“析取”和“推理符号”的含义感到困惑。工具提示让我们轻松地**扩展单一作品的可能受众**。
 - en: The written medium demands a linear narrative, only sparingly stopping for questions
     or elaborations. Too many waypoints, and you risk losing the reader. In an interactive
     text, **the system can give context-sensitive information only when it is relevant.**
@@ -75,9 +103,11 @@
     of a variable, the system explains how this inference rule works. This explanation
     is given elsewhere in a more general explanation of how quantifiers work, but
     the system also knows how to offer this information a timely and useful manner.
+  id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 写作媒介要求线性叙述，只在必要时停下来进行问题或详细说明。太多的航点会使读者失去兴趣。在交互式文本中，**只有在相关时系统才能提供上下文相关的信息**。在Logitext中，当读者点击需要变量实例化的子句时，系统会解释这个推理规则是如何工作的。这个解释在更一般的量词工作解释中有提及，但系统也知道如何在适时和有用的时候提供这些信息。
 - en: Sometimes, the information you are trying to convey should also be given in
     another form. It's the difference between describing a piece of music or actually
     hearing it, the difference between giving someone a map or letting them wander
@@ -86,21 +116,28 @@
     what the “no free occurrence” rule is until the chickens come home, but the unexpected
     renaming of variables when you click “forall right” immediately introduces the
     intuitive idea (even though it still needs to be explained for full understanding.)
+  id: totrans-15
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 有时候，你试图传达的信息也应该以另一种形式呈现。这就像描述一段音乐与真正听到它的区别，或者给某人一张地图与让他们在周围漫步几个小时的区别一样。**尽量呈现而非叙述**。如果可能的话，用不同方式呈现——不同的直觉适合不同的人。我可以解释“无自由出现”规则直到天荒地老，但当你点击“forall
+    right”时意外地重命名变量会立即引入直观的概念（尽管仍然需要解释才能完全理解）。
 - en: It is telling that each of these enhancements have been abused by countless
     systems in the past. Many people have a dim view of tooltips and Clippy, myself
     included. I think one way to limit the damage of any such abuse is to demand that
     the textbook **gracefully degrade** without interactivity. (For technological
     reasons, Logitext doesn’t render correctly without JavaScript, but I consider
     this a bug.)
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 令人注目的是，过去很多系统都滥用了这些增强功能。很多人对工具提示和Clippy持怀疑态度，我也是其中之一。我认为限制任何滥用的方法之一是要求教材在没有互动时**能够优雅地退化**。（由于技术原因，Logitext在没有JavaScript的情况下无法正确渲染，但我认为这是一个bug。）
 - en: On exercise design
+  id: totrans-17
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 在练习设计方面
 - en: 'In order to truly learn something, you must solve some problems with it. Gamification
     of exercises has done well at supplying extrinsic motivation, but up until recently,
     the state of the art in online exercise design has been something [like this](http://math.com/school/subject1/practice/S1U4L3/S1U4L3Pract.html).
@@ -109,8 +146,10 @@
     happens also to be wrong](http://blog.mathed.net/2011/07/rysk-erlwangers-bennys-conception-of.html).
     Remember when you were asked to show your work? We should be demanding this online
     too.'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 要真正学会一些东西，你必须用它解决一些问题。练习的游戏化确实在提供外在动机方面做得很好，但直到最近，在线练习设计的技术水平一直是类似于[这样的](http://math.com/school/subject1/practice/S1U4L3/S1U4L3Pract.html)。我觉得这令人沮丧：没有迹象表明学生真正理解了基本概念，或者仅仅构建了一个[复杂的私人系统，也恰好是错误的](http://blog.mathed.net/2011/07/rysk-erlwangers-bennys-conception-of.html)。还记得被要求展示你的工作吗？我们在线上也应该要求这样做。
 - en: 'This is easier said than done. It was no accident that I picked the *sequent
     calculus* for Logitext: while logic holds a very special place in my heart, I
     also knew that it would be easy to automate. The road to a system for something
@@ -119,8 +158,10 @@
     (with work) onto the computer?" let alone thorny issues such as one addressed
     by a [recent PhD thesis](http://www.marvin-schiller.de/): "How do we tell if the
     student needs to provide more work?"'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 这说起来比做起来容易。我选择Logitext的*推理演算*并非偶然：虽然逻辑在我心中占据了非常特殊的位置，但我也知道这样做将会很容易自动化。即使是如此简单的高中代数系统也需要漫长而艰难的道路。Logitext避开了很多重要问题，甚至简单的问题也是如此，比如“我们如何将学生的答案（附带工作）输入计算机？”更不用说像最近的一个[博士论文](http://www.marvin-schiller.de/)所解决的那样复杂的问题：“我们如何判断学生是否需要提供更多工作？”
 - en: I think I came away with two important ideas from Logitext. The first is a strong
     conviction that **theorem provers are the right foundational technology for interesting
     exercises in mathematics.** Building the Logitext system was a bit of work, but
@@ -131,8 +172,10 @@
     in the case of elementary mathematics, we may not even have to solve open research
     questions to get there. Theorem provers also know when you’ve gotten the answer
     *right*, and I suspect from a gamification perspective that is all you need.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 我认为我从Logitext中得出了两个重要的想法。第一个是坚信**定理证明器是数学中有趣练习的正确基础技术**。构建Logitext系统有些工作，但一旦平台设计完成，定义练习就简单多了，每个练习只需一行代码。如果每个练习都必须从头开始实施，成本将会过高，教程也会有很大不同。我们知道，原则上我们可以形式化数学的所有内容；在初等数学的情况下，我们甚至可能不需要解决未解研究问题就能做到这一点。定理证明器也知道你什么时候答对了，我认为从游戏化的角度来看，这可能就是你所需要的。
 - en: 'The second important idea is that computers can **assist exploration of high-level
     concepts, even when the foundations are shaky**. For some people, copying down
     a string of mathematical symbols quickly and accurately is an ordeal: a system
@@ -144,43 +187,61 @@
     should not be eliminating symbols, but making it easier to manipulate them. Educational
     systems should have what I call **adjustable affordance**: you should have the
     option to do the low level manipulations, or have the system do them for you.'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 第二个重要想法是计算机可以**在基础不稳固的情况下辅助探索高级概念**。对于一些人来说，快速准确地抄写数学符号串是一种苦难：像Logitext这样的系统抽象了这一过程，使他们能够看到这些证明的更高阶结构。确实，如果学生有坚实的基础会更好，但如果我们有一个系统能防止他们掉队，我认为这个世界将会更好。应对依赖于[对抽象符号进行操作的异常灵巧](http://worrydream.com/KillMath/)课程的解决方案不应该是消除符号，而是使操作更容易。教育系统应该具备我所说的**可调整的适应性**：你应该可以选择进行低级操作，或者让系统替你完成。
 - en: Conclusion
+  id: totrans-22
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 结论
 - en: 'I have articulated the following design principles for the gamification of
     textbooks:'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 我已经阐述了以下关于教科书游戏化设计原则：
 - en: An interactive textbook should still look like a textbook.
+  id: totrans-24
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一个互动教科书应该看起来仍然像一本教科书。
 - en: Use interactivity to extend the possible audience of a textbook by assisting
     those with less starting knowledge.
+  id: totrans-25
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 利用互动性来通过帮助那些起点知识较少的人，扩展教科书的潜在受众。
 - en: Use interactivity to offer context-sensitive information only when relevant.
+  id: totrans-26
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 利用互动性仅在相关时提供上下文敏感信息。
 - en: Use interactivity to show; but be sure to explain afterwards.
+  id: totrans-27
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 利用互动性来展示；但务必在之后解释清楚。
 - en: (Heavily modified) theorem provers will be the fundamental technology that will
     lie beneath any nontrivial exercise engine.
+  id: totrans-28
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: （大幅修改）定理证明器将是任何非平凡练习引擎底层的基础技术。
 - en: One of the most important contributions of computers to exercises will not be
     automated grading, but assisted exploration.
+  id: totrans-29
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 计算机对练习的最重要贡献之一不是自动评分，而是辅助探索。
 - en: I’ve asserted these very confidently, but the truth is that they are all drawn
     from a sample size of one. While the Logitext project was a very informative exercise,
     I am struck by how little I know about K12 education. As an ace student, I have
@@ -188,5 +249,7 @@
     by now anyway. Education is hard, and while I think improved textbooks will help,
     I don’t really know if they will really change the game. I am hopeful, but I have
     the nagging suspicion that I may end up waiting a long time.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 我非常自信地断言了这些，但事实是它们都来自一个样本大小的研究。虽然Logitext项目是一次非常具有启发性的练习，但我被自己对K12教育知之甚少所震惊。作为一个顶尖学生，我拥有一个相当不具代表性的记忆集合，而且它们现在可能都不可靠了。教育很难，虽然我认为改进的教科书会有所帮助，但我真的不知道它们是否真的会改变游戏规则。我抱有希望，但我有一种困扰的怀疑，我可能最终会等很长时间。

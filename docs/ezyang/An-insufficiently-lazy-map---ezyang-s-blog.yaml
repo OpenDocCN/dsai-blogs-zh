@@ -1,41 +1,61 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 分类：未分类
 - en: 'date: 2024-07-01 18:17:46'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:17:46
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'An insufficiently lazy map : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 一个不够懒惰的 map：[ezyang 博客](http://blog.ezyang.com/2011/05/an-insufficiently-lazy-map/)
 - en: 来源：[http://blog.ezyang.com/2011/05/an-insufficiently-lazy-map/](http://blog.ezyang.com/2011/05/an-insufficiently-lazy-map/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/05/an-insufficiently-lazy-map/](http://blog.ezyang.com/2011/05/an-insufficiently-lazy-map/)
 - en: 'Another common thunk leak arises from mapping functions over containers, which
     do not execute their combining function strictly. The usual fix is to instead
     use a strict version of the function, ala `foldl''` or `insertWith''`, or perhaps
     using a completely strict version of the structure. In today’s post, we’ll look
     at this situation more closely. In particular, the questions I want to answer
     are as follows:'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一个常见的 thunk 泄漏源于在容器上映射函数时，并没有严格执行它们的组合函数。通常的修复方法是改用函数的严格版本，比如 `foldl'` 或 `insertWith'`，或者完全使用一个严格版本的结构。在今天的文章中，我们将更仔细地看待这种情况。特别是，我想回答以下几个问题：
 - en: Example
+  id: totrans-7
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 示例
 - en: 'Our example is a very simple data structure, the spine-strict linked list:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的例子是一个非常简单的数据结构，即 spine-strict 链表：
 - en: '[PRE0]'
+  id: totrans-9
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: We first create an instance of the data structure using the `ssFromList`, and
     then we perform a map over all of its elements using `ssMap`. We assume the structure
     of the list is not semantically important (after all, the distribution of trees
@@ -44,24 +64,35 @@
     called, in order to avoid stack overflows.) The space leak here exemplifies the
     classic “non-strict container function” problem, where a call to a function like
     `map` looks harmless but actually blows up.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们首先使用 `ssFromList` 创建数据结构的一个实例，然后使用 `ssMap` 对其所有元素进行映射。我们假设列表的结构在语义上并不重要（毕竟，对于用户来说，不透明数据结构中树的分布可能仅仅出于性能原因是没有兴趣的。实际上，每当调用
+    `ssFromList` 和 `ssMap` 时，它们都会反转结构，以避免堆栈溢出）。这里的空间泄漏典型地展示了“非严格容器函数”问题，即像 `map` 这样的函数看起来无害，实际上会导致问题。
 - en: 'If you look at the implementation, this is not too surprising, based on a cursory
     look at `SpineStrictList`: of course it will accumulate thunks since it is not
     strict in the values, only the *structure* itself. Let’s look at some of the fixes.'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你仔细看这个实现，这并不奇怪，基于对 `SpineStrictList` 的粗略查看：当然会积累 thunk，因为它不严格于值，只对结构本身严格。让我们看看一些解决方法。
 - en: Fixes
+  id: totrans-12
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 修复
 - en: '*Bang-pattern permute.* This fix is tempting, especially if you were thinking
     of [our last example](http://blog.ezyang.com/2011/05/anatomy-of-a-thunk-leak/):'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: '*Bang-pattern permute.* 这个修复方法很诱人，特别是如果你在考虑[我们上一个例子](http://blog.ezyang.com/2011/05/anatomy-of-a-thunk-leak/)：'
 - en: '[PRE1]'
+  id: totrans-14
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'But it’s wrong. Why is it wrong? For one thing, we haven’t actually changed
     the semantics of this function: it’s already strict in `y`! The resulting `seq`
     is too deeply embedded in the expression; we need `permute y` to be invoked earlier,
@@ -70,22 +101,32 @@
     allocating them at all. However, that won’t work here, because we have a strict
     data structure which GHC doesn’t know if it can get rid of, so all of the allocation
     will always happen.'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 但这是错误的。为什么错呢？首先，我们实际上并没有改变这个函数的语义：`y` 已经是严格的了！导致的 `seq` 嵌入表达式太深；我们需要更早地调用 `permute
+    y`，而不是 `y`。还要记住，上次修复组合函数仅起作用是因为我们成功启用了 GHC 优化，它使元组变成非分配，从而完全避免了它们的分配。然而，在这里行不通，因为我们有一个
+    GHC 不知道能否摆脱的严格数据结构，所以所有分配总是会发生。
 - en: '*Rnf the structure on every iteration.* This works, but is pretty inelegant
     and inefficient. Essentially, you end up traversing every time, for ultimately
     quadratic runtime, just to make sure that everything is evaluated. `rnf` is a
     pretty heavy hammer, and it’s generally a good idea to avoid using it.'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: '*在每次迭代中强制求值结构。* 这种方法虽然有效，但相当不优雅且效率低下。实质上，你每次都要遍历一遍，导致最终的运行时间是二次的，仅仅是为了确保所有东西都被评估了。`rnf`就像是一个重锤，通常最好避免使用它。'
 - en: '*Use a strict version of ssMap.* This is a pretty ordinary response that anyone
     who has every changed a function from `foo` to the `foo''` version has learned
     to try:'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: '*使用 ssMap 的严格版本。* 这是一个相当普通的反应，任何改过 `foo` 函数为 `foo''` 版本的人都已经尝试过：'
 - en: '[PRE2]'
+  id: totrans-18
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'The remaining space usage is merely the strict data structure sitting in memory.
     In order to make this fix, that we had to go in and fiddle with the internal representation
     of our `SpineStrictList` in order to induce this strictness. Here is the answer
@@ -93,65 +134,91 @@
     because the extra strictness we require needs to be “attached” (using a `seq`)
     to the outer constructor of the data structure itself: something you can only
     access if you’re able to manipulate the internal structure of the data structure.'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 剩余的空间使用仅仅是严格的数据结构在内存中的存在。为了修复这个问题，我们必须进入并调整我们`SpineStrictList`的内部表示，以引入这种严格性。这是第一个问题的答案：我们无法通过修改组合函数来修复这个空间泄漏，因为我们需要的额外严格性需要“附加”（使用`seq`）到数据结构本身的外部构造函数上：这是只有当你能够操作数据结构的内部结构时才能访问到的东西。
 - en: One upshot of this is that it’s quite annoying when your favorite container
     library fails to provide a strict version of a function you need. In fact, historically
     this has been a problem with the containers package, though I’ve recently submitted
     a proposal to help fix this.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 这样做的一个好处是，当你喜欢的容器库无法提供你需要的函数的严格版本时，这是相当令人恼火的。事实上，历史上容器包一直存在这个问题，尽管我最近已经提交了一个提案来帮助解决这个问题。
 - en: '*Make the structure value strict.* This is a “nicer” way of turning `ssMap`
     into its strict version, since the bang patterns will do all the seq work for
     you:'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: '*使结构体的值严格。*这是将`ssMap`转换为其严格版本的“更好”方法，因为惰性模式将为您完成所有的序列化工作：'
 - en: '[PRE3]'
+  id: totrans-22
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'Of course, if you actually want a spine strict but value lazy list, this isn’t
     the best of worlds. However, in terms of flexibility, a fully strict data structure
     actually is a bit more flexible. This is because you can always simulate the value
     lazy version by adding an extra indirection:'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 当然，如果你真的想要一个脊柱严格但值惰性的列表，这并不是最好的选择。然而，从灵活性的角度来看，完全严格的数据结构确实更加灵活。这是因为你总是可以通过增加额外的间接性来模拟值惰性的版本：
 - en: '[PRE4]'
+  id: totrans-24
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: Now the constructor `Lazy` gets forced, but not necessarily its insides. You
     can’t pull off this trick with a lazy data structure, since you need cooperation
     from all of the functions to get the inside of the container evaluated at all.
     There is one downside to this approach, however, which is that the extra wrapper
     does have a cost in terms of memory and pointer indirections.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在构造函数`Lazy`被强制执行，但其内部未必会。你不能利用延迟数据结构来完成这一技巧，因为你需要所有函数的合作，以便在所有情况下评估容器的内部。然而，这种方法有一个缺点，即额外的包装器在内存和指针间接方面确实会造成成本。
 - en: '*Make the structure lazy.* Fascinatingly enough, if we *add* laziness the space
     leak goes away:'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: '*使结构体变得懒惰。*有趣的是，如果我们*添加*了惰性，空间泄漏就消失了：'
 - en: '[PRE5]'
+  id: totrans-27
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: We’ve added an `rnf` to make sure that everything does, in fact, get evaluated.
     In fact, the space usage dramatically improves!
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们添加了一个`rnf`来确保所有东西实际上都被评估了。事实上，空间使用显著改善了！
 - en: What happened? The trick is that because the data structure was lazy, we didn’t
     actually bother creating 1000000 thunks at once; instead, we only had thunks representing
     the head and the tail of the list at any given time. Two is much smaller than
     a million, and the memory usage is correspondingly smaller. Furthermore, because
     `rnf` doesn’t need to hold on to elements of the list after it has evaluated them,
     we manage to GC them immediately afterwards.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 发生了什么？技巧在于，因为数据结构是惰性的，我们实际上并没有一次性创建1000000个thunk；相反，我们只在任何给定时间创建表示列表头部和尾部的thunk。两者远小于一百万，因此内存使用量相应减少。此外，因为在评估完元素后，`rnf`不需要保留列表的元素，所以我们能够立即进行垃圾回收。
 - en: '*Fusion.* If you remove our list-like data constructor wrapper and use the
     built-in list data type, you will discover that GHC is able to fuse-away all of
     the maps into one, extremely fast, unboxed operation:'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: '*融合。* 如果你移除我们类似列表的数据构造器包装器，并使用内置的列表数据类型，你会发现 GHC 能够将所有的映射合并为一个极快的非装箱操作：'
 - en: '[PRE6]'
+  id: totrans-31
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'This is not completely fair: we could have managed the same trick with our
     strict code; however, we cannot use simple foldr/build fusion, which does not
     work for foldl (recursion with an accumulating parameter.) Nor can we convert
@@ -160,5 +227,7 @@
     bound on the size of their spine.) It’s also not clear to me if fusion derives
     any benefit from spine strictness, though it definitely can do better in the presence
     of value strictness.'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 这并不完全公平：我们可以用我们严格的代码做同样的技巧；然而，我们不能使用简单的foldr/build融合，因为它对于foldl（带有累积参数的递归）是无效的。我们也不能将我们的函数转换为foldr，否则在大输入时会有堆栈溢出的风险（尽管在树状数据结构中可以施加对其脊柱大小的对数界限，这可能是可以接受的）。对我来说，也不清楚脊柱严格性是否会为融合带来任何好处，尽管它在值严格性存在时肯定可以更好地运作。

@@ -1,46 +1,66 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:16:59'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:16:59'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Semantic Import Versioning in the wild : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 野生中的语义导入版本：ezyang's 博客
 - en: 来源：[http://blog.ezyang.com/2018/02/semantic-import-versioning-in-the-wild/](http://blog.ezyang.com/2018/02/semantic-import-versioning-in-the-wild/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2018/02/semantic-import-versioning-in-the-wild/](http://blog.ezyang.com/2018/02/semantic-import-versioning-in-the-wild/)
 - en: '*The best and worst thing about semantic import versioning is that it makes
     BC-breaking changes hard.*'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: '*语义导入版本的最大好处和最大坏处在于它使破坏向后兼容的更改变得困难*。'
 - en: 'In the past few days, Russ Cox has made a splash in a series of white papers
     describing [Go and Versioning](https://research.swtch.com/vgo). In them, he coins
     a new term, [Semantic Import Versioning](https://research.swtch.com/vgo-import),
     distilling it to the following principle:'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 最近几天，Russ Cox 在一系列关于[Go 与版本控制](https://research.swtch.com/vgo)的白皮书中引起了轰动。在其中，他创造了一个新术语，[语义导入版本](https://research.swtch.com/vgo-import)，并将其概括为以下原则：
 - en: If an old package and a new package have the same import path, the new package
     must be backwards compatible with the old package.
+  id: totrans-8
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 如果旧包和新包具有相同的导入路径，则新包必须向后兼容旧包。
 - en: 'I am very happy Russ has come up with a good name for semantic import versioning,
     because this concept has been *out there* for quite a long time, but without a
     concise name or formulation of its the design. In fact, I would even say that
     semantic import versioning is *inevitable* when you take on the premise that you
     will never break user code. It is so inevitable, that semantic import versioning
     is already practiced in the wild in a variety of places. Here are a few examples:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 我非常高兴 Russ 给语义导入版本命名想出了一个好名字，因为这个概念已经存在了很长时间，但却没有一个简明的名称或其设计的公式化。事实上，我甚至会说，当你承诺永远不会破坏用户代码的前提时，语义导入版本是*不可避免的*。它是如此不可避免，以至于语义导入版本已经在多种地方的实际应用中进行了实践。以下是一些例子：
 - en: REST APIs [often](http://www.baeldung.com/rest-versioning) [are](http://blog.restcase.com/restful-api-versioning-insights/)
     [versioned](https://restfulapi.net/versioning/) with explicit version numbers
     in the request (e.g., in the URI) to let clients specify what version of the API
@@ -48,9 +68,13 @@
     rewrite their API requests to a new URL. REST APIs are forced to semantic import
     versioning because the traditional mechanism for avoiding breakage, version bounds,
     are unavailable in this setting.
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: REST API [通常](http://www.baeldung.com/rest-versioning) [在](http://blog.restcase.com/restful-api-versioning-insights/)
+    [请求中](https://restfulapi.net/versioning/) 明确指定版本号（例如在 URI 中），以便客户端指定他们想要的 API
+    版本。如果客户端希望升级到 API 的新版本，则必须将他们的 API 请求重写到新的 URL。REST API 由于传统的避免破坏的机制，即版本边界，在这种设置中不可用，因此被迫使用语义导入版本。
 - en: '[Stripe''s REST API](https://stripe.com/blog/api-versioning) pins each of their
     customers to the version of their API at the time they subscribed; even if Stripe
     makes a BC-breaking change in the future, the API for a given customer never changes.
@@ -61,9 +85,13 @@
     libraries under semantic import versioning, which is that you need to put in the
     engineering effort to sustainably manage all of the semantic imports available
     to users.'
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[Stripe 的 REST API](https://stripe.com/blog/api-versioning) 将他们的每个客户固定在他们订阅时的
+    API 版本上；即使 Stripe 将来进行了向后不兼容的更改，给定客户的 API 也永远不会改变。在这种情况下，语义导入仍然存在，但是它是隐式的（与客户帐户相关联），而不是显式的（在客户端代码中）；因此，Stripe
+    愿意比传统 REST API 能够接受的更频繁地破坏向后兼容性。Stripe 的博客文章指出了维护库中语义导入的一个非常重要的方面，即您需要投入工程努力来可持续管理所有对用户可用的语义导入。'
 - en: Semantic import versioning is widely practiced in programming languages, in
     the form of language standards/epochs. In C++, the setting of -std=c++xx specifies
     a particular semantic version to be "imported". It would be unheard of for a compiler
@@ -72,29 +100,41 @@
     to take advantage of any new features. [Rust epochs](https://github.com/rust-lang/rfcs/blob/master/text/2052-epochs.md)
     have a similar tenor. The choice between Python 2 and Python 3 is another form
     of semantic import versioning.
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 编程语言普遍实践语义导入版本控制，以语言标准/时代的形式存在。在 C++ 中，设置 -std=c++xx 指定了要“导入”的特定语义版本。在新版本编译器中，单方面破坏
+    -std=c++11 的向后兼容性是不可想象的；同样，用户必须显式迁移到新的语言标准才能利用任何新功能。[Rust epochs](https://github.com/rust-lang/rfcs/blob/master/text/2052-epochs.md)
+    有类似的风格。选择 Python 2 和 Python 3 之间的差异也是语义导入版本控制的一种形式。
 - en: 'Semantic imports don''t have to just specify a number. Feature flags, such
     as {-# LANGUAGE #-} pragmas in GHC Haskell, let users opt into BC-breaking changes
     at their use-sites.'
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '语义导入不仅仅是指定一个数字。例如，在 GHC Haskell 中，像{-# LANGUAGE #-} pragma 这样的功能标志允许用户在使用站点中选择支持
+    BC-breaking 更改。'
 - en: In the deep learning world, [ONNX models](https://github.com/onnx/onnx) declare
     a semantic import to a [particular version](https://github.com/onnx/onnx/blob/master/docs/Versioning.md)
     of an operator set. Operator semantics can evolve in BC-compatible ways without
     bumping the version, but to take a BC-breaking change, you must update the import
     statement.
+  id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在深度学习领域，[ONNX 模型](https://github.com/onnx/onnx)声明了对操作符集的特定版本的语义导入。操作符语义可以以兼容
+    BC 的方式演变，而无需增加版本号，但要应用 BC-breaking 更改，必须更新导入语句。
 - en: 'One insight I draw from these examples is that what we call an "import version"
     is really a *specification* for some series of implementations. To someone who
     has spent a lot of time thinking about module systems, this is really a step in
     the right direction: program against *interfaces*, not *implementations.*'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 我从这些例子中得出的一个见解是，我们称之为“导入版本”的东西实际上是一系列实现的*规范*。对于那些花费大量时间思考模块系统的人来说，这确实是朝着正确方向迈出的一步：根据*接口*而不是*实现*编程。
 - en: 'Another thing we can observe from these examples are the real world consequences
     of semantic import versioning. One particular effect stands out: semantic import
     versioning is *challenging* for maintainers, because it pressures them to maintain
@@ -105,8 +145,11 @@
     active release branches (backporting patches is a lot of work!) The *friction*
     involved with managing multiple implementations means that less well staffed projects
     will have a strong pressure to never break backwards compatibility.'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们从这些例子中还可以观察到语义导入版本控制的现实世界后果。一个特别突出的影响是：语义导入版本控制对维护人员来说是*挑战*，因为它迫使他们同时维护多个主要发布分支（毕竟，谁愿意使用
+    pkg/v2，却在 pkg/v3 发布后立即停止维护）。在传统的发布分支模型中，每个主要版本都创建一个发布分支，只有最充足的软件开发团队才能负担得起同时维护多个活跃的发布分支（回溯补丁是一项繁重的工作！）管理多个实现所涉及的*摩擦*意味着较少人员的项目将强烈压力以不破坏向后兼容性。
 - en: This may not sound like a such a bad thing to the "don't break my stuff" grumps
     in the audience, but a lot of bugs and security problems have stemmed from being
     literally unable to outlaw harmful and dangerous APIs with BC-breaking changes.
@@ -121,36 +164,54 @@
     (v1, v2 and v3). As we saw from the examples, compilers can manage this (GCC supports
     multiple C++ versions), but traditional programming languages make it hard for
     libraries to do the same thing.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于观众中的“不要破坏我的东西”的人来说，这听起来可能不像什么大问题，但很多错误和安全问题源于实际上无法禁止有害和危险的 API 使用 BC-breaking
+    更改。将计算进一步朝向保留向后兼容性的危险，将进一步深化糟糕的“第一次尝试”API。因此，虽然我不否认 Russ 框架的天才之处在于将语义版本控制描述为包的
+    *路径* 的一部分，但它也为实施 BC-breaking 更改的可行性设立了错误的期望，我们应该改善工具的状态，以便对进行 BC-breaking 更改“不是什么大事”。对我来说，减少
+    BC-breaking 更改摩擦的最有希望的方法是组织软件开发，使一个 *单一* 代码库在 *单一* 构建下实现 *多个* 规范（v1、v2 和 v3）。正如我们从示例中看到的，编译器可以管理这一点（GCC
+    支持多个 C++ 版本），但传统的编程语言使得库难以做同样的事情。
 - en: 'I don''t now exactly how to solve this problem, but I do have a few ideas:'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 我现在不知道如何准确解决这个问题，但我确实有一些想法：
 - en: '**Treat specifications as data.** This means you can write code that operates
     over a specification, and for example, automatically generate the boilerplate
     necessary to forward from one implementation to another.'
+  id: totrans-19
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**将规范视为数据。** 这意味着你可以编写操作规范的代码，例如自动生成从一个实现到另一个实现所需的样板代码。'
 - en: '**Don''t ask programmers to manually write diffs.** I would never ask you to
     make a source code change by writing a diff by hand, just because this is the
     best representation for a VCS to store. Instead, you would just make the edit,
     and expect the system to figure it out. BC-breaking changes to APIs follow the
     same principle; it is much simpler and easy to understand if you just *make the
     change*, rather than write a description of the change'
+  id: totrans-20
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**不要求程序员手动编写差异。** 我永远不会要求你通过手工编写差异来进行源代码更改，仅仅因为这是版本控制系统存储的最佳表示形式。相反，你只需进行编辑，然后期望系统自行解决。对
+    API 的 BC-breaking 更改遵循同样的原则；如果你只是 *做出更改*，而不是编写更改的描述，这将更简单和易于理解。'
 - en: '**Package level modularity.** In a traditional package management system, I
     can''t release a single bundle of source code which presents multiple "package
     interfaces". Even in vgo, even if I have a shared codebase implementing v1 and
     v2, I still have to make two releases to publish a new version of code. This is
     backwards; there is no reason a single unit of code cannot provide multiple interfaces,
     and package tools should make this possible.'
+  id: totrans-21
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**包级别的模块化。** 在传统的包管理系统中，我无法发布一个单一的源代码包，其中包含多个“包接口”。即使在 vgo 中，即使我有一个共享的代码库实现
+    v1 和 v2，我仍然必须发布两个版本来发布新版本的代码。这是倒退的；没有理由一个单元的代码不能提供多个接口，并且包工具应该使这成为可能。'
 - en: These are maybe a bit too radical to expect Go to adopt them, but perhaps the
     next generation of programming languages will explore this design space further.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些想法可能对期望 Go 采纳它们有些激进了，但也许下一代编程语言会进一步探索这一设计空间。

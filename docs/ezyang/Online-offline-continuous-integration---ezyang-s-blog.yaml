@@ -1,57 +1,85 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:16:57'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:16:57'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Online/offline continuous integration : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 在线/离线连续集成：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2018/03/online-offline-continuous-integration/](http://blog.ezyang.com/2018/03/online-offline-continuous-integration/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2018/03/online-offline-continuous-integration/](http://blog.ezyang.com/2018/03/online-offline-continuous-integration/)
 - en: 'Raise your hand if you''ve ever put one of these commands in your continuous
     integration scripts:'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果您在连续集成脚本中使用过这些命令，请举手：
 - en: '`apt install somepackage`'
+  id: totrans-7
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`apt install somepackage`'
 - en: '`pip install -r requirements.txt` or `pip install somepkg`'
+  id: totrans-8
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`pip install -r requirements.txt` 或 `pip install somepkg`'
 - en: '`conda install blah`'
+  id: totrans-9
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`conda install blah`'
 - en: '`cabal update` or `cabal install blah`'
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`cabal update` 或 `cabal install blah`'
 - en: '`git clone https://github.com/someguy/somerepo`'
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`git clone https://github.com/someguy/somerepo`'
 - en: '`wget http://some-website/thingy-latest.tgz`'
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`wget http://some-website/thingy-latest.tgz`'
 - en: 'Can you tell what the problem is? These commands are not reproducible: depending
     on when you run them, they may give different results. More insidiously, *most*
     of the time they give you the same result (or, perhaps, a different result that
     still works for your use case).'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 您能说出问题在哪里吗？这些命令不可再现：取决于运行时机，它们可能会产生不同的结果。更隐蔽的是，*大多数*情况下它们给出的结果相同（或许对您的用例仍然有效的不同结果）。
 - en: '**I know, we need a reproducible build!** The prevailing answer to this problem
     by tooling authors has been to seize the means of production and replace it with
     something that is reproducible. If you live the npm/yarn ecosystem, lockfiles
@@ -61,22 +89,30 @@
     same Hackage package every time you build (except [when it doesn''t...](https://www.snoyman.com/blog/2017/04/stackages-no-revisions-field)).
     If you live in the Nix ecosystem, it means literally replacing the packaging system
     for *everything* on your system to achieve reproducibility.'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: '**我知道，我们需要一个可再现的构建！** 工具作者对此问题的主要回应是夺取生产资料并用可再现的东西替换它。如果您生活在npm/yarn生态系统中，锁定文件确保每次构建时所有依赖项都以相同的方式重新下载（除非[不是这样的](http://blog.npmjs.org/post/141577284765/kik-left-pad-and-npm)）。如果您生活在Stack生态系统中，Stackage发行版确保每次构建时都获取相同的Hackage包（除非[不是这样的...](https://www.snoyman.com/blog/2017/04/stackages-no-revisions-field)）。如果您生活在Nix生态系统中，这意味着您必须实际替换系统上的*所有*打包系统才能实现可再现性。'
 - en: 'So, it seems:'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以看起来：
 - en: If you can live entirely within the walled garden of the tools you use, things
     are pretty reproducible, but you're still on your own when it comes to taking
     updates on your dependencies.
+  id: totrans-16
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 如果您完全依赖所使用的工具园区，事情可能是相当可再现的，但是在更新依赖项时，您仍然需要自行处理。
 - en: As soon as you step outside of the garden, it's entirely *up to you* to ensure
     reproducibility. The "easy way" out is usually not reproducible.
+  id: totrans-17
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 一旦您走出园区，完全*由您*来确保可再现性。通常的“简便方法”往往不可复制。
 - en: '**What if we change the question?** We have entered this discussion under the
     assumption that *reproducibility* is our terminal value. But it''s not: it''s
     the mechanism by which we can achieve other goals. In the setting of continuous
@@ -87,34 +123,44 @@
     and broken your build. If this happens, you are *blocked*: you won''t get clean
     signal until you fix the dependency problem. Broken window theory demands you
     drop everything and *fix the build.*'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: '**如果我们改变问题的方式呢？** 我们在讨论中假设*可再现性*是我们的终端价值。但事实并非如此：它是我们可以实现其他目标的机制。在连续集成的环境中，我们*真正*关心的是一个能够提供我们*信号*的系统，指示特定变更集是否正确或破坏了事物。一个不可再现的构建只会以一种方式干扰这一目标：如果某个随机依赖项已自行更新并破坏了您的构建。如果发生这种情况，您将*受阻*：在您解决依赖问题之前，您将无法得到清洁的信号。损坏窗户理论要求您放下一切并*修复构建*。'
 - en: Clearly, we *don't care* if our dependencies are getting silently upgraded as
     development proceeds; in fact, we might prefer it, because "automatic" is less
     friction than "manual", at least when it works. What we *do* care about is the
     ability to *block* the upgrade if it is known to break us or *revert* the upgrade
     if we find out later that it caused some breakage.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 显然，我们*不在乎*我们的依赖关系在开发过程中是否在静默中升级；事实上，我们可能更喜欢这样，因为“自动”比“手动”少摩擦，至少在它工作时是这样的。我们*在乎的*是能够*阻止*如果已知会导致我们出现问题的升级，或者*回滚*如果后来发现它造成了一些问题。
 - en: '**Online/offline continuous integration.** We traditionally think of the continuous
     integration build as a single pipeline which, when run from beginning to end,
     gives us signal about whether or not our code works or not. But I think it is
     better to think of a CI pipeline as dividing into two phases:'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: '**在线/离线持续集成。** 我们传统上认为持续集成构建是一个单一的流水线，从头到尾运行，为我们提供代码是否工作的信号。但我认为把CI流水线看作分成两个阶段更好：'
 - en: '**Online environment configuration.** In this stage, you download all of the
     external software that depend on that fiddly third-party world, setting up a complete
     build environment. Once you are done, you *snapshot* this environment by some
     mechanism (e.g., filesystem snapshot or make a Docker image.)'
+  id: totrans-21
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**在线环境配置。** 在这个阶段，你下载所有依赖于那些讨厌的第三方世界的外部软件，设置一个完整的构建环境。完成后，通过某种机制（例如文件系统快照或创建一个Docker镜像）*快照*这个环境。'
 - en: '**Offline actual build and test.** In this stage, within the snapshotted environment
     from step (1), turn off your Internet connection and run the actual build and
     test.'
+  id: totrans-22
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '**离线实际构建和测试。** 在这个阶段，使用步骤（1）的快照环境，关闭你的互联网连接并运行实际的构建和测试。'
 - en: The key is that you don't have to run step (1) every build (you didn't want
     to anyway, for performance reasons.) Instead, the series of immutable snapshots
     of build environments generated by step (1) gives you the ability to revert or
@@ -123,8 +169,10 @@
     environment, running the tests, and only deciding to push the activate snapshot
     forward if everything passes. You don't have to actually turn off the Internet
     when you run step (2), but it might help keep you honest.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 关键在于你不必在每次构建时都运行步骤（1）（出于性能原因，你也不想这样做）。相反，由步骤（1）生成的不可变构建环境的快照系列使你能够回滚或锁定到所有依赖的特定版本，*而不必*使整个宇宙可复现。你可以每周设置一个定时任务来重建你的环境、运行测试，只有在一切顺利通过时才决定推进激活快照。在运行步骤（2）时，你并不一定要真的关闭互联网，但这可能有助于保持诚实。
 - en: '**Think offline.** In today''s connected world, it''s easy to build systems
     with the assumption that you are always connected to the Internet. Doing so, however,
     leaves your tool at the mercy of the sound and fury of the real world. By applying
@@ -132,5 +180,7 @@
     a design for continuous integration that gives you something *almost* as good
     as reproducibility, without forcing you to rewrite the universe. Surely that''s
     worth something.'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: '**离线思考。** 在今天互联的世界中，很容易构建假设你始终连接到互联网的系统。然而，这样做会使你的工具受到现实世界的变化和嘈杂的影响。通过应用一个简单的原则：“我可以离线做什么；我必须在线做什么？”我们可以反向设计一个持续集成的设计，让你得到几乎和可复现性一样好的东西，而不必重新编写整个宇宙。毫无疑问，这是有价值的。'

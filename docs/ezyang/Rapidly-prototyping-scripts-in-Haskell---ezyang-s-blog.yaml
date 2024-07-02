@@ -1,23 +1,35 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:06'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:06'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Rapidly prototyping scripts in Haskell : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 在 Haskell 中快速原型化脚本：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2010/10/rapid-prototyping-in-haskell/](http://blog.ezyang.com/2010/10/rapid-prototyping-in-haskell/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/10/rapid-prototyping-in-haskell/](http://blog.ezyang.com/2010/10/rapid-prototyping-in-haskell/)
 - en: 'I’ve been having some vicious fun over the weekend hacking up a little tool
     called [MMR Hammer](http://github.com/ezyang/mmr-hammer) in Haskell. I won’t bore
     you with the vagaries of multimaster replication with Fedora Directory Server;
@@ -26,99 +38,140 @@
     Using this script as a case study, I’ll describe how I approached the problem,
     what was easy to do and what took a little more coaxing. In particular, my main
     arguments are:'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 我在周末里玩得很痛快，用 Haskell 写了一个叫做 [MMR Hammer](http://github.com/ezyang/mmr-hammer)
+    的小工具。 我不会跟你讲 Fedora Directory Server 的多主复制的细节，相反，我想谈谈在 Haskell 中快速原型化脚本的经验—这些程序的特点是计算量少而
+    IO 多。 通过这个脚本作为案例研究，我将描述我如何解决问题，什么容易做到，什么需要花点儿力气。 特别是，我的主要论点是：
 - en: In highly specialized scripts, you can get away with not specifying top-level
     type signatures,
+  id: totrans-7
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在高度专业化的脚本中，你可以不指定顶层类型签名，
 - en: The IO monad is the only monad you need, and finally
+  id: totrans-8
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: IO 单子是你唯一需要的单子，最后
 - en: You *can* and *should* write hackish code in Haskell, and the language will
     impose just the right amount of rigor to ensure you can clean it up later.
+  id: totrans-9
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 你 *可以* 也 *应该* 在 Haskell 中编写一些 hackish 代码，语言会施加适量的严格性，以确保你稍后可以整理它。
 - en: I hope to convince you that Haskell can be a great language for prototyping
     scripts.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 我希望说服你，Haskell 可以成为快速原型化脚本的一种优秀语言。
 - en: '*What are the characteristics of rapidly prototyping scripts?* There are two
     primary goals of rapid prototyping: to get it *working*, and to get it working
     *quickly.* There are a confluence of factors that feed into these two basic goals:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: '*快速原型化脚本的特点是什么？* 快速原型化有两个主要目标：让它 *工作*，并让它快速 *工作*。 有许多因素汇集成这两个基本目标：'
 - en: Your requirements are immediately obvious—the problem is an exercise of getting
     your thoughts into working code. (You might decide later that your requirements
     are wrong.)
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 你的需求立即显而易见—问题在于将你的想法转化为可工作的代码。（你可能会后来决定你的需求是错误的。）
 - en: You have an existing API that you want to use, which let’s you say “I want to
     set the X property to Y” instead of saying “I will transmit a binary message of
     this particular format with this data over TCP.” This should map onto your conception
     of what you want to do.
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 你有一个现有的 API，你希望使用它，这让你可以说“我想将 X 属性设置为 Y”而不是说“我将以这种特定格式的二进制消息和这些数据通过 TCP 传输”。
+    这应该与你对你想做的事情的构思相匹配。
 - en: You are going to manually test by repeatedly executing the code path you care
     about. Code that you aren’t developing actively will in general not get run (and
     may fail to compile, if you have lots of helper functions). Furthermore, running
     your code should be fast and not involve a long compilation process.
+  id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 你将通过反复执行你关心的代码路径来进行手动测试。 你没有积极开发的代码通常不会被运行（如果你有很多辅助函数可能会编译失败）。 此外，运行代码应该快速且不涉及长时间的编译过程。
 - en: 'You want to avoid shaving yaks: solving unrelated problems eats up time and
     prevents your software from working; better to hack around a problem now.'
+  id: totrans-15
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 你想要避免剃牛毛：解决无关的问题会消耗时间，阻止你的软件正常工作；最好现在就解决问题。
 - en: 'Specialization of your code for your specific use-case is good: it makes it
     easier to use, and gives a specific example of what a future generalization needs
     to support, if you decide to make your code more widely applicable in the future
     (which seems to happen to a lot of prototypes.)'
+  id: totrans-16
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 你的代码专门为你的特定用例进行了优化：这使得它更容易使用，并提供了一个未来广泛适用时需要支持的具体示例（如果你决定将你的代码更广泛地应用，这似乎会发生）。
 - en: You’re not doing very much computationally expensive work, but your logic is
     more complicated than is maintainable in a shell script.
+  id: totrans-17
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 你并没有做很多计算昂贵的工作，但你的逻辑比在 shell 脚本中维护起来更复杂。
 - en: '*What does a language that enables rapid prototyping look like?*'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: '*一个能够实现快速原型化的语言是什么样子？*'
 - en: It should be concise, and at the very least, not make you repeat yourself.
+  id: totrans-19
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 它应该简洁，并且至少不要让你重复自己。
 - en: It should “come with batteries,” and at least have the important API you want
     to use.
+  id: totrans-20
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 它应该“随带电池”，并至少有你想要使用的重要 API。
 - en: It should be interpreted.
+  id: totrans-21
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 它应该是解释性的。
 - en: It should be well used; that is, what you are trying to do should exist somewhere
     in the union of what other people have already done with the language. This means
     you are less likely to run into bizarre error conditions in code that no one else
     runs.
+  id: totrans-22
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 它应该被充分利用；也就是说，你试图做的事情应该已经存在于其他人已经用该语言做过的事情的并集中。这意味着你在没有人运行的代码中遇到奇怪的错误条件的可能性较小。
 - en: It should have a fast write-test-debug cycle, at least for small programs.
+  id: totrans-23
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 它应该有一个快速的写-测试-调试循环，至少对于小程序来说是这样的。
 - en: The compiler should not get in your way.
+  id: totrans-24
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 编译器不应该妨碍你。
 - en: '*General prototyping in Haskell.* If we look at our list above, Haskell has
     several aspects that recommend it. GHC has a `runghc` command which allows you
     to interpret your script, which means for quick prototyping. Functional programming
@@ -127,76 +180,111 @@
     a rather large set of batteries. In the case of LDAP MMR, I needed a bindings
     for the OpenLDAP library, which [John Goerzen](http://hackage.haskell.org/package/LDAP)
     had already written. A great start.'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: '*Haskell的一般原型制作。* 如果我们看看上面的列表，Haskell有几个方面值得推荐。GHC有一个 `runghc` 命令，允许你解释你的脚本，这意味着可以快速进行原型制作。函数式编程鼓励高度的代码重用，并且在你熟悉使用高阶函数时可以非常简洁。而且，它正在逐渐增加一个相当庞大的工具集。在LDAP
+    MMR的情况下，我需要一个OpenLDAP库的绑定，[John Goerzen](http://hackage.haskell.org/package/LDAP)
+    已经写过了。一个很好的开始。'
 - en: '*The compiler should not get in your way.* This is perhaps the most obvious
     problem for any newcomer to Haskell: they try to some pedestrian program and the
     compiler starts bleating at them with a complex type error, rather than the usual
     syntax error or runtime error. As they get more acquainted with Haskell, their
     mental model of Haskell’s type system improves and their ability to fix type errors
     improves.'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: '*编译器不应该妨碍你。* 这对于任何初学者来说可能是Haskell最明显的问题：他们试图编写一些普通的程序，但编译器却开始用复杂的类型错误来“咩咩”地指责他们，而不是通常的语法错误或运行时错误。随着他们对Haskell的熟悉程度的提高，他们对Haskell类型系统的心理模型也会改进，并且他们修复类型错误的能力也会提高。'
 - en: The million dollar question, then, is how well do you have to know Haskell to
     be able to quickly resolve type errors? I argue, in the case of rapid prototyping
     in Haskell, *not much at all!*
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 百万美元的问题是，你必须对Haskell有多了解才能快速解决类型错误？我认为，在Haskell的快速原型制作中，*并不需要太多！*
 - en: One simplifying factor is the fact that the functions you write will usually
     *not* be polymorphic. Out of the 73 fully implemented functions in MMR Hammer,
     only six have inferred nontrivial polymorphic type signatures, all but one of
     these is only used single type context.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个简化的因素是你写的函数通常*不*是多态的。在MMR Hammer中的73个完全实现的函数中，只有六个具有推断的非平凡多态类型签名，其中除了一个之外都只在单一类型上下文中使用。
 - en: 'For these signatures, `a` is always `String`:'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于这些签名，`a` 总是 `String`：
 - en: '[PRE0]'
+  id: totrans-30
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: '`m` is always `IO`, `t` is always `[String]` but is polymorphic because it’s
     not used in the function body:'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: '`m` 总是 `IO`，`t` 总是 `[String]`，但它是多态的，因为它在函数体中没有被使用：'
 - en: '[PRE1]'
+  id: totrans-32
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: '`a` here is always `(String, String, String)`; however, this function is one
     of the few truly generic ones (it’s intended to be an implementation of `msum`
     for `IO`):'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: '`a` 在这里总是 `(String, String, String)`；然而，这个函数是为数不多的真正通用的函数之一（它旨在实现 `IO` 的 `msum`）：'
 - en: '[PRE2]'
+  id: totrans-34
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'And finally, our other truly generic function, a convenience debugging function:'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，我们的另一个真正通用的函数，一个方便的调试函数：
 - en: '[PRE3]'
+  id: totrans-36
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: I claim that for highly specific, prototype code, GHC will usually infer fairly
     monomorphic types, and thus you don’t need to add very many explicit type signatures
     to get good errors. You may notice that MMR Hammer has almost *no* explicit type
     signatures—I argue that for monomorphic code, this is OK! Furthermore, this means
     that you only need to know how to *use* polymorphic functions, and not how to
     write them. (To say nothing of more advanced type trickery!)
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 我认为对于高度特定的原型代码，GHC通常会推断出相当单态的类型，因此你不需要添加很多显式类型签名来获得良好的错误提示。你可能会注意到MMR Hammer几乎没有任何显式的类型签名——我认为对于单态代码来说，这是可以接受的！此外，这意味着你只需要知道如何*使用*多态函数，而不需要知道如何编写它们。（更不用说更高级的类型技巧了！）
 - en: '*Monads, monads, monads.* I suspect a highly simplifying assumption for scripts
     is to avoid using any monad besides IO. For example, the following code *could*
     have been implemented using the Reader transformer on top of IO:'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: '*单子，单子，单子。* 我怀疑脚本的一个高度简化的假设是避免使用除了IO之外的任何单子。例如，下面的代码*可能*已经使用了Reader变换器在IO的基础上实现了：'
 - en: '[PRE4]'
+  id: totrans-39
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: But with only one argument being passed around, which was essentially required
     for any call to the API (so I would have done a bit of `ask` calling anyway),
     so using the reader transformer would have probably increased code size, as all
     of my LDAP code would have then needed to be lifted with `liftIO`.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 但是只有一个参数传递，这在任何调用 API 时基本上都是必需的（所以我可能会做一点 `ask` 调用），所以使用读取器转换器可能会增加代码量，因为我的所有
+    LDAP 代码都需要用 `liftIO` 提升。
 - en: 'Less monads also means less things to worry about: you don’t have to worry
     about mixing up monads and you can freely use `error` as a shorthand for bailing
     out on a critical error. In IO these get converted into exceptions which are propagated
@@ -204,33 +292,47 @@
     code, but hey, prototypes usually don’t have error handling. In particular, it’s
     good for a prototype to be brittle: to prefer to error out rather than to do some
     operation that may be correct but could also result in total nonsense.'
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 更少的单子也意味着更少的担忧：你不必担心混淆单子，你可以自由地使用 `error` 作为在关键错误时中止的简写。在 IO 中，这些会被转换为异常，异常会按照通常的方式传播——因为它们是字符串，你不能编写非常健壮的错误处理代码，但嘿，原型通常不需要错误处理。特别是，原型容易出错是好事：宁愿出现错误而不是执行可能正确但可能导致完全无意义的操作。
 - en: 'Hanging lambda style also makes writing out code that uses bracketing functions
     very pleasant. Here are some example:'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 悬挂的 lambda 风格也使得编写使用括号函数的代码非常愉快。以下是一些示例：
 - en: '[PRE5]'
+  id: totrans-43
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: Look, no parentheses!
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 看，没有括号！
 - en: '*Reaping the benefits.* Sometimes, you might try writing a program in another
     language for purely pedagogical purposes. But otherwise, if you know a language,
     and it works well for you, you won’t really want to change unless there are compelling
     benefits. Here are the compelling benefits of writing your code in Haskell:'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: '*收获利益。* 有时候，你可能会出于纯粹的教育目的而尝试用另一种语言编写程序。但除此之外，如果你掌握一种语言，并且它对你来说很有效，除非有强有力的理由，否则你不会真的想去改变。以下是用
+    Haskell 编写代码的强有力理由：'
 - en: 'When you’re interacting with the outside world, you will fairly quickly find
     yourself wanting some sort of concurrent execution: maybe you want to submit a
     query but timeout if it doesn’t come back in ten seconds, or you’d like to do
     several HTTP requests in parallel, or you’d like to monitor a condition until
     it is fulfilled and then do something else. Haskell makes doing this sort of thing
     ridiculously easy, and this is a rarity among languages that can also be interpreted.'
+  id: totrans-46
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 当你与外部世界互动时，你会很快发现自己需要某种形式的并发执行：也许你想提交一个查询，但如果十秒钟内没有返回就超时，或者你想要同时进行几个 HTTP 请求，或者你想要监视一个条件直到它被满足然后做其他事情。Haskell
+    让这类事情变得非常容易，而这在同时也是可以解释的语言中极为罕见的。
 - en: 'Because you don’t have automatic tests, once you’ve written some code and manually
     verified that it works, you want it to stay working even when you’re working on
     some other part of the program. This is hard to guarantee if you’ve built helper
@@ -238,9 +340,12 @@
     to update all of its call sites, your code will compile but when you go back and
     try running an older codepath you’ll find you’ll have a bunch of trivial errors
     to fix. Static types make this go away. Seriously.'
+  id: totrans-47
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 因为你没有自动测试，一旦你编写了一些代码并手动验证它工作正常，你希望它保持工作状态，即使你在程序的其他部分工作时也是如此。如果你构建了需要演变的辅助函数：如果你更改了一个辅助函数的
+    API 并忘记更新所有调用站点，你的代码将会编译，但当你回去尝试运行一个旧的代码路径时，你会发现你有一堆微不足道的错误需要修复。静态类型会让这些问题消失。严肃点。
 - en: Haskell gives you really, really cheap abstraction. Things you might have written
     out in full back in Python because the more general version would have required
     higher order functions and looked ugly are extremely natural and easy in Haskell,
@@ -248,35 +353,49 @@
     once complained that Haskell encouraged you to spend to much time working on abstractions;
     this is true, but I also believe once you’ve waded into the fields of Oleg once,
     you’ll have a better feel in the future for when it is and isn’t appropriate.
+  id: totrans-48
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: Haskell 提供了非常非常便宜的抽象。在 Python 中，你可能会因为更一般的版本需要高阶函数并且看起来很丑，而不得不完整地编写出来，但在 Haskell
+    中，这些东西非常自然和简单，你真的不需要说太多就能做很多事情。我的一个朋友曾经抱怨说 Haskell 鼓励你花费太多时间在抽象上；这是事实，但我也相信一旦你深入到
+    Oleg 的领域中一次，你以后会更好地感知何时以及何时不适合使用抽象。
 - en: 'Rigorous NULL handling with Maybe gets you thinking about error conditions
     earlier. Many times, you will want to abort because you don’t want to bother dealing
     with that error condition, but other times you’ll want to handle things a little
     more gracefully, and the explicit types will always remind you when that is possible:'
+  id: totrans-49
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用 Maybe 进行严格的 NULL 处理会让你更早地考虑到错误条件。很多时候，你会想中止，因为你不想去处理那个错误条件，但有时你会想要更优雅地处理事情，而显式的类型会始终提醒你何时可能做到这一点：
 - en: '[PRE6]'
+  id: totrans-50
   prefs:
   - PREF_IND
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'Slicing and dicing input in a completely ad hoc way is doable and concise:'
+  id: totrans-51
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在完全随意的方式下进行输入的分割和切割是可行且简洁的：
 - en: '[PRE7]'
+  id: totrans-52
   prefs:
   - PREF_IND
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: But at the same time, it’s not too difficult to rip out this code for a real
     parsing library for not too many more lines of code. This an instance of a more
     general pattern in Haskell, which is that moving from brittle hacks to robust
     code is quite easy to do (see also, static type system.)
+  id: totrans-53
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 但同时，将这段代码换成一个真正的解析库并不需要太多额外的代码行数。这是 Haskell 中更一般模式的一个实例，即从脆弱的妥协到健壮的代码转换非常容易（另见，静态类型系统。）
 - en: '*Some downsides.* Adding option parsing to my script was unreasonably annoying,
     and after staring at cmdargs and cmdlib for a little bit, I decided to roll my
     own with getopt, which ended up being a nontrivial chunk of code in my script
@@ -285,13 +404,19 @@
     it wasn’t obvious how to use the higher level libraries to the effect I wanted.
     This is perhaps witnessed by the fact that most of the major Haskell command line
     applications also roll their own command parser. More on this on another post.'
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: '*一些缺点。* 给我的脚本添加选项解析实在是令人烦恼，看了一会儿 cmdargs 和 cmdlib 后，我决定用 getopt 自己写，结果在我的脚本中变成了一个相当不小的代码块。我不太确定这里出了什么问题，但其中一部分问题是我对命令行
+    API 的非常特殊的口味（毕竟基于 Git），而且不明显如何使用更高级别的库来达到我想要的效果。也许最明显的是，大多数主要的 Haskell 命令行应用程序也都自己编写了命令解析器。更多内容请看另一篇文章。'
 - en: 'Using LDAP was also an interesting exercise: it was a fairly high quality library
     that worked, but it wasn’t comprehensive (I ended up submitting a patch to support
     `ldap_initialize`) and it wasn’t battle tested (it had no workaround for a longstanding
     bug between OpenLDAP and Fedora DS—more on that in another post too.) This is
     something that gets better with time, but until then expect to work closely with
     upstream for specialized libraries.'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用 LDAP 也是一次有趣的练习：这是一个相当高质量的库，可以工作，但它并不全面（最终我提交了一个支持 `ldap_initialize` 的补丁），也没有经过充分测试（它对
+    OpenLDAP 和 Fedora DS 之间长期存在的 bug 没有解决方案——更多内容请看另一篇文章。）这是一个随时间而改善的事情，但在那之前期望与上游密切合作，特别是对于专业化的库。

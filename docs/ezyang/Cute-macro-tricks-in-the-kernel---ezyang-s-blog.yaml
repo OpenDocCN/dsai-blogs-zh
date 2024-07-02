@@ -1,53 +1,81 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:28'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:28'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Cute macro tricks in the kernel : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 内核中的巧妙宏技巧：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2010/02/kernel-macro-tricks/](http://blog.ezyang.com/2010/02/kernel-macro-tricks/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/02/kernel-macro-tricks/](http://blog.ezyang.com/2010/02/kernel-macro-tricks/)
 - en: Cute macro tricks in the kernel
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 内核中的巧妙宏技巧
 - en: A classic stylistic tip given to C programmers is that inline functions should
     be preferred over macros, when possible. This advice stems from the fact that
     a macro and an inline function can achieve the same effect, but the inline function
     also gets type checking.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 给 C 程序员的一个经典风格提示是，尽可能使用内联函数而不是宏。这个建议源于宏和内联函数可以达到相同的效果，但内联函数还可以进行类型检查。
 - en: 'As it turns out, you *can* achieve static type checking with macros, if you''re
     willing to resort to the same cute trick that this following snippet from the
     Linux kernel uses:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 结果表明，如果愿意采用 Linux 内核下面这个小巧的技巧，你*确实可以*通过宏实现静态类型检查：
 - en: '[PRE0]'
+  id: totrans-9
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'Hmm... I wonder what that `param_check_##type` call is all about. Digging through
     a few more macro definitions, we see:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 嗯... 我想知道那个`param_check_##type`调用是怎么回事。再深入挖掘几个宏定义，我们看到：
 - en: '[PRE1]'
+  id: totrans-11
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'So there you go. A throw-away inline function named `__check_##name` enforces
     that `p` is the same type as `type`. A comment is also given, explaining what''s
     going on:'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 就是这样。一个名为`__check_##name`的一次性内联函数确保`p`与`type`是相同类型。还附有一条注释，解释了发生了什么：
 - en: '[PRE2]'
+  id: totrans-13
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'

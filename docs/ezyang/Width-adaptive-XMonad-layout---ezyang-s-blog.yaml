@@ -1,47 +1,72 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:11'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:11'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Width-adaptive XMonad layout : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '宽度自适应的 XMonad 布局 : ezyang’s 博客'
 - en: 来源：[http://blog.ezyang.com/2015/05/width-adaptive-xmonad-layout/](http://blog.ezyang.com/2015/05/width-adaptive-xmonad-layout/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2015/05/width-adaptive-xmonad-layout/](http://blog.ezyang.com/2015/05/width-adaptive-xmonad-layout/)
 - en: Width-adaptive XMonad layout
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 宽度自适应的 XMonad 布局
 - en: 'My usual laptop setup is I have a wide monitor, and then I use my laptop screen
     as a secondary monitor. For a long time, I had two XMonad layouts: one full screen
     layout for my laptop monitor (I use big fonts to go easy on the eyes) and a two-column
     layout when I''m on the big screen.'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 我通常的笔记本设置是使用宽屏显示器，并将笔记本屏幕作为辅助显示器。长期以来，我使用了两种 XMonad 布局：一种是针对笔记本显示器的全屏布局（我使用大字体以便于眼睛放松），另一种是在大屏幕上使用的两列布局。
 - en: 'But I had an irritating problem: if I switched a workspace from the small screen
     to the big screen, XMonad would still be using the full screen layout, and I would
     have to Alt-Tab my way into the two column layout. To add insult to injury, if
     I moved it back, I''d have to Alt-Tab once again.'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 但我遇到了一个恼人的问题：如果我从小屏幕切换工作区到大屏幕，XMonad 仍然会使用全屏布局，我必须通过 Alt-Tab 切换到两列布局。更让人气愤的是，如果我又切回去，我还得再次
+    Alt-Tab。
 - en: 'After badgering the fine folks on #xmonad, I finally wrote an extension to
     automatically switch layout based on screen size! Here it is:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: '在 #xmonad 的伙计们的鼓励下，我终于写了一个扩展来根据屏幕大小自动切换布局！这就是它：'
 - en: '[PRE0]'
+  id: totrans-10
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: I'm going to submit it to xmonad-contrib, if I can figure out their darn patch
     submission process...
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我能搞清楚他们该死的补丁提交流程，我会把它提交到 xmonad-contrib...

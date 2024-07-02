@@ -1,27 +1,41 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:17'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:17'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'If you’re using lift, you’re doing it wrong (probably) : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 如果你在使用 lift，你做错了（可能）：ezyang’s blog
 - en: 来源：[http://blog.ezyang.com/2013/09/if-youre-using-lift-youre-doing-it-wrong-probably/](http://blog.ezyang.com/2013/09/if-youre-using-lift-youre-doing-it-wrong-probably/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2013/09/if-youre-using-lift-youre-doing-it-wrong-probably/](http://blog.ezyang.com/2013/09/if-youre-using-lift-youre-doing-it-wrong-probably/)
 - en: If you’re using lift, you’re doing it wrong (probably)
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 如果你在使用 lift，你做错了（可能）。
 - en: 'David Darais asked me to make this public service announcement: *If you''re
     using lift, you''re doing it wrong.* This request was prompted by several talks
     at ICFP about alternatives to monad transformers in Haskell, which all began their
@@ -30,31 +44,44 @@
     question](http://stackoverflow.com/questions/9054731/avoiding-lift-with-monad-transformers)
     describes the standard technique that `mtl` uses to remove the use of lift in
     most monadic code.'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: David Darais 要求我发布这则公告：*如果你在使用 lift，那你肯定是错的。* 这个请求是由于 ICFP 的几次关于 Haskell 中单子变换器替代方案的演讲所引发的，它们都以这样的动机开始演讲：“每个人都讨厌将他们的操作向上提升到单子堆栈中；因此，我们需要另一种组织效果的方式。”这个
+    [StackOverflow 问题](http://stackoverflow.com/questions/9054731/avoiding-lift-with-monad-transformers)
+    描述了 `mtl` 用来消除大多数单子代码中使用 lift 的标准技术。
 - en: 'Now, as most things go, the situation is a bit more nuanced than just "never
     use lift", and a technically incorrect quip at the beginning of a talk does not
     negate the motivation behind other effect systems. Here are some of the nuances:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，正如大多数情况一样，情况比“永远不使用 lift”更加微妙，技术上不正确的快言快语并不能否定其他效果系统背后的动机。以下是一些细微之处：
 - en: As everyone is well aware, when a monad transformer shows up multiple times
     in the monad stack, the automatic type class resolution mechanism doesn't work,
     and you need to explicitly say which monad transformer you want to interact with.
+  id: totrans-9
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 众所周知，当单子变换器在单子堆栈中出现多次时，自动类型类解析机制不起作用，您需要明确指出您想要与之交互的单子变换器。
 - en: This mechanism only works if the monadic operations you are interacting with
     are suitably generalized to begin with, e.g. `MonadReader a m => m a` rather than
     `Monad m => ReaderT m a` or `Reader a`. This is especially evident for the `IO`
     monad, where most people have not generalized their definitions to `MonadIO`.
     Fortunately, it is generally the case that only one `liftIO` is necessary.
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 这种机制仅在您与之交互的单子操作被适当地推广时才有效，例如 `MonadReader a m => m a`，而不是 `Monad m => ReaderT
+    m a` 或 `Reader a`。这在 `IO` 单子中尤为明显，大多数人并未将其定义推广到 `MonadIO`。幸运的是，通常情况下只需要一个 `liftIO`。
 - en: 'And of course, there are still many reasons why you would want to ditch monad
     transformers:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 当然，仍然有许多理由您想要抛弃单子变换器：
 - en: Type-class instances are inherently unordered, and thus a generalized `MonadCont
     m, MonadState m => m a` monadic value says nothing about what order the two relevant
     monads are composed. But the order of this composition has an important semantic
@@ -63,9 +90,11 @@
     when sometimes you want *non-interfering* effects that are truly commutative with
     one another. And indeed, when you are using the type class approach, you usually
     use only monads that commute with one another.
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 类型类实例本质上是无序的，因此一个广义的 `MonadCont m, MonadState m => m a` 单子值并不说明两个相关的单子组合的顺序。但是，这种组合的顺序对单子如何进行有重要的语义影响（状态在连续跳转中传递或重置）。因此，当单子变换器彼此相互作用时，有时您需要真正相互不干扰的效果。而事实上，当您使用类型类方法时，通常只使用能够彼此交换的单子。
 - en: 'The interference between different monad transformers makes it difficult to
     lift certain functions. For example, the type of `mask :: ((forall a. IO a ->
     IO a) -> IO b) -> IO b`. If we think operationally what has to happen when IO
@@ -73,17 +102,24 @@
     all the way into the code that runs with exceptions restored. That''s very tricky
     to do in a general way. It gets even worse when these callbacks are [invoked multiple
     times.](http://blog.ezyang.com/2012/01/monadbasecontrol-is-unsound/)'
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '不同单子变换器之间的干扰使得提升某些函数变得困难。例如，`mask :: ((forall a. IO a -> IO a) -> IO b) ->
+    IO b` 的类型。如果我们从操作角度考虑IO与State组合时的情况，提升者必须设法确保状态传递到执行带有恢复异常的代码中。这在一般情况下非常棘手。当这些回调被[多次调用](http://blog.ezyang.com/2012/01/monadbasecontrol-is-unsound/)时，情况变得更加糟糕。'
 - en: At the end of the day, while the use of type classes makes the monad stack somewhat
     abstract and allows the elision of lifts, most of this code is written with some
     specific monad stack in mind. Thus, it is very rare for nontrivial programs to
     make use of multiple effects in a modular way, or for effects to be instantiated
     (i.e. a concrete monad selected) without concretizing the rest of the monad stack.
+  id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 最终，尽管使用类型类使得单子栈有些抽象，并允许省略lift操作，但大多数代码仍然是针对某个特定的单子栈编写的。因此，非平凡程序以模块化方式使用多个效果非常罕见，或者说效果被实例化（即选择具体的单子）时，必须具体化其余的单子栈。
 - en: Monad transformers have problems, let's argue against them for the right reasons!
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 单子变换器存在问题，让我们因正确的原因对其提出异议！

@@ -1,64 +1,94 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:17:27'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:27'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'So you want to hack on IMAP… : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '所以你想在 IMAP 上进行黑客攻击... : ezyang’s blog'
 - en: 来源：[http://blog.ezyang.com/2012/08/so-you-want-to-hack-on-imap/](http://blog.ezyang.com/2012/08/so-you-want-to-hack-on-imap/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2012/08/so-you-want-to-hack-on-imap/](http://blog.ezyang.com/2012/08/so-you-want-to-hack-on-imap/)
 - en: So you want to hack on IMAP…
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 所以你想在 IMAP 上进行黑客攻击...
 - en: (Last IMAP themed post for a while, I promise!)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: (Last IMAP themed post for a while, I promise!)
 - en: 'Well, first off, you’re horribly misinformed: you do not *actually* want to
     hack on IMAP. But supposing, for some masochistic reason, you need to dig in the
     guts of your mail synchronizer and fix a bug or add some features. There are a
     few useful things to know before you start your journey...'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，你的信息是错误的：你实际上**不**想要在 IMAP 上进行黑客攻击。但是假设，出于某种 masochistic 的原因，你需要深入研究你的邮件同步程序并修复
+    bug 或添加一些功能。在开始旅程之前，有几件有用的事情需要知道...
 - en: Read your RFCs. [RFC 3501](http://tools.ietf.org/html/rfc3501) is the actual
     specification, while [RFC 2683](http://tools.ietf.org/html/rfc2683) gives a lot
     of helpful tips for working around the hairy bits of the many IMAP servers out
     there in practice. You should also know about the UIDPLUS extension, [RFC 4315](http://tools.ietf.org/html/rfc4315),
     which is fairly well supported and makes a client implementor’s life *a lot* easier.
+  id: totrans-9
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 阅读你的 RFC。[RFC 3501](http://tools.ietf.org/html/rfc3501) 是实际规范，而 [RFC 2683](http://tools.ietf.org/html/rfc2683)
+    给出了许多有助于解决实践中存在的 IMAP 服务器棘手问题的建议。你还应该了解 UIDPLUS 扩展，[RFC 4315](http://tools.ietf.org/html/rfc4315)，它被广泛支持，极大地简化了客户端实现者的生活。
 - en: IMAP is fortunately a text-based protocol, so you can and should play around
     with it on the command line. A great tool to use for this is `imtest`, which has
     all sorts of fancy features such as SASL authentication. (Don’t forget to `rlwrap`
     it!) Make sure you prefix your commands with an identifier (`UID` is a valid identifier,
     so typing `UID FETCH ...` will *not* do what you want.)
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: IMAP 幸运地是一个基于文本的协议，因此你可以在命令行上进行实验。一个很好的工具是 `imtest`，它有各种花哨的功能，如 SASL 认证。（不要忘记用
+    `rlwrap` 包装它！）确保在你的命令前加上标识符（`UID` 是一个有效的标识符，所以输入 `UID FETCH ...` 不会做你想要的事情。）
 - en: 'It is generally a better idea to use UIDs over sequence numbers, since they
     are more stable, but be careful: as per the specification, `UID` prefixed commands
     *never fail*, so you will need to check untagged data in the response to see if
     anything actually happened. (If you have a shitty IMAP library, it may not clear
     out untagged data between requests, so watch out for stale data!) Oh, and look
     up `UIDVALIDITY`.'
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 通常使用 UID 而不是序列号是个更好的主意，因为它们更稳定，但要小心：根据规范，以 `UID` 为前缀的命令*永远不会*失败，因此你需要检查响应中的未标记数据，以查看是否实际发生了任何事情。（如果你有一个糟糕的
+    IMAP 库，它可能不会在请求之间清除未标记的数据，因此要小心陈旧的数据！）哦，还要查一下 `UIDVALIDITY`。
 - en: There exist a lot of software that interfaces with IMAP, all of which has accreted
     special cases for buggy IMAP servers over the years. It is well worth sourcediving
     a few to get a sense for what kinds of things you will need to handle.
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 有很多软件与 IMAP 接口，多年来为了应对 IMAP 服务器的 bug 累积了许多特例。值得一探究竟，以便了解需要处理的问题类型。

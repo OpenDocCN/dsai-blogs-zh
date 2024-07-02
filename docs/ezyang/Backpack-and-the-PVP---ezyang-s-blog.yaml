@@ -1,31 +1,45 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:03'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:03'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Backpack and the PVP : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 背包和PVP：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2016/12/backpack-and-the-pvp/](http://blog.ezyang.com/2016/12/backpack-and-the-pvp/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2016/12/backpack-and-the-pvp/](http://blog.ezyang.com/2016/12/backpack-and-the-pvp/)
 - en: In the [PVP](http://pvp.haskell.org/), you increment the minor version number
     if you add functions to a module, and the major version number if you remove function
     to a module. Intuitively, this is because adding functions is a backwards compatible
     change, while removing functions is a breaking change; to put it more formally,
     if the new interface is a *subtype* of the older interface, then only a minor
     version number bump is necessary.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 [PVP](http://pvp.haskell.org/) 中，如果向一个模块添加函数，则增加次要版本号；如果从一个模块中移除函数，则增加主要版本号。直观地说，这是因为添加函数是向后兼容的更改，而删除函数是破坏性的更改；更正式地说，如果新接口是旧接口的*子类型*，则只需要增加次要版本号。
 - en: 'Backpack adds a new complication to the mix: signatures. What should the PVP
     policy for adding/removing functions from signatures should be? If we interpret
     a package with required signatures as a *function*, theory tells us the answer:
@@ -33,104 +47,148 @@
     so adding required functions is breaking (bump the major version), whereas it
     is **removing** required functions that is backwards-compatible (bump the minor
     version).'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: Backpack 给混合添加了一个新的复杂性：签名。向签名添加/删除函数的 PVP 政策应该是什么？如果我们将具有必需签名的包解释为一个*函数*，理论告诉我们答案：签名是[逆变](http://blog.ezyang.com/2014/11/tomatoes-are-a-subtype-of-vegetables/)的，因此添加必需函数是破坏性的（增加主要版本号），而**删除**必需函数是向后兼容的（增加次要版本号）。
 - en: 'However, that''s not the end of the story. Signatures can be *reused*, in the
     sense that a package can define a signature, and then another package reuse that
     signature:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，故事并没有结束。签名可以*重复使用*，即一个包可以定义一个签名，然后另一个包可以重用该签名：
 - en: '[PRE0]'
+  id: totrans-9
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: In the example above, we've placed a signature in the sigs unit, which p uses
     by declaring a dependency on sigs. B has access to all the declarations defined
     by the A in sigs.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 在上面的例子中，我们将一个签名放在 sigs 单元中，p 通过对 sigs 声明依赖项来使用它。B 可以访问 sigs 中由 A 定义的所有声明。
 - en: 'But there is something very odd here: if sigs were to ever remove its declaration
     for x, p would break (x would no longer be in scope). In this case, the PVP rule
     from above is incorrect: p must always declare an exact version bound on sigs,
     as any addition or deletion would be a breaking change.'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 但这里有一些非常奇怪的地方：如果 sigs 曾经删除了 x 的声明，p 将会中断（x 将不再在作用域内）。在这种情况下，上述的 PVP 规则是错误的：p
+    必须始终对 sigs 声明一个精确的版本边界，因为任何添加或删除都将是破坏性的更改。
 - en: 'So we are in this odd situation:'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以我们处于这种奇怪的情况中：
 - en: If we include a dependency with a signature, and we never use any of the declarations
     from that signature, we can specify a loose version bound on the dependency, allowing
     for it to remove declarations from the signature (making the signature easier
     to fulfill).
+  id: totrans-13
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 如果我们包含一个依赖项和一个签名，但我们从未使用过该签名的任何声明，我们可以对依赖项指定一个宽松的版本边界，允许它从签名中删除声明（使签名更容易实现）。
 - en: However, if we ever import the signature and use anything from it, we must specify
     an exact bound, since removals are now breaking changes.
+  id: totrans-14
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 然而，如果我们导入签名并使用其中的任何内容，我们必须指定一个精确的边界，因为现在删除操作将是破坏性的更改。
 - en: 'I don''t think end users of Backpack should be expected to get this right on
     their own, so GHC (in this [proposed patchset](https://phabricator.haskell.org/D2906))
     tries to help users out by attaching warnings like this to declarations that come
     solely from packages that may have been specified with loose bounds:'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 我认为不应该期望 Backpack 的最终用户能够自行正确地理解这一点，因此 GHC（在这个 [提议的补丁集](https://phabricator.haskell.org/D2906)
+    中）试图通过向仅来自可能已被指定为宽松边界的包的声明附加此类警告来帮助用户。
 - en: '[PRE1]'
+  id: totrans-16
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: '**UPDATE.** After the publishing of this post, we ended up removing this error,
     because it triggered in situations which were PVP-compatible. (The gory details:
     if a module reexported an entity from a signature, then a use of the entity from
     that module would have triggered the error, due to how DEPRECATED notices work.)'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: '**更新。** 在发布这篇文章后，我们最终删除了这个错误，因为它在与 PVP 兼容的情况下触发了。（详细信息：如果一个模块重新导出了一个来自签名的实体，那么来自该模块的实体使用将会触发错误，这是由于过时通知的工作方式。）'
 - en: 'Of course, GHC knows nothing about bounds, so the heuristic we use is that
     a package is a *signature package* with exact bounds if it does not expose any
     modules. A package like this is only ever useful by importing its signatures,
     so we never warn about this case. We conservatively assume that packages that
     do expose modules might be subject to PVP-style bounds, so we warn in that case,
     e.g., as in:'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 当然，GHC对边界一无所知，所以我们使用的启发式方法是，如果一个包不暴露任何模块，则认为它是一个*签名包*，具有精确的边界。像这样的包只通过导入其签名才有用，所以我们从不对这种情况发出警告。我们保守地假设暴露模块的包可能受到PVP风格的边界约束，因此在这种情况下会发出警告，例如：
 - en: '[PRE2]'
+  id: totrans-19
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'As the warning suggests, this error can be fixed by explicitly specifying `x
     :: Bool` inside `p`, so that, even if `q` removes its requirement, no code will
     break:'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: '正如警告所示，可以通过在p中明确指定`x :: Bool`来修复这个错误，这样，即使q移除其要求，也不会导致代码破坏：'
 - en: '[PRE3]'
+  id: totrans-21
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: Or by putting the signature in a new library of its own (as was the case in
     the original example.)
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 或者将签名放入自己的新库中（就像原始示例中的情况一样）。
 - en: 'This solution isn''t perfect, as there are still ways you can end up depending
     on inherited signatures in PVP-incompatible ways. The most obvious is with regards
     to types. In the code below, we rely on the fact that the signature from q forces
     T to be type equal to Bool:'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个解决方案并不完美，因为仍然有一些方法可以使你以PVP不兼容的方式依赖继承的签名。最明显的是与类型相关的情况。在下面的代码中，我们依赖于q的签名强制T类型等于Bool的事实：
 - en: '[PRE4]'
+  id: totrans-24
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: In principle, it should be permissible for q to relax its requirement on T,
     allowing it to be implemented as anything (and not just a synonym of Bool), but
     that change will break the usage of x in P. Unfortunately, there isn't any easy
     way to warn in this case.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 原则上，q可以放宽对T的要求，允许其实现为任何形式（而不仅仅是Bool的同义词），但这一变更将破坏P中对x的使用。不幸的是，在这种情况下并没有简单的方法来发出警告。
 - en: A perhaps more principled approach would be to ban use of signature imports
     that come from non-signature packages. However, in my opinion, this complicates
     the Backpack model for not a very good reason (after all, some day we'll augment
     version numbers with signatures and it will be glorious, right?)
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 也许一个更有原则的方法是禁止来自非签名包的签名导入。然而，在我看来，这样做会使Backpack模型变得更加复杂，而这并没有很好的理由（毕竟，总有一天我们会用签名增强版本号，那将是辉煌的，对吧？）
 - en: '**To summarize.** If you want to reuse signatures from signature package, specify
     an *exact* version bound on that package. If you use a component that is parametrized
     over signatures, do *not* import and use declarations from those signatures; GHC
     will warn you if you do so.'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: '**总结一下。** 如果你想重用来自签名包的签名，请在该包上指定一个*精确的*版本边界。如果你使用的组件是参数化的签名，*不要*导入和使用这些签名的声明；如果你这样做，GHC会警告你。'

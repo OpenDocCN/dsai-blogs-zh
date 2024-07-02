@@ -1,24 +1,36 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:03'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:03'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'You are in a maze of twisty little passages, all alike… (a GHC hacking post)
     : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 你正处在一个迷宫般的扭曲小通道中……（一个关于GHC的黑客帖子）：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2010/11/another-ghc-hacking-post/](http://blog.ezyang.com/2010/11/another-ghc-hacking-post/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/11/another-ghc-hacking-post/](http://blog.ezyang.com/2010/11/another-ghc-hacking-post/)
 - en: About a month ago I decided that it would be cool if I could solve the bug [GHC's
     runtime never terminates unused worker threads](http://hackage.haskell.org/trac/ghc/ticket/4262).
     Well, I just got around to looking at it today, and after wandering aimlessly
@@ -29,246 +41,378 @@
     and blog about the process by which I came to the conclusion that line 464 of
     `Capability.c` was the correct place to add my change, since this sort of mental
     journey is not the one that is really ever recorded anywhere in any shape or form.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 大约一个月前，我决定如果我能解决[GHC的运行时从不终止未使用的工作线程](http://hackage.haskell.org/trac/ghc/ticket/4262)的
+    bug，那将会很酷。好吧，今天我终于抽出时间看了看它，经过大约一个小时在GHC RTS这个弯弯曲曲的迷宫里四处游荡后，我终于看到了一个希望之光，以一种让人心情愉悦的简单补丁的形式。我已经给Simon
+    Marlow发了封邮件，确认这光明其实不是一列火车，但我突然意识到，查看我的命令历史并记录我是如何得出在`Capability.c`的第464行添加修改是正确的地方的过程，会是件有趣的事情，因为这种心智旅程实际上从未在任何地方以任何形式被记录过。
 - en: '* * *'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Warmups before running the maze.* In a shifty shifty maze like GHC, you want
     to make sure the guided route (i.e. a clean build) is working before trying anything
     fancy. I use a [separate build tree from source tree](http://hackage.haskell.org/trac/ghc/wiki/Building/Using#Sourcetreesandbuildtrees),
     so getting everything up to date involves:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: '*跑迷宫前的热身。* 在像GHC这样不稳定的迷宫中，你希望在尝试任何复杂操作之前，确保引导路线（即干净的构建）是正常工作的。我使用[源码树和构建树分离](http://hackage.haskell.org/trac/ghc/wiki/Building/Using#Sourcetreesandbuildtrees)，因此，更新所有内容包括：'
 - en: '[PRE0]'
+  id: totrans-9
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: When this has been resolved in a satisfactory manner (a non-trivial task for
     platforms with Windows), the code hunting can begin.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 当这个问题在一个令人满意的方式下解决（对于Windows平台来说是一个非平凡的任务）后，代码猎取就可以开始了。
 - en: '* * *'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Grab your equipment.* What? You mean to say you’ve wandered into this maze
     and you don’t even know how to tell you’ve gotten to your destination? That’s
     no good... you’ll need a dousing rod of some sort... something to tell you when
     you’ve got it right.'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: '*准备好你的设备。* 什么？你是说你迷失在这个迷宫中，连知道如何确认你已到达目的地的方法都没有？那可不行... 你需要某种寻找正确方向的工具... 一些能告诉你什么时候找对了的东西。'
 - en: 'In this particular case, the original bug reporter had written up a small,
     incomplete test script, so the first thing I did was [flesh it out](http://hackage.haskell.org/trac/ghc/ticket/4262#comment:3)
     into a script that required no human interaction. The benchmark for the new script
     was clear: `/proc/PID/task` should report a number substantially smaller than
     200\. To see that the current implementation is broken:'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这个特定情况下，原始的 bug 报告者已经写了一个小的不完整的测试脚本，所以我做的第一件事就是把它[完善](http://hackage.haskell.org/trac/ghc/ticket/4262#comment:3)成一个不需要人为交互的脚本。新脚本的基准很明确：`/proc/PID/task`
+    应该报告一个远小于200的数字。为了看到当前实现存在问题：
 - en: '[PRE1]'
+  id: totrans-14
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: '* * *'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Getting your bearings.* Ok, so what do we want? We want threads to die instead
     of hanging around. There are two ways to do this: have the thread commit seppuku
     when it realizes it isn’t wanted, or have some manager kill the thread as necessary.
     The later is generally considered poor form, since you want to make sure the threads
     aren’t doing anything critical that will get corrupted if they die. So seppuku
     it is. Here, now, there are two questions:'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: '*摸清方向。* 好的，我们想要什么？我们希望线程不再闲置而是结束掉。有两种方法可以做到这一点：当线程意识到不需要它时，让它自行了断，或者在必要时由某个管理器杀死线程。后者通常被认为是不好的做法，因为你希望确保线程不在死亡时执行任何可能导致数据损坏的关键任务。因此，自行了断是最好的选择。现在，有两个问题：'
 - en: When does the thread decide to go into a waiting pool? This is presumably where
     we’d want it to terminate itself instead.
+  id: totrans-17
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 线程何时决定进入等待池？这大概是我们希望它终止自身的地方。
 - en: How would the thread decide whether or not it should hang around or bug out?
+  id: totrans-18
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 线程如何决定它是否应该继续停留或者退出？
 - en: '* * *'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Mapping out the land.* GHC has this little runtime flag called `-Ds`. It’s
     pretty useful: it dumps out a whole gaggle of debug information concerning threads,
     which is precisely what we’d like to look for. Our plan of action is to look at
     what the thread activity looks like in our test script, and identify the points
     at which threads should be dying instead of hanging around.'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: '*绘制地图.* GHC 有一个叫做 `-Ds` 的小运行时标志。它非常有用：它会输出关于线程的一大堆调试信息，这正是我们想要查找的。我们的行动计划是查看我们的测试脚本中线程活动的情况，并确定线程应该死亡而不是徘徊的点。'
 - en: 'The very beginning of the log looks like this:'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 日志的开头看起来像这样：
 - en: '[PRE2]'
+  id: totrans-22
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'Note the number `b75006d0`; that’s our main thread and it’s going to be quite
     a busy beaver. Here is the very first thread we spin off to make a foreign call,
     but it finishes fairly quickly and isn’t the foreign call we are looking for:'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意数字 `b75006d0`；那是我们的主线程，它将非常忙碌。这是我们首次启动的线程，用来进行一个外部调用，但完成得相当快，并不是我们正在寻找的外部调用：
 - en: '[PRE3]'
+  id: totrans-24
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'Not before long, we see a veritable avalanche of new threads being created
     and added to the run queue—these are our threads:'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 不久之后，我们看到一大堆新线程被创建并添加到运行队列中——这些就是我们的线程：
 - en: '[PRE4]'
+  id: totrans-26
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: 'The process continues until we’ve spawned them all:'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个过程一直持续，直到我们把它们都生成出来：
 - en: '[PRE5]'
+  id: totrans-28
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 'And then, since there’s nothing to do (all of our threads are in FFI land),
     we go and run a major GC:'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，因为没有什么可做的（我们所有的线程都在 FFI land 中），我们进行了一次大的 GC：
 - en: '[PRE6]'
+  id: totrans-30
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: (I’ve always kind of wondered whether or not FFI calls should be considered
     deadlocked.)
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: （我一直在想 FFI 调用是否应该被视为死锁。）
 - en: 'Now the threads start coming back from FFI-land and idling:'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在线程开始从 FFI-land 回来并处于空闲状态：
 - en: '[PRE7]'
+  id: totrans-33
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: 'I''ve actually cheated a little: the `there are X spare workers` debug statements
     I added myself. But this section is golden; we’re specifically interested in these
     lines:'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 我其实有点作弊：`there are X spare workers` 的调试语句是我自己添加的。但这一部分很重要；我们特别感兴趣的是这些行：
 - en: '[PRE8]'
+  id: totrans-35
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: The thread stops, but it doesn’t die, it just gives up the capability. These
     are two extremely good candidates for where the thread might alternately decide
     to kill itself.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 线程停止了，但它并没有死，它只是放弃了能力。这两个地方非常适合线程可能会选择杀死自己的地方。
 - en: '* * *'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Placemarkers.* It’s time to bust out the trusty old `grep` and figure out
     where these debug messages are being emitted from. Unfortunately, `5` and `finished`
     are probably dynamically generated messages, so `stopped` is the only real identifier.
     Fortunately, that’s specific enough for me to find the right line in the RTS:'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: '*地标.* 是时候用信赖的 `grep` 搞清楚这些调试消息是从哪里发出的了。不幸的是，`5` 和 `finished` 可能是动态生成的消息，所以
+    `stopped` 是我们能找到的唯一真正的标识符。幸运的是，这足够具体，让我能找到 RTS 中正确的行：'
 - en: '[PRE9]'
+  id: totrans-39
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: 'That line in `Trace.c` is actually in a generic debugging function `traceSchedEvent_stderr`,
     but fortunately there’s a big case statement on one of its arguments `tag`:'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: '`Trace.c` 中的那一行实际上是在一个通用的调试函数 `traceSchedEvent_stderr` 中，但幸运的是，其中有一个关于其参数 `tag`
+    的大 `case` 语句：'
 - en: '[PRE10]'
+  id: totrans-41
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: 'So `EVENT_STOP_THREAD` is a good next grep. And sure enough:'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以 `EVENT_STOP_THREAD` 是一个很好的下一个 `grep`。确实如此：
 - en: '[PRE11]'
+  id: totrans-43
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: 'It looks to be an inline function in `Trace.h`:'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 它看起来是 `Trace.h` 中的一个内联函数：
 - en: '[PRE12]'
+  id: totrans-45
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: 'Classy. So `traceEventStopThread` is the magic word, and sure enough:'
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: Classy. 所以 `traceEventStopThread` 就是那个魔法词，确实：
 - en: '[PRE13]'
+  id: totrans-47
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: There are two plausible sites in `Schedule.c`.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 `Schedule.c` 中有两个可能的位置。
 - en: '* * *'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Going digging.* We first have to pick which site to inspect more closely.
     Fortunately, we notice that the second trace event corresponds to suspending the
     thread before going into a safe FFI call; that''s certainly not what we''re looking
     at here. Furthermore, the first is in the scheduler, which makes a lot of sense.
     But there’s nothing obvious in this vicinity that you might associate with saving
     a worker task away due to lack of work.'
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: '*开始挖掘.* 首先我们得选一个站点仔细检查。幸运的是，我们注意到第二个跟踪事件对应于在进行安全的 FFI 调用之前暂停线程；那肯定不是我们这里要找的。此外，第一个在调度器中，这很有道理。但在这附近并没有明显的东西，你可能会把它与由于工作不足而保存工作任务关联起来。'
 - en: 'What about that `giving up` capability message? Some more grepping reveals
     it to be in the `yieldCapability` function (like one might expect). If we then
     trace backwards calls to `yieldCapability`, we see it is invoked by `scheduleYield`,
     which is in turn called by the scheduler loop:'
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 那个 `giving up` 能力消息呢？再多找一下发现它在 `yieldCapability` 函数里（正如我们所料）。如果我们追踪 `yieldCapability`
+    的调用，我们看到它是由 `scheduleYield` 调用的，而 `scheduleYield` 又被调度循环调用：
 - en: '[PRE14]'
+  id: totrans-52
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE14]'
 - en: 'This is very, very interesting. It suggests that the capability itself will
     tell us whether or not the work to do, and that `yieldCapability` is a promising
     function to look further into:'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 这非常非常有趣。它表明能力本身将告诉我们是否要进行工作，而`yieldCapability`是一个有希望进一步探索的函数：
 - en: '[PRE15]'
+  id: totrans-54
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE15]'
 - en: 'That last call looks intriguing:'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后那个调用看起来很有趣：
 - en: '[PRE16]'
+  id: totrans-56
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE16]'
 - en: We’ve found it!
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们找到了！
 - en: '* * *'
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Checking the area.* The `spare_workers` queue looks like the queue in which
     worker threads without anything to do go to chill out. We should verify that this
     is the case:'
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: '*检查区域。* `spare_workers` 队列看起来像是那些没有工作可做的工作线程去放松的队列。我们应该验证这是否属实：'
 - en: '[PRE17]'
+  id: totrans-60
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE17]'
 - en: 'Indeed, as we saw in the debug statements above, this was indeed the case:
     the number of spare workers kept increasing:'
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 确实，正如我们在上面的调试语句中看到的那样，情况确实如此：空闲工作者的数量不断增加：
 - en: '[PRE18]'
+  id: totrans-62
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE18]'
 - en: '* * *'
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Writing up the solution.* So, the patch from here is simple, since we’ve found
     the correct location. We check if the queue of spare workers is at some number,
     and if it is, instead of saving ourselves to the queue we just cleanup and then
     kill ourselves:'
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: '*撰写解决方案。* 因此，从这里的补丁很简单，因为我们已经找到了正确的位置。我们检查一下空闲工作者的队列是否在某个数量，并且如果是的话，我们不再保存自己到队列中，而是清理然后自杀：'
 - en: '[PRE19]'
+  id: totrans-65
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE19]'
 - en: 'And then we test see that this indeed has worked:'
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后我们测试看到这确实起作用了：
 - en: '[PRE20]'
+  id: totrans-67
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE20]'
 - en: '* * *'
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Postscript.* There are some obvious deficiencies with this proof-of-concept.
     It’s not portable. We need to convince ourselves that this truly does all of the
     cleanup that the RTS expects a worker to do. Maybe our data representation could
@@ -276,5 +420,8 @@
     we’ll be storing is fixed.) But these are questions best answered by someone who
     knows the RTS better, so at this point I [sent in the proof of concept](http://www.haskell.org/pipermail/glasgow-haskell-users/2010-November/019503.html)
     for further review. Fingers crossed!'
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: '*附言*。这个概念验证中存在一些明显的不足。它不具备可移植性。我们需要确信这确实完成了 RTS 期望工作者执行的所有清理工作。也许我们的数据表示可以更有效（如果我们存储的值数量是固定的，我们显然不需要链表）。但这些问题最好由更了解
+    RTS 的人来回答，因此我目前已经[提交了这个概念验证](http://www.haskell.org/pipermail/glasgow-haskell-users/2010-November/019503.html)以供进一步审查。祈祷顺利！'

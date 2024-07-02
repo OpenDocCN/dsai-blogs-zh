@@ -1,69 +1,98 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:17:05'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:17:05
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'cabal new-build is a package manager : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: cabal new-build是一个包管理器：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2016/08/cabal-new-build-is-a-package-manager/](http://blog.ezyang.com/2016/08/cabal-new-build-is-a-package-manager/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2016/08/cabal-new-build-is-a-package-manager/](http://blog.ezyang.com/2016/08/cabal-new-build-is-a-package-manager/)
 - en: 'An old article I occasionally see cited today is [Repeat after me: "Cabal is
     not a Package Manager"](https://ivanmiljenovic.wordpress.com/2010/03/15/repeat-after-me-cabal-is-not-a-package-manager/).
     Many of the complaints don''t apply to cabal-install 1.24''s new [Nix-style local
     builds](http://blog.ezyang.com/2016/05/announcing-cabal-new-build-nix-style-local-builds/).
     Let''s set the record straight.'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 今天偶尔会看到引用的一篇旧文章是[重复一遍："Cabal不是一个包管理器"](https://ivanmiljenovic.wordpress.com/2010/03/15/repeat-after-me-cabal-is-not-a-package-manager/)。很多批评不适用于cabal-install
+    1.24的新[Nix风格本地构建](http://blog.ezyang.com/2016/05/announcing-cabal-new-build-nix-style-local-builds/)。让我们澄清一下。
 - en: 'Fact: cabal new-build doesn''t handle non-Haskell dependencies'
+  id: totrans-7
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 事实：cabal new-build不处理非Haskell依赖项
 - en: 'OK, so this is one thing that hasn''t changed since Ivan''s article. Unlike
     Stack, `cabal new-build` will not handle downloading and installing GHC for you,
     and like Stack, it won''t download and install system libraries or compiler toolchains:
     you have to do that yourself. This is definitely a case where you should lean
     on your system package manager to bootstrap a working installation of Cabal and
     GHC.'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 好的，这是自Ivan的文章以来没有改变的一点。与Stack不同，`cabal new-build`不会帮助你下载和安装GHC，并且像Stack一样，它也不会下载和安装系统库或编译器工具链：这些都需要你自己来做。在这种情况下，你应该依赖于系统包管理器来启动Cabal和GHC的工作安装。
 - en: 'Fact: The Cabal file format can record non-Haskell pkg-config dependencies'
+  id: totrans-9
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 事实：Cabal文件格式可以记录非Haskell的pkg-config依赖项。
 - en: Since 2007, the Cabal file format has a `pkgconfig-depends` field which can
     be used to specify dependencies on libraries understood by the [pkg-config](https://en.wikipedia.org/wiki/Pkg-config)
     tool. It won't install the non-Haskell dependency for you, but it can let you
     know early on if a library is not available.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 自2007年起，Cabal文件格式有一个`pkgconfig-depends`字段，可用于指定对由[pkg-config](https://en.wikipedia.org/wiki/Pkg-config)工具理解的库的依赖关系。它不会为您安装非Haskell依赖项，但它可以让您提前知道某个库是否不可用。
 - en: In fact, cabal-install's dependency solver knows about the `pkgconfig-depends`
     field, and will pick versions and set flags so that we don't end up with a package
     with an unsatisfiable pkg-config dependency.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 实际上，cabal-install的依赖解决器了解`pkgconfig-depends`字段，并会选择版本并设置标志，以便我们不会得到一个具有不可满足的pkg-config依赖的包。
 - en: 'Fact: cabal new-build can upgrade packages without breaking your database'
+  id: totrans-12
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 事实：cabal new-build可以升级包而不会破坏你的数据库
 - en: Suppose you are working on some project which depends on a few dependencies.
     You decide to upgrade one of your dependencies by relaxing a version constraint
     in your project configuration. After making this change, all it takes is a `cabal
     new-build` to rebuild the relevant dependency and start using it. That's it! Even
     better, if you had an old project using the old dependency, well, it still is
     working, just as you would hope.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设你正在开发一个依赖于几个依赖项的项目。你决定通过放宽项目配置中的版本约束来升级其中一个依赖项。做出这些改变后，只需运行`cabal new-build`重新构建相关的依赖项并开始使用它。就是这样！更好的是，如果你有一个使用旧依赖项的旧项目，它仍然能够正常工作，就像你希望的那样。
 - en: What is actually going on is that `cabal new-build` doesn't do anything like
     a traditional upgrade. Packages installed to `cabal new-build`'s global store
     are uniquely identified by a Nix-style identifier which captures *all* of the
@@ -71,31 +100,43 @@
     that were built against. Thus, a package "upgrade" actually is just the installation
     of a package under a different unique identifier which can coexist with the old
     one. You will never end up with a broken package database because you typed `new-build`.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: '`cabal new-build`实际上并不像传统的升级那样工作。安装到`cabal new-build`全局存储的包是通过类似Nix的标识符唯一标识的，该标识符包含了影响构建的所有信息，包括构建所依赖的具体版本。因此，“升级”一个包实际上只是安装一个使用不同唯一标识符的包，这个包可以与旧版本共存。你永远不会因为输入`new-build`而导致包数据库损坏。'
 - en: 'There is not presently a mechanism for *removing* packages besides deleting
     your store (`.cabal/store`), but it is worth noting that deleting your store is
     a completely safe operation: `cabal new-build` won''t decide that it wants to
     build your package differently if the store doesn''t exist; the store is purely
     a cache and does *not* influence the dependency solving process.'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 目前没有*删除*软件包的机制，除非删除您的存储（`.cabal/store`），但值得注意的是，删除您的存储是完全安全的操作：如果存储不存在，`cabal
+    new-build` 不会决定以不同方式构建您的软件包；存储仅仅是一个缓存，*不*影响依赖解决过程。
 - en: 'Fact: Hackage trustees, in addition to package authors, can edit Cabal files
     for published packages to fix bugs'
+  id: totrans-16
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 事实：除了软件包作者外，Hackage 受托人还可以编辑已发布软件包的 Cabal 文件以修复错误。
 - en: If a package is uploaded with bad version bounds and a subsequent new release
     breaks them, a [Hackage Trustee](https://www.haskell.org/wiki/Hackage_trustees)
     can intervene, making a modification to the Cabal file to update the version bounds
     in light of the new information. This is a more limited form of intervention than
     the patches of Linux distributions, but it is similar in nature.
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果上传的软件包带有错误的版本范围，并且随后的新版本破坏了这些范围，[Hackage 受托人](https://www.haskell.org/wiki/Hackage_trustees)
+    可以介入，修改 Cabal 文件以根据新信息更新版本范围。这是一种比 Linux 发行版补丁更有限的干预形式，但其本质类似。
 - en: 'Fact: If you can, use your system package manager'
+  id: totrans-18
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 事实：如果可能的话，请使用您的系统包管理器。
 - en: '`cabal new-build` is great, but it''s not for everyone. If you just need a
     working `pandoc` binary on your system and you don''t care about having the latest
     and greatest, you should download and install it via your operating system''s
@@ -104,8 +145,13 @@
     way to get a working install of OpenGL). `cabal new-build` is oriented at developers
     of Haskell packages, who need to build and depend on packages which are not distributed
     by the operating system.'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: '`cabal new-build` 很棒，但并非人人都适用。如果您只需在系统上安装一个可工作的`pandoc`二进制文件，并且不介意是否有最新的版本，您应该通过操作系统的包管理器下载和安装它。发行版软件包非常适合二进制文件；对于开发人员来说，它们的库通常太旧（尽管这通常是获得工作
+    OpenGL 安装的最简单方法）。`cabal new-build` 面向的是 Haskell 软件包的开发人员，他们需要构建并依赖于操作系统未分发的软件包。'
 - en: I hope this post clears up some misconceptions!
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 我希望这篇文章能消除一些误解！

@@ -1,70 +1,106 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:42'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:42'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Facebook support for BarnOwl : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: BarnOwl 的 Facebook 支持：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2011/07/facebook-support-for-barnowl/](http://blog.ezyang.com/2011/07/facebook-support-for-barnowl/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/07/facebook-support-for-barnowl/](http://blog.ezyang.com/2011/07/facebook-support-for-barnowl/)
 - en: Facebook support for BarnOwl
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: BarnOwl 的 Facebook 支持
 - en: This one's for the MIT crowd. This morning, I finished my [Facebook module for
     BarnOwl](https://github.com/ezyang/barnowl) to my satisfaction (my satisfaction
     being asynchronous support for Facebook API calls, i.e. no more random freezing!)
     Getting it to run on Linerva was a bit involved, however, so here is the recipe.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是专为 MIT 的人群准备的。今天早上，我满意地完成了我对 [BarnOwl 的 Facebook 模块](https://github.com/ezyang/barnowl)
+    的修改（我的满意度表现在对 Facebook API 调用的异步支持上，即不再随机冻结！）。但是，让它在 Linerva 上运行有点复杂，所以这里有个详细的步骤。
 - en: 'Setup a local CPAN installation using the [instructions at sipb.mit.edu](http://sipb.mit.edu/doc/cpan/),
     using `local::lib`. Don’t forget to add the setup code to `.bashrc.mine`, not
     `.bashrc`, and then source them. Don''t forget to follow prerequisites: otherwise,
     CPAN will give a lot of prompts.'
+  id: totrans-8
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用 [MIT 网站上的说明](http://sipb.mit.edu/doc/cpan/) 设置本地 CPAN 安装，使用 `local::lib`。不要忘记将设置代码添加到
+    `.bashrc.mine`，而不是 `.bashrc`，然后进行源操作。不要忘记遵循先决条件：否则，CPAN 将会提示很多信息。
 - en: Install all of the CPAN dependencies you need. For the Facebook module, this
     means `Facebook::Graph` and `AnyEvent::HTTP`. I suggest using `notest`, since
     `Any::Moose` seems to fail a harmless test on Linerva. `Facebook::Graph` fails
     several tests, but don't worry about it since we'll be using a pre-packaged version.
     If you want to use other modules, you will need to install them in CPAN as well.
+  id: totrans-9
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 安装所有你需要的 CPAN 依赖项。对于 Facebook 模块，这意味着需要安装 `Facebook::Graph` 和 `AnyEvent::HTTP`。我建议使用
+    `notest`，因为 `Any::Moose` 在 Linerva 上似乎会失败一个无害的测试。`Facebook::Graph` 失败了几个测试，但不用担心，因为我们将使用预打包版本。如果你想使用其他模块，你也需要在
+    CPAN 中安装它们。
 - en: Clone BarnOwl to a local directory (`git clone git://github.com/ezyang/barnowl.git
     barnowl`), `./autogen.sh`, `configure` and `make`.
+  id: totrans-10
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 克隆 BarnOwl 到本地目录 (`git clone git://github.com/ezyang/barnowl.git barnowl`)，然后运行
+    `./autogen.sh`，`configure` 和 `make`。
 - en: Run using `./barnowl`, and then type the command `:facebook-auth` and follow
     the instructions!
+  id: totrans-11
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用 `./barnowl` 运行，然后输入命令 `:facebook-auth` 并按照说明操作！
 - en: Happy Facebooking!
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 欢迎使用 Facebook！
 - en: '*Postscript.* I am really, really surprised that there is not a popular imperative
     language that has green threads and pre-emptive scheduling, allowing you to actually
     write code that looks blocking, although it uses an event loop under the hood.
     Maybe it’s because being safe while being pre-emptive is hard...'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: '*附言.* 我真的很惊讶，竟然没有一种流行的命令式语言有绿色线程和抢占式调度，允许你实际上编写看起来是阻塞的代码，尽管它在内部使用事件循环。也许这是因为在保证安全性的同时进行抢占是很难的……'
 - en: '*Known bugs.* Read/write authentication bug has been fixed. We seem to be tickling
     some bugs in BarnOwl''s event loop implementation, which is causing crashing on
     the order of day (making it tough to debug). Keep a backup instance of BarnOwl
     handy.'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: '*已知的 bug.* 读/写验证 bug 已修复。我们似乎在 BarnOwl 的事件循环实现中触发了一些 bug，这导致每天都会出现崩溃（这使得调试变得困难）。保持备份的
+    BarnOwl 实例是个好主意。'

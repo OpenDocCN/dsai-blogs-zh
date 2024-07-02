@@ -1,39 +1,58 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:26'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:26'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Generalizing the programmable semicolon : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 泛化可编程分号：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2012/10/generalizing-the-programmable-semicolon/](http://blog.ezyang.com/2012/10/generalizing-the-programmable-semicolon/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2012/10/generalizing-the-programmable-semicolon/](http://blog.ezyang.com/2012/10/generalizing-the-programmable-semicolon/)
 - en: '*Caveat emptor: half-baked research ideas ahead.*'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: '*购买者注意：前方有半成品研究思路。*'
 - en: What is a monad? One answer is that it is a way of sequencing actions in a non-strict
     language, a way of saying “this should be executed before that.” But another answer
     is that it is programmable semicolon, a way of implementing custom side-effects
     when doing computation. These include bread and butter effects like state, control
     flow and nondeterminism, to more exotic ones such as [labeled IO](http://hackage.haskell.org/package/lio).
     Such functionality is useful, even if you don’t need monads for sequencing!
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 什么是单子（monad）？一个答案是，它是在非严格语言中排序操作的一种方式，一种表达“这应该在那之前执行”的方式。但另一个答案是，它是可编程分号，一种在进行计算时实现自定义副作用的方式。这些包括基本的效果，如状态、控制流和非确定性，以及更奇特的效果，比如[labeled
+    IO](http://hackage.haskell.org/package/lio)。即使你不需要单子来排序，这样的功能也是有用的！
 - en: 'Let’s flip this on its head: what does a programmable semicolon look like for
     a call-by-need language? That is, can we get this extensibility without sequencing
     our computation?'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们来个大逆转：对于按需调用语言来说，可编程分号会是什么样子呢？也就是说，我们能否在不对计算进行排序的情况下实现这种可扩展性呢？
 - en: 'At first glance, the answer is no. Most call-by-value languages are unable
     to resist the siren’s song of side effects, but in call-by-need side effects are
     sufficiently painful that Haskell has managed to avoid them (for the most part!)
@@ -46,43 +65,59 @@
     call-by-need.” Paul Levy is not saying that for pure call-by-need, there are no
     denotational semantics (these semantics coincide exactly with call-by-name, call-by-need’s
     non-memoizing cousin), but that when you add side-effects, things go out the kazoo.'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 乍一看，答案是否定的。大多数按值调用语言无法抵制副作用的诱惑，但在按需调用中，副作用是足够痛苦的，以至于 Haskell 设法避免了它们（在大多数情况下！）任何使用过带有
+    `NOINLINE` 修饰的 `unsafePerformIO` 的人都可以证明这一点：依赖于优化，效果可能会执行一次，或者执行多次！正如保罗·列维所说：“第三种评估方法，按需调用，对于实现目的是有用的。但它缺乏干净的指称语义——至少对于除了发散和不规则选择之外的效果来说是如此，它们的特殊属性被利用在[Hen80]中提供按需模型。”所以我们不考虑按需调用。保罗·列维并不是说对于纯按需调用，没有指称语义（这些语义与称为名字调用的语义完全一致），而是当你添加副作用时，事情变得复杂。
 - en: 'But there’s a hint of an angle of attack here: Levy goes on to show how to
     discuss side effects in call-by-name, and has no trouble specifying the denotational
     semantics here. Intuitively, the reason for this is that in call-by-name, all
     uses (e.g. case-matches) on lazy values with an effect attached cause the effect
     to manifest. Some effects may be dropped (on account of their values never being
     used), but otherwise, the occurrence of effects is completely deterministic.'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 但是这里有一个攻击角度的提示：列维继续展示了如何在名字调用中讨论副作用，并且在这里指定指称语义毫无困难。直觉上来看，其原因在于，在名字调用中，所有对带有附加效果的延迟值的使用（例如
+    case-matches）都会导致效果显现。一些效果可能会被丢弃（因为它们的值从未被使用），但除此之外，效果的发生完全是确定性的。
 - en: Hmm!
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 嗯！
 - en: 'Of course, we could easily achieve this by giving up memoization, but that
     is a bitter pill to swallow. So our new problem is this: *How can we recover effectful
     call-by-name semantics while preserving sharing?*'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 当然，我们可以轻松通过放弃记忆化来实现这一点，但这是一个难以接受的牺牲。因此，我们的新问题是：*如何在保留共享的同时恢复具有影响力的按名字调用语义？*
 - en: 'In the case of the `Writer` monad, we can do this with all of the original
     sharing. The procedure is very simple: every thunk `a` now has type `(w, a)` (for
     some fixed monoidal `w`). This tuple can be shared just as the original `a` was
     shared, but now it also has an effect `w` embedded with it. Whenever `a` would
     be forced, we simply append effect to the `w` of the resulting thunk. Here is
     a simple interpreter which implements this:'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 在`Writer`单子的情况下，我们可以保留所有原始共享。过程非常简单：每个thunk `a` 现在的类型是`(w, a)`（对于某个固定的单子`w`）。这个元组可以像原始的`a`一样共享，但现在它还有一个嵌入的效果`w`。每当`a`被强制时，我们简单地将效果追加到结果thunk的`w`中。下面是一个简单的解释器，实现了这一点：
 - en: '[PRE0]'
+  id: totrans-14
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'Though the final print out is `"122"` (the two shows up twice), the actual
     addition of 2 to 3 only occurs once (which you should feel free to verify by adding
     an appropriate tracing call). You can do something similar for `Maybe`, by cheating
     a little: since in the case of `Nothing` we have no value for `x`, we offer bottom
     instead. We will never get called out on it, since we always short-circuit before
     anyone gets to the value.'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管最终输出是`"122"`（数字`2`出现两次），但将`2`添加到`3`的实际加法只发生了一次（您可以通过添加适当的跟踪调用来验证）。对于`Maybe`，您可以做类似的事情：通过稍微作弊，因为在`Nothing`的情况下，我们没有`x`的值，我们提供bottom。我们永远不会被追究，因为我们总是在任何人获得值之前就进行了短路。
 - en: 'There is a resemblance here to applicative functors, except that we require
     even more stringent conditions: not only is the control flow of the computation
     required to be fixed, but the value of the computation must be fixed too! It should
@@ -91,21 +126,29 @@
     following signature and law (reminiscent of inverses), which would need to be
     implementable by any monad you would want to do this procedure on (actually, you
     don’t even need a monad; a functor will do):'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里与应用函子有些相似之处，但我们要求更严格的条件：不仅计算的控制流需要固定，计算的值也必须固定！很明显，我们无法为大多数单子做到这一点。昨天在[Twitter](https://twitter.com/ezyang/status/253258690688344064)，我提出了以下签名和定律（回想起逆元），任何您想要对此过程执行的单子都必须实现这些：
 - en: '[PRE1]'
+  id: totrans-17
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: but it seemed only `Writer` had the proper structure to pull this off properly
     (being both a monad and a comonad). This is a shame, because the application I
     had in mind for this bit of theorizing needs the ability to allocate cells.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 但似乎只有`Writer`具有适当的结构来正确执行这一点（既是单子又是余单子）。这很遗憾，因为我想要进行这种理论化的应用需要分配单元的能力。
 - en: 'Not all is lost, however. Even if full sharing is not possible, you might be
     able to pull off partial sharing: a sort of bastard mix of full laziness and partial
     evaluation. Unfortunately, this would require substantial and invasive changes
     to your runtime (and I am not sure how you would do it if you wanted to CPS your
     code), and so at this point I put away the problem, and wrote up this blog post
     instead.'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，并非一无所获。即使无法完全共享，您仍可能实现部分共享：一种完全惰性和部分求值的混合体。不幸的是，这将需要对您的运行时进行重大和侵入性的更改（如果您想要将您的代码转换为CPS，我不确定您将如何做到这一点），因此在这一点上我放下了这个问题，而是写了这篇博客文章。

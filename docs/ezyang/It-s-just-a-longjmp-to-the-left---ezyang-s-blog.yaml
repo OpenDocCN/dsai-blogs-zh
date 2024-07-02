@@ -1,26 +1,40 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:03'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:03'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'It’s just a longjmp to the left : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 'It’s just a longjmp to the left : ezyang’s blog'
 - en: 来源：[http://blog.ezyang.com/2010/11/its-just-a-longjmp-to-the-left/](http://blog.ezyang.com/2010/11/its-just-a-longjmp-to-the-left/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/11/its-just-a-longjmp-to-the-left/](http://blog.ezyang.com/2010/11/its-just-a-longjmp-to-the-left/)
 - en: '*And then a signal to the ri-i-i-ight.*'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: '*然后向右边发出信号。*'
 - en: One notable wart with readline is that if you `^C` during the prompt, nothing
     happens, and if you do a second `^C` (and weren’t buggering around with the signal
     handlers) your entire program unceremoniously terminates. That’s not very nice!
@@ -29,16 +43,24 @@
     and not completely break the library’s internal state (they do this with liberal
     masking and unmasking, and their own signal handler which cleans up and then rethrows
     the signal).
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个与 readline 相关的明显缺陷是，如果在提示期间按下`^C`，什么也不会发生，如果再次按下`^C`（并且没有在信号处理程序中搞砸），整个程序将不情不愿地终止。那不太好！幸运的是，`readline`似乎是少数几个确实投入了一些工作来确保您可以从信号处理程序中
+    longjmp 出来而不完全破坏库内部状态的 C 库之一（他们通过自由掩码和解除掩码，以及他们自己的信号处理程序来做到这一点，清理然后重新抛出信号）。
 - en: So I decided I was going to see if I could patch up readline to `longjmp` out
     of the signal handler (signal provided by [yours truly](http://blog.ezyang.com/2010/09/towards-platform-agnostic-interruptibility/))
     and give control back to Haskell. This monstrosity resulted.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以我决定看看能否修补 readline，使其能从信号处理程序（由[yours truly](http://blog.ezyang.com/2010/09/towards-platform-agnostic-interruptibility/)提供的信号）中的
+    longjmp 中恢复控制权，并将控制权交还给 Haskell。这个怪物就这样诞生了。
 - en: '[PRE0]'
+  id: totrans-9
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'It actually works pretty wonderfully, despite the somewhat circuitous route
     the signal takes: the SIGINT will first get handled by *readline’s* installed
     signal handler, which will clean up changes to the terminal and then rethrow it
@@ -52,13 +74,21 @@
     we clean up the terminal, and then we hit our signal handler, which longjmps to
     a `return NULL` which will take us back to Haskell. And then the signal is caught
     and there is much rejoicing.'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 它实际上运行得非常好，尽管信号的路径有些迂回：SIGINT 首先由*readline*安装的信号处理程序处理，它会清理终端的更改，然后重新抛出到 GHC
+    的信号处理程序。 GHC 将告诉 IO 管理器发生了信号，然后返回到 readline 的内部（它重新安装了终端的所有更改）。然后，IO 管理器读取信号，并发送一个`ThreadKilled`异常，这将导致
+    RTS 尝试中断外部调用。`SIGALRM`（实际上，这是一个谎言，GHC 中的代码发送了一个`SIGPIPE`，但 readline 认为`SIGPIPE`不是应该清理的信号，所以我改变了它——欢迎更好的建议）再次命中
+    readline 的信号处理程序，我们清理终端，然后命中我们的信号处理程序，它 longjmp 到一个`return NULL`，这将把我们带回 Haskell。然后捕获信号，大家都很高兴。
 - en: Unfortunately, almost all of that code is boilerplate and I can’t stick it in
     a nice Haskell combinator because the when Haskell is executing there’s no stack
     to speak of, and I bet a `setjmp` FFI call would make the RTS very confused. It’s
     also not reentrant although I doubt `readline` is reentrant either. And of course,
     nonlocal control transfer from a signal handler is something your Mom always told
     you not to do. So this approach probably doesn’t generalize. But it’s pretty amusing.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 不幸的是，几乎所有的代码都是样板，我不能把它放进一个漂亮的 Haskell 组合器中，因为当 Haskell 在执行时，几乎没有堆栈可言，我敢打赌一个`setjmp`的
+    FFI 调用会让 RTS 非常困惑。它也不是可重入的，尽管我怀疑`readline`也不是可重入的。当然，从信号处理程序进行非本地控制转移是你妈妈告诉你不要做的事情。所以这种方法可能不通用。但它相当有趣。

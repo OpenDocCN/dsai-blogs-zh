@@ -1,51 +1,77 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:16'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:16'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'The Haskell Preprocessor Hierarchy : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Haskell 预处理器层次结构：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2010/06/the-haskell-preprocessor-hierarchy/](http://blog.ezyang.com/2010/06/the-haskell-preprocessor-hierarchy/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/06/the-haskell-preprocessor-hierarchy/](http://blog.ezyang.com/2010/06/the-haskell-preprocessor-hierarchy/)
 - en: This post is part of what I hope will be a multi-part tutorial/cookbook series
     on using [c2hs](http://www.cse.unsw.edu.au/~chak/haskell/c2hs/) ([Hackage](http://hackage.haskell.org/cgi-bin/hackage-scripts/package/c2hs)).
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 本篇文章是我希望能成为关于使用 [c2hs](http://www.cse.unsw.edu.au/~chak/haskell/c2hs/) 的多部教程/食谱系列之一。（[Hackage](http://hackage.haskell.org/cgi-bin/hackage-scripts/package/c2hs/)）
 - en: The Haskell Preprocessor Hierarchy (this post)
+  id: totrans-7
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: Haskell 预处理器层次结构（本文）
 - en: '[Setting up Cabal, the FFI and c2hs](http://blog.ezyang.com/2010/06/setting-up-cabal-the-ffi-and-c2hs/)'
+  id: totrans-8
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[配置 Cabal、FFI 和 c2hs](http://blog.ezyang.com/2010/06/setting-up-cabal-the-ffi-and-c2hs/)'
 - en: '[Principles of FFI API design](http://blog.ezyang.com/2010/06/principles-of-ffi-api-design/)'
+  id: totrans-9
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[FFI API 设计原则](http://blog.ezyang.com/2010/06/principles-of-ffi-api-design/)'
 - en: '[First steps in c2hs](http://blog.ezyang.com/2010/06/first-steps-in-c2hs/)'
+  id: totrans-10
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[c2hs 的第一步](http://blog.ezyang.com/2010/06/first-steps-in-c2hs/)'
 - en: '[Marshalling with get an set](http://blog.ezyang.com/2010/06/marshalling-with-get-and-set/)'
+  id: totrans-11
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[使用 get 和 set 进行数据整理](http://blog.ezyang.com/2010/06/marshalling-with-get-and-set/)'
 - en: '[Call and fun: marshalling redux](http://blog.ezyang.com/2010/06/call-and-fun-marshalling-redux/)'
+  id: totrans-12
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '[调用和乐趣：重新整理马歇尔](http://blog.ezyang.com/2010/06/call-and-fun-marshalling-redux/)'
 - en: '*What''s c2hs?* c2hs is a Haskell preprocessor to help people generate [foreign-function
     interface](http://www.haskell.org/haskellwiki/FFI_Introduction) bindings, along
     with [hsc2hs](http://www.haskell.org/ghc/docs/6.12.2/html/users_guide/hsc2hs.html)
@@ -56,98 +82,146 @@
     implement some set of Cpp''s functionality. I decided on an order for Alex and
     Happy on the grounds that Alex was a lexer generator, while Happy was a parser
     generator.)'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: '*c2hs 是什么？* c2hs 是一个 Haskell 预处理器，帮助生成 [外部函数接口](http://www.haskell.org/haskellwiki/FFI_Introduction)
+    绑定，与 [hsc2hs](http://www.haskell.org/ghc/docs/6.12.2/html/users_guide/hsc2hs.html)
+    和 [GreenCard](http://www.haskell.org/greencard/) 一起。（下图展示了 Cabal 支持的当前预处理器。）（对于好奇的人来说，Cpp
+    被放在其他 FFI 预处理器中，并不是因为它特别有用于生成 FFI 代码，而是因为许多 FFI 预处理器也实现了一些 Cpp 的功能。我根据 Alex 是一个词法分析器生成器，而
+    Happy 是一个语法分析器生成器的原则来确定了它们的顺序。）'
 - en: '*What does c2hs do?* Before I tell you what c2hs does, let me tell you what
     it does *not* do: it does *not* magically eliminate your need to understand the
     FFI specification. In fact, it will probably let you to write bigger and more
     ambitious bindings, which in turn will test your knowledge of the FFI. (More on
     this later.)'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: '*c2hs 是做什么的？* 在我告诉你 c2hs 做什么之前，让我告诉你它 *不* 做的事情：它 *不* 会魔法般地消除你理解 FFI 规范的需要。事实上，它可能会让你编写更大、更雄心勃勃的绑定，这反过来会测试你对
+    FFI 的理解。（稍后详细介绍。）'
 - en: 'What c2hs does help to do is eliminate some of the drudgery involved with writing
     FFI bindings. (At this point, the veterans who''ve written FFI bindings by hand
     are nodding knowingly.) Here are some of the things that you will not have to
     do anymore:'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: c2hs 帮助做的事情是消除编写 FFI 绑定时的一些枯燥工作。（那些手写过 FFI 绑定的老手们此刻都在会意地点头。）以下是你将不再需要做的一些事情：
 - en: Port enum definitions into pure Haskell code (this would have meant writing
     out the data definition as well as the Enum instance),
+  id: totrans-16
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 将枚举定义移植到纯 Haskell 代码中（这意味着需要编写数据定义以及 Enum 实例），
 - en: Manually compute the sizes of structures you are marshalling to and from,
+  id: totrans-17
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 手动计算你要进行数据整理的结构体的大小，
 - en: Manually compute the offsets to peek and poke at fields in structures (and deal
     with the corresponding portability headaches),
+  id: totrans-18
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 手动计算结构体中字段的偏移量（并处理相应的可移植性头疼问题），
 - en: Manually write types for C pointers,
+  id: totrans-19
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 手动编写 C 指针类型，
 - en: (To some extent) writing the actual `foreign import` declarations for C functions
     you want to use
+  id: totrans-20
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: （在某种程度上）编写实际的 `foreign import` 声明以使用 C 函数
 - en: '*When should I use c2hs?* There are many Haskell pre-processors; which one
     should you use? A short (and somewhat inaccurate) way to characterize the above
     hierarchy is the further down you go, the *less* boilerplate you have to write
     and the *more* documentation you have to read; I have thus heard advice that hsc2hs
     is what you should use for small FFI projects, while c2hs is more appropriate
     for the larger ones.'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: '*何时使用 c2hs？* Haskell 有很多预处理器；你应该选择哪一个？简单（虽然有些不太准确）地说，你可以将上述层次结构特征化为：越往下，你需要写的样板越*少*，需要阅读的文档越*多*；因此有人建议，对于小型
+    FFI 项目应该使用 hsc2hs，而对于更大型的项目则更适合 c2hs。'
 - en: 'Things that c2hs supports that hsc2hs does not:'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: '**c2hs** 支持而 **hsc2hs** 不支持的功能：'
 - en: Automatic generation of `foreign import` based on the contents of the C header
     file,
+  id: totrans-23
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 根据 C 头文件的内容自动生成 `foreign import`，
 - en: Semi-automatic marshalling to and from function calls, and
+  id: totrans-24
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 函数调用的半自动封送和解封送，
 - en: Translation of pointer types and hierarchies into Haskell types.
+  id: totrans-25
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 将指针类型和层次结构翻译成 Haskell 类型。
 - en: 'Things that GreenCard supports and c2hs does not:'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: GreenCard 支持而 c2hs 不支持的功能：
 - en: Automatic generation of `foreign import` based on the Haskell type signature
     (indeed, this is a major philosophical difference),
+  id: totrans-27
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 根据 Haskell 类型签名自动生成 `foreign import`（实际上，这是一个主要的哲学区别），
 - en: A more comprehensive marshalling language,
+  id: totrans-28
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 更全面的封送语言，
 - en: Automatic generation of data marshalling using Data Interface schemes.
+  id: totrans-29
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 使用数据接口方案自动生成数据封送，
 - en: Additionally, hsc2hs and c2hs are considered quite mature; the former is packaged
     with GHC, and (a subset of) the latter is used in gtk2hs, arguably the largest
     FFI binding in Haskell. GreenCard is a little more, well, green, but it recently
     received a refresh and is looking quite promising.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，hsc2hs 和 c2hs 被认为是相当成熟的工具；前者与 GHC 打包在一起，而后者（部分）被用于 gtk2hs，这可以说是 Haskell 中最大的
+    FFI 绑定。GreenCard 则稍微“年轻”一些，但最近经过更新，看起来非常有前途。
 - en: '*Is this tutorial series for me?* Fortunately, I''m not going to assume too
     much knowledge about the FFI (I certainly didn''t have as comprehensive knowledge
     about it going in than I do coming out); however, some understanding of C will
     be assumed in the coming tutorials. In particular, you should understand the standard
     idioms for passing data to and out of C functions and feel comfortable tangling
     with pointers (though there might be a brief review there too).'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: '*这个教程系列适合我吗？* 幸运的是，我不会假设读者对 FFI 有太多了解（我进入时对它的了解肯定没有现在多）；不过，会假设读者对 C 有一些了解。特别是，你应该了解将数据传递给
+    C 函数和从 C 函数中取出数据的标准惯例，并且对于处理指针应该感到自如（尽管可能还会简要复习一下）。'
 - en: '*Next time.* [Setting up Cabal, the FFI and c2hs](http://blog.ezyang.com/2010/06/setting-up-cabal-the-ffi-and-c2hs/).'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: '*下次再见。* [设置 Cabal、FFI 和 c2hs](http://blog.ezyang.com/2010/06/setting-up-cabal-the-ffi-and-c2hs/)。'

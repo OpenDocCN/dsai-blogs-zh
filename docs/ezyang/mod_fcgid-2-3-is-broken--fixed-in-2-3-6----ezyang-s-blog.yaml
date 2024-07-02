@@ -1,41 +1,62 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:03'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:03'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'mod_fcgid 2.3 is broken (fixed in 2.3.6) : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: mod_fcgid 2.3 是有问题的（在 2.3.6 中修复）：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2010/11/mod_fcgid-is-broke/](http://blog.ezyang.com/2010/11/mod_fcgid-is-broke/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/11/mod_fcgid-is-broke/](http://blog.ezyang.com/2010/11/mod_fcgid-is-broke/)
 - en: mod_fcgid 2.3 is broken (fixed in 2.3.6)
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: mod_fcgid 2.3 是有问题的（在 2.3.6 中修复）
 - en: This is a post to get some Google juice for a problem that basically prevented
     [Scripts](http://scripts.mit.edu) from being able to cut over from Fedora 11 to
     Fedora 13\. The cluster of new machines kept falling over from load, and we kept
     scratching our heads, wondering, “Why?”
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 这篇文章旨在为一个问题获得谷歌关键词排名，该问题基本上阻止了 [Scripts](http://scripts.mit.edu) 从 Fedora 11
+    切换到 Fedora 13。新机群一直因为负载而崩溃，我们一直在琢磨，“为什么？”
 - en: 'Turns out, the [following commit](http://svn.apache.org/viewvc?view=revision&revision=753578)
     broke mod_fcgid in a pretty terrifying way: essentially, mod_fcgid is unable to
     manage the pools of running FastCGI processes, so it keeps spawning new ones until
     the system runs out of memory. This is especially obvious in systems with large
     amounts of generated virtual hosts, i.e. people using mod_vhost_ldap. It got fixed
     in mod_fcgid 2.3.6, which was released last weekend.'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 结果，[以下提交](http://svn.apache.org/viewvc?view=revision&revision=753578) 在相当可怕的方式下破坏了
+    mod_fcgid：基本上，mod_fcgid 无法管理运行中的 FastCGI 进程池，因此它会不断生成新的进程，直到系统内存耗尽。这在拥有大量生成虚拟主机的系统中尤为明显，例如使用
+    mod_vhost_ldap 的用户。这在上周发布的 mod_fcgid 2.3.6 中得到了修复。
 - en: '*Unrelatedly.* I’ve been sort of turning around in my head a series of *Philosophy
     of Computer Science* posts, where I try to identify interesting philosophical
     questions in our field beyond the usual topics of discussion (cough AI cough.)
@@ -45,5 +66,7 @@
     theories and then come up with perplexing examples which seem to break them down,
     and it sounds like this in itself could generate some Zen koans as well, which
     are always fun.'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: '*与此无关的*，我一直在头脑中转悠着一系列*计算机科学哲学*的文章，试图在我们领域之外的一些有趣哲学问题中进行识别（咳咳 AI 咳咳）。希望能引入一些传统上与科学哲学、数学哲学、生物学哲学等相关的主题，也许提出一些我自己的问题。哲学家们最喜欢提出听起来合理的理论，然后提出一些令人困惑的例子，似乎能够打破它们，听起来这本身就可以产生一些禅宗公案，这总是很有趣的。'

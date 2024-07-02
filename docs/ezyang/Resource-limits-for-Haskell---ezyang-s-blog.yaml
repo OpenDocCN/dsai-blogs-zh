@@ -1,27 +1,41 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 分类：未分类
 - en: 'date: 2024-07-01 18:17:22'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:17:22
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Resource limits for Haskell : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Haskell的资源限制：ezyang博客
 - en: 来源：[http://blog.ezyang.com/2013/04/resource-limits-for-haskell/](http://blog.ezyang.com/2013/04/resource-limits-for-haskell/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2013/04/resource-limits-for-haskell/](http://blog.ezyang.com/2013/04/resource-limits-for-haskell/)
 - en: 'Last week, I made my very first submission to ICFP! The topic? An old flame
     of mine: how to bound space usage of Haskell programs.'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 上周，我第一次向ICFP提交了我的论文！主题是？一个我曾经热衷的老问题：如何限制Haskell程序的空间使用。
 - en: 'We describe the first iteration of a resource limits system for Haskell, taking
     advantage of the key observation that resource limits share semantics and implementation
     strategy with profiling. We pay special attention to the problem of limiting resident
@@ -29,17 +43,24 @@
     heap censuses and describe a novel information-flow control solution for handling
     forcible resource reclamation. This system is implemented as a set of patches
     to GHC.'
+  id: totrans-7
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 我们描述了Haskell资源限制系统的第一次迭代，利用资源限制与性能分析的语义和实现策略相同的关键观察。我们特别关注限制常驻内存使用的问题：我们描述了一种简单的实现技术来执行增量堆调查，并描述了一种处理强制资源回收的新型信息流控制解决方案。该系统实现为GHC的一组补丁。
 - en: You can get [a copy of the submission here.](http://ezyang.com/papers/ezyang13-rlimits.pdf)
     I've reproduced below the background section on how profiling Haskell works; if
     this tickles your fancy, check out the rest of the paper!
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可以在[这里获取提交的副本。](http://ezyang.com/papers/ezyang13-rlimits.pdf) 我在下面重现了关于如何分析
+    Haskell 的背景部分；如果你对此感兴趣，可以查看论文的其余部分！
 - en: '* * *'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: Profiling in Haskell is performed by charging the costs of computation to the
     “current cost center.” A *cost center* is an abstract, programmer-specified entity
     to which costs can be charged; only one is active per thread at any given time,
@@ -47,8 +68,11 @@
     program executes. For example, the `scc cc e` expression (set-cost-center) modifies
     the current cost center during evaluation of `e` to be `cc`. Cost centers are
     defined statically at compile time.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: Haskell 的性能分析是通过将计算成本分配给“当前成本中心”来完成的。*成本中心*是一个抽象的、由程序员指定的实体，可以向其收取成本；在任何给定时间内，每个线程只能有一个活动的*成本中心*，而*成本语义*决定了程序执行过程中当前成本中心的变化。例如，`scc
+    cc e`表达式（设置成本中心）在评估`e`期间修改当前成本中心为`cc`。成本中心在编译时静态定义。
 - en: 'A cost semantics for Haskell was defined by Sansom et al. (1995) Previously,
     there had not been a formal account for how to attribute costs in the presence
     of lazy evaluation and higher-order functions; this paper resolved these questions.
@@ -58,14 +82,20 @@
     for it. Secondly, they observed that there are two ways of attributing costs for
     functions, in direct parallel to the difference between lexical scoping and dynamic
     scoping.'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: Haskell 的成本语义是由Sansom等人（1995年）定义的。此前，在惰性评估和高阶函数存在的情况下，如何分配成本并没有形式化的解释；这篇论文解决了这些问题。他们论文的两个关键观点是：首先，他们明确指出成本分配应该与评估顺序无关。为了易于理解，一个thunk是立即评估还是稍后评估不应影响谁为其付费。其次，他们观察到在函数的成本分配上有两种方式，直接对应于词法作用域和动态作用域之间的差异。
 - en: 'The principle of order-independent cost-attribution can be seen by this program:'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过这个程序可以看到成本分配无关顺序的原则：
 - en: '[PRE0]'
+  id: totrans-13
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: When `g 4` is invoked, who is charged the cost of evaluating `x * x`? With strict
     evaluation, it is easy to see that `f` should be charged, since `x * x` is evaluated
     immediately inside the `scc` expression. Order-independence dictates, then, that
@@ -74,20 +104,30 @@
     `x` is a no-op. In order to implement such a scheme, the current cost-center at
     the time of the allocation of the thunk must be recorded with the thunk and restored
     when the thunk is forced.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 当调用`g 4`时，评估`x * x`的成本应该由谁承担？对于严格评估，很容易看出应该由`f`承担，因为`x * x`是在`scc`表达式内部立即评估的。而无关顺序则决定，即使将`x
+    * x`的执行延迟到`scc "g" y`的内部，成本仍然应该归于`f`。通常情况下，对于变量`x`的`scc "f" x`是一个无操作。为了实施这样的方案，必须在分配thunk时记录当前成本中心，并在强制thunk时恢复它。
 - en: 'The difference between lexical scoping and dynamic scoping for function cost
     attribution can be seen in this example:'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 函数成本归因方面的词法作用域和动态作用域的区别可以在这个例子中看到：
 - en: '[PRE1]'
+  id: totrans-16
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'What is the difference between these two functions? We are in a situation analogous
     to the choice for thunks: should the current cost-center be saved along with the
     closure, and restored upon invocation of the function? If the answer is yes, we
     are using lexical scoping and the functions are equivalent; if the answer is no,
     we are using dynamic scoping and the `scc` in `f` is a no-op. The choice GHC has
     currently adopted for `scc` is dynamic scoping.'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 这两个函数有什么区别？我们处于类似于thunks选择的情况：当前成本中心是否应该与闭包一起保存，并在函数调用时恢复？如果答案是肯定的，我们使用词法作用域，这两个函数是等效的；如果答案是否定的，我们使用动态作用域，`f`中的`scc`是一个空操作。
+    GHC当前为`scc`选择的策略是动态作用域。

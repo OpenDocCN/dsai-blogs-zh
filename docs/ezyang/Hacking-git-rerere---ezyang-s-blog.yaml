@@ -1,23 +1,35 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:29'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:29'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Hacking git-rerere : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '[Hacking git-rerere](http://blog.ezyang.com/2010/01/hacking-git-rerere/)：ezyang的博客'
 - en: 来源：[http://blog.ezyang.com/2010/01/hacking-git-rerere/](http://blog.ezyang.com/2010/01/hacking-git-rerere/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/01/hacking-git-rerere/](http://blog.ezyang.com/2010/01/hacking-git-rerere/)
 - en: An unusual workflow for Git, one that [Wizard](http://scripts.mit.edu/wizard)
     employs extensively, is when a single developer needs to perform merges inside
     lots of working copies. Normally, a maintainer would pull from the branches he
@@ -25,99 +37,145 @@
     in contributing patches. However, Wizard is using Git to provide a service for
     people who don't know and aren't interested in learning Git, so we need to push
     updates and merge their software for them.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: Git的一个非常规工作流，[Wizard](http://scripts.mit.edu/wizard)广泛使用，是单个开发者需要在大量工作副本中执行合并。通常，维护者会从他关心的分支拉取，并将大量工作分配给那些有兴趣贡献补丁的人。然而，Wizard正在使用Git为那些不了解并且不感兴趣学习Git的人提供服务，因此我们需要推送更新并为他们合并他们的软件。
 - en: The problem encountered when you are doing a lot of merging is "repeated resolution
     of the same conflicts." The solution, at least for the classical case, is `git
     rerere`. This feature saves the resolution of conflicts and then automatically
     applies those resolutions if the conflict comes up again. You can find out this
     much if you check `man git-rerere`.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 在进行大量合并时遇到的问题是“重复解决相同的冲突”。至少对于经典案例来说，解决方法是使用`git rerere`。此功能保存冲突的解决方案，然后如果再次遇到冲突，则自动应用这些解决方案。如果查看`man
+    git-rerere`，您可以了解到这些信息。
 - en: Unfortunately, this merge resolution data is stored per `.git` directory, specifically
     in the `rr-cache` subdirectory, so some modest cleverness is necessary to make
     this work across many repositories. Fortunately, the simple solution of symlinking
     all of the `rr-cache` directories to a common directory both works *and* is safe
     of race-conditions when initially merging (it's not race-safe when writing out
     resolutions, but I am willing to consider this low contention enough to be a non-issue).
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 不幸的是，这个合并解决数据存储在每个`.git`目录中，具体在`rr-cache`子目录中，因此需要一些适度的聪明才能使其在多个仓库中正常工作。幸运的是，将所有`rr-cache`目录符号链接到一个共同的目录的简单解决方案既有效又在最初合并时安全（写出解决方案时不是竞争安全，但我认为这种低竞争足以忽略不计）。
 - en: 'Why is this solution race safe? At first glance at the code in `rerere.c`,
     this would seem not to be the case: if two merges were to happen to generate the
     same merge conflict (precisely the use case of git rerere), the following code
     would get executed with the same value of `hex`:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 为什么这个解决方案是竞争安全的？初看`rerere.c`中的代码，这似乎并非如此：如果发生两次合并以生成相同的合并冲突（这正是git rerere的用例），则以下代码将使用相同的`hex`值执行：
 - en: '[PRE0]'
+  id: totrans-10
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: The last three lines access the (now shared) `rr-cache` directory, and `handle_file`
     will attempt to write out the file `rr-cache/$HEX/preimage` with the preimage
     contents; if both instances run `handle_file` concurrently, this file will get
     clobbered.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后三行访问了（现在共享的）`rr-cache`目录，并且`handle_file`将尝试写出文件`rr-cache/$HEX/preimage`的预影像内容；如果两个实例同时运行`handle_file`，则此文件将被覆盖。
 - en: 'But, as it turns out, we don''t care; barring a SHA-1 collision, both instances
     will write out the same file. The signature of `handle_file` is:'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 但事实证明，我们并不在乎；除非发生SHA-1碰撞，否则两个实例将写出相同的文件。`handle_file`的签名是：
 - en: '[PRE1]'
+  id: totrans-13
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: The first argument is a path to read conflict markers from, and is mandatory.
     `sha1` and `output` are optional; if `output` is not NULL, it contains a contents
     that the entire file, *minus* any diff3 conflict sections (the ones separated
     by `|||||||` and `=======`) gets written to; if `sha1` is not NULL, it gets a
     20-byte binary digest written to it of the contents that `output` would have received.
     And thus, balance is restored to the world.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 第一个参数是从中读取冲突标记的路径，是必需的。`sha1`和`output`是可选的；如果`output`不为NULL，则其包含整个文件的内容，*减去*任何diff3冲突部分（由`|||||||`和`=======`分隔）；如果`sha1`不为NULL，则写入其内容的20字节二进制摘要，这些内容`output`本来会收到。于是，世界恢复了平衡。
 - en: '*Addendum*'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: '*附录*'
 - en: 'Anders brings up the interesting question on whether or not two processes writing
     the same contents to the same file is actually race safe. Indeed, there is a very
     similar situation involving two processes writing the same contents to the same
     file which is a classic example of race conditions:'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: Anders 提出了一个有趣的问题，即两个进程是否将相同内容写入同一个文件是否真的是竞争安全的。事实上，有一个非常相似的情况涉及到两个进程将相同内容写入同一个文件，这是竞争条件的一个经典例子：
 - en: '[PRE2]'
+  id: totrans-17
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'Under normal circumstances, the contents of test is:'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 在正常情况下，测试的内容是：
 - en: '[PRE3]'
+  id: totrans-19
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'But every once in a while, one of the processes loses the race, and you get:'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 但是偶尔会出现其中一个进程输掉比赛的情况，你会得到：
 - en: '[PRE4]'
+  id: totrans-21
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: due to a non-atomic combination of writing and updating the file offset.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 因为写入和更新文件偏移量的非原子组合。
 - en: 'However, the distinguishing characteristic between this example and Git''s
     case is that, in this example, there is only one file descriptor. However, in
     Git''s case, there are two file descriptors, since each process called `open`
     independently. A more analogous shell script would be:'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 但是，这个例子与 Git 的情况的区别在于，在这个例子中只有一个文件描述符。然而，在 Git 的情况下，由于每个进程都独立调用 `open`，所以有两个文件描述符。一个更类似的
+    shell 脚本可能是：
 - en: '[PRE5]'
+  id: totrans-24
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 'the contents of which are (as far as I can tell) invariably:'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 其内容（据我所知）无疑是：
 - en: '[PRE6]'
+  id: totrans-26
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: Now, POSIX actually doesn't say what happens if two writes to the same offset
     with the same contents occur. However, casual testing seems to indicate that Linux
     and ext3 are able to give a stronger guarantee that writing the same values won't
     cause random corruption (note that, if the contents of the file were different,
     either combination could be possible, and this is what you see in practice).
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，POSIX 实际上并没有说明如果两个写入相同偏移量相同内容的情况会发生什么。然而，简单的测试似乎表明，Linux 和 ext3 能够更强地保证写入相同值不会导致随机损坏（注意，如果文件的内容不同，则可能会有任何组合，这是实际中的情况）。

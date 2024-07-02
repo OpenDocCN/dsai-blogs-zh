@@ -1,53 +1,81 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:17:58'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:17:58
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Two short tips for FFI bindings : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: FFI 绑定的两个小贴士：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2011/02/two-short-tips-for-ffi-binding/](http://blog.ezyang.com/2011/02/two-short-tips-for-ffi-binding/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/02/two-short-tips-for-ffi-binding/](http://blog.ezyang.com/2011/02/two-short-tips-for-ffi-binding/)
 - en: Two short tips for FFI bindings
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: FFI 绑定的两个小贴士
 - en: 'Subject: [Haskell-cafe] Please review my Xapian foreign function interface'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 主题：[Haskell-cafe] 请审阅我的 Xapian 外部函数接口
 - en: Thanks Oliver!
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 谢谢 Oliver！
 - en: 'I haven''t had time to look at your bindings very closely, but I do have a
     few initial things to think about:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 我还没有时间仔细查看你的绑定，但我有一些初步的想法：
 - en: You're writing your imports by hand. Several other projects used to do this,
     and it's a pain in the neck when you have hundreds of functions that you need
     to bind and you don't quite do it all properly, and then you segfault because
     there was an API mismatch. Consider using a tool like [c2hs](http://blog.ezyang.com/2010/06/the-haskell-preprocessor-hierarchy/)
     which rules out this possibility (and reduces the code you need to write!)
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 你手工编写你的导入。其他几个项目曾经这样做，但当你需要绑定数百个函数并且没有完全正确地执行时，这会很麻烦，然后由于 API 不匹配而导致段错误。考虑使用像
+    [c2hs](http://blog.ezyang.com/2010/06/the-haskell-preprocessor-hierarchy/) 这样的工具，可以排除这种可能性（并减少你需要编写的代码！）
 - en: I see a lot of unsafePerformIO and no consideration for interruptibility or
     thread safety. People who use Haskell tend to expect their code to be thread-safe
     and interruptible, so we have high standards ;-) But even C++ code that looks
     thread safe may be mutating shared memory under the hood, so check carefully.
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我看到了很多 `unsafePerformIO`，但没有考虑可中断性或线程安全性。使用 Haskell 的人往往希望他们的代码是线程安全和可中断的，所以我们的标准很高;-)
+    但是，即使看起来是线程安全的 C++ 代码，在底层可能会修改共享内存，所以要仔细检查。
 - en: I use Sup, so I deal with Xapian on a day-to-day basis. Bindings are good to
     see.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 我使用 Sup，因此我日常处理 Xapian。绑定看起来不错。

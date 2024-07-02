@@ -1,32 +1,48 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 分类：未分类
 - en: 'date: 2024-07-01 18:18:03'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:18:03
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Haskell.org committee : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Haskell.org 委员会：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2010/11/haskell-org-committee/](http://blog.ezyang.com/2010/11/haskell-org-committee/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/11/haskell-org-committee/](http://blog.ezyang.com/2010/11/haskell-org-committee/)
 - en: Haskell.org committee
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Haskell.org 委员会
 - en: 'Ever try to go to haskell.org and notice that it was down? Well, now you have
     someone to complain to: the [haskell.org committee](http://haskellorg.wordpress.com/2010/11/15/the-haskell-org-committee-has-formed/)
     has formed and apparently I’m on it. `8-)`'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 试过访问 haskell.org 发现它宕机了吗？现在你有人可以抱怨了：[haskell.org 委员会](http://haskellorg.wordpress.com/2010/11/15/the-haskell-org-committee-has-formed/)已经成立，而我显然是其中一员。`8-)`
 - en: One of the first things we’ll be doing is moving haskell.org from a server being
     hosted at Yale (the hosting has been good, but what will happen is the server
     will go down during the weekend and there will be no one to kick it until Monday)
@@ -34,5 +50,7 @@
     I must admit, I do feel a bit sheepish for being on the committee but not having
     any bits (or direct experience) to help do the maintenance work—hopefully that
     will change soon.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将首先要做的事情之一是将 haskell.org 从目前托管在耶鲁大学的服务器（目前的托管效果不错，但周末服务器将会宕机，直到周一才有人去启动它）迁移到一些[专用硬件](http://new-www.haskell.org/haskellwiki/Haskell)上。我必须承认，我作为委员会的一员却没有任何经验（或直接经验）来帮助进行维护工作，对此我感到有些不好意思，希望这种情况会很快改变。

@@ -1,31 +1,46 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:24'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:24'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Plan 9 mounts and dependency injection : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Plan 9 挂载和依赖注入：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2012/11/plan-9-mounts-and-dependency-injection/](http://blog.ezyang.com/2012/11/plan-9-mounts-and-dependency-injection/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2012/11/plan-9-mounts-and-dependency-injection/](http://blog.ezyang.com/2012/11/plan-9-mounts-and-dependency-injection/)
 - en: '“Everything is a file.” [1] This was the design philosophy taken to its logical
     extreme in [Plan 9](http://en.wikipedia.org/wiki/Plan_9_from_Bell_Labs). Any interface
     you could imagine was represented as a file. Network port, pixel buffers, kernel
     interfaces—all were unified under a common API: the file operations (`open`, `read`,
     `write`...) Plan 9 used this to eliminate most of its system calls: it had only
     thirty-nine, in contrast to modern Linux''s sprawling three hundred and twenty-six.'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: “一切皆文件。”[1] 这是在[Plan 9](http://en.wikipedia.org/wiki/Plan_9_from_Bell_Labs)中被推向逻辑极限的设计哲学。你能想象到的任何接口都被表示为一个文件。网络端口、像素缓冲区、内核接口——所有这些都统一在一个常规
+    API 下：文件操作（`open`、`read`、`write`...）。Plan 9 利用这一点消除了大部分系统调用：只有三十九个，与现代 Linux 的庞大的三百二十六个形成了对比。
 - en: 'When I first heard of Plan 9, my first thought was, “But that’s cheating, right?”
     After all, they had reduced the number of syscalls but increased the number of
     custom files: complexity had merely been shifted around. But one of [my labmates](https://plus.google.com/107333307248367605396/about)
@@ -36,26 +51,34 @@
     be accessing the network through some file, so I instead could mount a network
     filesystem to the network files of another system, and transparently achieve proxying
     without any cooperation from my application. [2]'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我第一次听说 Plan 9 时，我首先想到的是，“但这是作弊，对吧？”毕竟，他们减少了系统调用的数量，但增加了定制文件的数量：复杂性只是被重新分配了。但是我的一个[实验室同事](https://plus.google.com/107333307248367605396/about)给了我一个理由，说明这仍然很有用：每个进程的挂载点。这些挂载点意味着我可以给每个进程提供他们自己的文件系统视图——通常是相同的，但有时会有一些关键的不同之处。假设我想要隧道化我的一个应用程序的网络连接：这个应用程序将通过某些文件访问网络，因此我可以将一个网络文件系统挂载到另一个系统的网络文件上，并且透明地实现代理，而不需要我的应用程序的任何合作。[2]
 - en: 'Let’s step back for a moment and put on our programming language hats. Suppose
     that a file is an abstract data type, and the syscall interface for manipulating
     files is the interface for this data type. What are mounts, in this universe?
     Another [friend of mine](https://plus.google.com/116034118081904229710/about)
     pointed out the perfectly obvious analogy:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们暂时放下编程语言的帽子。假设文件是一个抽象数据类型，而用于操作文件的系统调用接口是此数据类型的接口。在这个宇宙中，挂载是什么？我的另一个[朋友](https://plus.google.com/116034118081904229710/about)指出了一个非常明显的类比：
 - en: 'Files : Mounts :: Abstract Data Types : Dependency Injection'
+  id: totrans-9
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '文件：挂载 :: 抽象数据类型：依赖注入'
 - en: In particular, the mount is a mechanism for modifying some local namespace,
     so that when a file is requested, it may be provided by some file system completely
     different to what the process might have expected. Similarly, dependency injection
     specifies a namespace, such that when an object is requested, the concrete implementation
     may be completely different to what the caller may have expected.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 特别是，挂载是一种修改本地命名空间的机制，因此当请求文件时，可能由完全不同的文件系统提供文件，这与进程可能期望的不同。类似地，依赖注入指定了一个命名空间，因此当请求对象时，具体实现可能完全不同于调用者可能期望的内容。
 - en: The overall conclusion is that when developers implemented dependency injection,
     they were reimplementing Plan 9’s local mounts. Is your dependency injection hierarchical?
     Can you replace a hierarchy (`MREPL`), or mount your files before (`MBEFORE`)
@@ -65,20 +88,29 @@
     the design of Plan 9\. And in Haskell, where it seems that people are able to
     get much further without having to create a dependency injection framework, do
     these lessons map back to the design of a mountable file system? *I wonder.*
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 总体结论是，当开发人员实施依赖注入时，他们重新实现了Plan 9的本地挂载。你的依赖注入是否是分层的？能否替换层次结构（`MREPL`），或在现有文件系统之前（`MBEFORE`）或之后（`MAFTER`）挂载你的文件？支持挂载时的运行时更改？支持层次结构中实体之间的词法引用（例如点点
+    `..` ）？我怀疑现有的依赖注入框架可以从Plan 9的设计中学到一些东西。而在Haskell中，似乎人们能够在不创建依赖注入框架的情况下取得更大进展，这些经验是否能映射回可挂载文件系统的设计呢？*我在想。*
 - en: '* * *'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '[1] Functional programmers might be reminded of a similar mantra, “Everything
     is a function.”'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] 功能程序员可能会想起一个类似的口号，“一切皆函数。”'
 - en: '[2] For the longest time, Linux did not provide per-process mount namespaces,
     and even today this feature is not available to unprivileged users—Plan 9, in
     contrast, had this feature available from the very beginning to all users. There
     is also the minor issue where per-process mounts are actually a big pain to work
     with in Linux, primarily, I dare say, due to the lack of appropriate tools to
     assist system administrators attempting to understand their applications.'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] 长期以来，Linux未提供进程级别的挂载命名空间，即使今天这一特性对非特权用户也不可用——相比之下，Plan 9从一开始就向所有用户提供了这一功能。还有一个小问题，即在Linux中，处理进程级挂载实际上非常麻烦，我敢说主要是由于缺乏适当的工具来帮助系统管理员理解他们的应用程序。'

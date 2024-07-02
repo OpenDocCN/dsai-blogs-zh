@@ -1,57 +1,85 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:01'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:01'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Gin and monotonic : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 'Gin and monotonic : ezyang’s blog'
 - en: 来源：[http://blog.ezyang.com/2010/12/gin-and-monotonic/](http://blog.ezyang.com/2010/12/gin-and-monotonic/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/12/gin-and-monotonic/](http://blog.ezyang.com/2010/12/gin-and-monotonic/)
 - en: '*Gin, because you’ll need it by the time you’re done reading this.*'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: '*Gin, because you’ll need it by the time you’re done reading this.*'
 - en: '[Last time](http://blog.ezyang.com/2010/12/hussling-haskell-types-into-hasse-diagrams/)
     we looked the partial orders of values for data types. There are two extra things
     I would like to add: an illustration of how star-subscript-bottom expands and
     an illustration of list without using the star-subscript-bottom notation.'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '[上次](http://blog.ezyang.com/2010/12/hussling-haskell-types-into-hasse-diagrams/)我们看了数据类型值的部分顺序。有两件事情我想补充：一个是星下标底部如何扩展，一个是不使用星下标底部符号的列表图解。'
 - en: 'Here is a triple of star-subscript-bottoms expanded, resulting in the familiar
     Hasse diagram of the powerset of a set of three elements ordered by inclusion:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是三个星下标底部扩展的三重体现，形成了熟悉的Hasse图，通过包含关系排序的三个元素集的幂集：
 - en: And here is the partial order of lists in its full exponential glory (to fit
     it all, the partial order of the grey spine increases as it goes to the right.)
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面是列表的部分顺序，在其全指数荣耀中（为了适应所有，灰色脊柱的部分顺序在向右增加时增加）。
 - en: '* * *'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: Now, to today's subject, functions! We've only discussed data types up until
     now. In this post we look a little more closely at the partial order that *functions*
     have. We'll introduce the notion of *monotonicity.* And there will be lots of
     pictures.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，谈谈今天的主题，函数！到目前为止，我们只讨论了数据类型。在本篇文章中，我们将更仔细地研究*函数*具有的偏序关系。我们将介绍*单调性*的概念。并且会有很多图片。
 - en: '* * *'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'Let''s start with a trivial example: the function of unit to unit, `() -> ()`.
     Before you look at the diagram, how many different implementations of this function
     do you think we can write?'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们从一个简单的例子开始：从单元到单元的函数，`() -> ()`。在你看图之前，你认为我们可以写多少不同的这种函数实现呢？
 - en: Three, as it turns out. One which returns bottom no matter what we pass it,
     one which is the identity function (returns unit if it is passed unit, and bottom
     if it is passed bottom), and one which is `const ()`, that is, returns unit no
@@ -60,8 +88,11 @@
     bottom function partial, because it's not defined for any arguments, although
     there's no way to directly write this and if you just use undefined GHC won't
     emit a partial function warning.)
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 结果，一共有三种。一种无论我们传递什么都返回底部，一种是恒等函数（如果传递单元则返回单元，如果传递底部则返回底部），还有一种是`const ()`，即无论传递什么都返回单元。注意这些不同函数与其参数的严格和惰性评估之间的直接对应关系。（你可以称底部函数为部分的，因为它对于任何参数都未定义，尽管没有直接编写此内容的方法，如果仅使用undefined
+    GHC不会发出部分函数警告。）
 - en: 'In the diagram I''ve presented three equivalent ways of thinking about the
     partial order. The first is just terms in the lambda calculus: if you prefer Haskell''s
     notation you can translate λx.x into `\x -> x`. The second is a mapping of input
@@ -70,285 +101,415 @@
     legal—that is, computable). The third is merely the domains of the functions:
     you can see that the domains are steadily getting larger and larger, from nothing
     to the entire input type.'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我提出的图中，我展示了关于偏序的三种等效思考方式。第一种只是λ演算中的术语：如果你更喜欢Haskell的表示法，你可以将λx.x翻译为`\x -> x`。第二种是将输入值映射到输出值，明确处理了底部（这种表示法有助于明确看到底部，但不太适合确定哪些值是合法的——即可计算的）。第三种仅仅是函数的定义域：你可以看到这些定义域逐渐变得越来越大，从空到整个输入类型。
 - en: 'At this point, a little formality is useful. We can define a partial order
     on a function as follows: f ≤ g if and only if dom(f) (the domain of f, e.g. all
     values that don''t result in f returning bottom) ⊆ dom(g) and for all x ∈ dom(f),
     f(x) ≤ g(x). You should verify that the diagram above agrees (the second condition
     is pretty easy because the only possible value of the function is `()`).'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这一点上，一点正式性是有用的。我们可以定义一个函数的偏序如下：f ≤ g当且仅当dom(f)（f的定义域，例如所有不会导致f返回底部的值）⊆ dom(g)，对于所有x
+    ∈ dom(f)，f(x) ≤ g(x)。你应该验证上面的图表是否一致（第二个条件非常容易，因为函数的唯一可能值是`()`）。
 - en: 'A keen reader may have noticed that I''ve omitted some possible functions.
     In particular, the third diagram doesn''t contain all possible permutations of
     the domain: what about the set containing just bottom? As it turns out, such a
     function is uncomputable (how might we solve the halting problem if we had a function
     `() -> ()` that returned `()` if its first argument was bottom and returned bottom
     if its first argument was `()`). We will return to this later.'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个敏锐的读者可能已经注意到，我忽略了一些可能的函数。特别是，第三个图表并不包含域的所有可能排列：只有底部的集合如何？事实证明，这样的函数是不可计算的（如果我们有一个函数
+    `() -> ()`，如果其第一个参数是底部则返回 `()`，如果其第一个参数是 `()` 则返回底部，那么如何解决停机问题）。我们稍后再回到这个问题。
 - en: 'Since `() -> ()` has three possible values, one question to ask is whether
     or not there is a simpler function type that has fewer values? If we admit the
     empty type, also written as ⊥, we can see that `a -> ⊥` has only one possible
     value: ⊥.'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于 `() -> ()` 有三种可能的取值，一个问题是是否存在一个更简单的函数类型，其取值更少？如果我们接受空类型，也可以写为 ⊥，我们可以看到 `a
+    -> ⊥` 只有一种可能的取值：⊥。
 - en: '* * *'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'Functions of type `⊥ -> a` also have some interesting properties: they are
     isomorphic to plain values of type `a`.'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 类型为 `⊥ -> a` 的函数也具有一些有趣的属性：它们与类型 `a` 的普通值是同构的。
 - en: In the absence of common subexpression elimination, this can be a useful way
     to prevent sharing of the results of lazy computation. However, writing `f undefined`
     is annoying, so one might see a `() -> a` instead, which has not quite the same
     but similar semantics.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 在没有公共子表达式消除的情况下，这可以是防止惰性计算结果共享的有效方式。然而，写 `f undefined` 是很麻烦的，因此人们可能会看到 `() ->
+    a`，它的语义并不完全相同，但类似。
 - en: '* * *'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'Up until this point, we''ve considered only functions that take `⊥` or `()`
     as an argument, which are not very interesting. So we can consider the next possible
     simplest function: `Bool -> ()`. Despite the seeming simplicity of this type,
     there are actually five different possible functions that have this type.'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 到目前为止，我们只考虑了以 `⊥` 或 `()` 作为参数的函数，这些函数并不是很有趣。因此，我们可以考虑下一个可能最简单的函数：`Bool -> ()`。尽管这种类型看起来很简单，实际上有五种不同的可能函数具有这种类型。
 - en: 'To see why this might be the case, we might look at how the function behaves
     for each of its three possible arguments:'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 要看为什么可能是这种情况，我们可以看看函数对其三个可能参数的行为：
 - en: 'or what the domain of each function is:'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 或者每个函数的定义域是什么：
 - en: These partial orders are complete, despite the fact there seem to be other possible
     permutations of elements in the domain. Once again, this is because we've excluded
     noncomputable functions. We will look at this next.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管看起来域中元素可能有其他可能的排列，但这些偏序是完备的。再次强调，这是因为我们排除了不可计算的函数。接下来我们会看看这一点。
 - en: '* * *'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: Consider the following function, `halts`. It returns `True` if the computation
     passed to it eventually terminates, and `False` if it doesn't. As we've seen by
     `fix id`, we can think of bottom as a nonterminating computation. We can diagram
     this by drawing the Hasse diagrams of the input and output types, and then drawing
     arrows mapping values from one diagram to the other. I've also shaded with a grey
     background values that don't map to bottom.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 考虑下面的函数 `halts`。如果传递给它的计算最终终止，则返回 `True`，如果不终止，则返回 `False`。正如我们通过 `fix id` 所见，我们可以将底部视为一个不终止的计算。我们可以通过绘制输入和输出类型的哈斯图，并绘制箭头将一个图表中的值映射到另一个图表中来绘制此图表。我还用灰色背景着色了不映射到底部的值。
 - en: It is widely known that the halting problem is uncomputable. So what is off
     with this perfectly plausible looking diagram?
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 众所周知，停机问题是不可计算的。那么这个看起来完全合理的图表有什么问题？
 - en: 'The answer is that our ordering has not been preserved by the function. In
     the first domain, `⊥ ≤ ()`. However, the resulting values do not have this inequality:
     `False ≰ True`. We can sum this condition as *monotonicity*, that is, f is monotonic
     when if x ≤ y then f(x) ≤ f(y).'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 答案是我们的排序没有被函数保留。在第一个定义域中，`⊥ ≤ ()`。然而，结果值却没有这种不等式：`False ≰ True`。我们可以总结这种情况为*单调性*，即，当
+    x ≤ y 时，若 f(x) ≤ f(y)，则 f 是单调的。
 - en: 'Two degenerate cases are worth noting here:'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里值得注意的两种退化情况：
 - en: In the case where f(⊥) = ⊥, i.e. the function is strict, you never have to worry
     about ⊥ not being less than any other value, as by definition ⊥ is less than all
     values. In this sense making a function strict is the “safe thing to do.”
+  id: totrans-32
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在 f(⊥) = ⊥ 的情况下，即函数是严格的，你永远不必担心 ⊥ 不小于任何其他值，因为根据定义 ⊥ 小于所有值。从这个意义上说，使函数严格是“安全的做法”。
 - en: In the case where f(x) = c (i.e. a constant function) for all x, you are similarly
     safe, since any ordering that was in the original domain is in the new domain,
     as c ≤ c. Thus, constant functions are an easy way of assigning a non-bottom value
     to f(⊥). This also makes clear that the monotonicity implication is only one direction.
+  id: totrans-33
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 当f(x) = c（即常数函数）对所有x都成立时，您同样是安全的，因为任何在原始域中存在的排序在新域中也是存在的，因为c ≤ c。因此，常数函数是向f(⊥)分配非底值的简单方法。这也清楚地表明单调性推论只是单向的。
 - en: What is even more interesting (and somewhat un-obvious) is that we can write
     functions that are computable, are not constant, and yet give a non-⊥ value when
     passed ⊥! But before we get to this fun, let's first consider some computable
     functions, and verify monotonicity holds.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 更有趣（并且有些不明显）的是，我们可以编写计算函数，它们不是常量，但在传递`⊥`时却提供了非⊥值！但在我们进入这种乐趣之前，让我们首先考虑一些可计算函数，并验证单调性是否保持。
 - en: '* * *'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'Simplest of all functions is the identity function:'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 最简单的所有函数是恒等函数：
 - en: It does so little that it is hardly worth a mention, but you should verify that
     you're following along with the notation.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 它几乎什么都不做，但是您应该验证自己是否能理解这种表示法。
 - en: A little less trivial is the `fst` function, which returns the first element
     of a pair.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 更不那么琐碎的是`fst`函数，它返回一对中的第一个元素。
 - en: 'Look and verify that all of the partial ordering is preserved by the function:
     since there is only one non-bottom output value, all we need to do is verify the
     grey is “on top of” everything else. Note also that our function doesn''t care
     if the `snd` value of the pair is bottom.'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 查看并验证函数保留了所有偏序关系：因为只有一个非底输出值，所以我们只需要验证灰色是否“位于”其他所有值之上。还要注意，我们的函数不关心对偶中的`snd`值是否为底。
 - en: The diagram notes that `fst` is merely an uncurried `const`, so let's look at
     that next.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 图表指出，`fst`仅仅是一个未柯里化的`const`，所以让我们接着看这个。
 - en: We would like to consider the sense of const as `a -> (b -> a)`, a function
     that takes a value and returns a function. For the reader's benefit we've also
     drawn the Hasse diagrams of the resulting functions. If we had fixed the type
     of `a` or `b`, there would be more functions in our partial order, but without
     this, by parametricity there is very little our functions can do.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们希望考虑`const`的意义是`a -> (b -> a)`，一个接受一个值并返回一个函数的函数。为了读者的利益，我们还绘制了导致这些函数的哈斯图。如果我们固定了`a`或`b`的类型，那么我们的偏序关系中将会有更多的函数，但在没有这些限制的情况下，通过参数性质，我们的函数能做的事情很少。
 - en: It's useful to consider `const` in contrast to `seq`, which is something of
     a little nasty function, though it can be drawn nicely with our notation.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 考虑到`const`与`seq`的对比是有用的，`seq`是一种有点恶劣的函数，尽管它可以很好地使用我们的表示法来绘制。
 - en: 'The reason why the function is so nasty is because it works for any type (it
     would be a perfectly permissible and automatically derivable typeclass): it''s
     able to see into any type `a` and see that it is either bottom or one of its constructors.'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个函数之所以如此难缠，是因为它适用于任何类型（它将是一个完全合法且自动推导的类型类）：它能够查看任何类型`a`，并看到它是底部还是其构造函数之一。
 - en: Let's look at some functions on lists, which can interact in nontrivial ways
     with bottom. `null` has a very simple correspondence, since what it is really
     asking is “is this the cons constructor or the null constructor?”
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们看看一些列表上的函数，它们与底部可能有非平凡的交互方式。`null`有一个非常简单的对应关系，因为它真正询问的是“这是`cons`构造函数还是`null`构造函数？”
 - en: '`head` looks a little more interesting.'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: '`head`看起来有点有趣。'
 - en: 'There are multiple regions of gray, but monotonicity is never violated: despite
     the spine which expands infinitely upwards, each leaf contains a maximum of the
     partial order.'
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 有多个灰色区域，但单调性从未被违反：尽管脊椎朝上无限扩展，每个叶子都包含偏序的最大值。
 - en: 'There is a similar pattern about `length`, but the leaves are arranged a little
     differently:'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: '`length`有类似的模式，但叶子的排列略有不同：'
 - en: Whereas `head` only cares about the first value of the list not being bottom,
     `length` cares about the cdr of the cons cell being null.
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然`head`只关心列表的第一个值不是底部，`length`却关心`cons`单元的`cdr`是否为空。
 - en: '* * *'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: We can also use this notation to look at data constructors and newtypes.
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还可以使用此符号来查看数据构造函数和新类型。
 - en: Consider the following function, caseSplit, on an unknown data type with only
     one field.
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 考虑下面的函数`caseSplit`，它作用在一个具有唯一字段的未知数据类型上。
 - en: 'We have the non-strict constructor:'
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们有非严格构造函数：
 - en: 'The strict constructor:'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 严格构造函数：
 - en: 'And finally the newtype:'
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后是新类型：
 - en: '* * *'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'We are now ready for the tour de force example, a study of the partial order
     of functions from `Bool -> Bool`, and a consideration of the boolean function
     `||`. To refresh your memory, `||` is usually implemented in this manner:'
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们准备进行一个力作示例，研究从 `Bool -> Bool` 函数的偏序，并考虑布尔函数 `||`。为了刷新您的记忆，`||` 通常以这种方式实现：
 - en: 'Something that''s not too obvious from this diagram (and which we would like
     to make obvious soon) is the fact that this operator is left-to-right: `True ||
     ⊥ = True`, but `⊥ || True = ⊥` (in imperative parlance, it short-circuits). We''ll
     develop a partial order that will let us explain the difference between this left-or,
     as well as its cousin right-or and the more exotic parallel-or.'
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 从这张图表中不太明显的一点（我们希望很快能够明显），是这个运算符是从左到右的：`True || ⊥ = True`，但 `⊥ || True = ⊥`（在命令式措辞中，它会短路）。我们将开发一个偏序，让我们能够解释这个左或及其表亲右或和更奇特的平行或之间的差异。
 - en: '* * *'
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'Recall that `||` is curried: its type is `Bool -> (Bool -> Bool)`. We''ve drawn
     the partial order of `Bool` previously, so what is the complete partial order
     of `Bool -> Bool`? A quite interesting structure!'
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: 记住 `||` 是柯里化的：它的类型是 `Bool -> (Bool -> Bool)`。我们之前已经画出了 `Bool` 的偏序，那么 `Bool ->
+    Bool` 的完全偏序是什么？一个非常有趣的结构！
 - en: I’ve violated my previously stated convention that more defined types are above
     other types, in order to demonstrate the symmetry of this partial order. I've
     also abbreviated True as T and False as F. (As penance, I've explicitly drawn
     in all the arrows. I will elide them in future diagrams when they're not interesting.)
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 我违反了我之前声明的约定，即更明确定义的类型位于其他类型之上，以展示这个偏序的对称性。我还缩写了 True 为 T，False 为 F。（作为补偿，我已经明确画出了所有的箭头。在未引起兴趣的未来图表中，我将省略它们。）
 - en: 'These explicit lambda terms somewhat obscure what each function actually does,
     so here is a shorthand representation:'
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些明确的 lambda 表达式有些模糊了每个函数的实际作用，因此这里是一个简写表示：
 - en: Each triple of balls or bottom indicates how the function reacts to True, False
     and bottom.
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 每个球或 bottom 的三重表示说明了函数对 True、False 和 bottom 的反应。
 - en: 'Notice the slight asymmetry between the top/bottom and the left/right: if our
     function is able to distinguish between True and False, there is no non-strict
     computable function. Exercise: draw the Hasse diagrams and convince yourself of
     this fact.'
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意顶部/底部和左侧/右侧之间的轻微不对称性：如果我们的函数能够区分 True 和 False，那么就没有非严格可计算的函数。练习：画出哈斯图并说服自己这一事实。
 - en: We will use this shorthand notation from now on; refer back to the original
     diagram if you find yourself confused.
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 从现在开始我们将使用这种简写表示法；如果你感到困惑，请参考原始图表。
 - en: '* * *'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: The first order (cough) of business is to redraw the Hasse-to-Hasse diagram
     of left-or with the full partial order.
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 首要任务（咳嗽）是重新绘制带有完全偏序的左或哈斯到哈斯图的图。
 - en: Verify that using transitivity we can recover the simplified, partial picture
     of the partial order. The red arrows indicate the preserved ordering from the
     original boolean ordering.
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用传递性验证，我们可以恢复简化的偏序的部分图。红色箭头表示原始布尔顺序中保留的排序。
 - en: 'The million dollar question is this: can we write a different mapping that
     preserves the ordering (i.e. is monotonic). As you might have guessed, the answer
     is yes! As an exercise, draw the diagram for strict-or, which is strict in both
     its arguments.'
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 百万美元的问题是：我们能写一个不同的映射来保持顺序（即单调吗）？正如你可能已经猜到的那样，答案是肯定的！作为一个练习，画出严格或的图表，它在其两个参数中都是严格的。
 - en: 'Here is the diagram of right-or:'
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是右或的图表：
 - en: 'Notice something really interesting has happened: bottom no longer maps to
     bottom, but we''ve still managed to preserve the ordering. This is because the
     target domain has a rich enough structure to allow us to do this! If this seems
     a little magical to you, consider how we might write a right-or in Haskell:'
+  id: totrans-70
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意一个非常有趣的事情发生了：bottom 不再映射到 bottom，但我们仍然成功地保留了顺序。这是因为目标域具有足够丰富的结构，可以让我们做到这一点！如果这对你来说有点神奇，请考虑我们如何在
+    Haskell 中编写一个右或：
 - en: '[PRE0]'
+  id: totrans-71
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: We just don't look at x until we've looked at y; in our diagram, it looks as
     if x has been slotted into the result if y is False.
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们查看 x 之前，我们先看 y；在我们的图中，如果 y 为 False，看起来 x 就被插入到结果中。
 - en: 'There is one more thing we can do (that has probably occurred to you by now),
     giving us maximum ability to give good answers in the face of bottom, parallel-or:'
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 还有一件事情我们可以做（你现在可能已经想到了），使我们在面对 bottom 时能够给出最大能力的答案，平行或：
 - en: 'Truly this is the farthest we can go: we can''t push our functions any further
     down the definedness chain and we can''t move our bottom without changing the
     strict semantics of our function. It''s also not obvious how one would implement
     this in Haskell: it seems we really need to be able to pattern match against the
     first argument in order to decide whether or not to return `const True`. But the
     function definitely is computable, since monotonicity has not been violated.'
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 真的这是我们能走的最远：我们不能把我们的函数进一步推入定义链的底部，也不能移动我们的底部而不改变函数的严格语义。在Haskell中如何实现这一点也不明显：似乎我们真的需要能够模式匹配第一个参数，以决定是否返回`const
+    True`。但这个函数肯定是可计算的，因为单调性没有被违反。
 - en: 'The name is terribly suggestive of the correct strategy: evaluate both arguments
     in parallel, and return True if any one of them returns True. In this way, the
     Hasse diagram is quite misleading: we never actually return three distinct functions.
     However, I''m not really sure how to illustrate this parallel approach properly.'
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个名字极具暗示正确的策略：并行评估两个参数，并在任何一个返回True时返回True。这种方式，哈斯图相当具有误导性：我们实际上从未返回三个不同的函数。然而，我真的不确定如何正确地说明这种并行方法。
 - en: This entire exercise has a nice parallel to Karnaugh maps and metastability
     in circuits. In electrical engineering, you not only have to worry about whether
     or not a line is 1 or 0, but also whether or not it is transitioning from one
@@ -359,15 +520,23 @@
     (which is what I presume is usually implemented) look like at the transistor level.
     Parallels like these make me feel that my time spent learning electrical engineering
     was not wasted. :-)
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 这整个练习与卡诺图和电路中的亚稳态有很明显的并行。在电气工程中，你不仅要担心一条线是1还是0，还要担心它是否从一个状态过渡到另一个状态。根据电路的构造方式，这种过渡可能导致危险，即使开始和结束状态相同（严格函数），或者无论第二行的操作如何都保持稳定（惰性函数）。我鼓励电气工程师评论一下在晶体管级别上严格或、左或、右或和并行或（我认为通常实现的方式）看起来像什么。这些类比让我觉得我花在学习电气工程上的时间并不浪费。:-)
 - en: '* * *'
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: That's it for today. Next time, we'll [extend our understanding of functions
     and look at continuity and fixpoints.](http://blog.ezyang.com/2010/12/getting-a-fix-on-fixpoints/)
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 今天就到这里。下次，我们将扩展我们对函数的理解，并看一下连续性和不动点。([点击此处查看原文](http://blog.ezyang.com/2010/12/getting-a-fix-on-fixpoints/))
 - en: '**Postscript.** There is some [errata for this post.](http://blog.ezyang.com/2010/12/errata-for-gin-and-monotonic/)'
+  id: totrans-79
   prefs: []
   type: TYPE_NORMAL
+  zh: '**附言。** 有一些[本文的勘误。](http://blog.ezyang.com/2010/12/errata-for-gin-and-monotonic/)'

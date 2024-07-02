@@ -1,23 +1,35 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:12'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:12'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Paper Monday : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 'Paper Monday : ezyang’s blog'
 - en: 来源：[http://blog.ezyang.com/2010/08/paper-monday/](http://blog.ezyang.com/2010/08/paper-monday/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/08/paper-monday/](http://blog.ezyang.com/2010/08/paper-monday/)
 - en: 'Over the weekend, I took the Greyhound up to Seattle to meet up with some friends.
     The Greyhound buses was very late: forty-five minutes in the case of the trip
     up, which meant that I had some time to myself in the Internet-less bus station.
@@ -25,20 +37,28 @@
     papers in my queue. In the process, I found out that a paper that had been languishing
     in my queue since December 2009 actually deals directly with a major problem I
     spent last Thursday debugging (unsuccessfully) at Galois.'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 上周末，我乘坐灰狗巴士去西雅图见了一些朋友。灰狗巴士非常晚：在去程的情况下晚了四十五分钟，这意味着我在没有互联网的车站有了一些自己的时间。我制定了唯一明显的行动方案：开始处理我的待读论文堆积。在这个过程中，我发现一个自2009年12月以来一直在我的待读列表中的论文实际上直接涉及到我上周四在Galois进行调试（不成功）时遇到的一个重要问题。
 - en: Here are the papers and slide-decks I read—some old, some new—and why you might
     care enough to read them too. (Gosh, and they’re not all Haskell either!)
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里是我阅读过的论文和幻灯片——有些是旧的，有些是新的——以及为什么你可能也对它们感兴趣。（天啊，并不全是Haskell！）
 - en: '* * *'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '[Popularity is Everything](http://research.microsoft.com/apps/pubs/?id=132859)
     (2010) by Schechter, Herley and Mitzenmacher. Tagline: *When false positives are
     a good thing!*'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: '[流行就是一切](http://research.microsoft.com/apps/pubs/?id=132859)（2010），由Schechter、Herley和Mitzenmacher撰写。标语：*当假阳性是一件好事！*'
 - en: We propose to strengthen user-selected passwords against statistical-guessing
     attacks by allowing users of Internet-scale systems to choose any password they
     want-so long as it's not already too popular with other users. We create an oracle
@@ -49,9 +69,12 @@
     to achieve only a maximum acceptable rate false-positives, we set a minimum acceptable
     false-positive rate to confound attackers who might query the oracle or even obtain
     a copy of it.
+  id: totrans-10
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 我们建议通过允许互联网规模系统的用户选择任何他们想要的密码来加强用户选定的密码对统计猜测攻击的抵抗力，只要这些密码不是已经太过流行。我们创建一个用现有用户密码填充并且每次有新用户密码更新的Oracle来识别不受欢迎的流行密码，使用的是一个称为[count-min
+    sketch](http://www.eecs.harvard.edu/~michaelm/CS222/countmin.pdf)的现有数据结构。与大多数概率数据结构的应用不同，这些只追求最大可接受的假阳性率，我们设定了一个最低可接受的假阳性率，以困扰可能查询或甚至获取它的副本的攻击者。
 - en: '[Nelson](http://blog.nelhage.com/) informed me of this paper; it is a practical
     application of probabilistic data structures like [Bloom filters](http://en.wikipedia.org/wiki/Bloom_filter)
     that takes advantage of their false positive rate: attackers who try to use your
@@ -59,15 +82,21 @@
     a large number of passwords which are claimed to be popular but are not. The data
     structure is pretty easy too: someone should go integrate this with the authentication
     mechanism of a popular web framework as weekend project!'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Nelson](http://blog.nelhage.com/)向我介绍了这篇论文；它是对诸如[Bloom filters](http://en.wikipedia.org/wiki/Bloom_filter)之类的概率数据结构的实际应用，利用它们的假阳性率：试图使用你的密码流行度数据库来弄清哪些密码流行的攻击者将得到大量被称为流行但实际上并非如此的密码。这个数据结构也相当简单：有人应该将其作为一个周末项目与一个流行的Web框架的认证机制集成起来！'
 - en: '* * *'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '[Ropes: an Alternative to Strings](http://www.cs.ubc.ca/local/reading/proceedings/spe91-95/spe/vol25/issue12/spe986.pdf)
     (1995) by Boehm, Atkinson and Plass. Tagline: *All you need is concatenation.*'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Ropes: an Alternative to Strings](http://www.cs.ubc.ca/local/reading/proceedings/spe91-95/spe/vol25/issue12/spe986.pdf)（1995），由Boehm、Atkinson和Plass撰写。标语：*你所需的只是串联*。'
 - en: Programming languages generally provide a ‘string’ or ‘text’ type to allow manipulation
     of sequences of characters. This type is usually of crucial importance, since
     it is normally mentioned in most interfaces between system components. We claim
@@ -76,9 +105,11 @@
     with specific, and unusual, performance requirements. We present ‘ropes’ or ‘heavyweight’
     strings as an alternative that, in our experience leads to systems that are more
     robust, both in functionality and in performance.
+  id: totrans-14
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 编程语言通常提供‘字符串’或‘文本’类型来允许操作字符序列。这种类型通常至关重要，因为它通常在系统组件之间的大多数接口中被提到。我们认为传统的字符串实现，以及通常支持的功能，不适合这样的通用用途。它们应该限于具有特定且不寻常的性能要求的应用程序。我们提出‘ropes’或‘重量级’字符串作为一种选择，根据我们的经验，这种选择会导致功能和性能更加强大的系统。
 - en: When is the last time you indexed into a string to get a single character? If
     you are dealing with a multibyte encoding, chances are this operation doesn't
     even mean anything! Rather, you are more likely to care about searching or slicing
@@ -87,21 +118,30 @@
     that text editors are a very practical illustration of traditional C strings being
     woefully inefficient. Ropes seem like a good match for web developers, who spend
     most of their time concatenating strings together.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 当你上次索引字符串以获取单个字符是什么时候？如果你正在处理多字节编码，那么这个操作可能毫无意义！相反，你更可能关心搜索、切片或连接字符串。从业者们可能会认为这是对渐近性能而非真实世界性能的关注，但是这篇论文非常明确地指出，文本编辑器是传统C字符串极不高效的非常实际的例子。对于大部分时间都在连接字符串的Web开发者来说，Ropes似乎是一个很好的选择。
 - en: '* * *'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '[Autotools tutorial](http://web.mit.edu/~ezyang/Public/autotools.pdf) (last
     updated 2010) by Duret-Lutz. (Rehosted since the canonical site seems down at
     time of writing.) Tagline: *Hello World: Autotools edition.*'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Autotools教程](http://web.mit.edu/~ezyang/Public/autotools.pdf)（最后更新于2010年）由Duret-Lutz撰写。（因为经典网站在撰写时似乎宕机，此处再次托管。）标语：*Hello
+    World：Autotools版。*'
 - en: This presentation targets developers familiar with Unix development tools (shell,
     make, compiler) that want to learn Autotools
+  id: totrans-18
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 这份演示文稿针对熟悉Unix开发工具（shell、make、编译器）并希望学习Autotools的开发者。
 - en: Despite its unassuming title, this slide deck has become the default recommendation
     by most of my friends if you want to figure out what this “autogoo” thing is about.
     In my case, it was portably compiling shared libraries. Perhaps what makes this
@@ -109,16 +149,23 @@
     the background that most people interested but new to autotools would have) and
     clearly explains away the black magic with many animated diagrams of what programs
     generate what files.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管它的标题不起眼，但这份幻灯片已成为大多数朋友的默认推荐，如果你想弄清楚这个“autogoo”究竟是什么。在我看来，它是可移植编译共享库。也许这份演示文稿之所以如此出色，是因为它假定了正确的背景（即大多数对autotools感兴趣但是新手的背景），并用许多动画图表清楚地解释了程序生成哪些文件的黑魔法。
 - en: '* * *'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '[Fun with Type Functions](http://research.microsoft.com/~simonpj/papers/assoc-types/fun-with-type-funs/typefun.pdf)
     (2009) by Oleg Kiselyov, Simon Peyton Jones and Chung-chieh Shan. See also [Haskellwiki](http://www.haskell.org/haskellwiki/Simonpj/Talk:FunWithTypeFuns).
     Tagline: *Put down those GHC docs and come read this.*'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: '[类型函数乐趣](http://research.microsoft.com/~simonpj/papers/assoc-types/fun-with-type-funs/typefun.pdf)（2009）由Oleg
+    Kiselyov、Simon Peyton Jones和Chung-chieh Shan撰写。另请参阅[Haskellwiki](http://www.haskell.org/haskellwiki/Simonpj/Talk:FunWithTypeFuns)。标语：*放下那些GHC文档，来阅读这篇文章吧。*'
 - en: 'Haskell''s type system extends Hindley-Milner with two distinctive features:
     polymorphism over type constructors and overloading using type classes. These
     features have been integral to Haskell since its beginning, and they are widely
@@ -126,9 +173,11 @@
     or associated types, which allows functions on types to be expressed as straightforwardly
     as functions on values. This facility makes it easier for programmers to effectively
     extend the compiler by writing functional programs that execute during type-checking.'
+  id: totrans-22
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: Haskell的类型系统通过两个独特的特性扩展了Hindley-Milner：类型构造器上的多态性和使用类型类进行重载。这些特性从Haskell诞生之初就成为其不可或缺的一部分，广泛被使用和欢迎。最近，Haskell还增加了类型族或关联类型，允许将类型上的函数像对值的函数一样直接表达。这一功能使得程序员能够通过编写在类型检查期间执行的函数式程序有效地扩展编译器。
 - en: 'Many programmers I know have an aversion to papers and PDFs: one I know has
     stated that if he could, he’d pay people to make blog posts instead of write papers.
     Such an attitude would probably make them skip over a paper like this, which truly
@@ -138,25 +187,36 @@
     STRef and IORef), arithmetic, graphs, memoization, session types, sprintf/scanf,
     pointer alignment and locks! In many ways, it’s the cookbook I mentioned I was
     looking for in [my post Friday](http://blog.ezyang.com/2010/08/the-gateway-drug-to-type-programming/).'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 我认识的许多程序员对论文和PDF有所厌恶：我认识的其中一个曾经说过，如果可以的话，他愿意付钱请人写博客文章而不是写论文。这种态度可能会让他们忽略掉像这样的论文，而这篇论文真正是你一直在寻找的有关类型族的教程。论文中没有讨论底层实现：只有三十五页的类型级别编程示例。在此过程中，他们涵盖了可变引用的接口（考虑STRef和IORef）、算术、图形、记忆化、会话类型、sprintf/scanf、指针对齐和锁！在许多方面，它就是我之前提到的那本烹饪书，我一直在寻找[我的博文
+    Friday](http://blog.ezyang.com/2010/08/the-gateway-drug-to-type-programming/)。
 - en: '* * *'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '[Purely Functional Lazy Non-deterministic Programming](http://www.cs.rutgers.edu/~ccshan/rational/lazy-nondet.pdf)
     (2009) by Sebastian Fischer, Oleg Kiselyov and Chung-chieh Shan. Tagline: *Sharing
     and caring can be fun!*'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: '[纯函数式惰性非确定性编程](http://www.cs.rutgers.edu/~ccshan/rational/lazy-nondet.pdf)（2009）由Sebastian
+    Fischer、Oleg Kiselyov和Chung-chieh Shan。标语：*分享和关心也可以很有趣！*'
 - en: Functional logic programming and probabilistic programming have demonstrated
     the broad benefits of combining laziness (non-strict evaluation with sharing of
     the results) with non-determinism. Yet these benefits are seldom enjoyed in functional
     programming, because the existing features for non-strictness, sharing, and non-determinism
     in functional languages are tricky to combine.
+  id: totrans-26
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 函数逻辑编程和概率编程展示了将惰性（非严格评估与结果共享）与非确定性结合起来的广泛好处。然而，由于功能语言中用于非严格性、共享和非确定性的现有特性很难组合，这些好处很少被享受到。
 - en: ''
+  id: totrans-27
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
@@ -166,9 +226,11 @@
     implementations, by making choices lazily and representing data with non-deterministic
     components, by working with custom monadic data types and search strategies, and
     by providing equational laws for the programmer to reason about their code.
+  id: totrans-28
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 我们提出了一种实用的方式来编写纯函数式的惰性非确定性程序，既高效又明了。我们通过将程序嵌入现有语言（如Haskell、SML和OCaml）的高质量实现中实现了这一目标，通过惰性选择和非确定性组件来表示数据，通过使用自定义的单子数据类型和搜索策略来工作，并为程序员提供方程法则，以便他们推理自己的代码。
 - en: 'This is the paper that hit right at home with of some code I’ve been wrangling
     with at work: I’ve essentially been converting a pure representation of a directed
     acyclic graph into a monadic one, and along the way I managed to break sharing
@@ -177,13 +239,19 @@
     helped me clarify my thinking about how I broke sharing (I now fully agree with
     John Matthews in that I need an explicit memoization mechanism), so I’m looking
     forward to apply some of these techniques at work tomorrow.'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 这篇论文正好对我在工作中处理的一些代码问题如实地击中要害：我基本上已经将一个纯粹的有向无环图转换为了一个单子结构，并且在此过程中，我设法破坏了共享常见节点，导致结果树呈指数增长。在处理非确定性环境中共享的显式处理中，为了得到一些理想的特性，帮助我澄清了我对如何破坏共享的思考（我现在完全同意约翰·马修斯的观点，我需要一个显式的记忆机制），因此我期待明天在工作中应用一些这些技术。
 - en: '* * *'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: That’s it for now, or at least, until the next *Paper Monday!* (If my readers
     don’t kill me for it first, that is. For the curious, the current backlog is sixty-six
     papers long, most of them skimmed and not fully understood.)
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 到此为止，或者至少是，直到下一次*Paper Monday*！（如果读者们不先因此杀了我的话。对于那些好奇的人来说，当前的积压稿件有六十六篇，大部分只是浏览过，并没有完全理解。）

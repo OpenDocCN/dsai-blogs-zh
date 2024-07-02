@@ -1,41 +1,59 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:17:05'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:17:05
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Optimizing incremental compilation : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 优化增量编译：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2016/08/optimizing-incremental-compilation/](http://blog.ezyang.com/2016/08/optimizing-incremental-compilation/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2016/08/optimizing-incremental-compilation/](http://blog.ezyang.com/2016/08/optimizing-incremental-compilation/)
 - en: 'When you run `make` to build software, you expect a build on software that
     has been previously built to take less time than software we are building from
     scratch. The reason for this is **incremental compilation**: by caching the intermediate
     results of ahead-of-time compilation, the only parts of a program that must be
     recompiled are those that depend on the changed portions of the dependency graph.'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 当你运行 `make` 来构建软件时，你期望对先前构建过的软件进行构建所需的时间比从头构建的软件少。这其中的原因在于**增量编译**：通过缓存预编译的中间结果，程序中只有依赖于依赖图变化部分的部分需要重新编译。
 - en: 'The term incremental compilation doesn''t say much about how the dependency
     graph is set up, which can lead to some confusion about the performance characteristics
     of "incremental compilers." For example, the [Wikipedia article on incremental
     compilation](https://en.wikipedia.org/wiki/Incremental_compiler) claims that incremental
     compilers cannot easily optimize the code that it compiles. This is wrong: it
     depends entirely on *how* your dependency graph is set up.'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: “增量编译”这个术语并未详述依赖图是如何设置的，这可能导致对“增量编译器”的性能特征产生一些误解。例如，[维基百科关于增量编译](https://en.wikipedia.org/wiki/Incremental_compiler)声称增量编译器无法轻松优化其编译的代码，这是错误的：这完全取决于你的依赖图设置方式。
 - en: 'Take, for example, `gcc` for C:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 以 C 为例，考虑 `gcc`：
 - en: The object file `a.o` depends on `a.c`, as well as any header files it (transitively)
     includes (`a.h`, in this case.) Since `a.o` and `main.o` do not depend on each
     other, if `a.c` is rebuilt, `main.o` does not need to rebuilt. In this sense,
@@ -43,127 +61,178 @@
     has a bad reputation for incremental compilation is that, naively, the preprocessing
     of headers is not done incrementally at all (precompiled headers are an attempt
     to address this problem).
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 目标文件 `a.o` 依赖于 `a.c`，以及它（传递性地）包含的任何头文件（在这种情况下是 `a.h`）。由于 `a.o` 和 `main.o` 互不依赖，如果重建
+    `a.c`，`main.o` 就不需要重建。从这个意义上讲，C 实际上是非常适合增量编译的（没有任何 C 程序员会这样说）。C 之所以在增量编译方面名声不佳，是因为在简单情况下，头文件的预处理完全没有做到增量化（预编译头文件是解决这个问题的一种尝试）。
 - en: 'The dependency graph implies something else as well: unless the body of a function
     is placed in `a.h`, there is no way for the compiler that produces `main.o` to
     inline the body in: it knows nothing about the C file. `a.c` may not even exist
     at the point `main.o` is being built (parallelism!) The only time such optimization
     could happen is at link-time (this is why link-time optimization is a thing.)'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 依赖图也意味着另外一件事情：除非函数体放在 `a.h` 中，否则生成 `main.o` 的编译器无法将函数体内联进去：它对 C 文件一无所知。在生成 `main.o`
+    的时候，甚至 `a.c` 可能还不存在（并行性！）这种优化只能在链接时发生（这就是为什么链接时优化存在的原因）。
 - en: 'A nice contrast is `ghc` for Haskell:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: Haskell 的 `ghc` 提供了一个很好的对比：
 - en: 'Here, `Main.{hi,o}` depend not only on `Main.hs` but `A.hi`, the module it
     imports. GHC is still incremental: if you modify an `hs` file, only things that
     import that source file that need to be recompiled. Things are even better than
     this dependency diagram implies: `Main.{hi,o}` may only depend on *specific* pieces
     of `A.hi`; if those pieces are unchanged GHC will exit early and report compilation
     is NOT necessary.'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里，`Main.{hi,o}` 不仅依赖于 `Main.hs`，还依赖于它导入的模块 `A.hi`。GHC 仍然是增量的：如果你修改了一个 `hs`
+    文件，只有导入该源文件的模块需要重新编译。事情甚至比这个依赖图暗示的更好：`Main.{hi,o}` 可能仅依赖于 `A.hi` 的*特定*部分；如果这些部分未改变，GHC
+    将提前退出并报告无需编译。
 - en: 'Despite being incremental, GHC supports inlining, since unfoldings of functions
     can be stored in `hi` files, which can subsequently be used by modules which import
     it. But now there is a trade-off: if you inline a function, you now depend on
     the unfolding in the `hi` file, making it more likely that compilation is necessary
     when `A.hi` changes.'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 尽管是增量的，GHC 支持内联，因为函数的展开可以存储在 `hi` 文件中，随后由导入它的模块使用。但现在有一个权衡：如果内联一个函数，你现在依赖于 `hi`
+    文件中的展开，这使得当 `A.hi` 变化时更有可能需要重新编译。
 - en: As one final example, incremental compilers in IDEs, like the Java compiler
     in Eclipse, are not doing anything fundamentally different than the operation
     of GHC. The primary differences are (1) the intermediate products are held in
     memory, which can result in huge savings since parsing and loading interfaces
     into memory is a huge timewaster, and (2) they try to make the dependency diagram
     as fine-grained as possible.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 作为最后的例子，IDE中的增量编译器，例如Eclipse中的Java编译器，与GHC的操作没有根本上的不同。主要区别在于（1）中间产品保存在内存中，这可以节省大量时间，因为解析和加载接口到内存中是一个巨大的时间消耗者，以及（2）他们试图使依赖图尽可能细粒度化。
 - en: '* * *'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'This is all fairly well known, so I want to shift gears and think about a less
     well-understood problem: how does one do incremental compilation for *parametrized*
     build products? When I say parametrized, I mean a blend of the C and Haskell paradigms:'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些都是相当出名的，所以我想转换思路，思考一个不太被理解的问题：如何为*参数化*的构建产品进行增量编译？当我说参数化时，我指的是C语言和Haskell语言范式的融合：
 - en: '**Separate compilation.** It should be possible to depend on an interface *without*
     depending on an implementation (like when a C file depends on a header file.)'
+  id: totrans-17
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**分离编译。** 应该可以依赖于接口*而不是*依赖于实现（就像一个C文件依赖于头文件时一样）。'
 - en: '**Cost-free abstraction.** When the implementation is provided, we should (re)compile
     our module so that we can inline definitions from the implementation (like when
     a Haskell module imports another module.)'
+  id: totrans-18
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '**零成本抽象。** 当提供了实现时，我们应该（重新）编译我们的模块，以便我们可以内联来自实现的定义（就像Haskell模块导入另一个模块时一样）。'
 - en: 'This problem is of interest for Backpack, which introduces libraries parametrized
     over signatures to Haskell. For Backpack, we came up with the following design:
     generate distinct build products for (1) uninstantiated code, for which we know
     an interface but not its implementation, and (2) instantiated code, for which
     we know all of their implementations:'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个问题对于Backpack非常重要，Backpack引入了针对Haskell签名参数化的库。对于Backpack，我们提出了以下设计：为以下两类构建产品生成不同的构建产品：（1）未实例化的代码，我们知道接口但不知道其实现，以及（2）已实例化的代码，我们知道它们的所有实现：
 - en: In the blue box, we generate `A.hi` and `Main.hi` which contain purely the results
     of typechecking against an interface. Only in the pink box do we combine the implementation
     of `A` (in the red box) with the user of `A` (`Main`). This is just a graph; thus,
     incremental compilation works just as it works before.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 在蓝色框中，我们生成`A.hi`和`Main.hi`，这些文件仅包含对接口的类型检查结果。仅在粉色框中，我们将`A`的实现（在红色框中）与`Main`的用户组合在一起。这只是一个图表；因此，增量编译的工作方式与之前的工作方式完全相同。
 - en: '* * *'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'We quickly ran into an intriguing problem when we sought to support *multiple*
     interfaces, which could be instantiated separately: if a client instantiates one
     interface but not the other, what should we do? Are we obligated to generate build
     products for these partially instantiated modules? This is not very useful, since
     we can''t generate code yet (since we don''t know all of the implementations.)'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们在支持*多个*接口时遇到了一个有趣的问题：如果客户端实例化了一个接口但没有实例化另一个接口，我们该怎么办？我们是否有义务为这些部分实例化的模块生成构建产品？这并不是很有用，因为我们目前还不能生成代码（因为我们还不知道所有的实现）。
 - en: An important observation is that these interfaces are really cheap to generate
     (since you're not doing any compilation). Thus, our idea was to do the instantiation
     *on-the-fly*, without actually generating build products. The partially instantiated
     interfaces can be cached in memory, but they're cheap to generate, and we win
     if we don't need them (in which case we don't instantiate them.)
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个重要的观察是，生成这些接口实际上很便宜（因为你不进行任何编译）。因此，我们的想法是在需要时*即时*进行实例化，而不实际生成构建产品。部分实例化的接口可以缓存在内存中，但生成它们的成本很低，如果我们不需要它们（在这种情况下我们不实例化它们），我们就会获胜。
 - en: 'This is a bit of a clever scheme, and cleverness always has a dark side. A
     major source of complexity with on-the-fly instantiation is that there are now
     two representations of what is morally the same build product: the on-the-fly
     products and the actually compiled ones:'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是一个有点聪明的方案，而聪明总是有其暗面。在即时实例化中的一个主要复杂性来源是，现在对于道德上相同的构建产品存在两种表示：即时生成的产品和实际编译的产品：
 - en: 'The subtyping relation between these two products states that we can always
     use a compiled interface in place of an on-the-fly instantiated one, but not vice
     versa: the on-the-fly interface is missing unfoldings and other important information
     that compiled code may need.'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 这两个产品之间的子类型关系表明，我们总是可以用一个编译后的接口来代替即时实例化的接口，但反之则不行：即时接口缺少展开和其他编译代码可能需要的重要信息。
 - en: 'If we are type-checking only (we have uninstantiated interfaces), we might
     *prefer* on-the-fly interfaces, because they require less work to create:'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们仅进行类型检查（即我们有未实例化的接口），我们可能*更喜欢*即时接口，因为它们需要较少的工作来创建：
 - en: 'In contrast, if we are compiling a package, we *must* use the compiled interface,
     to ensure we see the necessary unfoldings for inlining:'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 相反，如果我们正在编译一个包，我们*必须*使用编译后的接口，以确保我们看到必要的展开内容用于内联：
 - en: 'A particularly complicated case is if we are type-checking an uninstantiated
     set of modules, which themselves depend on some compiled interfaces. If we are
     using an interface `p+a/M.hi`, we should be *consistent* about it, and since `r`
     must use the compiled interfaces, so must `q`:'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 特别复杂的情况是，如果我们正在对一组未实例化的模块进行类型检查，这些模块本身依赖于一些已编译接口。如果我们正在使用接口`p+a/M.hi`，我们应该对此保持*一致性*，因为`r`必须使用编译后的接口，`q`也必须如此：
 - en: 'The alternative is to ensure that we always build products available that were
     typechecked against the on-the-fly interfaces, as below:'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一种选择是确保我们始终构建产品，这些产品是根据即时接口进行了类型检查的，如下所示：
 - en: But this has the distasteful effect of requiring everything to be built twice
     (first typechecked against the on-the-fly interfaces, and then built for real).
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 但这会带来一个令人不快的效果，即需要一切都建立两次（首先针对即时接口进行类型检查，然后进行真实构建）。
 - en: '* * *'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: The dependency graphs of build products for an ahead-of-time compiler is traditionally
     part of the public API of a compiler. As I've [written previously](http://blog.ezyang.com/2015/12/the-convergence-of-compilers-build-systems-and-package-managers/),
     to achieve better incrementality, better parallelism, and more features (like
@@ -171,11 +240,15 @@
     compiler writers don't want to commit to an interface and build tool authors aren't
     interested learning about a complicated compilation model, the only systems that
     work well are the integrated ones.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 提前编译器的构建产品的依赖图传统上是编译器的公共API的一部分。正如我之前[写过的](http://blog.ezyang.com/2015/12/the-convergence-of-compilers-build-systems-and-package-managers/)，为了实现更好的增量性、更好的并行性和更多的功能（如参数化模块），依赖图变得越来越复杂。当编译器作者不愿意承诺一个接口，而构建工具作者对复杂的编译模型不感兴趣时，唯一运作良好的系统就是集成的系统。
 - en: Is Backpack's system for on-the-fly interface instantiation too clever for its
     own good? I believe it is well-designed for the problem it tries to solve, but
     if you still have a complicated design, perhaps you are solving the wrong problem.
     I would love to hear your thoughts.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: Backpack的即时接口实例化系统是否聪明过头了？我认为它对尝试解决的问题设计良好，但如果您仍然有复杂的设计，也许您正在解决错误的问题。我很想听听您的想法。

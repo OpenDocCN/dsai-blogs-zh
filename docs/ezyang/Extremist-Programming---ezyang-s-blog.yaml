@@ -1,40 +1,60 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:24'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:24'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Extremist Programming : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '[极端编程](http://blog.ezyang.com/2012/11/extremist-programming/)：ezyang的博客'
 - en: 来源：[http://blog.ezyang.com/2012/11/extremist-programming/](http://blog.ezyang.com/2012/11/extremist-programming/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2012/11/extremist-programming/](http://blog.ezyang.com/2012/11/extremist-programming/)
 - en: '*Functions are awesome. What if we made a PL that only had functions?*'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: '*函数很棒。如果我们制作一种只有函数的编程语言呢？*'
 - en: '*Objects are awesome. What if we made a PL where everything was an object?*'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '*对象是很棒的。如果我们制作一种编程语言，所有东西都是对象呢？*'
 - en: '*Lazy evaluation is awesome. What if we made a PL where every data type was
     lazy?*'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: '*惰性评估很棒。如果我们制作一种编程语言，每种数据类型都是惰性的呢？*'
 - en: '**Extremist programming** (no relation to extreme programming) is the act of
     taking some principle, elevating it above everything else and applying it everywhere.
     After the dust settles, people often look at this extremism and think, “Well,
     that was kind of interesting, but using X in Y was clearly inappropriate. You
     need to use the right tool for the job!”'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: '**极端编程**（与极限编程无关）是将某些原则提升到高于一切的地位，并在各处应用它的行为。在尘埃落定后，人们经常会看到这种极端主义，并认为，“嗯，这有点有趣，但在Y中使用X显然是不合适的。你需要选择适合工作的正确工具！”'
 - en: 'Here’s the catch: sometimes you *should* use the *wrong* tool for the job—because
     it might be the right tool, and you just don’t know it yet. If you aren’t trying
     to use functions everywhere, you might not realize the utility of functions that
@@ -42,26 +62,34 @@
     use objects everywhere, you might not realize that both integers [3] and the class
     of an object [4] are also objects. If you aren’t trying to use laziness everywhere,
     you might not realize that purity is an even more important language feature [5].'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里的关键是：有时你*应该*使用*错误的*工具——因为它可能是正确的工具，只是你还不知道而已。如果你不到处尝试使用函数，你可能不会意识到接受函数作为参数[1]或廉价lambda[2]的函数的实用性。如果你不到处尝试使用对象，你可能不会意识到整数[3]和对象的类[4]也是对象。如果你不到处尝试使用惰性，你可能不会意识到纯度是更重要的语言特性[5]。
 - en: 'This leads to two recommendations:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 这导致两个建议：
 - en: '*When learning a new principle, try to apply it everywhere.* That way, you’ll
     learn more quickly where it does and doesn’t work well, even if your initial intuitions
     about it are wrong. (The right tool for the job, on the other hand, will lead
     you to missed opportunities, if you don’t realize that the principle is applicable
     in some situation).'
+  id: totrans-12
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*在学习新原则时，尝试到处应用它。* 这样，你将更快地了解它何时适用，何时不适用，即使你对它的最初直觉是错误的。（另一方面，如果你没有意识到某种情况下该原则是适用的，正确的工具可能会导致你错失机会）。'
 - en: '*When trying to articulate the essence of some principle, an extremist system
     is clearest.* If you want to know what it is like to program with lazy evaluation,
     you want to use Haskell, not a language with optional laziness. Even if the extremist
     system is less practical, it really gets to the core of the issue much more quickly.'
+  id: totrans-13
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '*在试图阐明某个原则的本质时，极端系统是最清晰的。* 如果你想知道使用惰性评估编程的感觉，你应该使用Haskell，而不是一个具有可选惰性的语言。即使极端系统不太实用，它确实能更快地抓住问题的核心。'
 - en: 'There are a lot of situations where extremism is inappropriate, but for fun
     projects, small projects and research, it can really teach you a lot. One of the
     most memorable interactions I had in the last year was while working with Adam
@@ -70,48 +98,73 @@
     knew the shape of the proof. Adam told me: “You should automate the proofs from
     the very beginning, don’t bother with the manual exploration.” [6] It was sage
     advice that made my life a lot better: I guess I just wasn’t extremist enough!'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 有很多情况下，极端主义是不合适的，但对于有趣的项目、小项目和研究，它确实可以教会你很多东西。在过去一年中，我最记得的一次互动是与Adam Chlipala合作时。我们正在Coq中进行一些证明，我一直采取逐步进行证明，然后再使用Ltac自动化的温和路线。亚当告诉我：“你应该从一开始就自动化证明，不要费心手动探索。”
+    [6] 这是一条明智的建议，让我的生活好了很多：我想我只是不够极端而已！
 - en: '*Files are awesome. What if we made an OS where everything was a file?*'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: '*文件很棒。如果我们制作一个操作系统，所有东西都是文件呢？*'
 - en: '*Cons cells are awesome. What if we made a PL where everything was made of
     cons cells?*'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: '*Cons单元格很棒。如果我们制作一种编程语言，所有东西都由Cons单元格构成呢？*'
 - en: '*Mathematics is awesome. What if we made a PL where everything came from math?*'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: '*数学很棒。如果我们制作一种编程语言，所有东西都来自数学呢？*'
 - en: '*Arrays are awesome. What if we made a PL where everything was an array?*'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: '*数组真棒。如果我们创造一种编程语言，一切都是数组会怎样？*'
 - en: '* * *'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '[1] Higher-order functions and combinators: these tend to not see very much
     airplay because they might be very verbose to write, or because the language doesn''t
     have a very good vocabulary for saying what the interface of a higher-order function
     is. (Types help a bit here.)'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: '[1] 高阶函数和组合子：这些往往不太流行，因为可能编写起来非常冗长，或者因为语言没有很好的词汇来描述高阶函数的接口。（类型在这里有些帮助。）'
 - en: '[2] Cheap lambdas are necessary for the convenient use of many features, including:
     monads, scoped allocation (and contexts in general), callbacks, higher-order functions.'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: '[2] 廉价的 lambda 对于方便使用许多功能是必要的，包括：单子、作用域分配（以及一般情况下的上下文）、回调、高阶函数。'
 - en: '[3] Consider early versions of Java prior to the autoboxing of integer and
     other primitive types.'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: '[3] 考虑 Java 的早期版本，在整型和其他基本类型的自动装箱之前。'
 - en: '[4] Smalltalk used this to good effect, as does JavaScript.'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: '[4] Smalltalk 使用这个技术效果很好，JavaScript 也是如此。'
 - en: '[5] This is one of my favorite narratives about Haskell, it comes from Simon
     Peyton Jones’ presentation [Wearing the hair shirt](http://research.microsoft.com/en-us/um/people/simonpj/papers/haskell-retrospective/)
     (in this case, laziness).'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: '[5] 这是我最喜欢的一个关于 Haskell 的叙述，出自 Simon Peyton Jones 的演讲 [Wearing the hair shirt](http://research.microsoft.com/en-us/um/people/simonpj/papers/haskell-retrospective/)（在这种情况下，指的是惰性）。'
 - en: '[6] This is the essence of the Chlipala school of Coq proving, in recognition
     of how astonishingly easy it is to trick experienced computer scientists into
     writing the equivalents of straight-line programs by hand, without any abstractions.'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: '[6] 这是 Chlipala Coq 证明学派的核心，认识到有多么令人惊讶地能够欺骗经验丰富的计算机科学家手写等效于直线程序，而没有任何抽象。'

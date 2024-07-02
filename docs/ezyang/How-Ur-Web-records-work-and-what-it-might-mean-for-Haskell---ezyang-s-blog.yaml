@@ -1,23 +1,35 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:31'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:17:31
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'How Ur/Web records work and what it might mean for Haskell : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Ur/Web记录的工作原理及其对Haskell可能意味着什么：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2012/04/how-urweb-records-work-and-what-it-might-mean-for-haskell/](http://blog.ezyang.com/2012/04/how-urweb-records-work-and-what-it-might-mean-for-haskell/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2012/04/how-urweb-records-work-and-what-it-might-mean-for-haskell/](http://blog.ezyang.com/2012/04/how-urweb-records-work-and-what-it-might-mean-for-haskell/)
 - en: '[Ur](http://www.impredicative.com/ur/) is a programming language, which among
     other things, has a rather interesting record system. Record systems are a topic
     of rather [intense debate](http://hackage.haskell.org/trac/ghc/wiki/Records) in
@@ -31,48 +43,71 @@
     the base language, while Ur/Web is a specialization of the base language for web
     programming, that also happens to actually have a compiler. For the sake of technical
     precision, I will refer to the language as Ur throughout this article.)'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Ur](http://www.impredicative.com/ur/)是一种编程语言，除其他外，它具有一个非常有趣的记录系统。记录系统在Haskell社区中是一个非常激烈辩论的话题，我注意到有人曾评论过“Ur/Web有一个非常先进的记录系统。如果有人能够看一看UR实现论文，并尝试从Haskell的角度来梳理记录的解释，那将非常有帮助！”本文试图执行这种提炼，基于我与Ur记录系统互动和其主要存在原因之一：元编程的经验。（次要命名注意事项：Ur是基础语言，而Ur/Web是用于Web编程的基础语言的专业化版本，它实际上也有一个编译器。为了技术上的精确性，我将在本文中始终将语言称为Ur。）'
 - en: Records and algebraic data types are not the same thing
+  id: totrans-7
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 记录和代数数据类型并不相同
 - en: 'In Haskell, if you want to define a record, you have to go and write out a
     `data` declaration:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 在Haskell中，如果要定义记录，您必须去编写`data`声明：
 - en: '[PRE0]'
+  id: totrans-9
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'In Ur, these two concepts are separate: you can define an algebraic data type
     (the `Foo` constructor) and you can write types which describe a record (the `{
     foo :: Int, bar :: Bool}` bit of the type). To emphasize this point, there are
     actually a lot of ways I can spell this record in Ur/Web. I can define a type
     synonym:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: '在Ur中，这两个概念是分开的：您可以定义一个代数数据类型（`Foo`构造函数），并且可以编写描述记录的类型（类型的`{ foo :: Int, bar
+    :: Bool}`部分）。为了强调这一点，实际上有很多种方式可以在Ur/Web中拼写这个记录。我可以定义一个类型同义词：'
 - en: '[PRE1]'
+  id: totrans-11
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'which offers me no protection from mixing it up with a structurally similar
     but semantically different `type qux = { Bar : int, Baz : bool }`, or I can define:'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: '这对我来说没有提供保护，以免将其与结构上相似但语义上不同的`type qux = { Bar : int, Baz : bool }`混淆，或者我可以定义：'
 - en: '[PRE2]'
+  id: totrans-13
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'which desugars into:'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 这被展开为：
 - en: '[PRE3]'
+  id: totrans-15
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: that is to say, the datatype has a single constructor, which takes only one
     argument, which is a record! This definition is closer to the spirit of the original
     Haskell definition. (ML users might be familiar with this style; Ur definitely
     comes from that lineage.)
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 也就是说，这种数据类型只有一个构造函数，只接受一个参数，即记录！这个定义更接近原始Haskell定义的精神。（ML用户可能熟悉这种风格；Ur明显来自于这一传统。）
 - en: 'This design of separating algebraic data types from records means we now have
     obvious facilities for record construction (`let val x = { Bar = 2, Baz = true
     }`) and record projection (`x.Bar`); though if I have a datatype I have to unwrap
@@ -80,19 +115,25 @@
     (order doesn''t matter), which makes them a bit more interesting than `HList`.
     They are also nicely parsimonious: unit is just the empty record type `{}`, and
     tuples are just records with special field names: `1`, `2`, etc.'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种将代数数据类型与记录分离的设计意味着现在我们有了明显的记录构造设施（`let val x = { Bar = 2, Baz = true }`）和记录投影（`x.Bar`）；虽然如果我有一个数据类型，我必须先解包它才能从中投影。这些记录类型在排列上是唯一的（顺序无关紧要），这使它们比`HList`更有趣。它们也非常简洁：单元就是空记录类型`{}`，元组就是带有特殊字段名的记录：`1`，`2`等。
 - en: Types and kinds of records
+  id: totrans-18
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 记录的类型和种类
 - en: Now, if this was all there was to the Ur record system, it wouldn't be very
     interesting. But actually, the field `#Bar` is a first class expression in the
     language, and the curly brace record type syntax is actually syntax sugar! Unpacking
     this will require us to define quite a few new kinds, as well as a lot of type
     level computation.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，如果这就是 Ur 记录系统的全部内容，那就不会有什么意思。但实际上，字段 `#Bar` 在语言中是一个一流表达式，而花括号记录类型语法实际上是语法糖！解开这一点将要求我们定义相当多的新种类，以及大量的类型级别计算。
 - en: 'In vanilla Haskell, we have only one kind: `*`, which in Ur parlance is a `Type`.
     Values inhabit types which inhabit this kind. Ur''s record system, however, demands
     more exotic kinds: one such kind is the `Name` kind, which represents a record
@@ -103,26 +144,42 @@
     type-level records are the things that *describe* value-level records. They are
     not, however, the *type* of the value-level records (because if they were, their
     kind would be `Type`). Let’s look at a concrete example.'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 在纯 Haskell 中，我们只有一种种类：`*`，在 Ur 的术语中是 `Type`。值居住于类型，这些类型居住于这种种类。然而，Ur 的记录系统要求更多的外来种类：其中一种是
+    `Name` 种类，它表示记录字段名（`#Foo` 是其中之一）。然而，GHC 已经有了这个：它是 [最近添加的](http://hackage.haskell.org/trac/ghc/wiki/TypeNats/Basics)
+    `Symbol` 种类。然而，GHC 没有的是 `{k}` 的种构造子，它是“类型级记录”的种类。如果值级别记录是包含数据的东西，那么类型级别记录就是*描述*值级别记录的东西。然而，它们并不是值级别记录的*类型*（因为如果它们是的话，它们的种类将是
+    `Type`）。让我们看一个具体的例子。
 - en: 'When I write:'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我写：
 - en: '[PRE4]'
+  id: totrans-22
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: 'What I’m really writing is:'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 我真正要写的是：
 - en: '[PRE5]'
+  id: totrans-24
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: The `$` is a type level operator, being applied to the expression `[ Bar = int,
     Baz = bool ]`, which is a type level record, specifically of kind `{Type}` (the
     “values” of the record are types). The dollar sign takes type level records, and
     transforms them into `Type` (so that they can actually be inhabited by values).
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: '`$` 是一个类型级别的操作符，被应用于表达式 `[ Bar = int, Baz = bool ]`，它是一个类型级别的记录，具体来说是 `{Type}`
+    的一种（记录的“值”是类型）。美元符号接受类型级别的记录，并将它们转换为 `Type`（以便它们实际上可以被值居住）。'
 - en: 'This may seem like a meaningless distinction, until you realize that Ur has
     type level operators which work only on type level records, and not types in general.
     The two most important primitive type level operations are concatenation and map.
@@ -131,8 +188,11 @@
     the record: so I can easily transform `[ Bar = int, Baz = bool ]` into `[ Bar
     = list int, Baz = list bool ]` by mapping the list type constructor. Extensible
     records and metaprogramming dispatched in one swoop!'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 这可能看起来是一个毫无意义的区分，直到你意识到，Ur 有类型级别的操作符，它们仅适用于类型级别的记录，而不是一般的类型。两个最重要的原始类型级别操作是连接和映射。它们的功能正如你所期望的：连接将两个记录放在一起，而映射将类型级别的函数应用于记录的每个成员：因此，我可以通过映射列表类型构造函数轻松地将
+    `[ Bar = int, Baz = bool ]` 转换为 `[ Bar = list int, Baz = list bool ]`。可扩展记录和元编程一举完成！
 - en: Now, recall that field names all live in a global namespace. So what happens
     if I attempt to do `[ Bar = bool ] ++ [ Bar = int ]`? The Ur type checker will
     reject this statement as ill-typed, because I have not provided the (unsatisfiable)
@@ -143,12 +203,19 @@
     for users of dependently typed languages. In fact, the Ur/Web compiler makes handling
     disjointness obligations very easy, automatically inferring them for you if possible
     and knowing some basic facts about about concatenate and map.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，请回想一下，字段名都存在于全局命名空间中。那么，如果我尝试执行 `[ Bar = bool ] ++ [ Bar = int ]` 会发生什么？Ur
+    类型检查器将拒绝这个声明，因为我没有提供这些记录“不相交”的（无法满足的）证明义务。一般来说，如果我有两个记录类型 `t1` 和 `t2`，我想要连接它们，我需要一个不相交证明
+    `[t1 ~ t2]`。处理不相交证明对于习惯于传统函数式编程语言的用户来说可能感觉相当不寻常，但对于依赖类型语言的用户来说并不那么奇怪。事实上，Ur/Web
+    编译器使处理不相交义务变得非常容易，如果可能的话会自动推断它们，并了解有关连接和映射的一些基本事实。
 - en: Type level computation
+  id: totrans-28
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 类型级别计算
 - en: 'The Ur record system crucially relies on type level computation for its expressiveness:
     we can expand, shrink and map over records, and we can also take advantage of
     “folders”, which are functions which use the type level records as structure to
@@ -157,8 +224,11 @@
     But in order to offer these features in a user friendly way, Ur crucially relies
     on a compiler which has some level of knowledge of how these operators work, in
     order to avoid making users discharge lots of trivial proof obligations.'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: Ur 记录系统至关重要地依赖于类型级计算来增强其表达能力：我们可以展开、收缩和映射记录，我们还可以利用“折叠器”，这些是利用类型级记录作为结构的函数，允许对记录进行通用折叠。有关这些更多信息，请参阅[类型级计算教程](http://www.impredicative.com/ur/tutorial/tlc.html)。但为了以用户友好的方式提供这些功能，Ur
+    关键依赖于编译器具有对这些运算符如何工作的某种了解，以避免用户解除大量微不足道的证明义务。
 - en: 'Unfortunately, here I must admit ignorance as to how the rest of the Haskell
     record proposals work, as well as how a record system like this would interact
     with Haskell (Ur does have typeclasses, so this interaction is at least reasonably
@@ -166,14 +236,20 @@
     system in an existing language, it is complex, and definitely shooting for the
     moon. But I think it says a bit about what might have to be added, beyond type-level
     strings, to fulfill [Gershom Bazerman''s vision here](http://www.haskell.org/pipermail/glasgow-haskell-users/2011-December/021410.html):'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 不幸的是，在这里，我必须承认对于其余的 Haskell 记录提案的工作方式以及这样一个记录系统如何与 Haskell 交互（Ur 确实有类型类，因此这种交互至少已经有了相当深入的研究。）我并不了解。虽然这个提案有一个在现有语言中有着明确定义的系统的好处，但它很复杂，并且显然是在追求完美。但我认为它对于理解除了类型级字符串之外可能需要添加的内容有所帮助，以实现[Gershom
+    Bazerman 在这里的愿景](http://www.haskell.org/pipermail/glasgow-haskell-users/2011-December/021410.html)：
 - en: It seems to me that there's only one essential missing language feature, which
     is appropriately-kinded type-level strings (and, ideally, the ability to reflect
     these strings back down to the value level). Given that, template haskell, and
     the HList bag of tricks, I'm confident that a fair number of elegant records packages
     can be crafted. Based on that experience, we can then decide what syntactic sugar
     would be useful to elide the TH layer altogether.
+  id: totrans-31
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 在我看来，只有一个基本缺失的语言特性，那就是适当类型化的类型级字符串（理想情况下，还能将这些字符串反映回值级）。鉴于此，模板 Haskell 和 HList
+    的种种技巧，我相信可以设计出相当多优雅的记录包。基于这种经验，我们可以决定哪些语法糖能够有助于完全省略 TH 层。

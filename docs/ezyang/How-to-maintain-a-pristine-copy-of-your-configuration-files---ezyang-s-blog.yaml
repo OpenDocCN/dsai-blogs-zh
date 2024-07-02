@@ -1,23 +1,35 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 分类：未分类
 - en: 'date: 2024-07-01 18:17:15'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:17:15
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'How to maintain a pristine copy of your configuration files : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 如何维护配置文件的原始副本：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2014/01/how-to-maintain-a-pristine-copy-of-your-configuration-files/](http://blog.ezyang.com/2014/01/how-to-maintain-a-pristine-copy-of-your-configuration-files/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2014/01/how-to-maintain-a-pristine-copy-of-your-configuration-files/](http://blog.ezyang.com/2014/01/how-to-maintain-a-pristine-copy-of-your-configuration-files/)
 - en: '[etckeeper](http://joeyh.name/code/etckeeper/) is a pretty good tool for keeping
     your /etc under version control, but one thing that it won’t tell you is what
     the diff between your configuration and a pristine version of your configuration
@@ -29,68 +41,97 @@
     the patch (automatically generated) to a pristine branch. This procedure works
     best on a fresh install, since I don’t have a good way of reconstructing history
     if you haven’t been tracking the pristine from the start.'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: '[etckeeper](http://joeyh.name/code/etckeeper/) 是一个非常好的工具，用于将你的 /etc 目录置于版本控制之下，但它不会告诉你一件事情，即你的配置与配置的原始版本之间的差异（如果你在系统上安装了相同的软件包，但没有更改任何配置）。[人们曾希望实现这一点](https://blueprints.launchpad.net/ubuntu/+spec/foundations-q-dpkg-pristine-conffiles)，但我找不到真正能够实现这一点的工具。一个月前，我找到了在
+    etckeeper 中用 Git 仓库实现这一目标的一个简单而好的方法。这个想法是维护一个原始分支，在升级发生时，自动将补丁（自动生成的）应用到原始分支上。这个过程最适合在新安装的系统上运行，因为如果你没有从一开始跟踪原始分支，我没有很好的方法来重建历史。'
 - en: 'Here’s how it goes:'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是一个示例：
 - en: Install etckeeper. It is best if you are using etckeeper 1.10 or later, but
     if not, you should replace [30store-metadata](https://github.com/joeyh/etckeeper/blob/master/pre-commit.d/30store-metadata)
     with a copy from the latest version. This is important, because pre-1.10, the
     metadata store included files that were ignored, which means you’ll get lots of
     spurious conflicts.
+  id: totrans-8
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 安装 etckeeper。最好使用 etckeeper 1.10 或更高版本，但如果没有，你应该从最新版本中替换 [30store-metadata](https://github.com/joeyh/etckeeper/blob/master/pre-commit.d/30store-metadata)
+    的副本。这很重要，因为在 1.10 之前的版本中，元数据存储包含了被忽略的文件，这意味着你将会得到很多假冲突。
 - en: Initialize the Git repository using `etckeeper init` and make an initial commit
     `git commit`.
+  id: totrans-9
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 初始化 Git 仓库，使用 `etckeeper init` 命令，并进行首次提交 `git commit`。
 - en: 'Create a pristine branch: `git branch pristine` (but stay on the master branch)'
+  id: totrans-10
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 创建一个原始分支：`git branch pristine`（但保留在主分支上）
 - en: 'Modify the etckeeper configuration so that `VCS="git"`, `AVOID_DAILY_AUTOCOMMITS=1`
     and `AVOID_COMMIT_BEFORE_INSTALL=1`:'
+  id: totrans-11
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 修改 etckeeper 配置，使得 `VCS="git"`，`AVOID_DAILY_AUTOCOMMITS=1` 和 `AVOID_COMMIT_BEFORE_INSTALL=1`：
 - en: '[PRE0]'
+  id: totrans-12
   prefs:
   - PREF_IND
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: Apply [this patch to etckeeper/commit.d/50vcs-commit](http://web.mit.edu/~ezyang/Public/etckeeper-pristine.patch).
     This patch is responsible for keeping the pristine branch up-to-date (more explanation
     below).
+  id: totrans-13
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将 [这个补丁应用到 etckeeper/commit.d/50vcs-commit](http://web.mit.edu/~ezyang/Public/etckeeper-pristine.patch)。这个补丁负责保持原始分支的最新状态（下面有更多解释）。
 - en: 'Create a `.gitattributes` file with contents `.etckeeper merge=union`. This
     makes merges on the metadata file use the union strategy, which reduces spurious
     conflicts dramatically:'
+  id: totrans-14
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 创建一个 `.gitattributes` 文件，内容为 `.etckeeper merge=union`。这样做可以使元数据文件上的合并使用联合策略，显著减少假冲突：
 - en: '[PRE1]'
+  id: totrans-15
   prefs:
   - PREF_IND
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: Commit these changes.
+  id: totrans-16
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 提交这些更改。
 - en: Permit pushes to the checked out `/etc` by running `git config receive.denyCurrentBranch
     warn`
+  id: totrans-17
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 允许推送到已检出的 `/etc` 目录，通过运行 `git config receive.denyCurrentBranch warn` 来配置。
 - en: All done! Try installing a package that has some configuration and then running
     `sudo gitk` in `/etc` to view the results. You can run a diff by running `sudo
     git diff pristine master`.
+  id: totrans-18
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 完成！尝试安装一个包含一些配置的软件包，然后在 `/etc` 目录中运行 `sudo gitk` 来查看结果。你可以通过运行 `sudo git diff
+    pristine master` 来进行差异比较。
 - en: 'So, what’s going on under the hood? The big problem that blocked me from a
     setup like this in the past is that you would like the package manager to apply
     its changes into the pristine etc, so that you can merge in the changes yourself
@@ -101,29 +142,41 @@
     patch (using a cherry-pick) to the pristine branch, and then rewrite history so
     the parent pointers are correct. All of this happens outside of `/etc`, so the
     production copy of the configuration files never gets touched.'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以，底层是怎么回事呢？过去我想要设置这样一个环境的最大问题是，你希望包管理器将其更改应用到原始的`/etc`，这样你就可以在生产版本上自己合并这些更改，但如何说服`dpkg`让它相信`/etc`其实在别的地方呢？也不希望恢复系统配置到原始版本，应用更新，然后再恢复：这样只会麻烦不断。所以，想法是正常应用（生成的）补丁，然后*重新应用*补丁（使用`cherry-pick`）到原始分支，并且重写历史记录，使得父指针正确。所有这些都发生在`/etc`之外，因此生产环境的配置文件副本永远不会被触及。
 - en: 'Of course, sometimes the cherry-pick might fail. In that case, you’ll get an
     error like this:'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 当然，有时`cherry-pick`可能会失败。在这种情况下，你会收到这样的错误信息：
 - en: '[PRE2]'
+  id: totrans-21
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'Do not fret: all that has happened is that the `pristine` branch is not up-to-date.
     You can resolve this problem by looking at `$TMPREPO/etc`, where you will see
     some sort of merge conflict. Resolve the conflict and commit. Now you will need
     to manually complete the rest of the script, this can be done with:'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 不要担心：发生的一切只是`pristine`分支不是最新的。你可以通过查看`$TMPREPO/etc`解决此问题，在那里你会看到某种合并冲突。解决冲突并提交。现在你需要手动完成剩余的脚本，可以这样做：
 - en: '[PRE3]'
+  id: totrans-23
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'To make sure you did it right, go back to `/etc` and run `git status`: it should
     report the working directory as clean. Otherwise, there are discrepancies and
     you may not have done the merges correctly.'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 要确保你做得对，回到`/etc`并运行`git status`：它应报告工作目录干净。否则，可能存在差异，合并可能没有做对。
 - en: 'I’ve been testing this setup for a month now, and it has proceeded very smoothly
     (though I’ve never attempted to do a full release upgrade with this setup). Unfortunately,
     as I’ve said previously, I don’t have a method for constructing a pristine branch
@@ -131,5 +184,7 @@
     There’s nothing stopping you, though: you can always decide to start, in which
     case you will record just the diffs from the time you started recording pristine.
     Give it a spin!'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 我已经测试了这个设置一个月了，进展非常顺利（尽管我从未尝试过使用这种设置进行完整的发布升级）。不幸的是，正如我之前所说的，我没有一种方法可以从头构建一个原始分支，如果你想将这个技巧应用到现有系统。当然没有什么能阻止你：你总是可以决定开始，然后你只记录从你开始记录原始的差异。试试看吧！

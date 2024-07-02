@@ -1,43 +1,61 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 分类：未分类
 - en: 'date: 2024-07-01 18:17:29'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:17:29
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Secure multiparty Bitcoin anonymization : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 安全的多方比特币匿名化：ezyang’s blog
 - en: 来源：[http://blog.ezyang.com/2012/07/secure-multiparty-bitcoin-anonymization/](http://blog.ezyang.com/2012/07/secure-multiparty-bitcoin-anonymization/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2012/07/secure-multiparty-bitcoin-anonymization/](http://blog.ezyang.com/2012/07/secure-multiparty-bitcoin-anonymization/)
 - en: '*Abstract.* We describe how secure multi-party sorting can serve as the basis
     for a Bitcoin anonymization protocol which improves over current centralized “mixing”
     designs.'
+  id: totrans-6
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '*摘要.* 我们描述了如何利用安全的多方排序作为比特币匿名化协议的基础，这种协议改进了当前集中式“混合”设计。'
 - en: 'Bitcoin is a [pseudonymous protocol](https://en.bitcoin.it/wiki/Anonymity):
     while Bitcoin addresses are in principle completely anonymous, all traffic into
     and out of a wallet is publicly visible. With some [simple network analysis](http://anonymity-in-bitcoin.blogspot.com/2011/07/bitcoin-is-not-anonymous.html)
     collections of addresses can be linked together and identified.'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 比特币是一个[匿名协议](https://en.bitcoin.it/wiki/Anonymity)：虽然比特币地址原则上完全匿名，但进入和离开钱包的所有流量都是公开可见的。通过一些[简单的网络分析](http://anonymity-in-bitcoin.blogspot.com/2011/07/bitcoin-is-not-anonymous.html)，可以将一组地址链接在一起并识别出来。
 - en: The current state of the art for anonymizing Bitcoins is a [mixing service](https://en.bitcoin.it/wiki/Mixing_service),
     which is trusted third-party wallet which accepts incoming transactions, and in
     random increments scheduled at random times in the future, transfers a corresponding
     quantity to a new wallet of your choice. The result is given any Bitcoin that
     is distributed from this service, there exist a large number of identities from
     whom the Bitcoin may have originated.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 目前用于比特币匿名化的最先进技术是[混合服务](https://en.bitcoin.it/wiki/Mixing_service)，这是一个信任的第三方钱包，接受传入交易，并在未来的随机时间以随机增量将相应数量转移到您选择的新钱包。其结果是，从该服务分发的任何比特币，都可能来自多个身份。
 - en: 'Mixing services of this kind have a number of notable problems. First, the
     mixing service must be trusted not to keep logs or otherwise monitor the mixing:
     if they are compromised, the path of any given Bitcoin can be fully traced. The
@@ -47,8 +65,10 @@
     this makes such mixing services risky for anonymizing large quantities of Bitcoins.
     Finally, most mixing services charge a processing fee on top of the usual transaction
     fee one might expect to pay out for arranging for a Bitcoin transfer.'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 这类混合服务存在一些显著问题。首先，混合服务必须值得信任，不会保留日志或以其他方式监视混合过程：如果它们被攻破，可以完全追踪任何给定比特币的路径。对于这种情况的通常建议是使用多个混合服务，这样所有这些服务必须被攻破才会失去匿名性。其次，混合服务必须值得信任，不会转身拒绝返还您的资金；这使得这种混合服务对于匿名大量比特币存在风险。最后，大多数混合服务在通常的交易费用之外还收取处理费。
 - en: We propose a decentralized, secure multiparty protocol for implementing a mixing
     protocol. Such a system [has been proposed in abstract](https://bitcointalk.org/index.php?topic=12751.msg315793#msg315793)
     ([also here](https://bitcointalk.org/index.php?topic=54266.0;wap2)); in this post,
@@ -59,12 +79,16 @@
     interested in performing the mixing protocol), does not require you to reveal
     your input-output addresses beyond the ultimate transaction, and can be performed
     atomically using Bitcoin’s transaction language.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们提出了一种去中心化、安全的多方协议，用于实施混合协议。这样的系统[已在摘要中提出](https://bitcointalk.org/index.php?topic=12751.msg315793#msg315793)（[也在这里](https://bitcointalk.org/index.php?topic=54266.0;wap2)）；在本文中，我们详细描述了如何实现它，特别是展示了[多方排序](http://www.csc.kth.se/~gkreitz/mpc_sorting/)（一个相对研究充分的算法问题）足以实现此协议。该协议不需要信任的第三方（除了协助发现有兴趣执行混合协议的参与者），不需要你透露你的输入输出地址，仅需最终交易即可执行。
 - en: Protocol description
+  id: totrans-11
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 协议描述
 - en: 'First some preliminaries: the multi-party sorting problem is usually formulated
     as follows: each party *i* contributes an input element *A[i]*. After the protocol
     is carried out, all parties learn the sorted sequence *A* in secret shared form,
@@ -74,8 +98,11 @@
     sorting is to construct a fixed size *sorting circuit* for the inputs, and then
     use the general framework of multi-party computation on the resulting circuit
     description.'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先进行一些准备工作：多方排序问题通常如下形式：每个参与方*i*贡献一个输入元素*A[i]*。协议执行后，所有参与方都以秘密共享的形式学习到了排序后的序列*A*，但不知道谁贡献了序列中的任何特定元素*A[i]*。参考[Jónsson,
+    Kreitz and Uddin (2011)](http://www.csc.kth.se/~gkreitz/mpc_sorting/)的工作，我们将这个协议作为一个基本原语：多方排序的基本思想是构建一个固定大小的*排序电路*，然后利用生成的电路描述在多方计算框架上进行操作。
 - en: We now describe the mixing problem. Assume that some number of parties are assembled
     to mix 1 BTC of coins among themselves. (For now, we assume that every participant
     has the same number of Bitcoins; we will generalize this later.) In particular,
@@ -84,17 +111,24 @@
     to its output wallet *B[i]*. Any adversary participating in this transaction should
     not be able to learn the *B[i]* corresponding to *A[i]*, except that it is among
     the set of output wallets taking part in the transaction.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在描述混合问题。假设有若干方参与将1 BTC的硬币混合在一起的过程。（目前假设每位参与者拥有相同数量的比特币；稍后我们将进行推广。）特别地，每位参与者*i*有一个输入钱包*A[i]*（余额至少为1
+    BTC）和一个输出钱包*B[i]*，并且只会在转账1 BTC到其输出钱包*B[i]*的交易中签署。任何参与该交易的对手都不应能够获知与*A[i]*对应的*B[i]*，除非它是参与交易的输出钱包集合中的一员。
 - en: 'The protocol proceeds as follows:'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 协议的执行步骤如下：
 - en: Every participant declares the input wallet it will be participating in the
     protocol with, and produces a signature to show that they own the wallet. These
     wallets are publically sorted into *A*.
+  id: totrans-15
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 每位参与者声明将使用的输入钱包，并生成签名以证明他们拥有该钱包。这些钱包公开排序为*A*。
 - en: With ordering defined as the numeric value of the *public key* of each participating
     output wallet, conduct a secure multi-party sort of all of the output wallets.
     We now have a sorted list of output wallets *B*, with no member of the transaction
@@ -102,30 +136,41 @@
     check if their output wallet is contained in this list (to protect against Byzantine
     failure); if it is not, they should abort the protocol and destroy their output
     wallet (its identity has been leaked).
+  id: totrans-16
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将参与输出钱包的每个公钥的数值定义为排序，进行所有输出钱包的安全多方排序。我们现在得到了一个排序好的输出钱包列表*B*，交易的任何成员都不知道谁贡献了哪个输出钱包。每位参与者应检查他们的输出钱包是否包含在这个列表中（以防止拜占庭故障）；如果没有，他们应该中止协议并销毁他们的输出钱包（其身份已泄露）。
 - en: Construct a transaction transferring 1 BTC from *A[0]* to *B[0]* (from the sorted
     lists), *A[1]* to *B[1]*, and so forth and broadcast it to all participants. Clients
     sign the transaction with their input wallet.
+  id: totrans-17
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 构建一笔交易，从排序列表中将1 BTC从*A[0]*转账到*B[0]*，*A[1]*转账到*B[1]*，依此类推，并广播给所有参与者。客户端使用其输入钱包对交易进行签名。
 - en: Once all signatures have arrived, the transaction is valid and is broadcast
     for incorporation into the block chain.
+  id: totrans-18
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 一旦所有签名到位，交易即为有效，并广播以纳入区块链。
 - en: Mixing pools only work if all participants are attempting to mix identical amounts
     of Bitcoins. In order to manage participants who would like to mix larger amounts
     of Bitcoins, we suggest maintaining discovery channels for power of two sizes
     of Bitcoins, e.g. ...1/4 BTC, 1/2 BTC, 1 BTC, 2 BTC, 4 BTC...
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 混合池只有在所有参与者试图混合相同数量的比特币时才起作用。为了管理希望混合更大数量比特币的参与者，我们建议维护不同大小比特币的发现通道，例如...1/4
+    BTC，1/2 BTC，1 BTC，2 BTC，4 BTC...
 - en: Analysis
+  id: totrans-20
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 分析
 - en: 'Step (1) does not mention output wallets, and thus cannot leak information
     about the input-output correspondence. By definition, step (2) does not leak information
     about who contributed the output wallet. Furthermore, we don’t even require the
@@ -137,8 +182,10 @@
     that an attacker knows that a mixing transaction is taking place, the deterministic
     mapping of input to output wallets gives all participants no further bits of information.
     Thus, this protocol clearly fulfills its security requirements.'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 步骤（1）并未提及输出钱包，因此不能泄露有关输入-输出对应关系的信息。根据定义，步骤（2）不会泄露有关谁贡献了输出钱包的信息。此外，我们甚至不要求排序结果是秘密共享的：一旦交易被发布在区块链上，这个排序列表将成为公开信息。在中止交易的情况下，如果你的输出钱包不在结果中（在拜占庭失败的情况下），情况就会棘手：中止*会*泄露信息，因此你不能在进一步的交易中使用输出钱包。在步骤（3）中，假设攻击者知道正在进行混合交易，输入到输出钱包的确定性映射不会再给所有参与者提供进一步的信息位。因此，这个协议显然满足其安全要求。
 - en: One odd thing about this protocol is that no random permutation between participants
     is explicitly constructed. This might seem unusual, since a natural security property
     one might expect is for an output wallet to receive its 1 BTC from a uniformly
@@ -150,8 +197,11 @@
     random, so the process of sorting automatically constructs a random permutation
     between these participants (dishonest participants must be excluded, since they
     can generate addresses from a skewed probability distributions).
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个协议的一个奇怪之处在于，参与者之间没有明确构建任何随机排列。这看起来可能不同寻常，因为人们可能期望的一个自然安全性质是，输出钱包从一个均匀随机选择的输入钱包接收其
+    1 BTC。然而，这个条件虽然足以保证匿名性，但并非必需。正如添加随机排列会破坏原始排列的所有信息一样，用新的常数排列替换原始排列也会破坏所有原始排列的信息。此外，诚实的参与者会随机选择他们的地址，因此排序过程会自动在这些参与者之间构建一个随机排列（必须排除不诚实的参与者，因为他们可以生成来自倾斜概率分布的地址）。
 - en: 'What is the amount of anonymity granted by one round of this protocol? Consider
     the case where I have 1 BTC in an input wallet tied to my identity, and I participate
     in a mixing round with *n* honest participants with a fresh output wallet. Since
@@ -170,18 +220,25 @@
     against this attack later. (Note, however, that no matter how many attackers there
     are, you are guaranteed to *not* lose any Bitcoins, due to the verification step
     in (2).)'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个轮次协议授予多少匿名性？考虑这样一种情况，我在一个与我的身份绑定的输入钱包中有1 BTC，并且我与*n*个诚实参与者一起进行了混合，使用了一个全新的输出钱包。因为没有泄露关于这个输出钱包来源的信息给参与者，一个对手在交易中猜测哪个输出钱包是我的概率为*1/n-1*：这被称为匿名因子。在Sybil攻击的情况下，授予的匿名性数量会减少。如果攻击者的比例小于参与者的某个比例（对于许多秘密共享协议来说，被动攻击者的魔数是1/2，主动攻击者的魔数是1/3），则匿名因子仍为*1/n-1*，其中*n*是诚实参与者的数量；但*n*小于协议中可见参与者的数量：交易的大小不一定与其匿名性相关！如果攻击者的数量超过这个比例，那么秘密共享方案可能会泄露信息，匿名性不再保证。这为混合协议提供了一种拒绝服务攻击的机会；我们稍后描述一些对抗这种攻击的缓解策略。（注意，无论攻击者有多少，由于第（2）步中的验证步骤，您都保证不会丢失任何比特币。）
 - en: In practice
+  id: totrans-24
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 在实践中
 - en: As with traditional mixing, a number of precautions should be taken in order
     to avoid accidentally revealing information about the source of Bitcoins via a
     side-channel. Consider the case where Alice has 2 BTC tied to her real-world identity,
     and she would like to anonymously pay 3/4 BTC to Bob.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 与传统混合一样，应采取一些预防措施，以避免通过侧信道意外泄露有关比特币来源的信息。考虑这样一种情况，Alice拥有与她真实身份绑定的2 BTC，并且她希望匿名向Bob支付3/4
+    BTC。
 - en: Alice first prepare by creating a pool of empty wallets, which she will use
     to carry the anonymized Bitcoins. Alice connects to a tracker for 1 BTC mixing
     over Tor. (1 BTC is the amount she would like to pay to Bob, rounded up.) She
@@ -189,8 +246,10 @@
     place submits her (public) input wallet and her (anonymous) output wallet. If
     the protocol fails, she throws out her output wallet and submits a new one next
     time, and blacklists the misbehaving node if she can figure out who it is.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: Alice首先通过创建一组空钱包来做准备，这些钱包将用于携带匿名的比特币。Alice通过Tor连接到一个1 BTC混合的追踪器。（1 BTC是她想支付给Bob的金额，四舍五入。）她等待一个时间窗口到期以进行下一轮混合，然后按照协议提交她的（公开的）输入钱包和（匿名的）输出钱包。如果协议失败，她会丢弃她的输出钱包，并在下次能确定是哪个节点出问题时列入黑名单。
 - en: Once Alice has successfully carried out a mixing, she flips a coin (which comes
     up tails with probability *1/m*). If the coin comes up heads, she waits for another
     mixing. The number of mixing transactions she is expected to perform is *m* (obeying
@@ -200,8 +259,11 @@
     could be attributable with equal probability to any of the other wallets that
     she participated in mixes with). She transfers 3/4 BTC to Bob, leaving 1/4 BTC
     in her wallet.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 一旦Alice成功进行了混合，她会掷一枚硬币（该硬币以概率*1/m*出现正面）。如果硬币出现正面，她会等待进行另一轮混合。她预计要执行的混合交易数量是*m*（遵从几何分布，因此选择它使所有输出钱包在重新混合或退出方面表现一致）。一旦Alice退出混合，她现在有一个包含匿名比特币的钱包（更确切地说，这个比特币可能以等概率归因于她参与混合的任何其他钱包）。她向Bob转移了3/4
+    BTC，留下1/4 BTC在她的钱包里。
 - en: 'The remaining Bitcoins in the wallet should now be considered tainted (as they
     now have a direct relationship to Bob, who may have a public wallet). These Bitcoins
     should be split into mixable amounts and reanonymized, before used for any other
@@ -209,8 +271,10 @@
     in particular, they must not be transferred back to the original, public Bitcoin
     account. In such a situation, the graph structure of mixing transactions looks
     like this:'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在应该将钱包中剩余的比特币视为受污染的（因为它们现在与Bob有直接关系，Bob可能有一个公共钱包）。在用于任何其他目的之前，这些比特币应该分成可混合的金额并重新匿名化。即使匿名化后，这些硬币仍然必须小心使用：特别是它们不能转回原始的公共比特币账户。在这种情况下，混合交易的图结构如下：
 - en: (The green node is your public node, the red node is your anonymous node). Network
     analysis that looks for *cycles* in Bitcoin transfers will be able to identify
     any transactions, even if the anonymizing pool has a large amount of turnover
@@ -219,8 +283,10 @@
     development of wallet management software that can handle thousands of private
     keys, sort by “size of coin”, and track the easily traceable transaction history
     associated with any given coin.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: （绿色节点是您的公共节点，红色节点是您的匿名节点）。在比特币转账中寻找*循环*的网络分析将能够识别任何交易，即使混淆池中有大量的流动性（尽管有趣的是，如果许多参与者生成循环，这种攻击更难实施）。为了帮助追踪这些硬币，我们建议开发能够处理成千上万个私钥、按“硬币大小”排序，并跟踪与任何给定硬币相关联的易于追踪的交易历史的钱包管理软件。
 - en: 'In order to protect herself against Sybil attacks, Alice may wish to select
     her mixing tracker with care. Some mixing trackers could charge fees for listing:
     with sufficient volume, these charges would make it more expensive to carry out
@@ -229,25 +295,36 @@
     expectation of being accompanied with a transaction fee.) Every mixing should
     be conducted with a different IP address; if Alice is using Tor for anonymity
     she needs to reanonymize her connection each time.'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了防范Sybil攻击，Alice可能希望慎重选择她的混合跟踪器。某些混合跟踪器可能会收取上市费用：在足够的交易量下，这些费用将使持续的Sybil攻击变得更加昂贵。
+    （然后，这些费用可以被用来支付复杂的混合交易的处理费用，这些交易有着伴随交易费用的社会期望。）每次混合都应该使用不同的IP地址进行；如果Alice使用Tor进行匿名化，她需要每次重新匿名化她的连接。
 - en: Conclusion
+  id: totrans-31
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 结论
 - en: Secure multi-party computation has always been in the eye of users of Bitcoin
     seeking anonymization, but to date there has not been any plausible implementation
     strategy for any such computation. We hope that this document describes such an
     implementation strategy and leads the way to a better ecosystem of Bitcoin anonymizers.
     As the fiascos at Bitcoinica and other exchanges have demonstrated, relying on
     third party wallets is dangerous. Fortunately, they are also unnecessary.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 安全多方计算一直是寻求比特币匿名化的用户关注的焦点，但迄今为止还没有任何可信的实施策略。我们希望本文档描述了这样一种实施策略，并为比特币匿名化的生态系统铺平了道路。正如Bitcoinica和其他交易所的惨败所示，依赖第三方钱包是危险的。幸运的是，它们也是不必要的。
 - en: Acknowledgments
+  id: totrans-33
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 致谢
 - en: I would like to thank Eric Price for playing an instrumental role in the formulation
     of this protocol.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 我要感谢Eric Price在制定这一协议中发挥的重要作用。

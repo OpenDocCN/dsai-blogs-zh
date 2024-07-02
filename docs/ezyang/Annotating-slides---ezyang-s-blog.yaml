@@ -1,110 +1,162 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:10'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:10'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Annotating slides : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 注释幻灯片：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2010/09/annotating-slides/](http://blog.ezyang.com/2010/09/annotating-slides/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/09/annotating-slides/](http://blog.ezyang.com/2010/09/annotating-slides/)
 - en: Annotating slides
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 注释幻灯片
 - en: 'A little trick for your toolbox: after you’ve generated your slide deck and
     printed it out to PDF, you might want to annotate the slides with comments. These
     is a good idea for several reasons:'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个小技巧供你参考：在生成了幻灯片堆栈并将其打印为PDF后，你可能想要用评论来注释幻灯片。这是一个好主意，有几个原因：
 - en: If you’ve constructed your slides to be text light, they might be optimized
     for presentation but not for reading later on. (“Huh, here is this diagram, I
     sure wish I knew what the presenter was saying at that point.”)
+  id: totrans-8
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如果你的幻灯片构造得内容较少，它们可能会被优化用于展示，但并不适合稍后阅读。（“嗯，这里是个图表，我真希望我知道演讲者在这一点上说了什么。”）
 - en: Writing out a dialog to go along the slides is a nonvocal way of practicing
     your presentation!
+  id: totrans-9
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 编写与幻灯片配套的对话是一种无声地练习你的演示的方式！
 - en: But how do you interleave the slide pages with your annotations? With the power
     of `enscript` and `pdftk`, you can do this entirely automatically, without even
     having to leave your terminal! Here’s the recipe.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 但是你如何将幻灯片页面与你的注释交叉排列？利用`enscript`和`pdftk`的强大功能，你可以完全自动地完成这一过程，甚至无需离开终端！以下是具体方法。
 - en: Create an “annotations” text file (we’ll refer to it as `annot.txt`). This will
     contain your text commentary to accompany the slides. Write the text explaining
     your first slide, and then insert a *form feed* (`^L`, you can do so by pressing
     `C-l` in vim (insert mode) or `C-q C-l` in emacs.) Write the text for your second
     slide. Rinse and repeat.
+  id: totrans-11
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 创建一个“annotations”文本文件（我们将其称为`annot.txt`）。其中包含了与幻灯片配套的文字评论。首先写出解释你的第一张幻灯片的文字，然后插入一个*换页*（`^L`，你可以在vim中按`C-l`（插入模式）或在emacs中按`C-q
+    C-l`来实现）。接着写出第二张幻灯片的文字。如此反复。
 - en: 'We now want to render this into a PDF file, with the same dimensions as your
     slide deck. Figure out what the size of your slides are in pixels, and then edit
     your `~/.enscriptrc` to contain the following line:'
+  id: totrans-12
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 现在，我们希望将此渲染为一个PDF文件，并与幻灯片堆栈具有相同的尺寸。找出你的幻灯片尺寸为多少像素，然后编辑你的`~/.enscriptrc`文件，加入以下行：
 - en: '[PRE0]'
+  id: totrans-13
   prefs:
   - PREF_IND
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'where ll stands for lower left and ur stands for upper right: these four numbers
     denote the bounding box for the text. One possible combination for these might
     be:'
+  id: totrans-14
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 其中ll表示左下，ur表示右上：这四个数字表示文字的边界框。这些数字的一个可能组合是：
 - en: '[PRE1]'
+  id: totrans-15
   prefs:
   - PREF_IND
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: We can now invoke enscript to generate a nicely formatted PostScript file of
     our annotations in the right dimensions, with `enscript annot.txt -p annot.ps
     -M Slide -B -f Palatino-Roman14` (pick a different font, if you like.)
+  id: totrans-16
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 现在我们可以调用enscript来生成我们注释的一个尺寸合适的PostScript文件，使用`enscript annot.txt -p annot.ps
+    -M Slide -B -f Palatino-Roman14`（如果你愿意，可以选择不同的字体。）
 - en: Convert the resulting PostScript file into a PDF, with `ps2pdf annot.ps`.
+  id: totrans-17
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将生成的PostScript文件转换为PDF，使用`ps2pdf annot.ps`。
 - en: 'Now, with pdftk, we will split our annotations PDF and our slides PDF into
     individual pages, and then merge them back together into one PDF. We can use `burst`
     to output the pages, suggestively naming the output files so they interleave correctly:'
+  id: totrans-18
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 现在，使用pdftk，我们将分割我们的注释PDF和幻灯片PDF成为单独的页面，然后将它们合并成一个PDF。我们可以使用`burst`来输出页面，并建议命名输出文件以便它们正确地交叉排列：
 - en: '[PRE2]'
+  id: totrans-19
   prefs:
   - PREF_IND
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'and then we join them back together:'
+  id: totrans-20
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 然后我们将它们合并回来：
 - en: '[PRE3]'
+  id: totrans-21
   prefs:
   - PREF_IND
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'Here’s the full script:'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是完整的脚本：
 - en: '[PRE4]'
+  id: totrans-23
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: Don’t forget to define `Slide` in your `.enscriptrc`, and happy annotating!
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 不要忘记在你的`.enscriptrc`文件中定义`Slide`，并愉快地进行注释吧！

@@ -1,49 +1,71 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:17:59'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024年07月01日 18:17:59
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Android 2.x Sensor Simulator : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Android 2.x传感器模拟器：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2011/02/android-2-x-sensor-simulator/](http://blog.ezyang.com/2011/02/android-2-x-sensor-simulator/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/02/android-2-x-sensor-simulator/](http://blog.ezyang.com/2011/02/android-2-x-sensor-simulator/)
 - en: Android 2.x Sensor Simulator
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Android 2.x传感器模拟器
 - en: 'OpenIntents has a nifty application called [SensorSimulator](http://code.google.com/p/openintents/wiki/SensorSimulator)
     which allows you feed an Android application accelerometer, orientation and temperature
     sensor data. Unfortunately, it doesn''t work well on the newer Android 2.x series
     of devices. In particular:'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: OpenIntents有一个很棒的应用程序叫做[SensorSimulator](http://code.google.com/p/openintents/wiki/SensorSimulator)，允许您向Android应用程序提供加速度计、方向和温度传感器数据。不幸的是，在较新的Android
+    2.x系列设备上表现不佳。特别是：
 - en: The mocked API presented to the user is different from the true API. This is
     due in part to the copies of the Sensor, SensorEvent and SensorEventHandler that
     the original code had in order to work around the fact that Android doesn't have
     public constructors for these classes,
+  id: totrans-8
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 展示给用户的模拟API与真实API不同。部分原因是原始代码中复制了Sensor、SensorEvent和SensorEventHandler，以解决Android没有这些类的公共构造函数的问题，
 - en: 'Though the documentation claims “Whenever you are not connected to the simulator,
     you will get real device sensor data”, this is not actually the case: all of the
     code that interfaces with the real sensor system is commented out. So not only
     is are the APIs incompatible, you have to edit your code from one way to another
     when you want to vary testing. (The code also does a terrible job of handling
     the edge condition where you are not actually testing the application.)'
+  id: totrans-9
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 虽然文档声称“无论何时您未连接到模拟器，您将获得真实设备的传感器数据”，但事实并非如此：所有与真实传感器系统接口的代码都被注释掉了。因此，不仅API不兼容，而且在您希望变换测试时，必须从一种方式编辑代码到另一种方式。
+    （代码在处理实际未测试应用程序的边缘条件时表现也很糟糕。）
 - en: Being rather displeased with this state of affairs, I decided to fix things
     up. With the power of Java reflection (cough cough) I switched the representation
     over to the true Android objects (effectively eliminating all overhead when the
@@ -52,9 +74,15 @@
     the code will probably break horribly with future versions of the Android SDK.
     Perhaps I should suggest to upstream that they should make their constructors
     public.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于这种现状，我感到相当不满，决定进行修复。借助Java反射的力量（咳咳），我将表示方式切换为真实的Android对象（在模拟器未连接时有效地消除了所有开销）。幸运的是，Sensor和SensorEvent是小巧的数据导向类，所以我认为我没有对内部表示造成太大影响，尽管随着未来版本的Android
+    SDK，代码可能会彻底崩溃。也许我应该建议上游开发人员将它们的构造函数设置为公共的。
 - en: 'You can grab the code here: [SensorSimulator on Github](https://github.com/ezyang/SensorSimulator).
     Let me know if you find bugs; I''ve only tested on Froyo (Android 2.2).'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 您可以在这里获取代码：[Github上的SensorSimulator](https://github.com/ezyang/SensorSimulator)。如果发现错误，请告知；我只在Froyo（Android
+    2.2）上进行了测试。

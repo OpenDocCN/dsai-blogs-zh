@@ -1,23 +1,35 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:15'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:15'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'PEPM’14: The HERMIT in the Stream : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 'PEPM’14: **The HERMIT in the Stream**：ezyang’s 博客'
 - en: 来源：[http://blog.ezyang.com/2014/01/pepm14-the-hermit-in-the-stream/](http://blog.ezyang.com/2014/01/pepm14-the-hermit-in-the-stream/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2014/01/pepm14-the-hermit-in-the-stream/](http://blog.ezyang.com/2014/01/pepm14-the-hermit-in-the-stream/)
 - en: 'POPL is almost upon us! I’ll be [live-Tumblr-ing](http://ezyang.tumblr.com/)
     it when the conference comes upon us proper, but in the meantime, I thought I’d
     write a little bit about one paper in the colocated PEPM''14 program: [The HERMIT
@@ -29,8 +41,12 @@
     The HERMIT project has been chugging along for some time now, and a stream of
     papers of various applications of the framework have been trickling out (as anyone
     who was at the Haskell implementors workshop can attest.)'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: POPL就快来了！当会议正式开始时，我将在[Tumblr上实时更新](http://ezyang.tumblr.com/)，但与此同时，我想在PEPM'14程序的一篇论文中写点东西：[The
+    HERMIT in the Stream](http://www.ittc.ku.edu/~afarmer/concatmap-pepm14.pdf)，作者是Andrew
+    Farmer, Christian Höner zu Sierdissen和Andy Gill。该论文提出了一种优化方案的实现，用于在[stream fusion框架](http://citeseer.ist.psu.edu/viewdoc/summary?doi=10.1.1.104.7401)中消除对concatMap组合子的使用，该框架是使用[HERMIT优化框架](http://www.ittc.ku.edu/csdl/fpg/software/hermit.html)开发的。HERMIT项目已经进行了一段时间，各种应用该框架的论文陆续发表（任何参加Haskell实现者研讨会的人都能证明这一点）。
 - en: '“But wait,” you may ask, “don’t we already have [stream fusion](http://hackage.haskell.org/package/stream-fusion)?”
     You’d be right: but while stream fusion is available as a library, it has not
     replaced the default fusion system that ships with GHC: foldr/build fusion. What
@@ -38,8 +54,12 @@
     it supports. Stream fusion nearly dominates foldr/build fusion, except for the
     case of concatMap, a problem which has resisted resolution for seven years and
     has prevented GHC from switching to using stream fusion as its default.'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: “但是等等”，你可能会问，“我们不是已经有了[stream fusion](http://hackage.haskell.org/package/stream-fusion)吗？”
+    你是对的：但是尽管stream fusion作为一个库是可用的，它并没有取代GHC默认的foldr/build融合系统。什么使得融合方案好呢？一个重要的度量标准是它支持的列表组合子的数量。几乎可以说stream
+    fusion几乎完全取代了foldr/build融合，除了concatMap的情况，这个问题已经持续了七年，阻止了GHC将stream fusion作为其默认选项。
 - en: As it turns out, we’ve known how to optimize concatMap for a long time; [Duncan
     Coutts gave a basic outline in his thesis.](http://community.haskell.org/~duncan/thesis.pdf)
     The primary contribution of this paper was a [prototype implementation of this
@@ -48,49 +68,64 @@
     rule, necessary modifications to the simplifier, and rules for desugaring list
     comprehensions). The paper also offers some microbenchmarks and real world benchmarks
     arguing for the importance of optimizing concatMap.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 原来，我们很久以前就知道如何优化concatMap了；[Duncan Coutts在他的论文中给出了一个基本的概述。](http://community.haskell.org/~duncan/thesis.pdf)
+    这篇论文的主要贡献是[这一优化的原型实现](https://github.com/xich/hermit-streamfusion)，包括重要技术细节的阐述（增加原始规则的适用性，简化器的必要修改以及用于解糖列表推导的规则）。论文还提供了一些微基准测试和真实世界基准测试，论证了优化concatMap的重要性。
 - en: I was glad to see this paper, since it is an important milestone on the way
     to replacing foldr/build fusion with stream fusion in the GHC standard libraries.
     It also seems the development of this optimization was greatly assisted by the
     use HERMIT, which seems like a good validation for HERMIT (though the paper does
     not go into very much detail about how HERMIT assisted in the process of developing
     this optimization).
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 我很高兴看到这篇论文，因为它是在替换GHC标准库中的foldr/build融合与流融合之路上的一个重要里程碑。同时，开发这一优化似乎在很大程度上得益于使用HERMIT，这对于HERMIT的验证是一个很好的例证（尽管论文没有详细介绍HERMIT如何在开发这一优化过程中起作用）。
 - en: 'There is something slightly unsatisfying with the optimization as stated in
     the paper, which can be best articulated by considering the paper from the perspective
     of a prospective implementor of stream fusion. She has two choices:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 论文中所述的优化还有一些令人不太满意的地方，最好通过考虑从流融合实施者的角度来表达。她有两个选择：
 - en: She can try to use the HERMIT system directly. However, HERMIT induces a 5-20x
     compilation slowdown, which is quite discouraging for real use. This slowdown
     is probably not fundamental, and will be erased in due time, but that is certainly
     not the case today. The limited implementation of stream fusion in the prototype
     (they don’t implement all of the combinators, just enough so they could run their
     numbers) also recommends against direct use of the system.
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 她可以尝试直接使用**HERMIT系统**。然而，HERMIT会导致5-20倍的编译减速，这对实际使用来说相当令人泄气。这种减速可能并非根本性的问题，在适当的时候会消失，但今天显然不是那个时候。在原型中有限的流融合实现（它们没有实现所有的组合器，只是足够用来运行他们的数据）也建议不直接使用该系统。
 - en: She can directly incorporate the rules as stated into a compiler. This would
     require special-case code to apply the non-semantics preserving simplifications
     only to streams, and essentially would require a reimplementation of the system,
     with the guidance offered by this paper. But this special-case code is of limited
     applicability beyond its utility for concatMap, which is a negative mark.
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 她可以直接按照论文中所述的规则将其整合到编译器中。这将需要特殊情况代码，仅适用于应用非语义保持简化的流，并且基本上需要重新实现系统，并且这篇论文提供了指导。但这种特殊情况代码的适用性有限，超出了对concatMap的实用性，这是一个负面评价。
 - en: So, it seems, at least from the perspective of an average GHC user, we will
     have to wait a bit longer before stream fusion is in our hands. Still, I agree
     that the microbenchmarks and [ADPFusion](http://hackage.haskell.org/package/ADPfusion)
     case study show the viability of the approach, and the general principle of the
     novel simplification rules seems reasonable, if a little ad hoc.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，至少从普通GHC用户的角度来看，我们在手中拥有流融合还需要等待一段时间。尽管如此，我同意微基准测试和[ADPFusion](http://hackage.haskell.org/package/ADPfusion)案例研究显示了这种方法的可行性，而且新的简化规则的一般原则似乎是合理的，尽管有些特殊。
 - en: 'One note if you’re reading the nofib performance section: the experiment was
     done comparing their system to foldr/build, so the delta is mostly indicative
     of the benefit of stream fusion (in the text, they point out which benchmarks
     benefitted the most from concatMap fusion). Regardless, it’s a pretty cool paper:
     check it out!'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你在阅读nofib性能部分时要注意一点：实验是将他们的系统与foldr/build进行比较的，因此增量主要显示出流融合的好处（在文本中，他们指出哪些基准测试最从concatMap融合中受益）。无论如何，这确实是一篇相当棒的论文：一定要看看！

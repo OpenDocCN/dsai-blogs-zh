@@ -1,27 +1,41 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:16:57'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:16:57'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'PyTorch Developer Podcast : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: PyTorch Developer Podcast：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2021/05/pytorch-developer-podcast/](http://blog.ezyang.com/2021/05/pytorch-developer-podcast/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2021/05/pytorch-developer-podcast/](http://blog.ezyang.com/2021/05/pytorch-developer-podcast/)
 - en: PyTorch Developer Podcast
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: '[PyTorch 开发者播客](https://pytorch-dev-podcast.simplecast.com/)'
 - en: I'm launching a new podcast, the [PyTorch Developer Podcast](https://pytorch-dev-podcast.simplecast.com/).
     The idea is to be a place for the PyTorch dev team to do bite sized (10-20 min)
     topics about all sorts of internal development topics in PyTorch. For now, it's
@@ -32,5 +46,9 @@
     Check it out! There's two episodes out already, one about how we do Python bindings
     for our C++ objects and another about history and constraints of the dispatcher.
     If there are any topics you'd like me to cover, give a shout.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 我正在推出一个新的播客，名为 [PyTorch 开发者播客](https://pytorch-dev-podcast.simplecast.com/)。这个想法是为
+    PyTorch 开发团队提供一个地方，讨论关于 PyTorch 内部开发的各种主题，每个主题都很精简（10-20 分钟）。目前，只有我一个人，每天发布一集，一周五天，直到我没话可说为止（可能还要一段时间，我有太多想说的）。我不编辑播客，只做最少量的策划，所以比写博客要容易一些。快来听听吧！已经发布了两集，一集关于我们如何为我们的
+    C++ 对象创建 Python 绑定，另一集关于调度程序的历史和约束。如果有任何你想我讨论的主题，就大声说出来。

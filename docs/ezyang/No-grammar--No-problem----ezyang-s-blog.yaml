@@ -1,177 +1,269 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 分类：未分类
 - en: 'date: 2024-07-01 18:17:18'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：`2024-07-01 18:17:18`
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'No grammar? No problem! : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 没有语法？没问题！：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2013/07/no-grammar-no-problem/](http://blog.ezyang.com/2013/07/no-grammar-no-problem/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2013/07/no-grammar-no-problem/](http://blog.ezyang.com/2013/07/no-grammar-no-problem/)
 - en: One day, you’re strolling along fields of code, when suddenly you spot a syntax
     construct that you don’t understand.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 有一天，当你漫步在代码的领域时，突然间你发现一个你不理解的语法结构。
 - en: Perhaps you’d ask your desk-mate, who’d tell you in an instant what it was.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 也许你会问你的同事，他会立刻告诉你它是什么。
 - en: Perhaps your programming toolchain can tell you. (Perhaps the IDE would you
     mouse over the construct, or you’re using Coq which let’s you `Locate` custom
     notations.)
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 也许你的编程工具链可以告诉你。也许IDE会在鼠标悬停在构造上时告诉你，或者你正在使用Coq，它允许你`Locate`自定义表示。
 - en: Perhaps you’d pull up the manual (or, more likely, one of many tutorials) and
     scan through looking for the syntax construct in question.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 也许你会拉起手册（或者更可能的是，众多的教程之一），并且扫描寻找所讨论的语法结构。
 - en: But when all this fails, what is one to do? What if the code in question is
     written in an internal language for a compiler, whose details have changed since
     it was last documented, for which the documentation is out of date?
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 但是当所有这些都失败时，该怎么办呢？如果所讨论的代码是写在编译器的内部语言中的，并且其细节自从上次文档化以来就发生了变化，而文档又已经过时了呢？
 - en: '*No problem.* As long as you’re willing to roll up your sleeves and take a
     look at the source code of the compiler in question, you can frequently resolve
     your question for less effort than it would have taken to look up the syntax in
     the manual (and it’s guaranteed to be up-to-date too!) The key is that modern
     compilers all use parser generators, and the input to these are essentially executable
     specifications.'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: '*没问题。* 只要你愿意卷起袖子，查看相关编译器的源代码，你通常可以在比查阅手册更少的时间内解决你的问题（而且它保证是最新的！）。关键在于现代编译器都使用解析器生成器，而这些输入本质上是可执行的规范。'
 - en: '* * *'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'I’ll give two examples from GHC. The first is from C--, GHC’s high-level assembly
     language. Consider this function:'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 我将从GHC中给出两个例子。第一个来自C--，GHC的高级汇编语言。考虑这个函数：
 - en: '[PRE0]'
+  id: totrans-14
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: Some aspects of this definition are familiar to someone who has written C before,
     but there are some mysterious bits. For example, what does the `return (P_ ret)`
     mean in the preamble?
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个定义的一些方面对于之前写过C语言的人来说很熟悉，但还有一些神秘的部分。例如，在导言中`return (P_ ret)`是什么意思？
 - en: 'The first order of business is to find the relevant file. When the code in
     question has very distinctive keywords (as this one does), a grep will often do
     the trick:'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 首要任务是找到相关的文件。当所讨论的代码具有非常独特的关键字（就像这个例子一样）时，grep通常可以解决问题：
 - en: '[PRE1]'
+  id: totrans-17
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'File extensions can also be dead giveaways; GHC uses a parser generator named
     Happy, and the file extension of Happy files is `.y`:'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 文件扩展名也可能是明显的线索；GHC使用一个名为Happy的解析器生成器，而Happy文件的文件扩展名是`.y`：
 - en: '[PRE2]'
+  id: totrans-19
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'From there, we can search the file for keywords or symbols (check for the string
     token name if a lexer is used; also, make sure to quote alphanumeric literals).
     A symbol can show up in multiple places, as it does for return:'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 从这里，我们可以搜索文件中的关键字或符号（检查是否使用了字符串标记名称的词法分析器；还要确保引用了字母数字文本）。符号可能会出现在多个地方，就像`return`一样：
 - en: '[PRE3]'
+  id: totrans-21
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'and:'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 以及：
 - en: '[PRE4]'
+  id: totrans-23
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: 'Guessing from the names of the productions and the contexts, it seems more
     likely that `maybe_conv` is the relevant production. It is used here:'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 根据产生式的名称和上下文猜测，`maybe_conv`似乎是相关的产生式。它在这里使用：
 - en: '[PRE5]'
+  id: totrans-25
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 'Now, if you really need to know *exactly* how it is lade out, you can go and
     checkout how `emitProcWithStackFrame` is implemented. Alternately, you might hope
     there is a useful comment in the source file which explains what is up:'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，如果你真的需要*准确*了解它是如何布局的，你可以去查看`emitProcWithStackFrame`是如何实现的。或者，你可能希望源文件中有一个有用的注释来解释这是什么：
 - en: '[PRE6]'
+  id: totrans-27
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: '* * *'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'The second example is for STG, which you can ask GHC to print out using `-ddump-stg`.
     Now, there is no parser for STG, so instead you’ll have to look at the *pretty-printer*.
     Not too difficult. Take this simple function:'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 第二个例子是针对STG的，你可以要求GHC使用`-ddump-stg`打印出来。现在，STG没有解析器，所以你将不得不查看*pretty-printer*。这不太困难。看这个简单的函数：
 - en: '[PRE7]'
+  id: totrans-30
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: Some aspects are familiar. But what does the `\r` mean?
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 有些方面很熟悉。但`\r`是什么意思呢？
 - en: 'Once again, we have to find the relevant source file. Since STG is printed
     out only when we pass the `-ddump-stg` flag, a good start is to trace the flag
     through the source code:'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 再次，我们必须找到相关的源文件。由于只有在通过`-ddump-stg`标志时才打印出STG，追踪该标志通过源代码是一个好的开始：
 - en: '[PRE8]'
+  id: totrans-33
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: 'That’s a good sign! Popping open `SimpleStg.lhs` gives us:'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是一个好迹象！打开`SimpleStg.lhs`给了我们：
 - en: '[PRE9]'
+  id: totrans-35
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: And the location of `pprStgBindings` (`compiler/stgSyn/StgSyn.lhs`) is in fact
     the ticket.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 而`pprStgBindings`的位置（`compiler/stgSyn/StgSyn.lhs`）实际上就是关键。
 - en: 'STG is pretty small, and as it turns out if you just do a quick scan of the
     file you’re likely to find what you need. But in case you don’t, you can still
     figure things out deliberately. Suppose we search for a quoted backslash:'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: STG相当简单，事实证明，如果你只是快速浏览文件，你很可能会找到你需要的东西。但是如果没有找到，你仍然可以有意识地找出答案。假设我们搜索带引号的反斜杠：
 - en: '[PRE10]'
+  id: totrans-38
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: 'Which is it? As it turns out:'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是什么？事实证明：
 - en: '[PRE11]'
+  id: totrans-40
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: 'Since `-ddump-stg` is post-CoreToSTG, we must be looking at `StgRhsClosure`,
     and `ppr upd_flag` looks like the ticket. `r` must be an `upd_flag`, whatever
     that is. An `UpdateFlag`, as it turns out:'
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 因为`-ddump-stg`是在CoreToSTG之后，我们必须看看`StgRhsClosure`，`ppr upd_flag`看起来像是关键。`r`必须是一个`upd_flag`，不管那是什么。正如事实证明的那样，是`UpdateFlag`：
 - en: '[PRE12]'
+  id: totrans-42
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: The `r` indicates the function is re-entrant! (Of course, as for what that means,
     you’ll have to consult other documentation.)
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: '`r`表示函数是可重入的！（当然，关于这是什么意思，你得查阅其他文档。）'
 - en: '* * *'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: Of course, in an ideal world, all of this would be documented. But even if it
     is not, there is no reason why you can’t help yourself. If your codebase is as
     nice as GHC’s, there will be plenty of breadcrumbs and comments to help you out.
     I hope this gives some insight into one possible thought process when you encounter
     something you don’t know, and don’t know how to learn. (Of course, sometimes it’s
     just best to ignore it!)
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 当然，在理想的世界中，所有这些都将有文档记录。但即使没有，也没有理由不能自己帮助自己。如果你的代码库像GHC那样好，将会有很多线索和注释来帮助你。希望这能为你在遇到不熟悉的东西和不知道如何学习时的思考过程提供一些见解。（当然，有时最好还是忽略它！）

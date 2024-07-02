@@ -1,23 +1,35 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:17:17'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:17:17
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Of Monadic Fixpoints and Heap Offsets : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 'Of Monadic Fixpoints and Heap Offsets : ezyang’s blog'
 - en: 来源：[http://blog.ezyang.com/2013/09/of-monadic-fixpoints-and-heap-offsets/](http://blog.ezyang.com/2013/09/of-monadic-fixpoints-and-heap-offsets/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2013/09/of-monadic-fixpoints-and-heap-offsets/](http://blog.ezyang.com/2013/09/of-monadic-fixpoints-and-heap-offsets/)
 - en: Here at ICFP, sometimes the so-called “hallway track” is sometimes just as important
     as the ordinary track. Johan Tibell was wanting to avoid an out-of-line call to
     `allocate` function in GHC when a small array of statically known size was allocated.
@@ -26,34 +38,51 @@
     post, I would like to explain how the code generation monad figures out what the
     heap offsets in the code are, by way of a kind of cute (and also slightly annoying)
     trick involving a “monadic” fixpoint.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 ICFP，有时所谓的“走廊轨道”有时比普通轨道还要重要。Johan Tibell 希望在 GHC 中避免对 `allocate` 函数的非行内调用，当静态已知大小的小数组被分配时。但他发现
+    GHC 的新代码生成器处理堆分配的方式有点令人困惑，所以今天我们中有人放弃了一场会议来解决这个问题。在这篇文章中，我想解释一下代码生成单子如何通过一种有趣（同时也有点烦人）的技巧来计算代码中的堆偏移量，这涉及到一个“单子”修复点的方式。
 - en: 'First, some background about the code generator. The big overall pattern of
     a function that GHC has to generate code for is something like:'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，关于代码生成器的一些背景。 GHC 需要为其生成代码的函数的大致模式如下：
 - en: Check if there is enough heap space, if not GC,
+  id: totrans-8
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 检查是否有足够的堆空间，如果没有则进行垃圾回收，
 - en: Write a bunch of data to the heap,
+  id: totrans-9
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将一堆数据写入堆，
 - en: Push some things to the stack,
+  id: totrans-10
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将一些东西推到栈上，
 - en: Jump to the appropriate continuation.
+  id: totrans-11
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 跳转到适当的继续。
 - en: 'Concretely, the code will be along the lines of:'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 具体来说，代码将是这样的：
 - en: '[PRE0]'
+  id: totrans-13
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: This seems reasonable, but how does one go about actually generating this code?
     The code is generated in order, but the amount of heap that needs to be checked
     is not known until we've finished laying out the rest of the code. If we put on
@@ -63,103 +92,152 @@
     in the above code, we only bump the heap pointer once; if we repeatedly bump the
     heap pointer, then the offsets are easy to calculate, but we are wasting instructions;
     x86 addressing modes support writing to a register plus some offset directly.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 这看起来是合理的，但如何实际生成这段代码呢？代码是按顺序生成的，但在完成布局其余代码之前，我们并不知道需要检查多少堆。如果我们戴上突变帽子，我们可能会说：“好吧，暂时略过它，等你知道实际值时再进行突变”，但是仍然有一个棘手的问题，即当我们向堆写入值时偏移量应该是多少。请注意，在上面的代码中，我们只增加了堆指针一次；如果我们反复增加堆指针，那么偏移量就很容易计算，但我们会浪费指令；x86
+    寻址模式支持直接将写入寄存器加上一些偏移量。
 - en: 'Let’s take a look what GHC does when it allocates a dynamic closure to the
     heap (simplified):'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们看看当 GHC 将动态闭包分配到堆时的操作（简化版）：
 - en: '[PRE1]'
+  id: totrans-16
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'In words, it:'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 换句话说，它：
 - en: Retrieves a “virtual heap pointer” (more on this later),
+  id: totrans-18
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 检索一个“虚拟堆指针”（稍后详细介绍），
 - en: Gets the true `Hp - n` expression (`base`) using the virtual heap pointer (`getHpRelOffset`,
     N.B. the off-by-one),
+  id: totrans-19
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用虚拟堆指针 (`getHpRelOffset`，注意偏差一个单位) 获取真正的 `Hp - n` 表达式 (`base`)，
 - en: Emits a bunch of writes to the memory at `base` (`emitSetDynHdr` and `hpStore`),
+  id: totrans-20
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 发出一系列写入到 `base` 内存的操作（`emitSetDynHdr` 和 `hpStore`），
 - en: Bumps the virtual Hp up with the size of the just allocated closure,
+  id: totrans-21
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 将虚拟 Hp 的位置上升到刚刚分配的闭包的大小，
 - en: Returns the `Hp - n` expression.
+  id: totrans-22
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 返回 `Hp - n` 表达式。
 - en: 'As it turns out, the virtual heap pointer is just an ordinary state variable
     in the code generation monad `FCode` (it’s good to take a look at the implementation
     of the monad you’re using!):'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如事实证明的那样，虚拟堆指针只是代码生成单子 `FCode` 中的普通状态变量（查看您正在使用的单子的实现是件好事！）：
 - en: '[PRE2]'
+  id: totrans-24
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: So `virtHp` just marches upwards as we allocate things; it is, in effect, the
     contents of the `Hp` register in our inefficient, rebumping implementation.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，`virtHp` 只需在我们分配东西时向上移动；实际上，它是我们低效的重新增加实现中 `Hp` 寄存器的内容。
 - en: 'Which leaves us with the pressing question, what is `realHp`? Well, it starts
     off as zero (since the offset of the real heap pointer is just zero), but once
     we bump the heap pointer to do the stack check, it is now *precisely the amount
     of heap we did the heap check for*. Calling back our example:'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 这留给我们一个紧迫的问题，`realHp` 是什么？嗯，它最初是零（因为真实堆指针的偏移量只是零），但一旦我们推动堆指针进行栈检查，它现在*恰好是我们进行堆检查的堆量*。回顾我们的例子：
 - en: '[PRE3]'
+  id: totrans-27
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: (Actually, internally the offsets are recorded as words, so, this being 64-bit
     code, divide everything by eight. BTW, virtHp + 8 == realHp, and that's where
     the off-by-one comes from.) The math is a little fiddly, but `getHpRelOffset`
     will calculate the offsets for you; you just have to make sure the virtual offset
     is right!
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: （实际上，内部偏移量记录为单词，所以在这个 64 位代码中，一切都要除以八。顺便说一句，virtHp + 8 == realHp，这就是偏差为一的原因。）数学有点复杂，但
+    `getHpRelOffset` 会为你计算偏移量；你只需确保虚拟偏移量正确即可！
 - en: 'OK, but we still haven’t figured out how we get this magic number 40 from in
     the first place! The key is to look at the code generator responsible for doing
     the heap check, `heapCheck`, which is wraps the call to `code`, which is actually
     responsible for the code generation:'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 好的，但我们仍然没有弄清楚最初这个神奇数字 40 是从哪里来的！关键是要看负责堆检查的代码生成器 `heapCheck`，它包裹了对 `code` 的调用，后者实际上负责代码生成：
 - en: '[PRE4]'
+  id: totrans-30
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: Hey, what's that magic `getHeapUsage` function?
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 嘿，那个神奇的 `getHeapUsage` 函数是什么？
 - en: '[PRE5]'
+  id: totrans-32
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 'And here, we see the monadic fixpoint. In order to provide the heap usage to
     `fcode`, GHC writes itself a check: `hp_hw`. The check is borrowed from the *result*
     of generating `fcode`, and the string attached is this: “As long as you don’t
     cash this check before you finish generating the code, everything will be OK!”
     (It’s a bit like a big bank in that respect.) Cute—and we only need to do the
     code generation once!'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里，我们看到了单子的不动点。为了将堆使用情况提供给 `fcode`，GHC 为自己编写了一个检查：`hp_hw`。检查借鉴了生成 `fcode` 的*结果*，并附加的字符串是：“只要在生成代码之前不兑现这个检查，一切都会没问题！”（在某种程度上有点像一个大银行。）可爱—我们只需要进行一次代码生成！
 - en: This technique is not without its dark side. `hp_hw` is dangerous; if you force
     it in the wrong place, you will chunder into an infinite loop. There are two uses
     of this variable, both in `compiler/codeGen/StgCmmLayout.hs`, which are careful
     not to force it. What would be nice is if one could explicitly mark `hp_hw` as
     blackholed, and attach a custom error message, to be emitted in the event of an
     infinite loop. How this might be accomplished is left as an exercise for the reader.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种技术并非没有其阴暗面。`hp_hw` 是危险的；如果你在错误的地方强制它，你将陷入无限循环。这个变量有两个用途，都在 `compiler/codeGen/StgCmmLayout.hs`
+    中，它们都小心地不强制使用它。如果能够显式地将 `hp_hw` 标记为黑洞，并附加自定义错误消息，以便在无限循环发生时发出，那将是非常好的。如何实现这一点留给读者作为练习。
 - en: '* * *'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: BTW, in case you aren't aware, I've been live-tumblr'ing coverage of ICFP at
     [http://ezyang.tumblr.com](http://ezyang.tumblr.com) — the coverage is not 100%,
     and the editing is rough, but check it out!
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 顺便提一句，在你还不知道的情况下，我一直在实时转发 ICFP 的报道，链接在[这里](http://ezyang.tumblr.com) — 虽然报道并非百分之百完整，编辑也比较草率，但你可以看看！

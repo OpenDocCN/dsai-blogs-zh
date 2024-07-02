@@ -1,23 +1,35 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:58'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:58'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Picturing binomial coefficient identities : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '[二项式系数恒等式的图像化](http://blog.ezyang.com/2011/02/picturing-binomial-coefficient-identities/)'
 - en: 来源：[http://blog.ezyang.com/2011/02/picturing-binomial-coefficient-identities/](http://blog.ezyang.com/2011/02/picturing-binomial-coefficient-identities/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/02/picturing-binomial-coefficient-identities/](http://blog.ezyang.com/2011/02/picturing-binomial-coefficient-identities/)
 - en: 'Guys, I have a secret to admit: I’m terrified of binomials. When I was in high
     school, I had a traumatic experience with Donald Knuth’s *The Art of Computer
     Programming*: yeah, that book that everyone recommends but no one has actually
@@ -29,46 +41,64 @@
     expected memorize. As I would find out later in my mathematical career, it pays
     to convince yourself that a given statement is true before diving into the mess
     of algebraic manipulation in order to actually prove it.'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 伙计们，我有一个秘密要承认：我害怕二项式系数。当我上高中时，我和唐纳德·克努斯的《计算机程序设计艺术》有一次创伤性的经历：是的，那本每个人都推荐但实际上没有人真正读过的书。（这并不完全正确，但这个主题是另一篇博客文章的话题。）我无法解决数学第一章中的任何推荐练习，也不熟练于计算机，无法理解汇编语言的用途。但最令我痛苦的部分可能是克努斯在我们预期记忆的第一章数学恒等式中极其紧凑的处理方式。正如我后来在我的数学生涯中发现的那样，在实际证明之前，说服自己某个给定的陈述是真实的是值得的，以避免陷入代数操作的混乱中。
 - en: One of my favorite ways of convincing myself is visualization. Heck, it’s even
     a useful way of memorizing identities, especially when the involve multiple parameters
     as binomial coefficients do. If I ever needed to calculate a binomial coefficient,
     I’d be more likely to bust out Pascal’s triangle than use the original equation.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 我最喜欢的说服自己的方法之一是可视化。天哪，这甚至是记忆恒等式的有用方法，尤其是当二项式系数涉及多个参数时。如果我需要计算一个二项式系数，我更可能使用帕斯卡三角形而不是使用原始方程式。
 - en: Of course, at some point you have to write mathematical notation, and when you
     need to do that, reliance on the symmetric rendition of Pascal’s triangle (pictured
     on the right) can be harmful. Without peeking, the addition rule is obvious in
     Pascal’s triangle, but what’s the correct mathematical formulation?
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 当然，有时你必须写数学符号，当你需要这样做时，依赖帕斯卡三角形的对称呈现（显示在右边）可能是有害的。在不偷看的情况下，帕斯卡三角形中的加法规则是显而易见的，但正确的数学公式是什么呢？
 - en: I hate memorizing details like this, because I know I’ll get it wrong sooner
     or later if I’m not using the fact regularly (and while binomials *are* indubitably
     useful to the computer scientist, I can’t say I use them frequently.)
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 我讨厌记忆这种细节，因为我知道如果我不经常使用这些知识，迟早会弄错（尽管二项式系数*确实*对计算机科学家非常有用，但我不能说我经常使用它们。）
 - en: Pictures, however. I can remember pictures.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 但是图片，我能记住图片。
 - en: 'And if you visualize Pascal’s triangle as an actual table wih *n* on the y-axis
     and *k* on the x-axis, knowing where the spatial relationship of the boxes means
     you also know what the indexes are. It is [a bit like visualizing dynamic programming](http://blog.ezyang.com/2010/11/dp-zoo-tour/).
     You can also more easily see the symmetry between a pair of equations like:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你将帕斯卡三角形视为一个真实的表格，*n*在y轴上，*k*在x轴上，知道盒子的空间关系意味着你也知道指数是什么。这有点像可视化动态规划。你还可以更容易地看到一对方程之间的对称性，例如：
 - en: which are presented by the boxes on the left.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些方程由左边的盒子呈现。
 - en: Of course, I’m not the first one to think of these visual aids. The “hockey
     stick identities” for summation down the diagonals of the traditional Pascal’s
     triangle are quite well known. I don’t think I’ve seen them pictured in tabular
     form, however. (I’ve also added row sums for completeness.)
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 当然，并不是我第一个想到这些视觉辅助工具的人。传统帕斯卡三角形对角线上的“曲棍球杆恒等式”是相当有名的。不过，我还没有看到它们以表格形式呈现过。（为了完整起见，我还添加了行求和。）
 - en: Symmetry is nice, but unfortunately our notation is not symmetric, and so for
     me, remembering the hockey stick identities this ways saves me the trouble from
     then having to figure out what the indexes are. Though I must admit, I’m curious
     if my readership feels the same way.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 对称性很好，但不幸的是，我们的符号不对称，所以对我来说，记住这种方式的曲棍球棒恒等式可以避免我随后必须弄清楚索引是什么的麻烦。虽然我必须承认，我很好奇我的读者是否有同样的感受。

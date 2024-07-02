@@ -1,128 +1,181 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: '类别: 未分类'
 - en: 'date: 2024-07-01 18:18:20'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: '日期: 2024-07-01 18:18:20'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Spring 2010: A Random Walk : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 'Spring 2010: A Random Walk : ezyang’s blog'
 - en: 来源：[http://blog.ezyang.com/2010/05/spring-2010-a-random-walk/](http://blog.ezyang.com/2010/05/spring-2010-a-random-walk/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/05/spring-2010-a-random-walk/](http://blog.ezyang.com/2010/05/spring-2010-a-random-walk/)
 - en: 'Spring 2010: A Random Walk'
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 'Spring 2010: A Random Walk'
 - en: 'Here at the eve of Spring 2010 term, I decided to run this little experiment
     on my laptop: what files had I modified within the last six months?'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 在2010年春季学期的前夕，我决定在我的笔记本电脑上运行这个小实验：在过去的六个月内，我修改了哪些文件？
 - en: '[PRE0]'
+  id: totrans-8
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'The result was north of one-hundred-fifty thousand modified files. Here''s
     the (slightly) abridged version:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 结果是修改了超过一百五十万个文件。以下是（稍微）删节的版本：
 - en: LaTeX files for ["Adventures in Three Monads"](http://blog.ezyang.com/2010/01/adventures-in-three-monads/),
     an article that ran in the Monad Reader. Also, blackboard diagrams for my Advanced
     Typeclasses class I gave that IAP; I ended up not being able to get to the material
     I prepared for the Reader.
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: LaTeX文件，用于["Adventures in Three Monads"](http://blog.ezyang.com/2010/01/adventures-in-three-monads/)，这篇文章发表在Monad
+    Reader上。还有我在Advanced Typeclasses课上的黑板图表，我最终没有能够使用为Reader准备的材料。
 - en: '`valk.txt`, which contained notes for my Valkyrie Nethack character. I made
     my first ascension on March {24,25}th.'
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`valk.txt`，其中包含我对Valkyrie Nethack角色的笔记。我在3月{24,25}日首次升级。'
 - en: An Eclipse Java project that served as the jumpboard for my [HAMT experiments](http://blog.ezyang.com/2010/03/the-case-of-the-hash-array-mapped-trie/),
     under the purview of my undergraduate research project.
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 作为本科研究项目的一部分，一个Eclipse Java项目，用作我的[HAMT实验的跳板](http://blog.ezyang.com/2010/03/the-case-of-the-hash-array-mapped-trie/)。
 - en: '`htmlpurifier-web` and `htmlpurifier`, courtesy of the [HTML Purifier 4.1](http://htmlpurifier.org/)
     release I pushed within the last month. (I suspect there will be another release
     coming soon too.) This also meant new builds of PHP 5.2.11, 5.2.12, 5.2.13, 5.3.1
     and 5.3.2 for my super-amazing PHP [multi-version farm](http://repo.or.cz/w/phpv.git).
     Note to self, next time, *exclude* the build directories from your automated backups,
     kthxbai.'
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`htmlpurifier-web`和`htmlpurifier`，感谢我在过去一个月内推出的[HTML Purifier 4.1](http://htmlpurifier.org/)版本。这也意味着我为我的超级神奇的PHP
+    [多版本农场](http://repo.or.cz/w/phpv.git)编译了新版本的PHP 5.2.11, 5.2.12, 5.2.13, 5.3.1和5.3.2。自言自语，下次记得从自动备份中排除*构建目录*，kthxbai。'
 - en: A `qemu` checkout, in which I attempted to fix their broken DHCP code when the
     same MAC address requests two different IP addresses, gave up, and assigned static
     addresses to the virtual machines we were using to demo live process migration.
     Mmm... [6.828 final project](http://pdos.csail.mit.edu/6.828/).
+  id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一个`qemu`的检出，我试图在他们的DHCP代码中修复同一MAC地址请求两个不同IP地址的问题，但放弃了，并为我们用于演示实时进程迁移的虚拟机分配了静态地址。嗯...
+    [6.828 final project](http://pdos.csail.mit.edu/6.828/)。
 - en: A `hackage-server` and `holumbus` checkout, sprung from aborted dreams of making
     Holombus and Hackage cooperate to have up-to-the-minute index of all Haskell functions.
     I hear the Holumbus team has been making changes to make Hayoo be able to incrementally
     update its index.
+  id: totrans-15
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`hackage-server`和`holumbus`的检出，源自于让Holombus和Hackage合作，实现所有Haskell函数最新索引的未竞成功梦想。听说Holumbus团队一直在做出改变，以便Hayoo能够增量更新其索引。'
 - en: Updates to tidy up `extort`, a membership dues tracking application written
     in Haskell, due to the recent change of leadership in the Assassins' Guild. During
     the replacement election, one of the suggested candidate questions was "Do you
     know Haskell." We'll see how long the program lasts...
+  id: totrans-16
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 更新以整理`extort`，这是一个用Haskell编写的会费追踪应用程序，因为刺客公会的领导最近发生了变化。在换届选举期间，有一位候选人的建议问题是“你懂Haskell吗？”我们将看看这个程序能坚持多久...
 - en: An `abc` source directory, in which I flexed my C source-diving skills and searched
     for information on how to use the library. I may be working closely with it in
     my internship at Galois. Curiously enough, this roughly coincided with the SAT
     solver that was to be written for 6.005, as well as the study of SAT in my computation
     complexity class 6.045.
+  id: totrans-17
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一个`abc`源目录，在那里我展示了我的C源码技能，并搜索了如何使用该库的信息。我可能会在Galois实习期间与它密切合作。有趣的是，这几乎与为6.005编写的SAT求解器以及我在计算复杂性课程6.045中研究SAT的时间重叠。
 - en: A `mit-scheme` checkout, in order to analyze their red-black tree implementation
     to figure out how easily it could be persisted (the answer was no, and I had to
     write my own implementation off of Okasaki's notes), and to figure out why `--batch-mode`
     didn't do [what it said on the tin](http://blog.ezyang.com/2010/04/art-code-math-and-mit-scheme/).
+  id: totrans-18
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一个`mit-scheme`的检出，用于分析他们的红黑树实现，以弄清楚它是否可以轻松持久化（答案是否定的，并且我不得不根据Okasaki的笔记编写了自己的实现），以及弄清楚为什么`--batch-mode`没有按照[它所说的去做](http://blog.ezyang.com/2010/04/art-code-math-and-mit-scheme/)。
 - en: A `log4j` source tree, which I used for two of my Software Engineering 6.005
     projects. It was mostly painless to use, and I highly recommend it if you're building
     software in Java.
+  id: totrans-19
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一个`log4j`源码树，我在我的软件工程 6.005 项目中使用过两次。它大多数时候使用起来很顺利，如果你在Java中开发软件，我强烈推荐它。
 - en: Lots of test directories for `wizard` (note to self, backing those up is also
     a bad idea!) Some day, I'll [unleash this software](http://scripts.mit.edu/wizard/)
     on the world, but for now, it's usage is growing within the MIT sphere.
+  id: totrans-20
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 有很多用于`wizard`的测试目录（注意备份这些目录也是个坏主意！）。有一天，我将[释放这个软件](http://scripts.mit.edu/wizard/)到世界上，但目前它在MIT内部的使用正在增长。
 - en: 'The really abridged version:'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 真正的精简版本：
 - en: 'Languages of the half-year: Java, Haskell and Scheme'
+  id: totrans-22
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 半年的语言：Java、Haskell和Scheme
 - en: 'Biggest directory: I didn''t count rigorously, but `linux`, `wizard` and `hackage`
     were pretty big.'
+  id: totrans-23
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 最大的目录：我没有严格计数，但`linux`、`wizard`和`hackage`都相当大。
 - en: 'Best filename: `./Dev/exploits/jessica_biel_naked_in_my_bed.c`'
+  id: totrans-24
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 最佳文件名：`./Dev/exploits/jessica_biel_naked_in_my_bed.c`
 - en: 'It''s been a long random walk through lots of subjects, software and self-research.
     There is some trade-off from swapping subjects to really focus in after a month:
     on the one hand a month is really enough time to do anything *really* in the space
@@ -131,5 +184,7 @@
     views of many specific subfields of computer science. With summer coming up soon,
     I will probably find another ambitious project to drive through my free time (or
     perhaps give some of my existing projects some of the love they need).'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 经历了漫长而随机的学习之旅，涉及了许多学科、软件和自我研究。在一个月后真正专注于某个领域有一些权衡：一方面，一个月的时间确实足够深入学习任何领域（我对我的博客文章也有同样的感觉；它们是做一些小实验和过渡的借口，但没什么大作为），另一方面，这意味着我继续看到计算机科学的许多具体子领域。随着夏天即将来临，我可能会找到另一个有雄心的项目来利用我的空闲时间（或者给我现有的一些项目一些它们需要的关注）。

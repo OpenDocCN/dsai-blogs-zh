@@ -1,65 +1,103 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:10'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:10'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Ubuntu Vivid upgrade (Xmonad) : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Ubuntu Vivid 升级（Xmonad）：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2015/05/ubuntu-vivid-upgrade-xmonad/](http://blog.ezyang.com/2015/05/ubuntu-vivid-upgrade-xmonad/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2015/05/ubuntu-vivid-upgrade-xmonad/](http://blog.ezyang.com/2015/05/ubuntu-vivid-upgrade-xmonad/)
 - en: Ubuntu Vivid upgrade (Xmonad)
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Ubuntu Vivid 升级（Xmonad）
 - en: 'Another half year, another Ubuntu upgrade. This upgrade went essentially smoothly:
     the only things that stopped working were my xbindkeys bindings for volume and
     suspend, which were easy to fix.'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 又是半年过去了，又一次 Ubuntu 升级。这次升级基本上很顺利：唯一出了问题的是我的 xbindkeys 绑定了音量和暂停功能，不过这很容易修复。
 - en: Volume up and down
+  id: totrans-8
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 调高和调低音量
 - en: 'If you previously had:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果之前有：
 - en: '[PRE0]'
+  id: totrans-10
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'this syntax no longer works: you must place the double dash earlier in the
     command, as so:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个语法不再适用：你必须在命令中早些放置双破折号，如下所示：
 - en: '[PRE1]'
+  id: totrans-12
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: Do the same for volume down.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 调低音量时也是同样的操作。
 - en: Suspend
+  id: totrans-14
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 暂停
 - en: 'If you previously had:'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果之前有：
 - en: '[PRE2]'
+  id: totrans-16
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'UPower no longer handles suspend; you have to send the command to login:'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: UPower 不再处理暂停功能；你必须将命令发送到登录界面：
 - en: '[PRE3]'
+  id: totrans-18
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'

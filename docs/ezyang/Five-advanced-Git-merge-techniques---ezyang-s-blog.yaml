@@ -1,42 +1,60 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:29'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:29'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Five advanced Git merge techniques : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 五种高级的Git合并技巧：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2010/01/advanced-git-merge/](http://blog.ezyang.com/2010/01/advanced-git-merge/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/01/advanced-git-merge/](http://blog.ezyang.com/2010/01/advanced-git-merge/)
 - en: Five advanced Git merge techniques
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 五种高级的Git合并技巧
 - en: Have you ever performed a merge in Git and not have it quite turn out the way
     you wanted it to? For example, you accidentally converted all of your UNIX line
     endings to DOS line endings, and now the entire file reports a conflict? Maybe
     you see a conflict that you don't really care about resolving, and want to resolve
     as theirs? Or perhaps the conflicted file is empty and you can't figure out just
     what happened there?
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 你是否曾经在Git中执行过合并，但结果并不如你所希望的那样？例如，你意外地将所有UNIX换行符转换为DOS换行符，现在整个文件都报告有冲突？也许你看到一个你并不想解决的冲突，想要以他们的版本解决？或者，冲突的文件是空的，你无法弄清楚发生了什么？
 - en: 'Here are some advanced techniques you can apply to your conflicted merges to
     make things go a little easier. Many of them utilize Git plumbing; that is, the
     internal commands that interface directly with the bare metal Git abstractions:
     the index, the tree, the commit graph. Others are as simple as flipping a configuration
     switch.'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里有一些高级技巧，你可以应用到冲突的合并中，使事情变得更容易一些。其中许多技巧利用了Git的底层命令；也就是说，直接与Git抽象层（索引、树、提交图）交互的内部命令。其他技巧则简单到只需改变一个配置开关。
 - en: Turn `diff3` conflicts using `git config --global merge.conflictstyle diff3`.
     The `diff3` conflict style adds an extra section between the new `|||||||` marker
     and `=======` markers, which indicates the original contents of the section, with
@@ -45,18 +63,23 @@
     months ago (to see the changes you made, compare the middle section with the upper
     section; for the changes they made, compare the middle section with the lower
     section), and there is really no good reason not to have this on by default.
+  id: totrans-9
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用`git config --global merge.conflictstyle diff3`来转换`diff3`冲突。`diff3`冲突风格在新的`|||||||`标记和`=======`标记之间添加了一个额外的部分，该部分显示了原始内容，你的修改在上面，他们（被合并的分支）的修改在下面。`diff3`是重新建立你几个月前做出的更改背景的强大方式（要查看你的更改，比较中间部分和上部分；要查看他们的更改，比较中间部分和下部分），默认情况下应该开启这个选项，真的没有理由不这样做。
 - en: If you've come in from Subversion, you may be familiar with the `FILE.mine`,
     `FILE.r2` (the original you worked with) and `FILE.r3` (the latest version checked
     in) files, as well as the ability to run `svn resolve --accept theirs-full` or
     `mine-full`, which says "I don't care about the other changes, just use this version
     of the file." Git offers similar facilities utilizing the merge parents, although
     they're a little more hidden.
+  id: totrans-10
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 如果你曾经使用过Subversion，你可能熟悉`FILE.mine`、`FILE.r2`（你最初使用的原始文件）和`FILE.r3`（最新版本检入的文件），以及运行`svn
+    resolve --accept theirs-full`或`mine-full`的能力，这些命令表示“我不关心其他的更改，只使用这个文件的版本”。Git提供了类似的功能，利用合并的父提交，尽管它们可能更为隐蔽。
 - en: You may be already familiar with the `git show` command, which lets you view
     commits as well as arbitrary blobs inside the tree of any given commit. When you
     are inside a merge, you can use a special `:N:` syntax, where `N` is a number,
@@ -64,22 +87,30 @@
     commit (the lower revision), `2` selects your version ("mine"), and `3` selects
     their version (the higher revision). So `git show :3:foobar.txt` shows the upstream
     version of `foobar.txt`.
+  id: totrans-11
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 你可能已经熟悉了`git show`命令，它允许你查看提交以及在任何给定提交的树中查看任意的blob。当你处于合并状态时，你可以使用特殊的`:N:`语法，其中`N`是一个数字，来自动选择其中一个合并父提交。`1`选择共同的基础提交（较低的版本），`2`选择你的版本（"mine"），`3`选择他们的版本（较高的版本）。因此，`git
+    show :3:foobar.txt`会显示`foobar.txt`的上游版本。
 - en: To actually use one of these versions as the merge resolution, use `git checkout
     {--ours|--theirs} filename.txt.`
+  id: totrans-12
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 要实际使用其中一种版本作为合并的解决方案，请使用`git checkout {--ours|--theirs} filename.txt`。
 - en: When you're in a conflict, `git diff` will give you the deep and dirty of all
     the conflicts that occurred, sometimes this is too much information. In that case,
     you can run `git ls-files -u` to view all of the unmerged files (this is also
     a lot faster than `git status`, and will omit all of the files that *were* merged
     properly.)
+  id: totrans-13
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 当你处于冲突状态时，`git diff`会提供所有发生冲突的详细信息，有时这些信息太多了。在这种情况下，你可以运行`git ls-files -u`查看所有未合并的文件（这比`git
+    status`快得多，并且会省略所有已正确合并的文件）。
 - en: You may notice that there as many as three copies of a file inside the list;
     this tells you the state of the "common", "ours" and "theirs" copies mentioned
     previously. If 1 (common) is missing, that means that the file appeared at the
@@ -88,9 +119,11 @@
     we made some changes, but upstream deleted the file. This is especially useful
     if a file is conflicted, but you can't figure out why (since there are no conflict
     markers.)
+  id: totrans-14
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 你可能会注意到列表中存在多达三份文件的副本；这告诉你之前提到的“公共”，“我们的”和“他们的”副本的状态。如果1（公共）丢失，这意味着该文件同时出现在我们的分支和他们的分支中。如果2（我们的）丢失，这意味着我们删除了该文件，但它在上游有了变更。如果3（他们的）丢失，这意味着我们做了一些更改，但上游删除了该文件。如果一个文件有冲突，但你无法弄清原因（因为没有冲突标记），这尤其有用。
 - en: 'Sometimes life gives you lemons. Many people suggest you make lemon juice.
     However, if Git gives you a really bad set of conflict markers, for example, you
     accidentally flipped the newline style for one of the files, so now the entire
@@ -102,23 +135,35 @@
     to those files you need (for example, run `dos2unix`), run `git merge-file mine
     common theirs`, and then copy the `mine` over the old conflicted file. Voila,
     instant new set of conflict markers.'
+  id: totrans-15
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 有时生活会给你柠檬。许多人建议你制作柠檬汁。然而，如果Git给了你一个非常糟糕的冲突标记集，例如，你不小心颠倒了一个文件的换行样式，现在整个文件都发生了冲突，那就不要妥协：重新为该文件进行合并。你可以使用方便的`git
+    merge-file`命令来做到这一点。这将运行一个三方文件合并，并接受三个参数：当前文件，公共文件和上游文件，并将合并写入当前文件（第一个参数）。使用`git
+    show`来转储你的文件，公共文件和上游文件，对这些文件进行必要的更改（例如运行`dos2unix`），运行`git merge-file mine common
+    theirs`，然后将`mine`复制到旧的有冲突的文件上。哇，即时得到新的冲突标记集。
 - en: If you discover a global conflict relatively early in the merge process, and
     it was your fault, it might be easier to back out of the merge `git reset --hard`,
     fix the mistake, and try merging again. However, if you've already made substantial
     progress merging a copy, re-merging just a single file can be a lifesaver.
+  id: totrans-16
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 如果你在合并过程中较早发现了全局冲突，并且是你的错，回退合并可能更容易`git reset --hard`，修复错误，然后再尝试合并。然而，如果你已经在合并一个副本时取得了重大进展，重新合并一个单独的文件可能会拯救你的一命。
 - en: Don't merge, rebase! Instead of running `git pull`, run `git pull --rebase`.
     Instead of running `git merge master`, run `git rebase master`. Your history will
     be much cleaner as a result, and you want have to go on a massive rebase marathon
     later if you want to submit your patches upstream.
+  id: totrans-17
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 不要合并，应该变基！而不是运行`git pull`，运行`git pull --rebase`。而不是运行`git merge master`，运行`git
+    rebase master`。结果将会使你的历史记录更清晰，如果你想向上游提交补丁，你将不需要进行大规模的变基马拉松。
 - en: Now, go forth and merge to thy hearts content!
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，继续前进，尽情合并吧！

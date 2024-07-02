@@ -1,23 +1,35 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:16'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:16'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'So you want to add a new concurrency primitive to GHC… : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 所以你想要向 GHC 添加一个新的并发原语…：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2014/01/so-you-want-to-add-a-new-concurrency-primitive-to-ghc/](http://blog.ezyang.com/2014/01/so-you-want-to-add-a-new-concurrency-primitive-to-ghc/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2014/01/so-you-want-to-add-a-new-concurrency-primitive-to-ghc/](http://blog.ezyang.com/2014/01/so-you-want-to-add-a-new-concurrency-primitive-to-ghc/)
 - en: One of the appealing things about GHC is that the compiler is surprisingly hackable,
     even when you don’t want to patch the compiler itself. This hackability comes
     from [compiler plugins](http://www.haskell.org/ghc/docs/latest/html/users_guide/compiler-plugins.html),
@@ -25,8 +37,12 @@
     which let you embed low-level C-- to manipulate the low-level representation of
     various primitives. These hooks let people implement and distribute features that
     would otherwise be to unstable or speculative to put into the compiler proper.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: GHC 的一个吸引人之处在于，即使你不想修补编译器本身，编译器也令人惊讶地易于修改。这种可修改性来自[编译器插件](http://www.haskell.org/ghc/docs/latest/html/users_guide/compiler-plugins.html)，允许你编写自定义优化通道来操作
+    Core，以及[外部原语](https://ghc.haskell.org/trac/ghc/wiki/Commentary/PrimOps#Foreignout-of-linePrimOpsandforeignimportprim)，允许你嵌入低级别的
+    C-- 代码来操纵各种原语的低级别表示。这些钩子允许人们实现和分发那些否则会太不稳定或者过于投机以至于无法放入编译器本身的功能。
 - en: 'A particular use-case that has garnered some amount of interest recently is
     that of concurrency primitives. We engineers like to joke that, in the name of
     performance, we are willing to take on nearly unbounded levels of complexity:
@@ -36,31 +52,44 @@
     It’s very tempting to look at this situation and think, “Hey, we could implement
     this stuff in GHC too, using the provided compiler hooks!” But there are a lot
     of caveats involved here.'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 最近引起了一定兴趣的一个特定用例是并发原语。我们工程师喜欢开玩笑地说，为了性能的名义，我们愿意承担几乎无限复杂的层次：但是当涉及到并发原语时，这几乎肯定是真的，其中使用更多异步内存屏障和并发数据结构可以带来显著的性能提升（只需[问问
+    Linux 内核开发人员](http://lwn.net/Articles/576486/)）。看到这种情况，很容易想到，“嘿，我们也可以在 GHC 中实现这些东西，使用提供的编译器钩子！”但是这里有很多注意事项。
 - en: 'After answering a few questions related to this subject on the `ghc-devs` list
     and noticing that many of the other responses were a bit garbled, I figured I
     ought to expand on my responses a bit in a proper blog post. I want to answer
     the following questions:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 `ghc-devs` 列表上回答了几个与这个主题相关的问题后，注意到其他回答有些混乱，我觉得应该在一篇合适的博客文章中详细展开我的回答。我想回答以下问题：
 - en: What does it mean to have a memory model for a high-level language like Haskell?
     (You can safely skip this section if you know what a memory model is.)
+  id: totrans-9
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在像 Haskell 这样的高级语言中有什么意义拥有内存模型？（如果你知道什么是内存模型，可以安全地跳过这一节。）
 - en: What is (GHC) Haskell’s memory model?
+  id: totrans-10
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 什么是（GHC）Haskell 的内存模型？
 - en: How would I go about implementing a (fast) memory barrier in GHC Haskell?
+  id: totrans-11
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 如何在 GHC Haskell 中实现（快速）内存屏障？
 - en: Memory models are semantics
+  id: totrans-12
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 内存模型是语义
 - en: 'What is a memory model? If you ask a hardware person, they might tell you,
     “A memory model is a description of how a multi-processor CPU interacts with its
     memory, e.g. under what circumstances a write by one processor is guaranteed to
@@ -69,18 +98,24 @@
     which modify shared variables.” A memory model must fulfill both purposes (a common
     misconception is that it is only one or the other). To be explicit, we define
     a memory model as follows (adapted from [Adve-Boehm](http://cacm.acm.org/magazines/2010/8/96610-memory-models-a-case-for-rethinking-parallel-languages-and-hardware/fulltext)):'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 什么是内存模型？如果你问一个硬件人员，他们可能会告诉你：“内存模型是描述多处理器 CPU 如何与其内存交互的方式，例如一个处理器写入的内容在何种情况下可以被另一个处理器看到。”如果你问一个编译器人员，他们可能会告诉你：“内存模型说明我可以在修改共享变量的操作上进行什么样的编译器优化。”内存模型必须同时满足这两个目的（一个常见的误解是它只能满足其中一个）。为了明确起见，我们定义内存模型如下（改编自[Adve-Boehm](http://cacm.acm.org/magazines/2010/8/96610-memory-models-a-case-for-rethinking-parallel-languages-and-hardware/fulltext)）：
 - en: A **memory model** is a *semantics* for shared variables, i.e. the set of values
     that a read in a program is allowed to return.
+  id: totrans-14
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: '**内存模型**是共享变量的*语义*，即程序中读取操作被允许返回的值集合。'
 - en: 'That’s right: a memory model defines the behavior of one the most basic operations
     in your programming language. Without it, you can’t really say what your program
     is supposed to do.'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 没错：内存模型定义了编程语言中最基本操作的行为。没有它，你无法真正说出你的程序应该做什么。
 - en: 'Why, then, are memory models so rarely discussed, even in a language community
     that is so crazy about semantics? In the absence of concurrency, the memory model
     is irrelevant: the obvious semantics apply. In the absence of [data races](http://blog.regehr.org/archives/490),
@@ -96,12 +131,18 @@
     complex: we refer to these models as *relaxed memory models*. Sophisticated synchronization
     primitives will often take advantage of a relaxed memory model to avoid expensive
     synchronizations and squeeze out extra performance.'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 那么，为什么在一个如此注重语义的语言社区中，内存模型如此少被讨论？在没有并发性的情况下，内存模型是无关紧要的：显而易见的语义适用。在[数据竞争](http://blog.regehr.org/archives/490)不存在的情况下，可以相当简单地描述内存模型。例如，仅使用
+    MVars 进行线程间通信的 Haskell 程序可以完全使用相对简单的非确定性操作语义来描述其行为（见[并发 Haskell 论文 (PS)](http://www.haskell.org/ghc/docs/papers/concurrent-haskell.ps.gz)）；软件事务内存提供了关于事务变量读取的原子性的高级保证。当程序包含数据竞争时，内存模型变得至关重要：当多个线程在没有任何同步的情况下写入和读取
+    IORefs 时，内存模型负责定义此程序的行为。在现代处理器上，这种行为可以非常复杂：我们称这些模型为*松散的内存模型*。复杂的同步原语通常会利用松散的内存模型来避免昂贵的同步操作，并提升额外的性能。
 - en: GHC Haskell’s memory (non) model
+  id: totrans-17
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: GHC Haskell 的内存（非）模型
 - en: One might say the Haskell tradition is one that emphasizes the importance of
     semantics... except for a number of notable blind spots. The memory model is one
     of those blind spots. The original [Haskell98 specification](http://www.haskell.org/onlinereport/)
@@ -109,8 +150,12 @@
     gave a description of semantics for how concurrency might be added to the language,
     but the paper posits only the existence of MVars, and is silent on how MVars ought
     to interact with IORefs.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 有人可能会说 Haskell 的传统强调语义的重要性... 除了一些显著的盲点。内存模型就是其中之一。最初的[Haskell98 规范](http://www.haskell.org/onlinereport/)没有包含任何并发规范。[并发
+    Haskell 论文 (PS)](http://www.haskell.org/ghc/docs/papers/concurrent-haskell.ps.gz)描述了如何向语言添加并发性的语义，但该论文仅假定了
+    MVars 的存在，并未说明 MVars 应如何与 IORefs 交互。
 - en: One of the very first discussions that took place on the haskell-prime committee
     when it was inaugurated in 2006 was [whether or not Concurrent Haskell should
     be standardized](http://www.haskell.org/pipermail/haskell-prime/2006-March/001046.html).
@@ -119,8 +164,12 @@
     ([continued here](http://www.haskell.org/pipermail/haskell-prime/2006-April/001237.html)).
     As of writing, [no decision has been made](https://ghc.haskell.org/trac/haskell-prime/wiki/Concurrency#a3.SemanticsofIORefs)
     as to whether or not IORefs should have a strong or weak memory model.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 在 2006 年成立的 haskell-prime 委员会上进行的第一次讨论之一是[是否应该标准化并发 Haskell](http://www.haskell.org/pipermail/haskell-prime/2006-March/001046.html)。在讨论中很快发现[IORefs
+    需要一个内存模型](http://www.haskell.org/pipermail/haskell-prime/2006-March/001193.html)（[续在此处](http://www.haskell.org/pipermail/haskell-prime/2006-April/001237.html)）。截至目前，[尚未作出决定](https://ghc.haskell.org/trac/haskell-prime/wiki/Concurrency#a3.SemanticsofIORefs)，即使
+    IORefs 是否应具有强内存模型或弱内存模型。
 - en: The upshot is that, as far as Haskell the standardized language goes, the behavior
     here is completely undefined. To really be able to say anything, we’ll have to
     pick an implementation (GHC Haskell), and we’ll have to infer which aspects of
@@ -131,11 +180,16 @@
     at all of the phases of the GHC compilation chain. Furthermore, we’ll restrict
     ourselves to monadic reads/writes, to avoid having to wrangle with the can of
     worms that is laziness.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 结果是，就标准化语言 Haskell 而言，这里的行为是完全未定义的。要真正能够说些什么，我们将不得不选择一个实现（GHC Haskell），并推断实现的哪些方面是指定的行为，而不是偶然发生的事情。值得注意的是，内存模型对你堆栈的*所有*层级都有影响（有一个普遍的误解是，可以在没有编译器协作的情况下使用内存屏障），因此为了进行此分析，我们需要查看
+    GHC 编译链的所有阶段。此外，我们将限制自己在单子读/写上，以避免必须处理惰性带来的麻烦。
 - en: 'Here’s GHC’s compilation pipeline in a nutshell:'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 简而言之，这是 GHC 的编译流水线：
 - en: 'At the very top of the compiler pipeline lie the intermediate languages Core
     and STG. These will preserve sequential consistency with no trouble, as the ordering
     of reads and writes is fixed by the use of monads, and preserved throughout the
@@ -146,8 +200,11 @@
     imposed by monads. Of course, both of these facilities can be used to also change
     the meaning of your program entirely; when considering a memory model, these rules
     merely have a higher burden of correctness.)'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 在编译器流水线的最顶层是中间语言 Core 和 STG。这些语言将通过单子的使用保持顺序一致性，读取和写入的顺序由此固定，并在去糖化和优化传递中保留：对于优化器而言，实现读/写的基本操作是完全的黑盒子。事实上，在许多情况下，单子将过度顺序化！（值得注意的是，重写规则和
+    GHC 插件可以应用不保留单子强加顺序的优化。当然，这两种方法也可以用于完全改变程序的含义；在考虑内存模型时，这些规则仅仅有更高的正确性负担。）
 - en: The next step of the pipeline is a translation into C--, a high-level assembly
     language. Here, calls to primitive operations like `readMutVar#` and `writeMutVar#`
     are translated into actual memory reads and writes in C--. Importantly, the monadic
@@ -156,67 +213,91 @@
     dependent on the C-- that is generated, as well as the optimizations that GHC
     applies, and C-- [has no memory model](http://www.cs.tufts.edu/~nr/c--/), so we
     cannot appeal to even that.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 流水线的下一步是将其翻译成 C--，一种高级汇编语言。在这里，对诸如`readMutVar#`和`writeMutVar#`之类的基本操作的调用被翻译为
+    C-- 中的实际内存读取和写入。重要的是，现在消除了在 Core 和 STG 中存在的单子结构，GHC 现在可以应用重新排列读取和写入的优化。实际发生的情况高度依赖于生成的
+    C-- 以及 GHC 应用的优化，而 C-- [没有内存模型](http://www.cs.tufts.edu/~nr/c--/)，所以我们甚至无法依赖于它。
 - en: 'This being said, a few things can be inferred from a study of the optimization
     passes that GHC does implement:'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 话虽如此，我们可以从研究 GHC 实施的优化传递中推断出一些事实：
 - en: 'GHC reserves the right to reorder stores: the `WriteBarrier` mach-op (NB: not
     available from Haskell!) is defined to prevent future stores from occurring before
     preceding stores. In practice, GHC has not implemented any C-- optimizations which
     reorder stores, so if you have a story for dealing with the proceeding stages
     of the pipeline, you can **dangerously** assume that stores will not be reordered
     in this phase.'
+  id: totrans-25
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: GHC 保留重新排序存储的权利：`WriteBarrier` 机器操作（注意：Haskell 中不可用！）被定义为防止将来的存储发生在前面的存储之前。实际上，GHC
+    实现的任何 C-- 优化都没有重新排序存储，因此，如果你有一个处理流水线后续阶段的方案，你可以**危险地**假设在这个阶段不会重新排序存储。
 - en: GHC reserves the right to reorder loads, and does so extensively. One of the
     most important optimizations we perform is a sinking pass, where assignments to
     local variables are floated as close to their use-sites as possible. As of writing,
     there is no support for read barrier, which would prevent this floating from occurring.
+  id: totrans-26
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: GHC保留重新排序加载的权利，并且广泛地这样做。 我们执行的最重要的优化之一是下沉传递，其中对本地变量的赋值尽可能地浮动到其使用位置。 在撰写本文时，尚不支持读取屏障，这将阻止此浮动发生。
 - en: 'There are a few situations where we happen to avoid read reordering (which
     may be **dangerously** assumed):'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 有一些情况下我们偶然避免读取重新排序（可能会**危险地**假设）：
 - en: Reads don’t seem to be reordered across *foreign primops* (primops defined using
     the `foreign prim` keywords). This is because foreign primops are implemented
     as a jump to another procedure (the primop), and there are no inter-procedural
     C-- optimizations at present.
+  id: totrans-28
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 读取似乎不会在*foreign primops*（使用`foreign prim`关键字定义的primops）之间重新排序。 这是因为foreign primops被实现为跳转到另一个过程（primop），目前没有跨过程的C--优化。
 - en: Heap reads don’t seem to be reordered across heap writes. This is because we
     currently don’t do any aliasing analysis and conservatively assume the write would
     have clobbered the read. (This is especially dangerous to assume, since you could
     easily imagine getting some aliasing information from the frontend.)
+  id: totrans-29
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 堆读取似乎不会在堆写入之间重新排序。 这是因为我们目前不执行任何别名分析，并且保守地假设写入会破坏读取。 （这是一个危险的假设，因为您可以轻松地想象从前端获取一些别名信息。）
 - en: Finally, the C-- is translated into either assembly (via the NCG—N for native)
     or to LLVM. During translation, we convert the write-barrier mach-op into an appropriate
     assembly instruction (no-op on x86) or LLVM intrinsic (sequential consistency
     barrier); at this point, the behavior is up to the memory model defined by the
     processor and/or by LLVM.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，C--被翻译为汇编（通过NCG—N代表本机）或LLVM。 在翻译过程中，我们将write-barrier mach-op转换为适当的汇编指令（在x86上为无操作）或LLVM内在函数（顺序一致性屏障）；此时，行为取决于处理器和/或LLVM定义的内存模型。
 - en: 'It is worth summarizing the discussion here by comparing it to the documentation
     at [Data.IORef](http://hackage.haskell.org/package/base-4.6.0.1/docs/Data-IORef.html),
     which gives an informal description of the IORef memory model:'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 值得总结这里的讨论，将其与[Data.IORef](http://hackage.haskell.org/package/base-4.6.0.1/docs/Data-IORef.html)中的文档进行比较，该文档对IORef内存模型进行了非正式描述：
 - en: In a concurrent program, IORef operations may appear out-of-order to another
     thread, depending on the memory model of the underlying processor architecture...The
     implementation is required to ensure that reordering of memory operations cannot
     cause type-correct code to go wrong. In particular, when inspecting the value
     read from an IORef, the memory writes that created that value must have occurred
     from the point of view of the current thread.
+  id: totrans-32
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 在并发程序中，IORef操作可能对另一个线程呈现出无序状态，这取决于底层处理器架构的内存模型...实现必须确保内存操作的重新排序不会导致类型正确的代码出错。
+    特别是，在检查从IORef读取的值时，创建该值的内存写入必须从当前线程的角度发生。
 - en: 'In other words, “We give no guarantees about reordering, except that you will
     not have any type-safety violations.” This behavior can easily occur as a result
     of reordering stores or loads. However, the type-safety guarantee is an interesting
@@ -225,45 +306,62 @@
     write that initializes a value. This holds easily on x86, due to the fact that
     C-- does not reorder stores; I am honestly skeptical that we are doing the right
     thing on the new code generator for ARM (but no one has submitted a bug yet!)'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 换句话说，“我们不保证重新排序，除非您不会发生任何类型安全违规。” 这种行为很容易发生，因为重新排序存储或加载。 然而，类型安全保证是一个有趣的保证：最后一句话指出，IORef不允许指向未初始化的内存；也就是说，我们不允许将写入IORef与初始化值的写入重新排序。
+    这在x86上很容易实现，因为C--不会重新排序存储；我对我们在ARM的新代码生成器上是否做对了事情持怀疑态度（但是还没有人提交错误！）
 - en: What does it all mean?
+  id: totrans-34
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 这一切是什么意思？
 - en: 'This dive into the gory internals of GHC is all fine and nice, but what does
     it mean for you, the prospective implementor of a snazzy new concurrent data structure?
     There are three main points:'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 这次深入GHC的内部细节很好，但对于您，即准备实现时髦新并发数据结构的人，这意味着什么？ 有三个主要观点：
 - en: Without inline foreign primops, you will not be able to convince GHC to emit
     the fast-path assembly code you are looking for. As we mentioned earlier, foreign
     primops currently always compile into out-of-line jumps, which will result in
     a bit of extra cost if the branch predictor is unable to figure out the control
     flow. On the plus side, any foreign primop call will accidentally enforce the
     compiler-side write/read barrier you are looking for.
+  id: totrans-36
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 如果没有内联外部原语，您将无法说服 GHC 发出您寻找的快速路径汇编代码。正如我们之前提到的，外部原语当前总是编译为跳转到外部的跳转，如果分支预测器无法理解控制流，这将导致一些额外的成本。另一方面，任何外部原语调用都会无意中强制执行您寻找的编译器侧写/读障碍。
 - en: With inline foreign primops, you will still need make modifications to GHC in
     order to ensure that optimization passes respect your snazzy new memory barriers.
     For example, [John Lato’s](http://comments.gmane.org/gmane.comp.lang.haskell.glasgow.user/24162)
     desire for a load-load barrier (the email which kicked off this post) will be
     fulfilled with no compiler changes by a out-of-line foreign primop, but not by
     the hypothetical inline foreign primop.
+  id: totrans-37
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用内联外部原语，您仍然需要修改 GHC，以确保优化过程尊重您时髦的新内存障碍。例如，[John Lato 的](http://comments.gmane.org/gmane.comp.lang.haskell.glasgow.user/24162)
+    对加载-加载障碍的渴望（启动此帖子的电子邮件）将通过外部的外部原语而无需编译器更改实现，但不会通过假设的内联外部原语实现。
 - en: 'This stuff is really subtle; see the position paper [Relaxed memory models
     must be rigorous](http://www.cl.cam.ac.uk/~so294/documents/ec209.pdf), which argues
     that informal descriptions of memory models (like this blog post!) are far too
     vague to be useful: if you want to have any hope of being correct, you must formalize
     it! Which suggests an immediate first step: give C-- a memory model. (This should
     be a modest innovation over the memory models that C and C++ have recently received.)'
+  id: totrans-38
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 这些东西真的很微妙；请参阅位置论文 [Relaxed memory models must be rigorous](http://www.cl.cam.ac.uk/~so294/documents/ec209.pdf)，该论文认为内存模型的非正式描述（比如本博文！）太过模糊，无法提供有用的信息：如果您希望正确无误，必须将其形式化！这表明一个立即的第一步：给
+    C-- 一个内存模型。（这应该是 C 和 C++ 最近收到的内存模型的一项适度创新。）
 - en: For the rest of us, we’ll use STM instead, and be in a slow but compositional
     and dead-lock free nirvana.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于我们其他人来说，我们将改用 STM，进入一个缓慢但组合和无死锁的涅槃境界。

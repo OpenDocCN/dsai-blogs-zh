@@ -1,124 +1,186 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:17:14'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:17:14
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Parsec: “try a <|> b” considered harmful : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Parsec：“try a <|> b”被认为是有害的：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2014/05/parsec-try-a-or-b-considered-harmful/](http://blog.ezyang.com/2014/05/parsec-try-a-or-b-considered-harmful/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2014/05/parsec-try-a-or-b-considered-harmful/](http://blog.ezyang.com/2014/05/parsec-try-a-or-b-considered-harmful/)
 - en: '*tl;dr The scope of backtracking try should be minimized, usually by placing
     it inside the definition of a parser.*'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: '*tl;dr 应该将回溯 try 的范围最小化，通常是将其放置在解析器定义的内部。*'
 - en: Have you ever written a Parsec parser and gotten a really uninformative error
     message?
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 你是否曾经编写过一个 Parsec 解析器并得到了一个非常不具信息性的错误消息？
 - en: '[PRE0]'
+  id: totrans-8
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: The line and the column are randomly somewhere in your document, and you're
     pretty sure you should be in the middle of some stack of parser combinators. But
     wait! Parsec has somehow concluded that the document should be ending immediately.
     You noodle around and furthermore discover that the true error is some ways *after*
     the actually reported line and column.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 行号和列号在文档中随机地某个地方，并且你非常确定应该在某些解析器组合器的堆栈中间。但是等等！Parsec 已经以某种方式得出结论，文档应该立即结束。你继续思考并发现真正的错误在实际报告的行号和列号之后一段距离。
 - en: You think, “No wonder Parsec gets such a bad rep about its error handling.”
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 你想：“难怪 Parsec 的错误处理声名狼藉。”
 - en: '* * *'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'Assuming that your grammar in question is not too weird, there is usually a
     simple explanation for an error message like this: the programmer sprinkled their
     code with too many backtracking `try` statements, and the backtracking has destroyed
     useful error state. In effect, at some point the parser failed for the reason
     we wanted to report to the user, but an enclosing `try` statement forced the parser
     to backtrack and try another (futile possibility).'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设你所询问的语法并不太奇怪，通常对于这样的错误消息有一个简单的解释：程序员在他们的代码中撒入了太多的回溯`try`语句，并且回溯已经破坏了有用的错误状态。实际上，在某些时候，解析器因为我们想向用户报告的原因而失败，但是一个封闭的`try`语句迫使解析器回溯并尝试另一种（徒劳无功的）可能性。
 - en: 'This can be illustrated by way of an example. A Haskeller is playing around
     with parse combinators and decides to test out their parsing skills by writing
     a parser for Haskell module imports:'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 这可以通过一个例子来说明。一个 Haskell 程序员正在使用解析组合器玩耍，并决定通过编写 Haskell 模块导入的解析器来测试他们的解析技能：
 - en: '[PRE1]'
+  id: totrans-14
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'Piggy-backing off of Parsec’s built in [token combinators](http://hackage.haskell.org/package/parsec-3.0.0/docs/Text-Parsec-Token.html)
     (and the sample code), their first version might look something like this:'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 利用 Parsec 内置的[token 组合器](http://hackage.haskell.org/package/parsec-3.0.0/docs/Text-Parsec-Token.html)(以及示例代码)，他们的第一个版本可能看起来像这样：
 - en: '[PRE2]'
+  id: totrans-16
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'Unfortunately, the parser doesn''t work for regular imports—they get this error
     message:'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 不幸的是，该解析器对于常规的导入不起作用，它们会收到以下错误消息：
 - en: '[PRE3]'
+  id: totrans-18
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: After a little Googling, they discover that [Parsec doesn’t backtrack by default](http://stackoverflow.com/questions/9976388/haskell-text-parsec-combinator-choice-doesnt-backtrack).
     Well, that’s fine; why not just insert a try into the parser.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 经过一番搜索，他们发现 [Parsec 不默认回溯](http://stackoverflow.com/questions/9976388/haskell-text-parsec-combinator-choice-doesnt-backtrack)。好吧，那很好；为什么不只是在解析器中插入一个
+    try 呢。
 - en: '[PRE4]'
+  id: totrans-20
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: 'This fixes both parses and suggests the following rule for writing future parsers:'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 这既修复了两种解析，并提出了撰写未来解析器的以下规则：
 - en: If I need choice over multiple parsers, but some of these parsers might consume
     input, I better tack a `try` onto each of the parsers, so that I can backtrack.
+  id: totrans-22
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 如果我需要在多个解析器之间做出选择，但其中一些解析器可能会消耗输入，我最好在每个解析器上添加一个 `try`，这样我就可以回溯。
 - en: 'Unbeknownst to the user, they have introduced bad error reporting behavior:'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 用户并不知道，他们已经引入了不良的错误报告行为：
 - en: '[PRE5]'
+  id: totrans-24
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: Wait a second! The error we wanted was that there was an unexpected identifier
     `s`, when we were expecting `as`. But instead of reporting an error when this
     occurred, Parsec instead *backtracked*, and attempted to match the `pImport` rule,
     only failing once that rule failed. By then, the knowledge that one of our choice
     branches failed had been forever lost.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 等一下！我们想要的错误是，当我们期望 `as` 时，出现了意外的标识符`s`。但是，Parsec 没有在此发生时报告错误，而是*回溯*，并尝试匹配 `pImport`
+    规则，仅在该规则失败后才失败。到那时，我们的选择分支失败的知识已经永远丢失了。
 - en: 'How can we fix it? The problem is that our code backtracks when we, the developer,
     know it will be futile. In particular, once we have parsed `import qualified`,
     we know that the statement is, in fact, a qualified import, and we shouldn’t backtrack
     anymore. How can we get Parsec to understand this? Simple: *reduce the scope of
     the try backtracking operator:*'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们该如何修复它？问题在于我们的代码在我们，开发者，知道会徒劳无功时回溯。特别是，一旦我们解析了`import qualified`，我们就知道这个语句实际上是一个有资格的导入，我们就不应该再回溯了。我们如何让Parsec理解这一点？简单：*减少try回溯操作符的作用范围*：
 - en: '[PRE6]'
+  id: totrans-27
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'Here, we have moved the `try` from `pStmt` into `pQualifiedImport`, and we
     only backtrack if `import qualified` fails to parse. Once it parses, we consume
     those tokens and we are now committed to the choice of a qualified import. The
     error messages get correspondingly better:'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里，我们将`try`从`pStmt`移动到`pQualifiedImport`，只有在无法解析`import qualified`时才回溯。一旦解析成功，我们消耗这些标记，现在我们已经选择了一个有资格的导入。错误消息相应地变得更好：
 - en: '[PRE7]'
+  id: totrans-29
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: 'The moral of the story: The scope of backtracking try should be minimized,
     usually by placing it inside the definition of a parser. Some amount of cleverness
     is required: you have to be able to identify how much lookahead is necessary to
@@ -126,11 +188,15 @@
     many languages are constructed specifically so that the necessary lookahead is
     not too large, and for the types of projects I might use Parsec for, I’d be happy
     to sacrifice this modularity.'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 故事的寓意：应该尽量减少回溯try的范围，通常是通过将其放置在解析器的定义内部来实现。需要一定的技巧：您必须能够确定需要多少前瞻来承诺到一个分支，这通常取决于解析器的使用方式。幸运的是，许多语言专门设计，以便所需的前瞻不会太大，对于我可能使用Parsec的项目类型，我愿意牺牲这种模块化。
 - en: '* * *'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'Another way of looking at this fiasco is that Parsec is at fault: it shouldn’t
     offer an API that makes it so easy to mess up error messages—why can’t it automatically
     figure out what the necessary lookahead is? While a traditional parser generator
@@ -140,13 +206,17 @@
     lookahead needs to be](http://stackoverflow.com/a/7863380/23845). This is one
     of the reasons (among many) why many Haskellers prefer faster parsers which simply
     [don’t try to do any error handling at all.](https://hackage.haskell.org/package/attoparsec)'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一种看待这场灾难的方式是Parsec的问题：它不应该提供一个API，使得错误消息混乱变得如此容易——为什么它不能自动确定必要的前瞻呢？虽然传统的解析器生成器可以做到这一点（并通过在我们之前的例子中完全避免回溯来提高效率），但是有一些基本原因解释了为什么Parsec（以及像它一样的单子解析器组合库）不能自动地确定[需要什么前瞻](http://stackoverflow.com/a/7863380/23845)。这是为什么（众多原因之一），许多Haskeller更喜欢更快的解析器，它们根本就[不试图进行任何错误处理。](https://hackage.haskell.org/package/attoparsec)
 - en: 'Why, then, did I write this post in the first place? There is still a substantial
     amount of documentation recommending the use of Parsec, and a beginning Haskeller
     is more likely than not going to implement their first parser in Parsec. And if
     someone is going to write a Parsec parser, you might as well spend a little time
     to limit your backtracking: it can make working with Parsec parsers a *lot* more
     pleasant.'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 为什么我首先写这篇帖子呢？目前还有大量的文档建议使用Parsec，并且初学者更有可能在Parsec中实现他们的第一个解析器。如果有人要写一个Parsec解析器，那么最好花点时间来限制回溯：这样可以使得与Parsec解析器一起工作变得*更加愉快*。

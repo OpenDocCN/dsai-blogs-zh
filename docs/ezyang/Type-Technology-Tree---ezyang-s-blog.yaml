@@ -1,195 +1,296 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:17:57'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:57'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Type Technology Tree : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 类型技术树：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2011/03/type-tech-tree/](http://blog.ezyang.com/2011/03/type-tech-tree/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/03/type-tech-tree/](http://blog.ezyang.com/2011/03/type-tech-tree/)
 - en: Type Technology Tree
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 类型技术树
 - en: 'They say that one doesn’t discover advanced type system extensions: rather,
     the type system extensions discover you! Nevertheless, it’s worthwhile to know
     what the tech tree for GHC’s type extensions are, so you can decide how much power
     (and the correspondingly headache inducing error messages) you need. I’ve organized
     the relations in the following diagram with the following criterion in mind:'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 他们说，你并不是发现了高级类型系统扩展：相反，类型系统扩展发现了你！尽管如此，了解 GHC 的类型扩展的技术树仍然是值得的，这样你可以决定需要多少能力（以及对应的头疼的错误消息）。
 - en: Some extensions automatically enable other extensions (implies);
+  id: totrans-8
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 一些扩展自动启用其他扩展（蕴含）；
 - en: Some extensions offer all the features another extension offers (subsumes);
+  id: totrans-9
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 一些扩展提供了另一扩展提供的所有功能（包含）；
 - en: Some extensions work really nicely with other extensions (synergy);
+  id: totrans-10
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 一些扩展与其他扩展非常良好地协同工作（协同作用）；
 - en: Some extensions offer equivalent (but differently formulated) functionality
     to another extension (equiv).
+  id: totrans-11
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 一些扩展提供了与另一扩展相当（但以不同的形式）的功能（等效）。
 - en: It’s also worth noting that the GHC manual divides these extensions into “Extensions
     to data types and type synonyms”, “Class and instances declarations”, “Type families”
     and “Other type system extensions”. I have them organized here a little differently.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外值得注意的是，GHC 手册将这些扩展划分为“数据类型和类型同义词的扩展”、“类和实例声明”、“类型族”和“其他类型系统扩展”。我在这里对它们进行了稍微不同的组织。
 - en: Rank and data
+  id: totrans-13
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 等级和数据
 - en: 'Our first tech tree brings together two extensions: arbitrary-rank polymorphism
     and generalized algebraic data types.'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的第一个技术树将任意等级的多态性和广义代数数据类型结合在一起。
 - en: 'Briefly:'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 简言之：
 - en: 'GADTSyntax permits ordinary data types to be written GADT-style (with explicit
     constructor signatures): `data C where C :: Int -> C`'
+  id: totrans-16
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 'GADTSyntax 允许普通数据类型以 GADT 风格编写（带有显式构造函数签名）：`data C where C :: Int -> C`'
 - en: '[ExplicitForall](http://hackage.haskell.org/trac/haskell-prime/wiki/ExplicitForall)
     allows you to explicitly state the quantifiers in polymorphic types: `forall a.
     a -> a`'
+  id: totrans-17
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[显式的forall](http://hackage.haskell.org/trac/haskell-prime/wiki/ExplicitForall)
+    允许你显式声明多态类型中的量化器：`forall a. a -> a`'
 - en: '[ExistentialQuantification](http://hackage.haskell.org/trac/haskell-prime/wiki/ExistentialQuantification)
     allows types to be hidden inside a data constructor: `data C = forall e. C e`'
+  id: totrans-18
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[存在量化](http://hackage.haskell.org/trac/haskell-prime/wiki/ExistentialQuantification)
+    允许将类型隐藏在数据构造器中：`data C = forall e. C e`'
 - en: '[GADTs](http://hackage.haskell.org/trac/haskell-prime/wiki/GADTs) permits explicit
     constructor signatures: `data C where C :: C a -> C b -> C (a, b)`. Subsumes ExistentialQuantification
     because existentially quantified data types are simply polymorphic constructors
     for which the type variable isn’t in the result.'
+  id: totrans-19
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[GADTs](http://hackage.haskell.org/trac/haskell-prime/wiki/GADTs) 允许显式构造函数签名：`data
+    C where C :: C a -> C b -> C (a, b)`。包含存在量化因此，存在量化的数据类型只是那些类型变量不在结果中的多态构造函数。'
 - en: '[PolymorphicComponents](http://hackage.haskell.org/trac/haskell-prime/wiki/PolymorphicComponents)
     allows you to write `forall` inside data type fields: `data C = C (forall a. a)`'
+  id: totrans-20
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[多态组件](http://hackage.haskell.org/trac/haskell-prime/wiki/PolymorphicComponents)
+    允许你在数据类型字段中写入 `forall`：`data C = C (forall a. a)`'
 - en: '[Rank2Types](http://hackage.haskell.org/trac/haskell-prime/wiki/Rank2Types)
     allows polymorphic arguments: `f :: (forall a. a -> a) -> Int -> Int`. This with
     GADTs subsumes PolymorphicComponents because data type fields with `forall` within
     them correspond to data constructors with rank-2 types.'
+  id: totrans-21
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[Rank2Types](http://hackage.haskell.org/trac/haskell-prime/wiki/Rank2Types)
+    允许多态参数：`f :: (forall a. a -> a) -> Int -> Int`。与 GADTs 结合，它包含多态组件，因为数据类型字段中的 `forall`
+    对应于具有二阶类型的数据构造器。'
 - en: '[RankNTypes](http://hackage.haskell.org/trac/haskell-prime/wiki/RankNTypes):
     `f :: Int -> (forall a. a -> a)`'
+  id: totrans-22
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[RankNTypes](http://hackage.haskell.org/trac/haskell-prime/wiki/RankNTypes)：`f
+    :: Int -> (forall a. a -> a)`'
 - en: 'ImpredicativeTypes allows polymorphic functions and data structures to be parametrized
     over polymorphic types: `Maybe (forall a. a -> a)`'
+  id: totrans-23
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: ImpredicativeTypes 允许多态函数和数据结构参数化为多态类型：`Maybe (forall a. a -> a)`
 - en: Instances
+  id: totrans-24
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 实例
 - en: Our next tech tree deals with type class instances.
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的下一个技术树涉及类型类实例。
 - en: 'Briefly:'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 简言之：
 - en: '[TypeSynonymInstances](http://hackage.haskell.org/trac/haskell-prime/wiki/TypeSynonymInstances)
     permits macro-like usage of type synonyms in instance declarations: `instance
     X String`'
+  id: totrans-27
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[TypeSynonymInstances](http://hackage.haskell.org/trac/haskell-prime/wiki/TypeSynonymInstances)
+    允许在实例声明中类似宏地使用类型同义词：`instance X String`'
 - en: '[FlexibleInstances](http://hackage.haskell.org/trac/haskell-prime/wiki/FlexibleInstances)
     allows more instances for more interesting type expressions, with restrictions
     to preserve decidability: `instance MArray (STArray s) e (ST s)` (frequently seen
     with multi-parameter type classes, which are not in the diagram)'
+  id: totrans-28
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[FlexibleInstances](http://hackage.haskell.org/trac/haskell-prime/wiki/FlexibleInstances)
+    允许更多有趣的类型表达式的实例，但限制以保持可判定性：`instance MArray (STArray s) e (ST s)`（经常与多参数类型类一起看到，但不在图表中）'
 - en: '[UndecidableInstances](http://hackage.haskell.org/trac/haskell-prime/wiki/UndecidableInstances)
     allows instances for more interesting type expression with no restrictions, at
     the cost of decidability. See [Oleg](http://okmij.org/ftp/Haskell/types.html#undecidable-inst-defense)
     for a legitimate example.'
+  id: totrans-29
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[UndecidableInstances](http://hackage.haskell.org/trac/haskell-prime/wiki/UndecidableInstances)
+    允许更有趣的类型表达式的实例，没有限制，但牺牲了可判定性。参见[Oleg](http://okmij.org/ftp/Haskell/types.html#undecidable-inst-defense)作为合法示例。'
 - en: '[FlexibleContexts](http://hackage.haskell.org/trac/haskell-prime/wiki/FlexibleContexts)
     allows more type expressions in constraints of functions and instance declarations:
     `g :: (C [a], D (a -> b)) => [a] -> b`'
+  id: totrans-30
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[FlexibleContexts](http://hackage.haskell.org/trac/haskell-prime/wiki/FlexibleContexts)
+    允许在函数和实例声明的约束中更多的类型表达式：`g :: (C [a], D (a -> b)) => [a] -> b`'
 - en: '[OverlappingInstances](http://hackage.haskell.org/trac/haskell-prime/wiki/OverlappingInstances)
     allows instances to overlap if there is a most specific one: `instance C a; instance
     C Int`'
+  id: totrans-31
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[OverlappingInstances](http://hackage.haskell.org/trac/haskell-prime/wiki/OverlappingInstances)
+    允许实例在有最特定实例的情况下重叠：`instance C a; instance C Int`'
 - en: '[IncoherentInstances](http://hackage.haskell.org/trac/haskell-prime/wiki/IncoherentInstances)
     allows instances to overlap arbitrarily.'
+  id: totrans-32
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[IncoherentInstances](http://hackage.haskell.org/trac/haskell-prime/wiki/IncoherentInstances)
+    允许实例任意重叠。'
 - en: Perhaps conspicuously missing from this diagram is `MultiParamTypeClasses` which
     is below.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 或许在此图表中显著缺失的是 `MultiParamTypeClasses`，它位于以下。
 - en: Type families and functional dependencies
+  id: totrans-34
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 类型族和函数依赖
 - en: 'Our final tech tree addresses programming with types:'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们最终的技术树涉及类型编程：
 - en: 'Briefly:'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 简言之：
 - en: 'KindSignatures permits stating the kind of a type variable: `m :: * -> *`'
+  id: totrans-37
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[KindSignatures](http://hackage.haskell.org/trac/haskell-prime/wiki/KindSignatures)
+    允许声明类型变量的种类：`m :: * -> *`'
 - en: '[MultiParamTypeClasses](http://hackage.haskell.org/trac/haskell-prime/wiki/MultiParamTypeClasses)
     allow type classes to range over multiple type variables: `class C a b`'
+  id: totrans-38
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[MultiParamTypeClasses](http://hackage.haskell.org/trac/haskell-prime/wiki/MultiParamTypeClasses)
+    允许类型类跨越多个类型变量：`class C a b`'
 - en: '[FunDeps](http://hackage.haskell.org/trac/haskell-prime/wiki/FunctionalDependencies)
     allow restricting instances of multi-parameter type classes, helping resolve ambiguity:
     `class C a b | a -> b`'
+  id: totrans-39
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[FunDeps](http://hackage.haskell.org/trac/haskell-prime/wiki/FunctionalDependencies)
+    允许限制多参数类型类的实例，有助于解决歧义：`class C a b | a -> b`'
 - en: '[TypeFamilies](http://www.haskell.org/ghc/docs/7.0.1/html/users_guide/type-families.html)
     allow “functions” on types: `data family Array e`'
+  id: totrans-40
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[TypeFamilies](http://www.haskell.org/ghc/docs/7.0.1/html/users_guide/type-families.html)
+    允许在类型上进行“函数”操作：`data family Array e`'
 - en: The correspondence between functional dependencies and type families is well
     known, though not perfect (type families can be more wordy and can’t express certain
     equalities, but play more nicely with GADTs).
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 函数依赖与类型族之间的对应关系众所周知，尽管不完美（类型族可能更啰嗦，无法表达某些相等性，但在广义代数数据类型（GADTs）中更友好）。

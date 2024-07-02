@@ -1,35 +1,52 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:20'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:20'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Omnipresent Cabal : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 无所不在的Cabal：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2010/05/omnipresent-cabal/](http://blog.ezyang.com/2010/05/omnipresent-cabal/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/05/omnipresent-cabal/](http://blog.ezyang.com/2010/05/omnipresent-cabal/)
 - en: Omnipresent Cabal
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 无所不在的Cabal
 - en: 'A short public service announcement: you might think you don''t need Cabal.
     Oh, you might be just whipping up a tiny throw-away script, or a small application
     that you never intend on distributing. *Cabal? Isn''t that what you do if you''re
     planning on sticking your package on Hackage?* But the Cabal always knows. The
     Cabal is always there. And you should embrace the Cabal, even if you think you''re
     too small to care. Here''s why:'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个简短的公共服务声明：你可能认为你不需要Cabal。哦，你可能只是在编写一个小型的临时脚本或一个你根本不打算分发的小应用程序。*Cabal？那不是你打算将包发布到Hackage上时才会做的事情吗？*
+    但是Cabal总是知道的。Cabal总是在那里。即使你认为自己不重要，你也应该拥抱Cabal。以下是为什么：
 - en: Writing a `cabal` file forces you to document what modules and what versions
     your script worked with when you were originally writing it. If you ever decide
     you want to run or build your script on another environment, the cabal file will
@@ -37,9 +54,11 @@
     you ever update your modules, the cabal file will partially insulate you against
     API changes (assuming that the package follows [Hackage's PVP](http://www.haskell.org/haskellwiki/Package_versioning_policy)).
     This is far more palatable than GHC's package-qualified imports.
+  id: totrans-8
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 编写一个`cabal`文件会迫使你记录在最初编写脚本时使用的模块和版本。如果你决定在另一个环境中运行或构建你的脚本，cabal文件将大大简化获取依赖项并快速运行的过程。如果你更新了模块，cabal文件将在一定程度上保护你免受API更改的影响（假设包遵循[Hackage的PVP](http://www.haskell.org/haskellwiki/Package_versioning_policy)）。这比GHC的包限定导入要好得多。
 - en: You might have cringed about writing up a `Makefile` or `ant` file to build
     your projects in another language; as long as it is just one or two files, the
     pain associated with these build languages seems to outweight the cost of just
@@ -47,12 +66,18 @@
     is a [cabal init](http://byorgey.wordpress.com/2010/04/15/cabal-init/) to do the
     scaffolding for you. Toss out the dinky shell script that you've kept to run `ghc
     --make` and use `cabal configure && cabal build`.
+  id: totrans-9
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 你可能对编写`Makefile`或`ant`文件来构建你的项目感到不爽；只要是一个或两个文件，与这些构建语言相关的痛苦似乎比运行`gcc foo.c -o
+    foo`还要大。编写Cabal文件非常简单。甚至有一个[cabal init](http://byorgey.wordpress.com/2010/04/15/cabal-init/)来为你完成脚手架工作。抛弃你一直用来运行`ghc
+    --make`的微小shell脚本，改用`cabal configure && cabal build`。
 - en: It gives you nice things, for free! Do you want Haddock documentation? A traditional
     GNU-style Makefile? Colourised code? Cabal can do all of these things for you,
     with minimal effort after you have your `cabal` file.
+  id: totrans-10
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 它可以免费为你提供很多好东西！你想要Haddock文档吗？传统的GNU风格的Makefile？代码着色？Cabal都可以为你做到，而且在编写完`cabal`文件后，只需要很少的努力。

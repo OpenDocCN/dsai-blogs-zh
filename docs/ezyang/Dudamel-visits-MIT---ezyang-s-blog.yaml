@@ -1,27 +1,41 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:18:22'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:18:22
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Dudamel visits MIT : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 杜达梅尔访问麻省理工学院：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2010/04/dudamel-visits-mit/](http://blog.ezyang.com/2010/04/dudamel-visits-mit/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/04/dudamel-visits-mit/](http://blog.ezyang.com/2010/04/dudamel-visits-mit/)
 - en: Dudamel visits MIT
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 杜达梅尔访问麻省理工学院
 - en: Conductor and violinist [Gustavo Dudamel](http://en.wikipedia.org/wiki/Gustavo_Dudamel)
     will be visiting MIT today to accept the [Eugene McDermott Award in the Arts](http://web.mit.edu/press/2009/dudamel-mcdermott.html).
     Part of the awards ceremony will include a session with Dudamel conducting the
@@ -29,17 +43,23 @@
     Oboe and English Horn on Rimsky Korsakov and Mozart. Our regular conductor (Adam
     Boyles) has been prepping us for this by taking, erm, *unusual* liberties in tempo
     and phrasing.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 指挥家和小提琴家[Gustavo Dudamel](http://en.wikipedia.org/wiki/Gustavo_Dudamel)今天将访问麻省理工学院，接受[尤金·麦克德莫特艺术奖](http://web.mit.edu/press/2009/dudamel-mcdermott.html)。颁奖典礼的一部分将包括杜达梅尔指挥[麻省理工交响乐团](http://web.mit.edu/mitso/)的演出；我将在舞台上演奏韦伯和莫扎特的双簧管和英国管。我们的常任指挥（亚当·博伊尔斯）通过在节奏和乐句方面采取，嗯，*不寻常*的自由来为此做准备。
 - en: I'm not usually very aware of names of conductors, but I have heard Dudamel's
     float across [WQXR](http://www.wqxr.org/articles/wqxr-features/2010/jan/08/wqxr-arts-file-new-year-new-opera/)
     on occasion. The evening promises to be exciting.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 我通常不太了解指挥家的名字，但偶尔在[WQXR](http://www.wqxr.org/articles/wqxr-features/2010/jan/08/wqxr-arts-file-new-year-new-opera/)上听到过杜达梅尔的名字。今晚将会是令人兴奋的一晚。
 - en: '*Non sequitur.* You can join PDF files together using `pdftk input1.pdf input2.pdf
     input3.pdf cat output output.pdf`. You can also use GhostScript, but this results
     in quality degradation since the file gets converted to PostScript first. (This
     may also explain why we keep finding 2.5GB PostScript files filling up our server
     disks.)'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: '*前后不相干的事实*。你可以使用`pdftk input1.pdf input2.pdf input3.pdf cat output output.pdf`将PDF文件合并。你也可以使用GhostScript，但这样会导致文件先转换为PostScript，从而使质量下降。（这也许可以解释为什么我们总是发现服务器磁盘上充斥着2.5GB的PostScript文件。）'

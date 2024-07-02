@@ -1,145 +1,229 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:27'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:27'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Nested loops and exceptions (Oleg Kiselyov) : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 嵌套循环和异常（Oleg Kiselyov）：ezyang’s 博客
 - en: 来源：[http://blog.ezyang.com/2010/02/nested-loops-and-exceptions-oleg-kiselyov/](http://blog.ezyang.com/2010/02/nested-loops-and-exceptions-oleg-kiselyov/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/02/nested-loops-and-exceptions-oleg-kiselyov/](http://blog.ezyang.com/2010/02/nested-loops-and-exceptions-oleg-kiselyov/)
 - en: '*Editorial.* Today we interrupt our regularly scheduled programming to bring
     you a guest post by [Oleg Kiselyov](http://okmij.org/ftp/), reinterpreting our
     previous post about [nested loops and continuations](http://blog.ezyang.com/2010/02/nested-loops-and-continuation/)
     with exceptions.'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: '*编者按.* 今天我们中断常规节目，为您带来 [Oleg Kiselyov](http://okmij.org/ftp/) 的客座文章，重新解释我们之前关于
+    [嵌套循环和延续](http://blog.ezyang.com/2010/02/nested-loops-and-continuation/) 的文章，使用异常。'
 - en: '* * *'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: Hello!
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 你好！
 - en: I noticed your recent article about nested loops and continuations. I should
     have commented on it using the provided form, but I was not sure how formatting
     would come out. The comment includes a lot of code. Please feel free to post the
     code in whole or in part, or do anything else with it.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 我注意到您最近关于嵌套循环和延续的文章。我应该使用提供的表单进行评论，但我不确定格式化结果如何。评论包含大量代码。请随意发布全部或部分代码，或做任何其他操作。
 - en: The thesis of my comment is that `callCC` is not necessary for the implementation
     of break and continue in single and nested loops. We observe that the continuations
     of each iteration and of the entire loop are invoked either 0 or 1 time (but never
     more than once). That is the pattern of exceptions. So, the problem posed by your
     article can be solved with exceptions. Here are several variations of the solution.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 我的评论论点是，在单个和嵌套循环中，`callCC` 是不必要的用于实现 break 和 continue。我们观察到每次迭代和整个循环的延续被调用 0
+    次或 1 次（但从不超过一次）。这是异常的模式。因此，您的文章提出的问题可以用异常解决。这里有几种解决方案的变体。
 - en: 'First, a few preliminaries: this message is the complete literate Haskell code.'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，一些预备知识：这条消息是完整的文学化 Haskell 代码。
 - en: '[PRE0]'
+  id: totrans-12
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: Alas, `ErrorT` in `Control.Monad.Error` has the stupid `Error` constraint. So,
     we have to write our own Exception monad transformer. The code below is standard.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 唉，`Control.Monad.Error` 中的 `ErrorT` 有一个愚蠢的 `Error` 约束。因此，我们不得不编写我们自己的异常 monad
+    transformer。下面的代码是标准的。
 - en: '[PRE1]'
+  id: totrans-14
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'We are ready to code the first solution, for simple, non-nested loops. The
     idea is to treat ''break'' and ''continue'' as exceptions. After all, both control
     operators cause computations to be skipped—which is what exceptions do. We define
     the datatype of our ''exceptions'':'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们准备编码第一个解决方案，用于简单的非嵌套循环。其思想是将 'break' 和 'continue' 视为异常。毕竟，这两个控制运算符都会导致跳过计算，这正是异常所做的。我们定义了我们
+    'exceptions' 的数据类型：
 - en: '[PRE2]'
+  id: totrans-16
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'Here is the code for the loop: it catches exceptions at some points:'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是循环的代码：它在某些点上捕捉异常：
 - en: '[PRE3]'
+  id: totrans-18
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'Here is your test:'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是您的测试：
 - en: '[PRE4]'
+  id: totrans-20
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: 'Running it:'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 运行它：
 - en: '[PRE5]'
+  id: totrans-22
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: prints 23 numbers starting with 0, 2, 3 and ending with 30, 32, 33.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 打印从 0、2、3 开始，以 30、32、33 结束的 23 个数字。
 - en: We have to generalize to nested loops. Two solutions are apparent. I would call
     the first one 'dynamic'. We index the exceptions by levels, which are natural
     numbers. Level 0 pertains to the current loop, level 1 is for the parent loop,
     etc.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们必须推广到嵌套循环。显然有两种解决方案。我称第一种为 'dynamic'。我们通过级别（自然数）对异常进行索引。级别 0 适用于当前循环，级别 1
+    适用于父循环，依此类推。
 - en: '[PRE6]'
+  id: totrans-25
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'Operators break and continue now take the number: how many loop scopes to break.
     I think Perl has a similar breaking-with-number operator.'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，break 和 continue 运算符需要带上数字：中断多少个循环作用域。我认为 Perl 有类似的带数字中断操作符。
 - en: '[PRE7]'
+  id: totrans-27
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: 'The new iterator:'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 新的迭代器：
 - en: '[PRE8]'
+  id: totrans-29
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: The single-loop test now looks as follows.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在单循环测试如下所示。
 - en: '[PRE9]'
+  id: totrans-31
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: 'We can now write the nested loop test. I took a liberty to enhance the example
     in your article, so to exercises all cases:'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们可以编写嵌套循环测试了。我稍作修改您文章中的示例，以涵盖所有情况：
 - en: '[PRE10]'
+  id: totrans-33
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: 'The result is the sequence of numbers: 1 4 5 1 2 4 5 3 4 5'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 结果是数字序列：1 4 5 1 2 4 5 3 4 5
 - en: 'There exists another solution for the nested-loop problem, which I call ''static''.
     What if we just iterate the single-loop solution? We can nest `ExT` `BC` monad
     transformers to any given depth. To refer to particular layer in the transformer
     stack, we use lift. We can use the for_in iterator and the operators break, continue
     defined earlier. We write the nested test as follows:'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 存在另一种解决嵌套循环问题的方法，我称之为 'static'。如果我们只是迭代单循环解决方案会怎样？我们可以将 `ExT` `BC` monad transformers
+    嵌套到任意给定的深度。要引用转换器堆栈中的特定层，我们使用 lift。我们可以使用之前定义的 for_in 迭代器和操作符 break、continue。我们将嵌套测试编写如下：
 - en: '[PRE11]'
+  id: totrans-36
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: 'I guess the lesson here might be that `callCC` is often not needed (I would
     argue that `callCC` is never needed, but that''s the argument for another time).
     Here is another example of simple exceptions sufficing where call/cc was thought
     to be required:'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 我猜这里的教训可能是`callCC`通常是不需要的（我会争辩说`callCC`从来不需要，但那是另一个时间的论点）。这里是另一个简单异常足够的例子，而在那里人们认为需要`call/cc`：
 - en: '[http://okmij.org/ftp/Computation/lem.html](http://okmij.org/ftp/Computation/lem.html)'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: '[http://okmij.org/ftp/Computation/lem.html](http://okmij.org/ftp/Computation/lem.html)'

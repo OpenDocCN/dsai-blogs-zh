@@ -1,71 +1,105 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:17:54'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:17:54
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Type Kata: Local data type : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 类型 Kata：本地数据类型：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2011/04/type-kata-local-data-type/](http://blog.ezyang.com/2011/04/type-kata-local-data-type/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/04/type-kata-local-data-type/](http://blog.ezyang.com/2011/04/type-kata-local-data-type/)
 - en: '*The imperative.* When should you create a custom data type, as opposed to
     reusing pre-existing data types such as `Either`, `Maybe` or tuples? Here are
     some reasons you should reuse a generic type:'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: '*命令式。* 什么时候应该创建自定义数据类型，而不是重用预先存在的数据类型如`Either`、`Maybe`或元组？以下是重用通用类型的一些理由：'
 - en: It saves typing (both in declaration and in pattern matching), making it good
     for one-off affairs,
+  id: totrans-7
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 它节省了输入（在声明和模式匹配中），使其对于一次性的事务非常有用。
 - en: It gives you a library of predefined functions that work with that type,
+  id: totrans-8
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 它为你提供了一个预定义函数库，用于处理该类型的函数。
 - en: Other developers have expectations about what the type does that make understanding
     quicker.
+  id: totrans-9
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 其他开发者对类型做什么使理解更快的期望。
 - en: 'On the flip side of the coin:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 硬币的另一面：
 - en: You may lose semantic distinction between types that are the same but have different
     meanings (the [newtype](http://blog.ezyang.com/2010/08/type-kata-newtypes/) argument),
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 你可能会失去相同但具有不同含义的类型之间的语义区分（[newtype](http://blog.ezyang.com/2010/08/type-kata-newtypes/)
+    论据），
 - en: The existing type may allow more values than you intended to allow,
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 现有的类型可能允许比你打算允许的更多的值，
 - en: Other developers have expectations about what the type does that can cause problems
     if you mean something different.
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 其他开发者对类型的期望可能会导致问题，如果你的意思不同的话。
 - en: In this post, I’d like to talk about those last two problems with reusing custom
     types, using two case studies from the GHC codebase, and how the problems where
     alleviated by defining a data type that was only used by a small section of the
     codebase.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本文中，我想谈谈关于重用自定义类型的最后两个问题，使用 GHC 代码库中的两个案例研究，以及如何通过定义仅在代码库的一小部分中使用的数据类型来缓解这些问题。
 - en: '*Great expectations.* The `Maybe` type, by itself, has a very straight-forward
     interpretation: you either have the value, or you don’t. Even when `Nothing` means
     something like `Wildcard` or `Null` or `UseTheDefault`, the meaning is usually
     fairly clear.'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: '*大家期待。* `Maybe` 类型本身有一个非常直观的解释：你要么有值，要么没有。即使 `Nothing` 意味着类似 `Wildcard`、`Null`
+    或 `UseTheDefault`，其含义通常也很明确。'
 - en: 'What is more interesting, however, is when `Maybe` is placed in another data
     type that has its *own* conception of nothing-ness. A very simple example is `Maybe
     (Maybe a)`, which admits the values `Nothing`, `Just Nothing` or `Just (Just a)`.
@@ -74,8 +108,12 @@
     | Nothing2 | Just a`. If we intend to distinguish between `Nothing` and `Just
     Nothing`, we need to assign some different semantic meaning to them, meaning that
     is not obvious from the cobbled together data type.'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，更有趣的是，当 `Maybe` 放置在另一个具有其*自己*无意义概念的数据类型中时。一个非常简单的例子是 `Maybe (Maybe a)`，它允许值
+    `Nothing`、`Just Nothing` 或 `Just (Just a)`。在这种情况下，`Just Nothing` 意味着什么？在这种情况下，我们真正掩盖的是一个具有三个构造函数的数据类型案例：`data
+    Maybe2 a = Nothing1 | Nothing2 | Just a`。如果我们打算区分 `Nothing` 和 `Just Nothing`，我们需要为它们分配一些不同的语义含义，这些含义不是从拼凑在一起的数据类型中显而易见的。
 - en: 'Another example, which comes from [Hoopl and GHC](http://blog.ezyang.com/2011/04/hoopl-dataflow-lattices/),
     is the curious case of `Map Var (Maybe Lit)`. A map already has its own conception
     of nothingness: that is, when the key-value pair is not in the map at all! So
@@ -89,21 +127,31 @@
     I make a custom data type for the purpose. Even better, I found that Hoopl already
     provided this very type: `HasTop`, which also had a number of utility functions
     that reflected this set of semantics. Fortuitous indeed!'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一个例子来自[Hoopl和GHC](http://blog.ezyang.com/2011/04/hoopl-dataflow-lattices/)，是`Map
+    Var (Maybe Lit)`的奇怪情况。映射已经有了它自己的空值概念：也就是说，当键-值对根本不在映射中时！所以一个遇到这段代码的开发者可能会问的第一个问题是，“为什么不只是`Map
+    Var Lit`呢？”对于那些已经阅读了数据流格点帖子的人来说，这个问题的答案是，在这种情况下，`Nothing`表示top（变量绝对不是常量），这与映射中的缺失不同，后者表示bottom（变量是常量或非常量）。我成功地用这段奇怪的代码搞糊涂了两位西蒙斯，经过一些时间解释这种情况后，他们立刻建议我为此制作一个自定义数据类型。更好的是，我发现Hoopl已经提供了这种类型：`HasTop`，它还具有一系列反映这组语义的实用函数。真是幸运！
 - en: '*Uninvited guests.* Our example of a data type that allows too many values
     comes from the linear register allocator in GHC (`compiler/nativeGen/RegAlloc/Linear/Main.hs`).
     Don’t worry, you don’t need to know how to implement a linear register allocator
     to follow along.'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: '*不速之客.* 我们的一个过多值的数据类型例子来自于GHC中的线性寄存器分配器（`compiler/nativeGen/RegAlloc/Linear/Main.hs`）。别担心，你不需要知道如何实现线性寄存器分配器来跟进。'
 - en: 'The linear register allocator is a rather large and unwieldy beast. Here is
     the function that actually allocates and spills the registers:'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 线性寄存器分配器是一个相当庞大且笨拙的家伙。这是实际分配和溢出寄存器的函数：
 - en: '[PRE0]'
+  id: totrans-20
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: There’s a bit of noise here, but the important things to notice is that it’s
     a mostly recursive function. The first two cases of `lookupUFM` directly call
     `allocateRegsAndSpill`, but the last case needs to do something complicated, and
@@ -112,55 +160,83 @@
     functions](http://en.wikipedia.org/wiki/Mutual_recursion). The original was probably
     just recursive, but the long bit handling “Not already in a register, so we need
     to find a free one” got factored out at some point.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里有些噪音，但需要注意的重要事情是，这是一个大部分递归的函数。`lookupUFM`的前两种情况直接调用`allocateRegsAndSpill`，但最后一种情况需要执行一些复杂操作，并调用辅助函数`allocRegsAndSpill_spill`。事实证明，这个函数最终总是会调用`allocateRegsAndSpill`，所以我们有两个[互递归函数](http://en.wikipedia.org/wiki/Mutual_recursion)。
 - en: 'This code is reusing a data type! Can you see it? It’s very subtle, because
     the original use of the type is legitimate, but it is then *reused* in an inappropriate
     manner. The answer is `loc`, in the last case statement. In particular, because
     we’ve already case-matched on `loc`, we know that it can’t possibly be `Just (InReg{})`
     or `Just (InBoth{})`. If we look at the declaration of `Loc`, we see that there
     are only two cases left:'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 这段代码正在重用一个数据类型！你能看到吗？这非常微妙，因为类型的原始用途是合法的，但随后以不恰当的方式*重复使用*了。答案就是`loc`，在最后的case语句中。特别是因为我们已经在`loc`上进行了case匹配，我们知道它不可能是`Just
+    (InReg{})`或`Just (InBoth{})`。如果我们查看`Loc`的声明，我们会发现只剩下两种情况：
 - en: '[PRE1]'
+  id: totrans-23
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'That is, the only remaining cases are `Just (InMem{})` and `Nothing`. This
     is fairly important, because we lean on this invariant later in `allocRegsAndSpill_spill`:'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 也就是说，唯一剩下的情况是`Just (InMem{})`和`Nothing`。这相当重要，因为我们稍后在`allocRegsAndSpill_spill`中依赖这一不变量：
 - en: '[PRE2]'
+  id: totrans-25
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'If you hadn’t seen the original case split in `allocateRegsAndSpill`, this
     particular code may have got you wondering if the last guard also applied when
     the result was `Just (InReg{})`, in which case the behavior would be very wrong.
     In fact, if we are `reading`, `loc` must be `Nothing` in that last branch. But
     there’s no way of saying that as the code stands: you’d have to add some panics
     and it gets quite messy:'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你没有看到 `allocateRegsAndSpill` 中的原始情况分割，这段特定的代码可能会让你想知道最后的保护条件是否也适用于结果是 `Just
+    (InReg{})` 的情况，这种情况下行为会非常错误。实际上，如果我们在 `reading` 时，那个最后的分支中 `loc` 必须是 `Nothing`。但是代码现在无法表达这一点：你必须添加一些紧急情况处理，而且变得非常混乱：
 - en: '[PRE3]'
+  id: totrans-27
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'Furthermore, we notice a really interesting extra invariant: what happens if
     we’re reading from a location that has never been assigned to before (that is,
     `reading` is `True` and `loc` is `Nothing`)? That is obviously bogus, so in fact
     we should check if that’s the case. Notice that the original code did *not* enforce
     this invariant, which was masked out by the use of `otherwise`.'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，我们注意到一个非常有趣的额外不变量：如果我们正在从一个以前从未分配过的位置读取（也就是，`reading` 是 `True` 而 `loc` 是
+    `Nothing`），会发生什么？这显然是错误的，因此实际上我们应该检查是否出现了这种情况。请注意，原始代码*没有*强制执行这个不变量，这是通过使用 `otherwise`
+    掩盖了出来。
 - en: 'Rather than panic on an impossible situation, we should *statically rule out
     this possibility.* We can do this simply by introducing a new data type for `loc`,
     and pattern-matching appropriately:'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 与其在不可能的情况下恐慌，我们应该*静态地排除这种可能性*。我们可以通过引入一个新的数据类型来实现这一点，并适当地进行模式匹配：
 - en: '[PRE4]'
+  id: totrans-30
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: 'And now the pattern match inside `allocateRegsAndSpill_spill` is nice and tidy:'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，在 `allocateRegsAndSpill_spill` 内部的模式匹配变得清晰简洁：
 - en: '[PRE5]'
+  id: totrans-32
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'

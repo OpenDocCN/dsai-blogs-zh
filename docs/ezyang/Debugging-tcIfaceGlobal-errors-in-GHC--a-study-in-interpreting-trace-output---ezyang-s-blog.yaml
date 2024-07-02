@@ -1,431 +1,629 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:06'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:06'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Debugging tcIfaceGlobal errors in GHC: a study in interpreting trace output
     : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 调试 GHC 中的 tcIfaceGlobal 错误：解读跟踪输出研究：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2016/05/debugging-tcifaceglobal-errors-in-ghc-a-study-in-interpreting-trace-output/](http://blog.ezyang.com/2016/05/debugging-tcifaceglobal-errors-in-ghc-a-study-in-interpreting-trace-output/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2016/05/debugging-tcifaceglobal-errors-in-ghc-a-study-in-interpreting-trace-output/](http://blog.ezyang.com/2016/05/debugging-tcifaceglobal-errors-in-ghc-a-study-in-interpreting-trace-output/)
 - en: I recently solved a bug where GHC was being insufficiently lazy (yes, *more*
     laziness needed!) I thought this might serve as a good blog post for how I solve
     these sorts of laziness bugs, and might engender a useful conversation about how
     we can make debugging these sorts of problems easier for people.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 最近我解决了一个 bug，其中 GHC 表现得不够懒惰（是的，*更*多的懒惰是需要的！）我想这可能成为一个很好的博客文章，介绍我如何解决这类懒惰 bug，并可能引发关于如何使调试这类问题对人们更容易的有用讨论。
 - en: Hark! A bug!
+  id: totrans-7
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 哎呀！一个 bug！
 - en: Our story begins with an [inflight patch](https://phabricator.haskell.org/D2213)
     for some related changes I’d been working on. The contents of the patch are not
     really important—it just fixed a bug where `ghc --make` did not have the same
     behavior as `ghc -c` in programs with `hs-boot` files.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的故事始于一个[待处理的补丁](https://phabricator.haskell.org/D2213)，涉及到我之前正在进行的一些相关更改。补丁的内容并不重要——它只是修复了一个
+    bug，即 `ghc --make` 在具有 `hs-boot` 文件的程序中与 `ghc -c` 没有相同的行为。
 - en: 'Validating the patch on GHC’s test suite, I discovered that made the `prog006`
     test for GHCi start failing with the following error:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 在验证对 GHC 测试套件的补丁时，我发现这导致 `prog006` 测试在 GHCi 上开始失败，并显示以下错误：
 - en: '[PRE0]'
+  id: totrans-10
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: '`tcIfaceGlobal` errors are a “dark” corner of how GHC implements hs-boot files,
     but since I’d been looking at this part of the compiler for the past week, I decided
     to boldly charge forward.'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: '`tcIfaceGlobal` 错误是 GHC 如何实现 hs-boot 文件的“黑暗”角落，但因为我过去一周一直在看这部分编译器，所以我决定大胆地前进。'
 - en: If your test case doesn't fit on a slide, it's not small enough
+  id: totrans-12
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 如果你的测试案例放不进一张幻灯片，那还不够小
 - en: '`prog006` is not a simple test case, as it involves running the following commands
     in a GHCi session:'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: '`prog006` 并不是一个简单的测试案例，因为它涉及在 GHCi 会话中运行以下命令：'
 - en: '[PRE1]'
+  id: totrans-14
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'While the source files involved are *relatively* short, my first inclination
     was to still simplify the test case. My first thought was that the bug involved
     some aspect of how GHCi reloaded modules, so my first idea was to try to minimize
     the source code involved:'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 虽然所涉及的源文件*相对*较短，但我第一个想法仍然是简化测试案例。我最初的想法是，这个 bug 可能涉及到 GHCi 如何重新加载模块的某些方面，因此我的第一个想法是尝试最小化涉及的源代码：
 - en: '[PRE2]'
+  id: totrans-16
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'This example uses a fancy language feature `ExistentialQuantification`, and
     its generally a good bet to try to eliminate these sorts of uses if they are not
     relevant to the problem at hand. So my first idea was to replace the type class
     in module A with something more pedestrian, e.g., a type synonym. (Note: why not
     try to eliminate the `hs-boot`? In this case, I happened to know that a `tcIfaceGlobal`
     error can *only* occur when compiling an `hs-boot` file.)'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个示例使用了一个花哨的语言特性 `ExistentialQuantification`，如果这些使用与手头的问题无关，通常最好尝试消除它们。因此，我最初的想法是用更普通的东西替换模块
+    A 中的类型类，例如，一个类型同义词。（注意：为什么不试着消除 `hs-boot`？在这种情况下，我碰巧知道，在编译 `hs-boot` 文件时，`tcIfaceGlobal`
+    错误*只*会发生。）
 - en: 'I did this transformation, resulting in the following smaller program:'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 我进行了这个转换，得到了以下较小的程序：
 - en: '[PRE3]'
+  id: totrans-19
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'This program indeed also gave a `tcIfaceGlobal` error... but then I realized
     that `Boot.hs` is not well-typed anyway: it’s missing a declaration for `Data`!
     And indeed, when I inserted the missing declaration, the panic went away.'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个程序确实也产生了一个 `tcIfaceGlobal` 错误...但后来我意识到 `Boot.hs` 本身就不是良好类型化的：它缺少了 `Data`
+    的声明！事实上，当我插入了缺少的声明时，恐慌消失了。
 - en: One of the important things in debugging is to know when you have accidentally
     triggered a different bug. And indeed, this was a different bug, [which I reported
     here](https://ghc.haskell.org/trac/ghc/ticket/12063).
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 在调试中的一个重要事项是要知道何时意外触发了不同的 bug。事实上，这确实是一个不同的 bug，[我在这里报告了](https://ghc.haskell.org/trac/ghc/ticket/12063)。
 - en: 'In the process of reducing this test case I discovered that the bug had nothing
     to do with GHCi at all; e.g., if I just ran `ghc --make Boot2.hs` that was sufficient
     to trigger the bug. (Or, for a version of GHC without my patch in question, running
     `ghc -c Boot2.hs` after building the rest—`ghc --make` has different behavior
     prior to the patch which started this all masks the bug in question.) So here''s
     the final test-case (with some shorter names to avoid some confusing messages):'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 在减少这个测试用例的过程中，我发现这个bug与GHCi无关；例如，如果我只是运行`ghc --make Boot2.hs`，就足以触发这个bug。（或者，对于一个没有我的补丁的GHC版本，在构建其余部分后运行`ghc
+    -c Boot2.hs`，`ghc --make`在引发问题的补丁之前具有不同的行为，这一切都掩盖了问题的本质。）因此，这是最终的测试用例（为了避免一些混乱的消息使用了一些更短的名称）：
 - en: '[PRE4]'
+  id: totrans-23
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: Debugging is easier when you know what the problem is
+  id: totrans-24
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 当你知道问题所在时，调试就更容易
 - en: 'When debugging a problem like this, it helps to have some hypothesis about
     why the bug is occurring. And to have a hypothesis, we must first ask ourselves
     the question: what is `tcIfaceGlobal` doing, anyway?'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 在调试这样的问题时，了解为什么bug会发生是有帮助的。而要有假设，我们必须首先问自己一个问题：`tcIfaceGlobal`到底在做什么？
 - en: 'Whenever you have a panic like this, you should grep for the error message
     and look at the surrounding source code. Here it is for `tcIfaceGlobal` (on a
     slightly older version of GHC which also manifests the bug):'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 每当你遇到这样的恐慌时，你应该搜索错误消息并查看周围的源代码。这里是关于`tcIfaceGlobal`的（在一个稍旧版本的GHC上，这也表现出了bug）：
 - en: '[PRE5]'
+  id: totrans-27
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 'And if you see a Note associated with the code, you should definitely go find
     it and read it:'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你看到与代码相关联的注释，你绝对应该去找到它并阅读它：
 - en: '[PRE6]'
+  id: totrans-29
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'So case (a) is exactly what''s going on here: when we are typechecking `Boot.hs`
     and load the interface `A.hi`, when we typecheck the reference to `D`, we don’t
     go and typecheck `Boot.hi-boot`; instead, we try to *tie the knot* with the locally
     defined `Data` in the module. If `Data` is not in the type environment, we get
     the panic we were seeing.'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以情况（a）正是这里正在发生的事情：当我们正在对`Boot.hs`进行类型检查并加载接口`A.hi`时，当我们对`D`的引用进行类型检查时，我们不会去对`Boot.hi-boot`进行类型检查；相反，我们试图与模块中本地定义的`Data`打成一片。如果类型环境中没有`Data`，我们会看到我们之前遇到的恐慌。
 - en: What makes things tricky is that there is no explicit call to "typecheck the
     reference to `D`"; instead, this lump of work is unsafely wrapped into a thunk
     for the `TyThing` representing `D`, which is embedded within the description of
     `K`. When we force this thunk, GHC will *then* scurry off and attempt to typecheck
     the types associated with `D`.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 使情况复杂的是，并没有显式调用“对`D`的类型检查”；相反，这一堆工作被不安全地封装在表示`D`的`TyThing`的thunk中，而这个thunk嵌入在对`K`描述中。当我们强制求值这个thunk时，GHC将*然后*忙于尝试对与`D`相关联的类型进行类型检查。
 - en: 'Back to our original question: why is `D` not defined in the local type environment?
     In general, this is because we forced the thunk for `K` (and thus caused it to
     call `tcIfaceGlobal D`) before we actually added `D` to the type environment.
     But why did this occur? There seem to be two possible explanations for this:'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 回到我们最初的问题：为什么本地类型环境中没有定义`D`？一般来说，这是因为我们在实际将`D`添加到类型环境之前就强制求值了`K`的thunk（因此导致调用`tcIfaceGlobal
+    D`）。但为什么会这样呢？有两种可能的解释：
 - en: The first explanation is that we forgot to update the type environment before
     we forced the thunk. The fix then would be to add some extra updates to the global
     type environment so that we can see the missing types when we do force the thunk.
+  id: totrans-33
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 第一个解释是，我们在强制求值thunk之前忘记更新类型环境。修复方法是在全局类型环境中添加一些额外的更新，这样当我们强制求值thunk时，就能看到缺失的类型。
 - en: The second explanation is that we are forcing the thunk too early, and there
     is some code that needs to be made *lazier* so that we only force thunk at the
     point when the type environment has been updated sufficiently.
+  id: totrans-34
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 第二个解释是，我们强制求值thunk的时间过早，有些代码需要变得*更懒*，这样我们才能在类型环境已经充分更新时才强制求值thunk。
 - en: So, which is it?
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以，问题究竟出在哪里？
 - en: Reading the tea-leaf traces
+  id: totrans-36
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 读茶叶脉络
 - en: In both cases, it seems useful to know *where* in the typechecking process we
     actually force the thunk. Now here’s the point where I should rebuild GHC with
     profiling and then get a stack trace out of `tcIfaceGlobal`, but I was feeling
     a bit lazy and so I decided to use GHC’s tracing facilities instead.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这两种情况下，知道我们实际上在类型检查过程中什么时候强制求值thunk似乎是有用的。现在是时候重建带有分析工具的GHC并获得`tcIfaceGlobal`的堆栈跟踪了，但我有点懒，所以我决定改用GHC的跟踪工具。
 - en: GHC has existing flags `-ddump-tc-trace`, `-ddump-rn-trace` and `-ddump-if-trace`
     which dump out *a lot* of debugging trace information associated with typechecking,
     renaming and interface loading, respectively. Most of these messages are very
     terse and don’t say very much about how the message is supposed to be interpreted;
     if you want to interpret these messages you are going to have to search the source
     code and see what code is outputting the trace.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: GHC 具有现有标志 `-ddump-tc-trace`，`-ddump-rn-trace` 和 `-ddump-if-trace`，它们分别倾倒了与类型检查、重命名和接口加载相关的*大量*调试跟踪信息。大多数这些消息非常简洁，不会详细说明消息应该如何解释；如果您想要解释这些消息，您将不得不搜索源代码，看看哪段代码输出了这些跟踪信息。
 - en: 'Here''s the end of the trace we get from compiling, in one-shot mode, `Boot.hs`:'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是我们在编译 `Boot.hs` 时得到的跟踪的结尾：
 - en: '[PRE7]'
+  id: totrans-40
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: Amazingly, this trace actually tells you *exactly* what you need to know to
     solve the bug... but we're getting ahead of ourselves. First, we need to know
     how to interpret this trace.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 神奇的是，这个跟踪实际上告诉你*确切地*你需要知道什么来解决这个 bug……但我们得先知道如何解释这个跟踪。
 - en: Each trace message, e.g., `Tc2 (src)`, `Tc3`, etc., comes with a unique string
     which you can use to find where the trace originates from. For example, grepping
     for `Tc2` lands you in `TcRnDriver.hs`, right where we are about to start renaming
     and typechecking all of the declarations in the source file. Similarly, `lk1`
     lands you in `TcHsType.hs`, where we are trying to lookup the `TyThing` associated
     with `K`.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 每条跟踪消息，例如 `Tc2 (src)`，`Tc3` 等，都带有一个唯一的字符串，您可以用它来找到跟踪的来源。例如，使用 `Tc2` 进行 grep
+    会导航到 `TcRnDriver.hs`，就在我们即将开始对源文件中所有声明进行重命名和类型检查的地方。类似地，`lk1` 会导航到 `TcHsType.hs`，在这里我们试图查找与
+    `K` 关联的 `TyThing`。
 - en: 'The `Starting fork` messages are of particular interest: this is `-ddump-if-trace`''s
     way of saying, “I am evaluating a thunk which has some deferred work typechecking
     interfaces.“ So we can see that shortly after the trace `lk1`, we force the thunk
     for the type class declaration `K`; furthermore, while we are forcing this thunk,
     we further force the thunk for the class operation `method :: D -> a`, which actually
     causes the panic.'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: '`Starting fork` 消息特别值得关注：这是 `-ddump-if-trace` 的方式表达“我正在评估一个带有某些延迟工作类型检查接口的
+    thunk”。因此，我们可以看到，在跟踪 `lk1` 之后不久，我们强制执行了类型类声明 `K` 的 thunk；此外，在我们强制执行此 thunk 时，我们进一步强制执行了类操作
+    `method :: D -> a` 的 thunk，这实际上导致了 panic。'
 - en: The Rube Goldberg machine
+  id: totrans-44
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 鲁布·戈尔德堡机器
 - en: 'I didn’t read the trace closely enough, so I spent some time manually adding
     extra tracing declarations and tracing the flow of the code during typechecking.
     Starting with `Tc2 (src)`, we can actually use the trace to follow the flow of
     typechecking (use of `hasktags` here is essential!):'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 我没有仔细阅读跟踪，因此在类型检查期间，我花了一些时间手动添加额外的跟踪声明和跟踪代码的流程。从 `Tc2 (src)` 开始，我们实际上可以使用跟踪来跟随类型检查的流程（这里使用
+    `hasktags` 是必不可少的！）
 - en: '`tcRnModuleTcRnM` is the main entry point for renaming and typechecking a module.
     After processing imports, it calls `tcRnSrcDecls` to typecheck the main body.'
+  id: totrans-46
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '`tcRnModuleTcRnM` 是重命名和类型检查模块的主要入口点。处理导入后，它调用 `tcRnSrcDecls` 对主体进行类型检查。'
 - en: '`tcRnSrcDecls` calls `tc_rn_src_decls` to typecheck all of the top-level declarations;
     then it simplifies all of the top-level constraints and finalizes all the types.'
+  id: totrans-47
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '`tcRnSrcDecls` 调用 `tc_rn_src_decls` 来对所有顶层声明进行类型检查；然后简化所有顶层约束并完成所有类型。'
 - en: '`tc_rn_src_decls` is the main loop of the Template Haskell / typecheck/renaming
     dance. We first rename (via `rnTopSrcDecls`) and typecheck (`tcTopSrcDecls`) up
     until the first splice, then run the splice and recurse.'
+  id: totrans-48
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '`tc_rn_src_decls` 是模板 Haskell / 类型检查/重命名舞蹈的主循环。我们首先通过 `rnTopSrcDecls` 进行重命名，然后通过
+    `tcTopSrcDecls` 进行类型检查，直到第一个 splice，然后运行 splice 并递归。'
 - en: '`tcTopSrcDecls` outputs `Tc2 (src)`. It successively typechecks all the different
     types of top-level declarations. The big important one is `tcTyClsInstDecls` which
     typechecks type and class declarations and handles deriving clauses.'
+  id: totrans-49
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '`tcTopSrcDecls` 输出 `Tc2 (src)`。它逐个检查所有不同类型的顶层声明。其中一个重要的是 `tcTyClsInstDecls`，它对类型和类声明进行类型检查，并处理推导子句。'
 - en: '`tcTyClsInstDecls` calls `tcTyAndClassDecls` to typecheck top-level type and
     class declarations, and then calls `tcInstDeclsDeriv` to handle deriving.'
+  id: totrans-50
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '`tcTyClsInstDecls` 调用 `tcTyAndClassDecls` 对顶层类型和类声明进行类型检查，然后调用 `tcInstDeclsDeriv`
+    处理推导。'
 - en: '`tcTyAndClassDecls` takes every mutually recursive group of type/class declarations
     and calls `tcTyClGroup` on them.'
+  id: totrans-51
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '`tcTyAndClassDecls` 处理每个互递类型/类声明组，并在它们上调用 `tcTyClGroup`。'
 - en: '`tcTyClGroup` calls `tcTyClDecls` to typecheck the group and then checks if
     everything is well-formed.'
+  id: totrans-52
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '`tcTyClGroup`调用`tcTyClDecls`来对组进行类型检查，然后检查一切是否良好形式。'
 - en: '`tcTyClDecls` actually type checks the group of declarations. It first kind-checks
     the group with `kcTyClGroup`; then it type-checks all of the groups together,
     tying the knot.'
+  id: totrans-53
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '`tcTyClDecls`实际上是类型检查声明组。它首先用`kcTyClGroup`对组进行种类检查，然后将所有组一起进行类型检查，绑定结节。'
 - en: '`kcTyClGroup` outputs the (appropriately named) `kcTyClGroup` trace. At this
     point I stopped tracing.'
+  id: totrans-54
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '`kcTyClGroup`输出（适当命名的）`kcTyClGroup`追踪。在这一点上，我停止了追踪。'
 - en: By observing the `kcTyClGroup` trace, but no terminating `kcTyClGroup result`
     trace (which is at the end of this function), we can tell that while we were kind
     checking, the bad thunk was triggered.
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过观察`kcTyClGroup`的追踪，但没有终止的`kcTyClGroup result`追踪（这在函数末尾），我们可以得知在我们进行种类检查时，坏的延迟计算被触发了。
 - en: 'It is actually quite useful to know that the panic occurs while we are kind-checking:
     kind-checking occurs before we actually construct the knot-tied `TyThing` structures
     for these top-level declarations. So we know that it is *not* the case that we
     are failing to update the global type environment, because it definitely is not
     constructed at this point. It must be that we are forcing a thunk too early.'
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 知道恐慌发生在我们进行种类检查时实际上是非常有用的：种类检查发生在我们实际构造这些顶层声明的结节绑定`TyThing`结构之前。所以我们知道，我们没有失败更新全局类型环境，因为它在这一点上肯定没有构建。必须是我们太早强制了一个延迟计算。
 - en: AAAAAAAA is the sound of a GHC disappearing down a black hole
+  id: totrans-57
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: AAAAAAAA是GHC消失在一个黑洞中的声音
 - en: 'At this point, I was pretty sure that `lk1`, a.k.a. `tcTyVar` was responsible
     for forcing the thunk that ultimately lead to the panic, but I wasn''t sure. Here''s
     the code for the function:'
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: 此时，我非常确定`lk1`，即`tcTyVar`是导致最终引发恐慌的延迟计算的责任所在，但我并不确定。以下是该函数的代码：
 - en: '[PRE8]'
+  id: totrans-59
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: '`tcTyVar` on `K` should result in the `AGlobal (ATyCon tc)`, and inserting
     a trace on that branch didn’t result in any extra output. But I sealed the deal
     by adding ``thing `seq` traceTc "lk2" (ppr name)`` and observing that no `lk2`
     occurred.'
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: 对`K`的`tcTyVar`应该导致`AGlobal (ATyCon tc)`，在该分支上添加一个追踪并没有额外的输出。但我通过添加``thing `seq`
+    traceTc "lk2" (ppr name)``并观察没有出现`lk2`来确定了这件事。
 - en: It is also clear that it should be OK for us to force `K`, which is an external
     declaration, at this point in the code. So something has gone wrong inside the
     thunk itself.
+  id: totrans-61
   prefs: []
   type: TYPE_NORMAL
+  zh: 显然在这一点上强制`K`应该对我们来说没问题，因为它是一个外部声明。所以某些东西在延迟计算本身出错了。
 - en: Back to the tea leaves
+  id: totrans-62
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 回到茶叶上
 - en: 'Let''s take a look at the end of the trace again:'
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们再次看一下追踪的结尾：
 - en: '[PRE9]'
+  id: totrans-64
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: 'In human readable terms, the trace tells a story like this:'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 以人类可读的方式来说，这个追踪告诉了一个这样的故事：
 - en: Someone forced the thunk representing the `TyThing` for the type class `K` (`Starting
     fork { Declaration for K`)
+  id: totrans-66
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 有人强制了代表类型类`K`的`TyThing`的延迟计算（`Starting fork { Declaration for K`）
 - en: I'm typechecking the contents of the `IfaceDecl` for `K` (`tc-iface-class`,
     etc.)
+  id: totrans-67
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 我正在对`K`的`IfaceDecl`的内容进行类型检查（`tc-iface-class`等）
 - en: I'm building the actual `Class` representing this type class (`buildClass`)
+  id: totrans-68
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 我正在构建代表这个类型类的实际`Class`（`buildClass`）
 - en: I allocate some global names for the class in question. (`newGlobalBinder`)
+  id: totrans-69
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 我为所讨论的类分配了一些全局名称。（`newGlobalBinder`）
 - en: Oops! I force the thunk representing class operation `method` (which has type
     `D -> a`)
+  id: totrans-70
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 糟糕！我强制了代表类操作`method`的延迟计算（其类型为`D -> a`）
 - en: Shortly after, a panic occurs.
+  id: totrans-71
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 不久之后，恐慌发生。
 - en: 'So, it’s off to read the code for `TcIface`. Here''s the body of the code which
     typechecks an `IfaceDecl` for a type class declaration:'
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以，去读`TcIface`的代码。以下是类型检查`IfaceDecl`的代码体：
 - en: '[PRE10]'
+  id: totrans-73
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: 'The methods of a type class are processed in `sigs <- mapM tc_sig rdr_sigs`.
     Looking at this helper function, we see:'
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 类型类的方法在`sigs <- mapM tc_sig rdr_sigs`中处理。看一下这个辅助函数，我们可以看到：
 - en: '[PRE11]'
+  id: totrans-75
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: 'Great! There is already some code which mentions that the types of the signatures
     need to be done lazily. If we force `op_ty` or `dm''`, we will cause the types
     here to be loaded. So now all we need to do is find where in `buildClass` these
     are being forced. Here is the header of `buildClass`:'
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 太好了！已经有一些代码提到了签名类型需要懒惰地完成。如果我们强制`op_ty`或`dm'`，我们将导致这里的类型被加载。现在我们只需要找到在`buildClass`中它们被强制的地方。以下是`buildClass`的头部：
 - en: '[PRE12]'
+  id: totrans-77
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: 'So let''s look for occurrences of `sig_stuff`. The first place they are used
     is:'
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以让我们来看看`sig_stuff`的出现。它们第一次被使用的地方是：
 - en: '[PRE13]'
+  id: totrans-79
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: 'Let''s look at that helper function:'
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们看看这个辅助函数：
 - en: '[PRE14]'
+  id: totrans-81
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE14]'
 - en: There it is! The case on `dm_spec` will force `dm'`, which will in turn cause
     the type to be forced, which results in a panic. That can’t be right.
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这里！`dm_spec`上的这个案例将迫使`dm'`，进而导致类型被强制，结果引发了恐慌。这肯定不对。
 - en: 'It seems that `mk_op_item` only cares about the top level of wrapping on `dm_spec`;
     `spec` is used lazily inside `dm_info`, which doesn''t appear to be forced later
     in `mkClass`. So the fix would be to make it so that when can peel back the outer
     `Maybe` without forcing the contents of `dm`:'
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: 看起来`mk_op_item`只关心`dm_spec`上的顶层包装；`dm_info`内部懒惰地使用`spec`，并且似乎在`mkClass`后期不会被强制执行。因此修复的方法将是使得我们可以在不强制`dm`内容的情况下剥离外部的`Maybe`：
 - en: '[PRE15]'
+  id: totrans-84
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE15]'
 - en: We check the fix, and yes! It works!
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们检查了修复，是的！它奏效了！
 - en: The parting glass
+  id: totrans-86
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 分手的酒杯
 - en: 'I won’t claim that my debugging process was the most efficient possible—not
     mentioned in this blog post is the day I spent reading the commit history to try
     and convince myself that there wasn’t actually a bug where we forgot to update
     the global type environment. But there seem to be a few generalizable lessons
     here:'
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: 我不会声称我的调试过程是可能的最有效过程——在这篇博文中没有提到的是我花了一天时间阅读提交历史，试图说服自己我们并没有忘记更新全局类型环境中的错误。但是这里似乎有一些可推广的经验教训：
 - en: If you see some trace output, the way to make the trace most useful to you is
     to determine *where* in the code the trace comes from, and what the compiler is
     doing at that point in time. Usually, grepping for the trace message is good enough
     to figure this out.
+  id: totrans-88
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 如果你看到一些跟踪输出，使跟踪对你最有用的方法是确定*代码中*跟踪消息来自何处，并且在那个时间点编译器正在做什么。通常，使用grep搜索跟踪消息就足以弄清楚这一点。
 - en: The smaller your test cases, the smaller your traces will be, which will make
     it easier to interpret the traces. When I ran my test case using `ghc --make`
     rather than `ghc -c`, there was a lot more logging output. Sure the ending trace
     is the same but if there was something important in the earlier trace, it would
     have been that much harder to dig out.
+  id: totrans-89
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 你的测试案例越小，你的跟踪就会越小，这样解释跟踪就更容易。当我运行我的测试案例时使用`ghc --make`而不是`ghc -c`时，输出的日志要多得多。确实，结束的跟踪是一样的，但如果在早期跟踪中有重要内容，那么挖掘出来就更加困难。
 - en: If you can trust your traces, debugging is easier. If I had trusted the trace
     output, I could have found the bug a lot more quickly. But I didn't, and instead
     spent a bunch of time making sure the code was behaving in the way I expected
     it to. On the plus side, I understand the codepath here a lot better than I used
     to.
+  id: totrans-90
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 如果你可以信任你的跟踪，调试就会更容易。如果我相信跟踪输出，我本可以更快地找到错误。但我没有，而是花了大量时间确保代码表现出我期望的行为。好的一面是，我现在对这里的代码路径了解得比以前深多了。
 - en: How can GHC make debugging these types of bugs easier? Have your own laziness-related
     debugging story? I would love to hear what you think.
+  id: totrans-91
   prefs: []
   type: TYPE_NORMAL
+  zh: GHC如何使调试这些类型的错误更容易？有自己的与惰性相关的调试故事吗？我很想知道你的想法。

@@ -1,43 +1,63 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:16:54'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:16:54'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'HIW’18: Let’s Go Mainstream with Eta! : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: HIW’18：让Eta走向主流！：ezyang’s博客
 - en: 来源：[http://blog.ezyang.com/2018/09/hiw18-lets-go-mainstream-with-eta/](http://blog.ezyang.com/2018/09/hiw18-lets-go-mainstream-with-eta/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2018/09/hiw18-lets-go-mainstream-with-eta/](http://blog.ezyang.com/2018/09/hiw18-lets-go-mainstream-with-eta/)
 - en: 'HIW’18: Let’s Go Mainstream with Eta!'
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: HIW’18：让Eta走向主流！
 - en: My name is Rahul Muttineni, CTO of TypeLead, working on building services around
     a language named Eta. To get started, I'll give an overview of how the project
     started, and where it is now.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 我的名字是Rahul Muttineni，TypeLead的CTO，致力于构建围绕一种名为Eta的语言的服务。为了开始，我将概述项目的起源和当前状态。
 - en: It started as a HSOC project. It was called GHCVM; back then we had plans of
     making it both on JVM and CLR... we don't think about CLR anymore. I was mentored
     by Edward Kmett. We got pretty good response on this, so Jo and I decided to take
     the risk and work on this full time.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 它起初是一个HSOC项目。当时它被称为GHCVM；当时我们计划使其同时在JVM和CLR上运行...我们不再考虑CLR了。我由Edward Kmett指导。我们对此收到了非常好的反馈，所以Jo和我决定冒险全职工作在此上。
 - en: Big thanks to the GHC team, really good work. We've worked with the codebase
     for two years, and the more and more we work with it, we see how much awesome
     stuff there is. I've learned a lot by working with the code.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 对GHC团队表示衷心的感谢，做得真的很好。我们已经与这个代码库一起工作了两年，随着工作的深入，我们看到了其中有多少令人惊叹的东西。通过与代码的互动，我学到了很多。
 - en: 'What is Eta? Eta is a fork of GHC. During the GSOC project, it started off
     as a Haskell program that used the GHC API. Midway in the program, I found that
     there were certain things that I wanted to do that I couldn''t do, and I spent
@@ -54,28 +74,37 @@
     tension; it''s easy to make decisions on how to add new features, because will
     it help companies? If it is yes, otherwise we don''t. (SPJ: That can be a hard
     question to answer!)'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 什么是Eta？Eta是GHC的一个分支。在GSOC项目期间，它起初是一个使用GHC API的Haskell程序。在项目的中途，我发现有些事情我想做但做不到，于是花了3-4天时间设置了一个分支。我会谈谈那些限制是什么。像Haskell一样，它是一种...语言，但其关键区别在于它在JVM上运行。这是它自己的一套挑战，主要是尾调用方面。Eta的好处是它可以在JVM上运行，并且可以像那样运行大部分项目。最近，我们在上个月让Yesod运行起来了...它的状态很好。Eta的下一个真正伟大的类型是强类型的FFI。它与JVM中的子类型非常兼容，这个话题的大部分内容都是关于我们如何让它工作的。Eta的一个主要关注点之一是专注于工业使用。GHC则专注于工业使用和研究。两者之间存在紧张关系...对于Eta的好处是我们不必面对这种紧张关系；很容易做出决策来添加新功能，因为它会帮助公司吗？如果是的话，我们就会添加，否则不会。（SPJ：这可能是一个难以回答的问题！）
 - en: 'Haskell: Avoid success at all costs. We''re not going to sacrifice core principles
     of language for benefit. Pursue success, at minimum cost. We want to make it successful
     as much as possible, but we want to make as little sacrifice as possible. That
     will be a little tricky...'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: Haskell：不惜一切代价避免成功。我们不会为了好处而牺牲语言的核心原则。追求成功，以最小的成本。我们希望尽可能地成功，但是我们希望尽可能少地做出牺牲。这会有点棘手...
 - en: 'What is Eta? What language features does it support? It started off as a fork
     of GHC 7.10.3\. All extensions that work there, work with Eta as well. The only
     thing was TemplateHaskell and QuasiQuotes didn''t work for a long time. We got
     it working 3-4 months ago. Biggest change is JavaFFI. GHC 7.10.3 is MINUS C FFI.
     We could have supported it: Java has JNI, but we tried to avoid it because we
     didn''t want to make platform specific bindings to all the libbraries.'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 什么是Eta？它支持哪些语言特性？它起初是GHC 7.10.3的一个分支。所有在那里工作的扩展，在Eta中同样适用。唯一的问题是TemplateHaskell和QuasiQuotes很长时间内都无法工作。我们在3-4个月前解决了这个问题。最大的变化是JavaFFI。GHC
+    7.10.3减去C FFI。我们本来可以支持它：Java有JNI，但我们试图避免这样做，因为我们不想对所有的库做平台特定的绑定。
 - en: 'Joe backported a bunch of GHC 8 features: StrictData, ApplicativeDo, OverloadedLabels.
     Backpack was got recently. There''s a very particular reason we had to do it:
     it has to do with the fact that we don''t have green threads by default, and we
     wanted to give the user a choice of threaded runtime versus blocking runtime.'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: Joe将一堆GHC 8的特性进行了回溯移植：StrictData、ApplicativeDo、OverloadedLabels。Backpack是最近获取的。我们不得不这样做有一个非常特别的原因：这与我们默认没有绿色线程有关，我们希望给用户选择线程运行时与阻塞运行时的选择。
 - en: 'The compiler? It''s a fork of GHC, so all the compiler passes are the same.
     We just chopped off everything after STG; e.g., C-- is gone. We generate bytecode
     from STG. We don''t do any optimizations right now, and won''t need to for some
@@ -85,8 +114,10 @@
     just zip files that package up a bunch of class files that store Java bytecodes.
     We also added one more mode for Uberjars. These are JAR files that are packaged
     up into one giant package.'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 编译器？它是GHC的一个分支，所以所有编译器通道都是相同的。我们只是在STG之后截断了所有内容；例如，C--已经不存在了。我们从STG生成字节码。目前我们不进行任何优化，而且未来一段时间也不需要进行优化。我们不必这样做，因为在JVM中，它是即时编译的，所以我们不需要像以前那样进行大量优化，因为JVM会自动删除未使用的大量代码。关于驱动程序：GHC生成对象文件...我们决定使用JAR文件。它们只是将大量存储Java字节码的类文件打包在一起的ZIP文件。我们还增加了一种Uberjars的模式。这些是将JAR文件打包成一个巨大的包。
 - en: 'I''ll talk a little bit about how we implemented the REPL; template haskell.
     It works through the external-interpreter architecture. In GHC that''s called
     iserv: the process, what it does, is handles running the code. So the compiler
@@ -99,8 +130,10 @@
     called classloading, which is very flexible. You can download bytecodes from the
     network, get code an runtime. Once you load the class, it''s statically compiled
     code, it''s optimized the same, etc.'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 我会简要谈一下我们如何实现REPL；模板Haskell。它通过外部解释器架构工作。在GHC中称为iserv：该进程负责运行代码。因此，编译器仍将执行类型检查和一切工作，但一旦完成所有这些工作，GHC将生成一个特定的字节码集，以便有效地解释Haskell。因为我们已经生成了JVM字节码。我们不需要那个自定义的字节码集；我们只需关闭优化进行JVM字节码编译，然后将其发送到外部进程，加载并执行它们。实现REPL非常容易，如何让所有这些工作在一起。JVM有一个称为类加载的机制，非常灵活。您可以从网络下载字节码，获取代码和运行时。一旦加载了类，它就是静态编译的代码，优化相同等等。
 - en: The build tool we use is Etlas. We didn't want to move too far off of GHC, we
     stuck with Cabal. At the point we started using it, we forked off of Cabal 2.0\.
     Main difference is that it lets you manage Eta versions. Etlas is almost like
@@ -118,8 +151,15 @@
     were a bunch of packages that would check if they were GHC 8... and then use new
     generics. So we had to do a bunch of patching for that. But that's the kind of
     stuff we have to deal with.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们使用的构建工具是 **Etlas**。我们不想离开 GHC 太远，所以我们坚持使用 Cabal。在我们开始使用它的时候，我们从 Cabal 2.0
+    分支出来。主要区别在于它允许你管理 Eta 的版本。Etlas 几乎像 Stack，但它更接近 Cabal。我们将 Stack 的优秀特性加入到了 Cabal
+    中。另外一点是它进行补丁管理。随着我们添加更多功能并进行反向移植，我们发现 Eta 不完全是 GHC 7.10，也不是 GHC 8.0，它处于一种奇怪的中间状态，因此某些包在没有小改动的情况下不会精确编译，所以我们需要一些系统在实际运行构建之前应用这些改动。因此，我们设置了一个
+    GitHub 仓库来存储所有的补丁文件。Etlas 的工作方式是，它将为你获取最新的补丁集。然后如果你安装一个包，比如 lens，它将下载 lens，应用补丁，然后进行构建。就在最近，我们一直使用
+    base 4.8，最近升级到了 base 4.11。但我们无法更新到新的 Generics 架构，因为它会减慢编译时间。因此有一些包会检查它们是否是 GHC
+    8... 然后使用新的 Generics。所以我们必须为此做一些补丁。但这就是我们必须处理的那种事情。
 - en: 'The title of this talk is lets go mainstream with eta. I want to take a moment
     and say, what does that mean? "The ideas, attitudes, or activities that are shared
     by most people and regarded as normal or conventional." So at what point does
@@ -133,29 +173,44 @@
     clearly solves a lot of problems better than the status quo. So why isn''t it
     moving forward? That''s a big question, I''m going to talk about how we''re approaching
     it.'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 这次讲座的标题是让 **eta** 成为主流。我想花一点时间说一下，这意味着什么？“被大多数人分享并视为正常或传统的思想、态度或活动。”那么编程语言在何时变得普遍或传统？它必须被大公司使用，解决大型现实世界问题，并且人们必须相信它有效。这是一个非常复杂的问题，多方面的，其中一部分答案是，它应该比现状更容易解决实际问题。举个例子，PHP
+    就是这样。PHP 是在没有更好的动态网页应用程序编程语言时出现的。它只具备了使其有用于构建这些应用程序所需的最低功能。现在大家都在问这个问题：Haskell
+    明显比现状更好地解决了许多问题。那么为什么它没有继续发展？这是一个很大的问题，我将讨论我们如何解决它。
 - en: The strategy we're using internally, is we put on a "Big Company Hat"; we pretend
     we're a big company with a lot of employees, millions or billions of lines, and
     try to figure out what problems they'll face. Some problems are crazy long build
     times, when trying to build huge software; dynamic where you have to make sure
     junior developers get up to speed... etc. That's couple to get this conversation
     started.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们内部使用的策略是戴上一顶“大公司的帽子”；我们假装自己是一个拥有大量员工、数百万或数十亿行代码的大公司，试图找出他们将面临的问题。一些问题包括构建庞大软件时的漫长构建时间，动态的情况需要确保初级开发人员能够快速上手...
+    等等。这是为了启动这场对话。
 - en: After thinking about this a long time, we boiled it down to three basic principles,
     how we will develop Eta.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 经过长时间的思考，我们将其简化为三个基本原则，我们将如何开发 Eta。
 - en: 1\. User Experience
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 1\. 用户体验
 - en: 2\. Performance
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 2\. 性能
 - en: 3\. Safety
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 3\. 安全性
 - en: User Experience is mainly, an emotional thing, how you feel when you use Eta
     technology, how you interact with it, what you feel when you get an error, psychologically.
     When something has good UX, we feel good. That's a very subjective thing, it can
@@ -163,8 +218,10 @@
     it universal. Something we forget as software and tool developers, the person
     developing the software is human. If they get errors persistently over time, they'll
     get frustrated. Machines will do what you tell them over and over again.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 用户体验主要是一种情感体验，当您使用Eta技术时的感受，您与之交互时的感觉，当您遇到错误时的感受，心理上的反应。当某物具有良好的用户体验时，我们感觉很好。这是非常主观的事情，不同的人可能有所不同，我们必须找到一种标准化/普遍化的方式。作为软件和工具开发者，我们有时会忘记，开发软件的人是人类。如果他们长时间内不断遇到错误，他们会感到沮丧。机器会一遍又一遍地执行您告诉它们要做的事情。
 - en: 'So what have we done in Eta to concern? We''ve done something very recently;
     it''s not in master yet. Jo and I spent a week refactoring the codebase to refactor
     the error reporting part of the typechecker. It stores a list of strings; internally
@@ -180,8 +237,11 @@
     refactoring, adding an argument, changing the type, that''s one of the most common
     errors you''ll get working with Haskell. So we focused on those first. This shows
     an example of a type error... ''checker'', it''s an IO action.'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以在Eta中，我们关注了什么？我们最近做了一些事情；它还没有在主分支中。Jo和我花了一周时间重构了类型检查器中的错误报告部分。它存储了一个字符串列表；在GHC内部，有一个漂亮打印的数据类型，一个这样的列表。问题是我们不能在其上进行后处理。因此，Jo做的是创建了一个巨大的数据类型，有三百个数据构造器，每个构造器对应GHC中的一个错误消息。那个重构花了一周（SPJ：只有一周？！）现在是这样的，它是解耦的，现在你有了，而不是在类型检查monad中存储字符串，你存储了一个数据类型，用于存储打印出错误消息所需的相关数据。然后在最后一点，您可以遍历数据类型；根据其他错误的存在，您可以决定要做什么。现在是在某些错误模式上进行模式匹配并进行良好的报告。这是一个例子。我们谈到了简单的错误：重构，添加参数，更改类型，这是您使用Haskell时可能遇到的最常见的错误之一。因此，我们首先专注于这些。这显示了一个类型错误的例子...
+    '检查器'，这是一个IO操作。
 - en: 'GHC would tell you, couldn''t match Int -> IO () with IO (). The problem is,
     for people who don''t know how the typechecker works, they won''t be able to understand
     what the typechecker is doing: going argument by argument. Because of the refactor
@@ -199,15 +259,21 @@
     So we don''t have to flood the user with every suggestion, we just have to show
     the user what probably is the cause for it. And if it''s a tricky case, not what
     we posted, in the link, we''ll have the case as well.'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 'GHC 会告诉你，无法匹配 `Int -> IO ()` 和 `IO ()`。问题在于，对于不了解类型检查器工作方式的人，他们无法理解类型检查器的操作：逐个参数进行。由于我们进行了重构，很容易在这种特定情况下进行模式匹配，并说，嘿，如果用户忘记放置一个参数，可以打印出这种形式的错误消息。你打印一个参数丢失，你突出显示。（SM:
+    在这种情况下，你可能错过了第一个参数！）这是真的。这很棘手；有时您提供的建议可能不会。我们不告诉人们他们到底做错了什么，因为我们不知道。这不是一件完美的事情，但我们试图给出我们能给出的最佳建议。这的一个重要特征，大多数我们决定这个布局的方式，我们研究了像Elm和Purescript这样的语言，它们在这种错误上做了很好的工作。PureScript和Elm，它们为一种特定类型的错误所做的事情，如果您不确定该怎么做……例如，我们的信息不完整，他们可以转到特定的链接并查看可能发生的其他事情。因此，我们不必向用户提供每一个建议，我们只需向用户显示可能是其原因的东西。如果是一个棘手的案例，不是我们发布的，我们也会在链接中提到该案例。'
 - en: '(BG: There''s other information that might be relevant; expanding type synonyms,
     etc. Do you have this info?) We''re still thinking about that. Probably we''ll
     have extra flags and stuff. Eventually, we''ll have a mode that prints out JSON
     for IDEs, then it''s easier to parse on the IDE side. (BG: Incidentally, there''s
     a ticket, a student working with Richard, trying to figure out smoething similar).'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: '(BG: 还有其他可能相关的信息；扩展类型同义词等。你有这些信息吗？) 我们还在考虑这个问题。可能我们会有额外的标志和其他东西。最终，我们将有一个模式，用于IDE打印JSON，这样在IDE端更容易解析。(BG:
+    顺便说一下，有一个学生和理查德一起工作，试图找出类似的东西。)'
 - en: 'Another aspect of UX is we added the REPL. Tried to simplify the entry point,
     try to make it easy. You want types, kinds, and where to find out more information.
     This is a statically typed language: you always hhave to be thinking about types.
@@ -218,8 +284,12 @@
     to a. He said that... no show instance found, just say that this is a function,
     and you can''t print it. That''s a change we did. This was very easy for us to
     do.'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 用户体验的另一个方面是我们添加了REPL。试图简化入口点，试图使其更容易。你想要类型、种类以及如何找到更多信息。这是一种静态类型语言：你总是要考虑类型。所以我们:set
+    +t：打印出你打印东西时的类型。还有一件事，前Scala工程师之一一直在学习Haskell，并对REPL体验的一个方面提出了批评。f 是一个有两个参数的函数。在REPL的第二条语句中，我应用了1\.
+    找到实例，显示实例，对于 a 转到 a。他说……没有找到显示实例，只是说这是一个函数，你不能打印它。这是我们所做的改变。这对我们来说非常容易做到。
 - en: 'Performance: it can mean many things. We''re talking about fast developer feedback
     loop. Compile time and develop time, reducing that feedback loop. Some work we''ve
     done in this direction is reproducible builds. As of now, we have bit-for-bit
@@ -231,12 +301,20 @@
     between different runs depending on environment. What we did, was we added a counter.
     We used to print the uniques in the Java class name; that will make it nondeterministic.
     So we made a counter: the order in which the bindings make it to STG is the same.'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 性能：它可以指很多事情。我们讨论的是快速的开发者反馈循环。编译时间和开发时间，减少这种反馈循环。在这方面我们做了一些工作是可重现构建。截至目前，我们在
+    Eta 中实现了 bit-for-bit 的可重现性。这相当于……尼基塔已经在可重现性方面做了大量工作，他使 Haskell 接口可重现；但最后一英里的 bit-for-bit
+    非常困难，有很多地方。对于我们的代码生成器来说，情况简单得多，我们不需要做太多工作。只需 20 行代码就能使其确定性。GHC 中的主要非确定性来源是 Unique
+    数据类型，它在不同的运行环境下会发生变化。我们所做的是添加了一个计数器。我们曾经在 Java 类名中打印 uniques；这将使其变得不确定。所以我们做了一个计数器：将绑定按照进入
+    STG 的顺序排列相同。
 - en: GHCi is known to take up lots of memory, esp. with IDE. Simon Marlow has a bunch
     of fixes to that; we also backported those.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: GHCi 以其占用大量内存而闻名，尤其是在使用 IDE 时。**Simon Marlow** 对此做了许多修复；我们也进行了这些修复的回溯。
 - en: Another aspect of performance is the actual runtime performance. We're on the
     JVM, that puts us at a huge disadvantage. We don't have control over many things.
     The runtime system... this is Java. It's OO, so the runtime system is implemented
@@ -254,8 +332,16 @@
     evaluating, it will update the thunk to point to the newly computed value. And
     SingleEntryThunk, they're evaluated only once, so you can just evaluate it directly
     without pushing an update frame. This terminology is borrowed from GHC as well.
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 性能的另一个方面是实际的运行时性能。我们使用的是 JVM，这让我们处于一个巨大的劣势。我们无法控制许多事情。运行时系统……这是 Java。它是面向对象的，所以运行时系统是用
+    Java 实现的。我们为在 Eta 中定义的值设置了一个层次结构。我们有一个 Closure 类，它是所有值、thunk、WNF 的父类。Closure 类有两个方法。evaluate，评估到
+    WHNF，enter 实际上会进入……这与 GHC 运行时系统相似。最初的版本完全模仿了 GHC，除了尾调用。术语是相似的。它主要用于函数主体时。Closure
+    的主要子类是 Thunk 和 Value。Value 将是诸如函数、部分应用函数和数据构造函数之类的事物的父类。Thunk 将是诸如 CAFs、单入口 thunk
+    和可更新 thunk 的超类。CAF 没有自由变量，因此有一个特例，每次创建一个 blackholing entry，以避免两个线程评估相同的 thunk。UpdatableThunk
+    在完成评估时会推送一个更新帧，将 thunk 更新为新计算的值。SingleEntryThunk 只评估一次，因此可以直接评估它而不推送更新帧。这些术语也是从
+    GHC 借来的。
 - en: 'VAlues: DataCon, Function and PAPs. In the early days, and even now, every
     function call that was a tail call, is just a method call. This is the only way
     to make it remotely efficient. (More on stack soon). For static tail recursive
@@ -272,8 +358,12 @@
     size limit, so you can only have 65000 bytecodes. That''s Eta compiled with itself.
     That''s the only thing that''s preventing us from using Eta with Eta. But all
     you need to do is split method into smaller chunks.'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 'VAlues: DataCon, Function and PAPs. 在早期，甚至现在，每次尾递归调用都只是一个方法调用。这是使其稍微有效的唯一方法。（关于堆栈的更多信息很快就会出现）。对于静态尾递归调用：单递归或互递归，它们会被编译成循环。在大多数情况下，它们会得到一个紧凑的循环。在互递归的情况下，会发生的是，我们收集所有的SCC，并制作一个进入循环的巨大方法。假设你在偶数/奇数示例中，会发生的是，当偶数调用奇数时，有一个名为目标的变量，一个整数。偶数将被分配为0，奇数分配为1，然后设置1并重新启动。（BG:
+    您编译的函数总是有展开可用吗？）这是在同一模块中定义的互递归函数。（SPJ: 它们可能有非常不同的类型参数。）我们将所有参数连接成一个。这个参数的主要问题是，使用Happy和Alex生成的解析器，我们会遇到限制。（BG:
+    崩溃？）不是堆栈溢出。JVM有方法大小限制，所以你只能有65000个字节码。这是Eta与自身编译的情况。这是唯一阻止我们使用Eta的东西。但你需要做的就是将方法分成更小的块。'
 - en: 'So how do we handle tail calls? When we know it , tail recursive, let''s say
     you don''t. Let''s say you''re using CPS. It''s so common in Haskell, any fast
     parser uses CPS. In early days, Aeson would just blow the stack, it was pretty
@@ -301,14 +391,19 @@
     all the arguments in a context variable that gets passed to every eta function.
     We stash all the arguments into a function that has the state, then wjhen it unwinds,
     marked by this function, it will call that, with that function and those arguments.'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: '那么我们如何处理尾调用？当我们知道它，尾递归，假设你不知道。假设你正在使用CPS。在Haskell中，这是如此普遍，任何快速解析器都使用CPS。在早期，Aeson只会爆栈，情况非常糟糕。因此，我们默认探索了trampolining，但那太糟糕了，非常慢。我们所做的是关闭它，让栈溢出。我们找到了一个更好的解决方案。JVM有...卷栈的唯一方法是抛出异常，或者返回，并继续返回直到完全返回。结果是，通过异常，你可以关闭捕获堆栈跟踪的功能：这是异常中最昂贵的部分。所以我们有一个通用异常。因此，这种trampoline机制是可选的。所以，我们有一个函数''trampoline
+    :: a -> a''，运行时原语，它的作用是在上下文中激活一个布尔值，告诉它现在要跳跃，它激活一个代码路径来转换计数器，一旦达到一个可配置的特定数字，它将解开栈，然后继续它所需去的地方。我们的限制是400，然后我们解开。它曾经在1000多个的时候，但是使用Happy和Alex后，我们需要一个更小的数字。（BG：在这种情况下，成本如何？但观察起来更快。几个月前，我们让PureScript在Eta上工作，并不是默认的坏？）（SPJ：因此，您可以默认启用它：您所做的只是计数。）计数是我们知道堆栈有多大的方式。在您的主函数中，您可以调用trampolineIO，并使整个程序跳跃。（SPJ：也许开销很低，您可以随时这样做。）如果低，我们会这样做。（你如何恢复？一旦引发异常，你存储什么？）计数器发生在入口点，并由布尔值保护。因此，如果超出了限制，它将调用另一个接受上下文的函数。因此，我们将所有参数存储在传递给每个eta函数的上下文变量中。我们将所有参数存储在一个具有状态的函数中，然后当它解开时，由这个函数标记，它将使用该函数和这些参数调用那个。'
 - en: As I mentioned, it's guarded by a boolean. JVM has an optimization, where it
     observes the boolean is true for a lot of times, it won't even compile that branch
     in the native code. So if you don't use trampolining, it doesn't affect you at
     all; the code for the counter will just not be there.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 如我所提到的，它由一个布尔值来保护。JVM有一个优化，当它观察到布尔值在许多时刻为true时，它甚至不会编译本地代码中的该分支。因此，如果你不使用trampolining，它对你没有任何影响；计数器的代码将不会存在。
 - en: 'One nice thing I like about Eta is that you actually get stack traces for exceptions.
     This is because, to get good perf for Eta, you have to implement most primitives
     on JVM stack. This is a sample stack. You have a schedule loop, and you hare evaluting
@@ -321,16 +416,24 @@
     line number to code, so we have to discard all that info. This will get better;
     we''ll stash that debug information in the classfile itself, and then access it
     and render a better stack trace. (BG: This is Source Notes?) Yeah.'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 我喜欢 Eta 的一个好处是，你实际上可以获得异常的堆栈跟踪。这是因为，为了让 Eta 有良好的性能，你必须在 JVM 栈上实现大多数原语。这是一个示例堆栈。你有一个调度循环，你正在评估一些
+    IO 行动。applyV/applyN，这些是部分应用。执行一个 IO 行动。还有一个不错的地方，我们尝试将其编码接近原始名称。因此，你可以看到这个函数调用发生在
+    statistics.Regression、rnfAll 中。如果你看到，你会注意到有行号。这并不完美，但我们肯定可以稍后做得更好…… GHC 在 STG
+    时间给了你很多调试信息，但因为 JVM 没有太多的灵活性，我们只能将一个行号附加到代码中，所以我们必须丢弃所有那些信息。这将会变得更好；我们将把调试信息存储在类文件本身中，然后访问它并呈现更好的堆栈跟踪。（BG：这是源注释吗？）是的。
 - en: 'Concurrency: One nice part is, it''s nice or not. If you''re evaluating a long
     chain of thunks, you''re going to blow the stack. This happily coincides with
     GHC also having a space leak. Neil Mitchell wrote a blog post about how to detect
     space leaks: restrict stack size and then figure out which thunk was being evaluated.
     If you see a stack trace like this, and you see a huge chain of evaluates, in
     a long chain, you probably have a space leak.'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 并发性：一个好处是，它是好的还是不好的。如果你正在评估一长串 thunk，你将会耗尽栈空间。这恰好与 GHC 也有空间泄漏的情况相吻合。Neil Mitchell
+    写了一篇关于如何检测空间泄漏的博文：限制堆栈大小，然后找出正在评估的 thunk。如果你看到这样的堆栈跟踪，并且看到一个巨大的评估链，在一个长链中，你可能有一个空间泄漏。
 - en: 'How do I do interop? The way we did interop was, made a thing called the Java
     monad. IT''s supposed to give you the experience of programming JAva. The basic
     implementation is inspired from IO monad. Object# c is "this", the object that
@@ -341,19 +444,29 @@
     had to introduce a new low level representation. Declare wrapper types, wrapping
     the iterable interface in Java. We''ve stolen better syntax, which were type applications...
     resolve it somehow. I''m declaring an Eta type that wraps a JAva type, @java.lang.Iterable.'
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 我如何进行互操作？我们进行互操作的方式是，做了一个叫做 Java monad 的东西。它应该给你编程 JAva 的体验。基本实现受到 IO monad
+    的启发。Object# c 是“this”，即正在传递的对象。由于这种编码，你得到了 Java 的体验：你可以在 Java 对象上调用点操作符。几乎就像在内部使用
+    Java 一样。这个参数被称为……这是迫使我们分叉而不是使用 API 的类型构造器。你不能在 API 中声明原始类型。我们不得不引入一个新的低级表示。声明包装器类型，包装
+    Java 中的 iterable 接口。我们偷了更好的语法，这些是类型应用……以某种方式解决它。我正在声明一个 Eta 类型，包装一个 JAva 类型，@java.lang.Iterable。
 - en: You use the java function to run the Java monad. All of these have to be imported.
     newArrayList, newInteger, but we brought some combinators, that let you call methods.
     It owrked out with the monad. This is sample code that does the same thing as
     Java code. it just uses standard monadic combinators. If it's a fixed c, it's
     an instance.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 你使用 java 函数来运行 Java monad。所有这些都必须被导入。newArrayList，newInteger，但我们引入了一些组合子，让你调用方法。它与
+    monad 相匹配。这是一个做与 Java 代码相同事情的示例代码。它只是使用标准的 monadic 组合子。如果它是一个固定的 c，那么它是一个实例。
 - en: You can use Eta as a better JAva, with referential transparency! Unlike Kotlin
     or Scala.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可以使用 Eta 作为更好的 JAva，具有引用透明性！与 Kotlin 或 Scala 不同。
 - en: 'How do we handle subtyping? We define uilt in type families. We have a typeclass
     named extends. Any time you declare a function that takes a given class and any
     subtype of that class, you can, instead of actually subtyping, we do it with constraints.
@@ -361,16 +474,21 @@
     operator on anything that is a subclass of Iterator. We had to extend the typechecker
     just a little bit: a lot of times the type gets stuck in the form Extends'' (List
     JSTring) (List a) where a is unconstrained.'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 如何处理子类型？我们通过内建类型家族来定义。我们有一个名为extends的类型类。每当你声明一个函数，它接受一个给定类及其任何子类型时，你可以使用约束条件而不是实际的子类型。extends从inherits中获取信息并进行计算。你可以对任何Iterator子类使用点操作符。我们不得不稍微扩展类型检查器：很多时候，类型会被卡在Extends'
+    (List JSTring) (List a)的形式中，其中a是无约束的。
 - en: 'Imports are tiresome, so we''re setting up direct Java Interop; actually use
     JAva reflection to get info class files, and generate imports. "import java java.lang.Math"
     works, but doesn''t scale. Biggest priority for the rest of the year is Java interop,
     really good IDE support, documentation, language extensions: UnboxedSums, TypeApplications,
     DerivingVia, QuantifiedConstraints. We have some new language extensions in mind,
     AnonymousRecords, RowTypePolymorphism... We''ll see how that goes.'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 导入是令人厌烦的，所以我们正在设置直接的Java互操作性；实际上使用Java反射获取信息类文件，并生成导入。"import java java.lang.Math"虽然有效，但不可扩展。今年剩下的最重要的优先事项是Java互操作性，真正好的IDE支持，文档，语言扩展：UnboxedSums，TypeApplications，DerivingVia，QuantifiedConstraints。我们还有一些新的语言扩展在计划中，AnonymousRecords，RowTypePolymorphism...我们会看看会怎样。
 - en: 'I was thinking about ways... we work on the same codebase, how to collaborate?
     We''re interested in compile performance, support for unbboxed sums. Worker wrapper
     has some glitch, and no one got around to fixing it. At some point, maybe not
@@ -380,30 +498,46 @@
     you have unboxed sums, you can represent it as null. (SPJ: Or you can say, just
     box it, and you won''t notice it. If it''s fast enough all the time, focus on
     what''s going to make a difference.)'
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 我正在考虑方法……我们在同一个代码库上工作，如何进行协作？我们对编译性能感兴趣，支持unboxed sums。Worker wrapper有一些小问题，但还没有人来解决。在某个时候，也许不是很快的时候，还有可变字段。这对我们非常重要。（BG：Unboxed
+    sums使用频繁吗？为什么unboxed sums？Eta代码经常使用吗？）不，但很多JVM上的人对Maybe总是装箱感到恼火。但如果你有unboxed sums，你可以将其表示为null。（SPJ：或者你可以说，只需将其装箱，你就不会注意到它。如果始终如此快速，专注于能够产生差异的事物。）
 - en: 'Q: Did you consider using Graal (it''s a new virtual machine that supports
     partial evaluation and partial escape analysis, good for functional languages)?'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Q: 你考虑过使用Graal吗（它是一个支持部分评估和部分逃逸分析的新虚拟机，非常适合函数语言）？'
 - en: 'A: We have looked into it, it''s not completely there yet to use, and we''re
     not sure if it''s something we can invest time with. We''re keeping up with it.
     (BG: But you lose the JVM!) That''s what''s preventing us from going there. Maybe
     if it gets integrated into a mainline VN we might look at it. (Mainline Java is
     planning to integrate Graal)'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 'A: 我们研究过，但目前还不完全可以使用，我们也不确定是否值得投入时间。我们一直在关注它。（BG：但你失去了JVM！）这是阻止我们前进的因素。也许如果它被集成到主流VN中，我们可能会考虑。
+    （主流Java正计划集成Graal）'
 - en: 'Q: (SM) Are you keeping the fork up to date with master GHC?'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Q: （SM）你们是否将分支与主GHC保持更新？'
 - en: 'A: One thing that is out of bounds for us, and for a long time, is all the
     dependent Haskell work. Everything else, we keep up. If there''s any nice bugfixes...
     (SM: So you''re selectively backporting).'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 'A: 对于我们来说，有一件事情很难做到，长期以来，那就是所有依赖的Haskell工作。其他所有事情，我们都在跟进。如果有任何好的bug修复...（SM：所以你们是有选择性地回溯）。'
 - en: 'Q: (BG) Have you considered unforking.'
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 'Q: （BG）你考虑过解除fork吗？'
 - en: 'A: Not yet, no.'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 'A: 还没有，没有。'

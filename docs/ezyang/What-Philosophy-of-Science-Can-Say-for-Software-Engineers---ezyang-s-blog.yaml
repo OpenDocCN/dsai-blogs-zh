@@ -1,30 +1,44 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:45'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:45'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'What Philosophy of Science Can Say for Software Engineers : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 软件工程师的科学哲学：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2011/06/philosophy-of-software-engineering/](http://blog.ezyang.com/2011/06/philosophy-of-software-engineering/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/06/philosophy-of-software-engineering/](http://blog.ezyang.com/2011/06/philosophy-of-software-engineering/)
 - en: I spent part of my year in Cambridge reading the History and Philosophy of Science
     course. It has been a thrilling and enlightening course, and I cannot recommend
     it highly enough for anyone lucky enough to take the HPS strand at Cambridge.
     Of course, I was a bit of an odd one out, since the course is designed for Natural
     Science majors, and I am, of course, a Computer Scientist.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 在剑桥的一年中，我花时间阅读了科学史与哲学课程。这是一个激动人心且启发性的课程，我强烈推荐任何有幸在剑桥选修 HPS（历史与哲学科学）分支的人参加。当然，我有点格格不入，因为该课程是为自然科学专业设计的，而我当然是计算机科学家。
 - en: 'In the next two posts, I’d like to highlight some of the major themes of the
     Philosophy of Science course, and how they may be applicable to software engineers.
     (Notably not computer scientists: it seems likely that their philosophy is one
@@ -41,12 +55,18 @@
     are not interesting at all, and others may think the arguments I draw in not insightful
     at all. I humbly ask for your patience—I am, after all, being examined on this
     topic tomorrow.'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 在接下来的两篇文章中，我想强调科学哲学课程的一些主要主题，以及它们如何适用于软件工程师。（显然不是计算机科学家：看起来他们的哲学根植于数学哲学。）并非所有问题都相关：一个老
+    Tripos 问题问“是否存在统一的科学哲学，还是各科学的分散哲学？”——我可能会回答“两者都有”。但我认为现有的知识体系可以对我们面临的一些棘手问题提供一些见解：什么构成了
+    bug 的原因？软件工程师如何调试？我们如何知道软件的特定测量或评估是可靠的？我们扩展我们对软件领域经验的理由是什么？所有关于代码高层行为的解释都可以归结为其背后的抽象吗？我应该小心不要过分陈述我的观点：毫无疑问，你们中的一些人可能认为这些问题根本不有趣，而其他人可能认为我所提出的论点毫无洞见。我谦卑地请求你们的耐心——毕竟，明天我就要被考察这个话题。
 - en: Causation
+  id: totrans-8
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 因果关系
 - en: 'What does it mean when we say an event *causes* another? This is one of those
     questions that seem so far removed from practicality to be another one of those
     useless philosophical exercises. But the answer is not so simple. The philosopher
@@ -56,8 +76,10 @@
     a succession of one event to another; unlike the programmer, we cannot inspect
     the source code of the universe and actually see “Ah yes, there’s the binding
     of that cause to that effect.”'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我们说一个事件*引起*另一个事件时，这意味着什么？这是一个似乎与实用性相去甚远的问题，似乎是另一个毫无用处的哲学练习。但答案并不简单。哲学家大卫·休谟观察到，当我们谈论因果关系时，因果之间存在某种必然的联系：bug*导致*程序崩溃。但我们能直接观察到这种“必然联系”吗？休谟认为不行：我们只能看到一个事件到另一个事件的连续；与程序员不同的是，我们不能检查宇宙的源代码并实际看到“啊，是的，这就是那个因果关系的绑定点”。
 - en: 'One simple model of causation is the *regularity theory*, inspired by a comment
     Hume makes in the *Enquiry*: a cause is “an object, followed by another, and where
     all the objects similar to the first are followed by objects similar to the second.”
@@ -66,26 +88,35 @@
     is the cause of the crash. There is nothing unreasonable here, but now the philosopher
     sees the point of attack. There are many, many cases where such a simple regularity
     theory fails. Consider the following cases:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 一个简单的因果模型是*规律理论*，受到休谟在*询问*中的评论启发：一个原因是“一个对象，后跟另一个对象，第一个对象的所有类似对象后面都跟着第二个对象。”
+    我观察到每次“我按按钮”的事件之后立即是“程序崩溃”，那么我可能合理地推断按按钮是崩溃的原因。这里没有什么不合理的地方，但哲学家现在看到了攻击点。有许多情况下，这样一个简单的规律理论是行不通的。考虑以下情况：
 - en: I press the button, but the program only crashes some of the time. Even if the
     bug is not 100% reproduceable, I might still reasonably say it causes the crash.
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我按按钮，但程序只有在某些情况下崩溃。即使错误不是100%可以重现，我仍然可以合理地说它导致了崩溃。
 - en: 'An alert dialog pops up, I press the button, and the program crashes. But it
     was not my pressing the button that caused the crash: rather, it’s more likely
     it was whatever caused the alert dialog to pop up. (You may have had an experience
     explaining this to a less computer-savvy family member.)'
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一个警报对话框弹出，我按按钮，程序崩溃了。但不是我按按钮导致了崩溃：更有可能是导致警报对话框弹出的原因。 （你可能曾经试图向一个不那么懂计算机的家人解释这种经历。）
 - en: 'I have only pressed the button once, and that one time the program crashed.
     It is indeed the case that whenever I pushed the button, a crash came afterwards:
     but it’s possible for me to press the button now and no crash to occur.'
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我只按了一次按钮，那一次程序崩溃了。的确，每当我按按钮时，之后都会发生崩溃：但现在我按按钮可能不会导致崩溃。
 - en: 'Perhaps no reasonably practiced software engineer uses this model of causation.
     Here is a more plausible model of causation, the *counterfactual* model (proposed
     by David Lewis). Here we pose a hypothetical “if” question: if pushing the button
@@ -93,8 +124,11 @@
     crash would not have happened.” As an exercise, the reader should verify that
     the above cases are neatly resolved by this improved model of causality. Alas,
     the counterfactual model is not without its problems as well:'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 或许没有合理实践的软件工程师会使用这种因果模型。这里是一个更合理的因果模型，*反事实*模型（由大卫·刘易斯提出）。在这里，我们提出一个假设性的“如果”问题：如果按按钮导致崩溃，我们可以同样说“如果没有按按钮，崩溃就不会发生。”
+    作为一个练习，读者应该验证上述案例是否被这个改进的因果模型清楚地解决了。然而，反事实模型也并非没有问题：
 - en: Suppose that our crashing program has two bugs (here we use “bug” in the sense
     of “source code defect”). Is it true that the first bug causes the crash? Well,
     if we removed that bug, the program would continue to crash. Thus, under the counterfactual
@@ -103,37 +137,47 @@
     the true cause of the bug is the *disjunction* of the two bugs. Perhaps not too
     surprising for a computer scientist, but this sounds genuinely weird when applied
     to every-day life.)
+  id: totrans-15
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 假设我们崩溃的程序有两个bug（这里我们使用“bug”来表示“源代码缺陷”）。第一个bug是否导致了崩溃呢？如果我们移除了那个bug，程序仍然会崩溃。因此，在因果反事实理论下，第一个bug并不会导致崩溃。第二个bug也是一样。我们有一个*因果超定*的案例。（刘易斯声称bug的真正原因是这两个bug的*析取*。对于计算机科学家来说这可能不算什么，但当应用到日常生活时，听起来确实有些奇怪。）
 - en: Suppose that our crashing program has a bug. However, removing the first bug
     exposes a latent bug elsewhere, which also causes crashes. It’s false to say removing
     the first bug would cause the crashing to go away, so it does not cause the crash.
     This situation is called *causal preemption.* (Lewis’s situation here is to distinguish
     between causal dependence and causal chains.)
+  id: totrans-16
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 假设我们崩溃的程序有一个bug。然而，移除第一个bug会暴露出其他地方的潜在bug，也会导致崩溃。说移除第一个bug会使崩溃消失是错误的，因此它并不是导致崩溃的原因。这种情况被称为*因果先占*。（刘易斯在这里的情况是区分因果依赖和因果链。）
 - en: 'What a software engineer realizes when reading these philosophers is that the
     convoluted and strange examples of causation are in fact very similar to the knots
     of causality he is attached to on a day-to-day basis. The analysis here is not
     too complicated, but it sets the stage for theories of *laws of nature*, and also
     nicely introduces the kind of philosophical thinking that encourages consideration
     of edge-cases: a virtuous trait for software engineers!'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 当软件工程师阅读这些哲学家时所意识到的是，复杂和奇怪的因果关系示例实际上与他在日常工作中所依附的因果关系结节非常相似。这里的分析并不复杂，但它为*自然法则*的理论奠定了基础，并且也很好地介绍了鼓励考虑边缘案例的哲学思维类型：对软件工程师来说是一种有益的特质！
 - en: Methodology and confirmation
+  id: totrans-18
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 方法论和确认
 - en: 'One of the most famous debates in philosophy of science to spill over into
     popular discourse is the debate on scientific *methodology*—how scientists carry
     out their work and how theories are chosen. I find this debate has direct parallels
     into the art of debugging, one of the most notoriously difficult skills to teach
     fledgling programmers. Here we’ll treat two of the players: inductivism (or confirmation
     theory) and falsificationism (put forth by Karl Popper.)'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 哲学科学中最著名的辩论之一溢出到普及话语中的辩论是关于科学*方法论*的辩论——科学家如何进行工作以及如何选择理论。我发现这场辩论直接对应于调试艺术，这是教初学者程序员最为困难的技能之一。在这里，我们将讨论两个主要角色：归纳法（或确认理论）和证伪主义（由卡尔·波普提出）。
 - en: 'Sherlock Holmes once said this about theories: “Insensibly one begins to twist
     facts to suit theories, instead of theories to suit facts.” He advocated an inductivist
     methodology, in which the observer dispassionately collects before attempting
@@ -142,62 +186,78 @@
     while they are still collecting data. This seems like a plausible thing to ask
     of people, especially perhaps profilers who are collecting performance data. The
     slogan, as A.F. Chalmers puts it, is “Science is derived from facts.”'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 夏洛克·福尔摩斯曾经对理论说过这样的话：“在不知不觉中，人们开始扭曲事实以适应理论，而不是调整理论以适应事实。”他提倡归纳方法论，观察者在试图提取一些模式之前，冷静地收集事实——归纳本身是从有限案例的泛化。在这个旗帜下，人们在收集数据时不能简单地得出结论。这似乎是对人们的一个合理要求，特别是也许是在收集性能数据的剖析师。正如A.F.查尔默斯所说的那样，口号是“科学源于事实。”
 - en: 'Unfortunately, it is well known among philosophers of science that pure inductivism
     is deeply problematic. These objects range from perhaps unresolvable foundational
     issues (Hume’s problem of induction) to extremely practical problems regarding
     what scientists *actually* practice. Here is a small sampling of the problems:'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 不幸的是，众所周知的是，在科学哲学家中，纯粹的归纳法是非常有问题的。这些问题从也许无法解决的基础性问题（休谟的归纳问题）到关于科学家*实际*实践的极端实际问题都有。以下是一些问题的简要介绍：
 - en: 'What are facts? On one level, facts are merely sense expressions, and it’s
     an unreasonable amount of skepticism to doubt those. But raw sense expressions
     are not accessible to most individuals: rather, they are combined with our current
     knowledge and disposition to form facts. An expert programmer will “see” something
     very different from an error message than a normal end-user. Fact-gathering is
     *not* egalitarian.'
+  id: totrans-22
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 什么是事实？在某种程度上，事实只是感官表达，怀疑它们是不合理的过度怀疑。但是原始的感官表达并不对大多数人可及：相反，它们与我们当前的知识和倾向结合形成事实。一个专业的程序员会对错误消息看到一个非常不同的东西，而不是一个普通的终端用户。事实收集*不是*平等主义的。
 - en: Facts can be fallible. Have you ever analyzed a situation, derived some facts
     from it, only to come back later and realize, wait, your initial assessment was
     wrong? The senses can lie, and even low-level interpretations can be mistaken.
     Inductivism doesn’t say how we should throw out suspicious facts.
+  id: totrans-23
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 事实可能是靠不住的。你有没有分析过一个情况，从中推导出一些事实，只是后来意识到，等等，你最初的评估是错误的？感官可以撒谎，即使是低层次的解释也可能是错误的。归纳法并没有说我们应该如何放弃可疑的事实。
 - en: 'Under what circumstances do we grant more weight to facts? The inductivist
     says that all facts are equal, but surely this is not true: we value more highly
     facts which resulted from public, active investigation, than we do facts that
     were picked up from a private, passive experience. Furthermore, an end-user may
     report a plethora of facts, all true, which an expert can instantly identify as
     useless.'
+  id: totrans-24
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 在什么情况下我们给事实更多的权重？归纳主义者说所有事实都是平等的，但显然这不是真的：我们更高度评价那些来自公开积极调查的事实，而不是那些来自私人被动经验的事实。此外，终端用户可能报告了大量的事实，所有这些事实都是真实的，但专家可以立即识别为无用。
 - en: And, for a pure bit of philosophy, the *problem of induction* says that we have
     no reason to believe induction is rational. How do we know induction works? We’ve
     used in the past successfully. But the act of generalizing this past success to
     the future is itself induction, and thus the justification is circular.
+  id: totrans-25
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 此外，对于纯粹的哲学问题，归纳问题表明我们没有理由认为归纳是合理的。我们如何知道归纳有效？我们过去成功地使用过。但将过去的成功推广到未来本身就是归纳，因此理由是循环的。
 - en: This is not to say that inductivism cannot be patched up to account for some
     of these criticisms. But certainly the simple picture is incomplete. (You may
     also accuse me of strawman beating. In an educational context, I don”t think there
     is anything wrong here, since the act of beating a strawman can also draw out
     weaknesses in more sophisticated positions—the strawman serves as an exemplar
     for certain types of arguments that may be employed.)
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 这并不意味着归纳法不能修正这些批评。但显然这个简单的图景是不完整的。（你也可以指责我打打稻草人。在教育背景下，我认为这里没有任何错，因为打打稻草人也可以揭示更复杂立场的弱点——稻草人作为某些类型论证的典型案例。）
 - en: 'Karl Popper proposed falsificationism as a way to sidestep the issues plaguing
     induction. This method should be another one that any software engineer should
     be familiar with: given a theory, you then seek an observation or experiment that
     would falsify it. If it is falsified, it is abandoned, and you search for another
     theory. If it is not, you simply look for something else (Popper is careful to
     say that we cannot say that the theory was confirmed by this success).'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 卡尔·波普尔提出伪证主义作为回避困扰归纳法的方法。这种方法应该是任何软件工程师都应该熟悉的另一种方法：给定一个理论，然后寻找一个观察或实验来伪证它。如果被伪证了，就放弃它，并寻找另一个理论。如果没有被伪证，那么你就简单地寻找其他东西（波普尔小心地指出，我们不能说这个理论因为这种成功而被证实）。
 - en: 'Falsification improves over inductivism by embracing the theory-dependence
     of observation. Falsificationists don’t care where you get your theory from, as
     long as you then attempt to falsify it, and also accept the fact that there is
@@ -208,21 +268,27 @@
     logically true that if there is a white raven, then not all ravens are black.
     Furthermore, a theory is better if it is more falsifiable: it suggests a specific
     set of tests.'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 伪证通过接受观察的理论依赖性而优于归纳法。伪证主义者不关心你的理论从哪里来，只要你试图伪证它，并且接受这样一个事实：没有办法在证据的光线下确定一个理论是否真实。后一点值得强调：归纳试图从几个案例推广到普遍，是非演绎的步骤，而伪证可以从一个负案例推演出一个负普遍。用一个喜爱的例子来说，逻辑上确实如此，如果有一只白色的乌鸦，那么并不是所有的乌鸦都是黑色的。此外，一个理论如果更具伪证性则更好：它提出了一组具体的测试。
 - en: As might be expected, naive falsificationism has its problems too, some which
     are reminiscent of some problems earlier.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 顾名思义，天真的伪证主义也有它的问题，其中一些问题让人回忆起先前的某些问题。
 - en: 'In light of a falsification, we can always modify our theory to account for
     this particular falsifying instance. This is the so-called *ad hoc modification.*
     “All ravens are black, except for this particular raven that I saw today.” Unfortunately,
     ad hoc modifications may be fair play: after all, there is no reason why software
     cannot be modified for a particular special case. Better crack open the source
     code.'
+  id: totrans-30
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 针对一次伪造，我们总是可以修改我们的理论以解释这个特定的伪造实例。这就是所谓的*特例修改*。“所有乌鸦都是黑色的，除了我今天看到的这只特殊的乌鸦。”不幸的是，特例修改可能是公平的：毕竟，软件也可以为特定情况进行修改。最好打开源代码。
 - en: Falsificationism suggests we should always throw out a theory once we have seen
     falsifying evidence. But as we saw for inductivism, evidence can be wrong. There
     are many historic cases where new theories were proposed, and it was found that
@@ -231,9 +297,11 @@
     calculating where the planets would be.) Should these new theories have been thrown
     out? Real scientists are tenacious; they cling to theories, and many times this
     tenacity is useful.
+  id: totrans-31
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 伪证主义建议我们一旦看到伪证证据就应该放弃一个理论。但正如归纳主义所示，证据可能是错误的。有许多历史案例表明，新理论被提出后发现它们实际上并不适合手头的证据（哥白尼的日心说宇宙模型就是一个例子——它在计算行星位置方面并不比现有的托勒密模型更好）。这些新理论应该被放弃吗？真正的科学家是顽强的；他们坚持理论，而且许多时候这种坚持是有用的。
 - en: To turn this argument on its head, it is never the case that we can test a theory
     in isolation; rather, an experimental test covers both the theory and any number
     of auxiliary assumptions about the test setup. When a falsifying test is found,
@@ -241,16 +309,22 @@
     which! The *Duhem-Quine thesis* states that given any set of observations, we
     are always able to modify the auxiliary assumptions to make our theory fit (this
     thesis may or may not be true, but it is interesting to consider.)
+  id: totrans-32
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 把这个论点推翻过来，我们永远不能测试一个孤立的理论；相反，实验测试涵盖了理论及其关于测试设置的任何数量的辅助假设。当找到一个伪证测试时，理论或任何一个辅助假设可能是错误的——但我们不知道哪个是！*杜厄姆-奎恩论*表明，在任何观察到的一组情况下，我们总是能够修改辅助假设使我们的理论成立（这个论点可能是真实的，也可能不是，但思考它是很有趣的）。
 - en: 'All of these problems highlight how *hard* it is to come up with an accurate
     account of what is called the “scientific method.” Simple descriptions do not
     seem to be adequate: they sound intuitively appealing but have downsides. The
     practicing scientist is something of an opportunist: he does what works. So is
     the debugger.'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 所有这些问题都突显出了准确描述所谓“科学方法”是多么*困难*。简单的描述似乎是不够的：它们听起来直观吸引人，但也有其不足之处。实际科学家有点像机会主义者：他做有效的事情。调试器也是如此。
 - en: Next time, I hope to talk about quantification, measurement and reduction.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 下次，我希望谈论量化、测量和减少。

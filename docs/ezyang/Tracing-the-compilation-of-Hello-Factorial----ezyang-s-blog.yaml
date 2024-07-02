@@ -1,23 +1,35 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:54'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:54'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Tracing the compilation of Hello Factorial! : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '追踪编译 Hello Factorial! : ezyang’s 博客'
 - en: 来源：[http://blog.ezyang.com/2011/04/tracing-the-compilation-of-hello-factorial/](http://blog.ezyang.com/2011/04/tracing-the-compilation-of-hello-factorial/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/04/tracing-the-compilation-of-hello-factorial/](http://blog.ezyang.com/2011/04/tracing-the-compilation-of-hello-factorial/)
 - en: 'It is often said that the *factorial function* is the “Hello World!” of the
     functional programming language world. Indeed, factorial is a singularly useful
     way of testing the pattern matching and recursive facilities of FP languages:
@@ -29,133 +41,199 @@
     module on the GHC wiki.](http://hackage.haskell.org/trac/ghc/wiki/Commentary/Compiler/HscMain)
     We won’t compile with optimizations to keep things simple; perhaps an optimized
     factorial will be the topic of another post!'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 在函数式编程语言世界中，*阶乘函数*常被称为函数式编程语言中的“Hello World!”。确实，阶乘是测试模式匹配和递归功能的一种非常有用的方式：我们不用操心像输入输出这样“琐碎”的问题。在本博文中，我们将追踪阶乘函数在
+    GHC 的编译过程中的详细步骤。您将学习如何阅读 Core、STG 和 Cmm，希望您能体验一下编译函数式程序的过程。想要参与 GHC 源码的朋友可以查看[GHC
+    wiki 上一个模块编译的描述。](http://hackage.haskell.org/trac/ghc/wiki/Commentary/Compiler/HscMain)为了保持简单，我们不会进行优化编译；或许优化后的阶乘函数会成为另一篇文章的主题！
 - en: The examples in this post were compiled with GHC 6.12.1 on a 32-bit Linux machine.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 本文示例使用 GHC 6.12.1 在一个 32 位 Linux 机器上编译。
 - en: Haskell
+  id: totrans-8
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: Haskell
 - en: '[PRE0]'
+  id: totrans-9
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'We start in the warm, comfortable land of Haskell:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们从 Haskell 这个温暖舒适的国度开始：
 - en: '[PRE1]'
+  id: totrans-11
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: We don’t bother checking if the input is negative to keep the code simple, and
     we’ve also specialized this function on `Int`, so that the resulting code will
     be a little clearer. But other then that, this is about as standard Factorial
     as it gets. Stick this in a file called `Factorial.hs` and you can play along.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了保持代码简单，我们不再检查输入是否为负数，并且还将此函数特化为 `Int`，以便最终生成的代码更清晰。但除此之外，这就是标准的阶乘函数。将其放入名为
+    `Factorial.hs` 的文件中，您就可以开始体验了。
 - en: Core
+  id: totrans-13
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: Core
 - en: '[PRE2]'
+  id: totrans-14
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: Haskell is a big, complicated language with lots of features. This is important
     for making it pleasant to code in, but not so good for machine processing. So
     once we’ve got the majority of user visible error handling finished (typechecking
     and the like), we desugar Haskell into a small language called Core. At this point,
     the program is still functional, but it’s a bit wordier than what we originally
     wrote.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: Haskell 是一种大而复杂的语言，具有许多特性。这对于编码来说很重要，但对于机器处理来说就不那么好了。因此，一旦我们完成了大多数用户可见的错误处理（如类型检查等），我们将
+    Haskell 转换成一个称为 Core 的小语言。在这一点上，程序仍然是函数式的，但比我们最初写的要冗长一些。
 - en: 'We first see the Core version of our factorial function:'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们首先看到我们阶乘函数的 Core 版本：
 - en: '[PRE3]'
+  id: totrans-17
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'This may look a bit foreign, so here is the Core re-written in something that
     has more of a resemblance to Haskell. In particular I’ve elided the binder info
     (the type signature, `LclId` and `[]` that precede every binding), removed some
     type signatures and reindented:'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 这可能看起来有点陌生，因此这里是将 Core 重新编写成更像 Haskell 的形式。特别是我省略了绑定器信息（类型签名、`LclId` 和 `[]`，这些都在每个绑定之前），删除了一些类型签名并重新缩进：
 - en: '[PRE4]'
+  id: totrans-19
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: It’s still a curious bit of code, so let’s step through it.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 这仍然是一段有趣的代码，让我们来逐步分析一下它。
 - en: 'There are no longer `fact n = ...` style bindings: instead, everything is converted
     into a lambda. We introduce anonymous variables prefixed by `ds_` for this purpose.'
+  id: totrans-21
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 不再有 `fact n = ...` 风格的绑定：一切都被转换成 lambda。我们引入了匿名变量，前缀为 `ds_` 用于此目的。
 - en: The first let-binding is to establish that our variable `n` (with some extra
     stuff tacked on the end, in case we had defined another `n` that shadowed the
     original binding) is indeed the same as `ds_dgr`. It will get optimized away soon.
+  id: totrans-22
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 第一个 let 绑定是为了确保我们的变量 `n`（在末尾附加了一些额外的东西，以防我们定义了另一个遮盖原始绑定的 `n`）确实与 `ds_dgr` 相同。它很快会被优化掉。
 - en: 'Our recursive call to `fact` has been mysteriously placed in a lambda with
     the name `fail_dgt`. What is the meaning of this? It’s an artifact of the pattern
     matching we’re doing: if all of our other matches fail (we only have one, for
     the zero case), we call `fail_dgt`. The value it accepts is a faux-token `GHC.Prim.realWorld#`,
     which you can think of as unit.'
+  id: totrans-23
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们对 `fact` 的递归调用已神秘地放置在一个名为 `fail_dgt` 的 lambda 中。这是什么意思呢？这是我们正在做的模式匹配的产物：如果我们所有的其他匹配失败（我们只有一个零的情况），我们调用
+    `fail_dgt`。它接受的值是一个伪 token `GHC.Prim.realWorld#`，你可以把它看作是单位。
 - en: We see that our pattern match has been desugared into a case-statement on the
     *unboxed* value of `ds_dgr`, `ds_dgs`. We do one case switch to unbox it, and
     then another case switch to do the pattern match. There is one extra bit of syntax
     attached to the case statements, a variable to the right of the `of` keyword,
     which indicates the evaluated value (in this particular case, no one uses it.)
+  id: totrans-24
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们看到我们的模式匹配已经被解糖成了对 `ds_dgr` 的 *unboxed* 值 `ds_dgs` 的 `case` 语句。我们做一个情况切换来解箱它，然后再做另一个情况切换来进行模式匹配。与
+    `case` 语句附加的一个额外的语法是 `of` 关键字右边的一个变量，它指示评估后的值（在这种特殊情况下，没有人使用它）。
 - en: Finally, we see each of the branches of our recursion, and we see we have to
     manually construct a boxed integer `GHC.Int.I# 1` for literals.
+  id: totrans-25
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 最后，我们看到我们递归的每一个分支，我们看到我们必须手动构造一个装箱的整数 `GHC.Int.I# 1` 作为字面量。
 - en: 'And then we see a bunch of extra variables and functions, which represent functions
     and values we implicitly used from Prelude, such as multiplication, subtraction
     and equality:'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后我们看到一堆额外的变量和函数，它们表示我们从 Prelude 隐式使用的函数和值，比如乘法、减法和相等性：
 - en: '[PRE5]'
+  id: totrans-27
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: Since `+`, `*` and `==` are from type classes, we have to lookup the dictionary
     for each type `dNum_agq` and `dEq_agk`, and then use this to get our actual functions
     `*_agj`, `-_agi` and `==_adA`, which are what our Core references, *not* the fully
     generic versions. If we hadn’t provided the `Int -> Int` type signature, this
     would have been a bit different.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 因为 `+`、`*` 和 `==` 是从类型类来的，我们必须为每种类型 `dNum_agq` 和 `dEq_agk` 查找字典，然后使用它们来获取我们实际的函数
+    `*_agj`、`-_agi` 和 `==_adA`，这是我们的 Core 引用的内容，*不是* 完全通用的版本。如果我们没有提供 `Int -> Int`
+    类型签名，这将有所不同。
 - en: Simplified Core
+  id: totrans-29
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 简化的 Core
 - en: '[PRE6]'
+  id: totrans-30
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'From here, we do a number of optimization passes on the core. Keen readers
     may have noticed that the unoptimized Core allocated an unnecessary thunk whenever
     `n = 0`, the `fail_dgt`. This inefficiency, among others, is optimized away:'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 从这里开始，我们对核心进行了多次优化。敏锐的读者可能已经注意到，在 `n = 0` 时，未优化的 Core 分配了一个不必要的 thunk，即 `fail_dgt`。这种低效性，以及其他因素，都被优化掉了：
 - en: '[PRE7]'
+  id: totrans-32
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: Now, the very first thing we do upon entry is unbox the input `ds_dgr` and pattern
     match on it. All of the dictionary nonsense has been inlined into the `__DEFAULT`
     branch, so `GHC.Num.* @ GHC.Types.Int GHC.Num.$fNumInt` corresponds to multiplication
     for `Int`, and `GHC.Num.- @ GHC.Types.Int GHC.Num.$fNumInt` corresponds to subtraction
     for `Int`. Equality is nowhere to be found, because we could just directly pattern
     match against an unboxed `Int`.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，我们进入时的第一件事是对输入 `ds_dgr` 进行拆箱并对其进行模式匹配。所有的字典混乱已经内联到 `__DEFAULT` 分支中，因此 `GHC.Num.*
+    @ GHC.Types.Int GHC.Num.$fNumInt` 对应于 `Int` 的乘法，而 `GHC.Num.- @ GHC.Types.Int GHC.Num.$fNumInt`
+    对应于 `Int` 的减法。由于我们可以直接对 unboxed 的 `Int` 进行模式匹配，所以找不到相等性。
 - en: 'There are a few things to be said about boxing and unboxing. One important
     thing to notice is that the case statement on `ds_dgr` forces this variable: it
     may have been a thunk, so some (potentially large) amount of code may run before
@@ -163,38 +241,57 @@
     is so hard: we care about where the thunk for `ds_dgr` was allocated, not where
     it gets evaluated! But we don’t know that it’s going to error until we evaluate
     it.'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 关于装箱（boxing）和拆箱（unboxing）有几点需要说明。一个重要的事情要注意的是，`ds_dgr` 上的 `case` 语句迫使这个变量：它可能是一个
+    thunk，因此在我们进一步进行之前可能会运行一些（潜在的大量）代码。这也是为什么在 Haskell 中获取回溯（backtraces）如此困难的原因之一：我们关心的是
+    `ds_dgr` 的 thunk 分配位置，而不是它被评估的位置！但是在我们评估它之前，我们不知道它会出错。
 - en: Another important thing to notice is that although we unbox our integer, the
     result `ds1_dgs` is not used for anything other than pattern matching. Indeed,
     whenever we would have used `n`, we instead use `wild_B1`, which corresponds to
     the fully evaluated version of `ds_dgr`. This is because all of these functions
     expect *boxed* arguments, and since we already have a boxed version of the integer
     lying around, there's no point in re-boxing the unboxed version.
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一个重要的事情要注意的是，尽管我们将整数解包，结果 `ds1_dgs` 并未用于除了模式匹配之外的任何事情。事实上，每当我们使用 `n` 时，我们都会使用
+    `wild_B1`，它对应于 `ds_dgr` 的完全求值版本。这是因为所有这些函数都期望 *装箱* 的参数，而由于我们已经有了整数的装箱版本，重新装箱未装箱版本就没有意义。
 - en: STG
+  id: totrans-36
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: STG
 - en: '[PRE8]'
+  id: totrans-37
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: Now we convert Core to the spineless, tagless, G-machine, the very last representation
     before we generate code that looks more like a traditional imperative program.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们将 Core 转换为无脊柱、无标签的 G 机器，在生成更像传统命令式程序的代码之前的最后表示。
 - en: '[PRE9]'
+  id: totrans-39
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: 'Structurally, STG is very similar to Core, though there’s a lot of extra goop
     in preparation for the code generation phase:'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 结构上，STG 与 Core 非常相似，尽管在为代码生成阶段准备的时候有很多额外的杂项：
 - en: All of the variables have been renamed,
+  id: totrans-41
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 所有变量都已重命名，
 - en: 'All of the lambdas now have the form `\r srt:(0,*bitmap*) [ds_sgx]`. The arguments
     are in the list at the rightmost side: if there are no arguments this is simply
     a thunk. The first character after the backslash indicates whether or not the
@@ -203,36 +300,50 @@
     (so closures that take arguments can’t be updateable!) Afterwards, the [static
     reference table](http://hackage.haskell.org/trac/ghc/wiki/Commentary/Rts/CAFs)
     is displayed, though there are no interesting static references in our program.'
+  id: totrans-42
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 现在所有的 lambda 表达式都具有形式 `\r srt:(0,*bitmap*) [ds_sgx]`。参数位于最右边的列表中：如果没有参数，则只是一个惰性求值。反斜杠后的第一个字符指示闭包是否可重入（r）、可更新（u）或单入口（s，在本例中未使用）。可更新的闭包在求值后可以重写为其结果（因此带有参数的闭包不能是可更新的！）然后显示[静态引用表](http://hackage.haskell.org/trac/ghc/wiki/Commentary/Rts/CAFs)，尽管在我们的程序中没有有趣的静态引用。
 - en: '`NO_CCS` is an annotation for profiling that indicates that no cost center
     stack is attached to this closure. Since we’re not compiling with profiling it’s
     not very interesting.'
+  id: totrans-43
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`NO_CCS` 是一个用于性能分析的注释，表示此闭包未附加任何成本中心堆栈。由于我们没有使用性能分析进行编译，这并不是很有趣。'
 - en: 'Constructor applications take their arguments in square brackets: `GHC.Types.I#
     [1]`. This is not just a stylistic change: in STG, constructors are required to
     have *all* of their arguments (e.g. they are saturated). Otherwise, the constructor
     would be turned into a lambda.'
+  id: totrans-44
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 构造函数应用使用方括号来接收它们的参数：`GHC.Types.I# [1]`。这不仅是风格上的变化：在 STG 中，构造函数需要 *所有* 的参数（例如，它们是饱和的）。否则，构造函数将被转换为一个
+    lambda 表达式。
 - en: There is also an interesting structural change, where all function applications
     now take only variables as arguments. In particular, we’ve created a new `sat_sgJ`
     thunk to pass to the recursive call of factorial. Because we have not compiled
     with optimizations, GHC has not noticed that the argument of `fact` will be immediately
     evaluated. This will make for some extremely circuitous intermediate code!
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 还有一个有趣的结构变化，现在所有的函数应用现在只接受变量作为参数。特别是，我们已经创建了一个新的 `sat_sgJ` 惰性求值，传递给 `factorial`
+    的递归调用。因为我们没有使用优化编译，GHC 没有注意到 `fact` 的参数将立即被求值。这将导致一些极其迂回的中间代码！
 - en: Cmm
+  id: totrans-46
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: Cmm
 - en: '[PRE10]'
+  id: totrans-47
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: 'Cmm (read “C minus minus”) is GHC’s high-level assembly language. It is similar
     in scope to LLVM, although it looks more like C than assembly. Here the output
     starts getting large, so we’ll treat it in chunks. The Cmm output contains a number
@@ -240,44 +351,64 @@
     and the entry points: `sgI_entry`, `sgJ_entry`, `sgC_ret` and `Factorial_fact_entry`.
     There are also two extra functions `__stginit_Factorial_` and `__stginit_Factorial`
     which initialize the module, that we will not address.'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: Cmm（读作“C 减减”）是 GHC 的高级汇编语言。它在范围上类似于 LLVM，尽管看起来更像 C 而不是汇编语言。在这里，输出开始变得很大，因此我们将它分块处理。Cmm
+    输出包含许多数据部分，主要编码自 STG 中的额外注释信息和入口点：`sgI_entry`、`sgJ_entry`、`sgC_ret` 和 `Factorial_fact_entry`。还有两个额外的函数
+    `__stginit_Factorial_` 和 `__stginit_Factorial`，用于初始化模块，我们不会详细讨论。
 - en: 'Because we have been looking at the `STG`, we can construct a direct correspondence
     between these entry points and names from the STG. In brief:'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 因为我们一直在查看 `STG`，所以我们可以在这些入口点和 `STG` 中的名称之间建立直接的对应关系。简言之：
 - en: '`sgI_entry` corresponded to the thunk that subtracted 1 from `wild_sgC`. We’d
     expect it to setup the call to the function that subtracts `Int`.'
+  id: totrans-50
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`sgI_entry` 对应于从 `wild_sgC` 减去 `1` 的thunk。我们预计它将设置调用将 `Int` 减去的函数。'
 - en: '`sgJ_entry` corresponded to the thunk that called `Factorial.fact` on `sat_sgI`.
     We’d expect it to setup the call to `Factorial.fact`.'
+  id: totrans-51
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`sgJ_entry` 对应于调用 `Factorial.fact` 在 `sat_sgI` 上的thunk。我们预计它将设置调用 `Factorial.fact`。'
 - en: '`sgC_ret` is a little different, being tagged at the end with `ret`. This is
     a return point, which we will return to after we successfully evaluate `ds_sgx`
     (i.e. `wild_sgC`). We’d expect it to check if the result is `0`, and either “return”
     a one (for some definition of “return”) or setup a call to the function that multiplies
     `Int` with `sgJ_entry` and its argument.'
+  id: totrans-52
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`sgC_ret` 有点不同，在末尾带有 `ret` 标记。这是一个返回点，在成功评估 `ds_sgx`（即 `wild_sgC`）后我们将返回到这里。我们预计它将检查结果是否为
+    `0`，并返回一个一（根据“返回”的某种定义）或设置一个调用将 `Int` 与 `sgJ_entry` 及其参数相乘的函数。'
 - en: 'Time for some code! Here is `sgI_entry`:'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 该到代码时间了！这是 `sgI_entry`：
 - en: '[PRE11]'
+  id: totrans-54
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: 'There’s a bit of metadata given at the top of the function, this is a description
     of the *info table* that will be stored next to the actual code for this function.
     You can look at `CmmInfoTable` in `cmm/CmmDecl.hs` if you’re interested in what
     the values mean; most notably the tag 17 corresponds to `THUNK_1_0`: this is a
     thunk that has in its environment (the free variables: in this case `wild_sgC`)
     a single pointer and no non-pointers.'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 函数顶部给出了一些元数据，这是将存储在此函数实际代码旁边的 *信息表* 的描述。如果您对值的含义感兴趣，可以查看 `cmm/CmmDecl.hs` 中的
+    `CmmInfoTable`；特别是标签 17 对应于 `THUNK_1_0`：这是一个thunk，其环境中（自由变量：在本例中是 `wild_sgC`）有一个单指针和没有非指针。
 - en: 'Without attempting to understand the code, we can see a few interesting things:
     we are jumping to `base_GHCziNum_zm_info`, which is a [Z-encoded name](http://hackage.haskell.org/trac/ghc/wiki/Commentary/Compiler/SymbolNames)
     for `base GHC.Num - info`: hey, that’s our subtraction function! In that case,
@@ -288,8 +419,13 @@
     which happens to point to a statically allocated closure representing the number
     `1`. Which means at last we have `I32[R1 + 8]`, which must refer to `wild_sgC`
     (in fact `R1` is a pointer to this thunk’s closure on the stack.)'
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: 不需要试图理解代码，我们可以看到一些有趣的东西：我们跳到了`base_GHCziNum_zm_info`，这是一个[Z编码的名称](http://hackage.haskell.org/trac/ghc/wiki/Commentary/Compiler/SymbolNames)，代表`base
+    GHC.Num - info`：嘿，这是我们的减法函数！在这种情况下，一个合理的猜测是我们写入栈的值是这个函数的参数。让我们再次看一下STG调用：`GHC.Num.-
+    GHC.Num.$fNumInt wild_sgC sat_sgH`（回想起[PRE12]是Z编码的 `base GHC.Num $fNumInt`，所以这是我们的字典函数。`stg_INTLIKE_closure+137`是一个相当奇特的常量，它指向一个表示数字
+    `1` 的静态分配闭包。这意味着最后我们有 `I32[R1 + 8]`，必须指向 `wild_sgC`（事实上 `R1` 是指向这个thunk在栈上闭包的指针。）
 - en: 'You may ask, what do `stg_ap_pp_info` and `stg_upd_frame_info` do, and why
     is `base_GHCziNum_zdfNumInt_closure` at the very bottom of the stack? The key
     is to realize that in fact, we’re placing three distinct entities on the stack:
@@ -297,91 +433,132 @@
     containing `I32[R1 + 8]` and `stg_INTLIKE_closure+137`, and a `stg_upd_frame_info`
     object with a closure containing `R1`. We’ve delicately setup a Rube Goldberg
     machine, that when run, will do the following things:'
+  id: totrans-57
   prefs: []
   type: TYPE_NORMAL
+  zh: 您可能会问，`stg_ap_pp_info` 和 `stg_upd_frame_info` 是什么，为什么 `base_GHCziNum_zdfNumInt_closure`
+    在栈的最底部？关键是要意识到实际上，我们在栈上放置了三个不同的实体：`base_GHCziNum_zm_info` 的参数、一个包含 `I32[R1 + 8]`
+    和 `stg_INTLIKE_closure+137` 的 `stg_ap_pp_info` 对象的闭包，以及一个包含 `R1` 的 `stg_upd_frame_info`
+    对象的闭包。我们精心设计了一个鲁布·戈尔德堡机器，当运行时，将执行以下操作：
 - en: Inside `base_GHCziNum_zm_info`, consume the argument `base_GHCziNum_zdfNumInt_closure`
     and figure out what the right subtraction function for this dictionary is, put
     this function on the stack, and then jump to its return point, the next info table
     on the stack, `stg_ap_pp_info`.
+  id: totrans-58
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在`base_GHCziNum_zm_info`内部，使用参数 `base_GHCziNum_zdfNumInt_closure` 并找出这个字典的正确减法函数，将这个函数放入栈中，然后跳转到它的返回点，栈上的下一个信息表
+    `stg_ap_pp_info`。
 - en: Inside `stg_ap_pp_info`, consume the argument that `base_GHCziNum_zm_info` created,
     and apply it with the two arguments `I32[R1 + 8]` and `stg_INTLIKE_closure+137`.
     (As you might imagine, `stg_ap_pp_info` is very simple.)
+  id: totrans-59
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在`stg_ap_pp_info`内部，消耗了`base_GHCziNum_zm_info`创建的参数，并使用`I32[R1 + 8]`和`stg_INTLIKE_closure+137`这两个参数进行应用。
+    （正如你可以想象的那样，`stg_ap_pp_info`非常简单。）
 - en: The subtraction function runs and does the actual subtraction. It then invokes
     the next info table on the stack `stg_upd_frame_info` with this argument.
+  id: totrans-60
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 减法函数运行并执行实际的减法操作。然后，它使用这个参数调用了堆栈上的下一个信息表`stg_upd_frame_info`。
 - en: Because this is an updateable closure (remember the `u` character in STG?),
     will `stg_upd_frame_info` the result of step 3 and use it to overwrite the closure
     pointed to by `R1` (the original closure of the thunk) with a new closure that
     simply contains the new value. It will then invoke the next info table on the
     stack, which was whatever was on the stack when we entered `sgI_Entry`.
+  id: totrans-61
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 因为这是一个可更新的闭包（还记得STG中的`u`字符吗？），`stg_upd_frame_info`将步骤3的结果使用来覆盖`R1`指向的闭包（延迟求值的原始闭包），用一个新的只包含新值的闭包来替换它。然后它将调用堆栈上的下一个信息表，这个信息表是我们进入`sgI_Entry`时堆栈上的内容。
 - en: Phew! And now there’s the minor question of `if (Sp - 24 < SpLim) goto ch2;`
     which checks if we will overflow the stack and bugs out to the garbage collector
     if so.
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: 哦，现在还有一个小问题，即`if (Sp - 24 < SpLim) goto ch2;`，它检查我们是否会溢出堆栈，并在如此时跳转到垃圾收集器。
 - en: '`sgJ_entry` does something very similar, but this time the continuation chain
     is `Factorial_fact` to `stg_upd_frame_info` to the great beyond. We also need
     to allocate a new closure on the heap (`sgI_info`), which will be passed in as
     an argument:'
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: '`sgJ_entry`做了类似的事情，但这次的继续执行链是从`Factorial_fact`到`stg_upd_frame_info`再到更远的地方。我们还需要在堆上分配一个新的闭包（`sgI_info`），它将作为参数传递进来：'
 - en: '[PRE13]'
+  id: totrans-64
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: 'And finally, `sgC_ret` actually does computation:'
+  id: totrans-65
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，`sgC_ret`实际上进行了计算：
 - en: '[PRE14]'
+  id: totrans-66
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE14]'
 - en: '...though not very much of it. We grab the result of the case split from `I32[R1
     + 3]` (R1 is a tagged pointer, which is why the offset looks weird.) We then check
     if its zero, and if it is we shove `stg_INTLIKE_closure+137` (the literal 1) into
     our register and jump to our continuation; otherwise we setup our arguments on
     the stack to do a multiplication `base_GHCziNum_zt_info`. The same dictionary
     passing dance happens. And that’s it!'
+  id: totrans-67
   prefs: []
   type: TYPE_NORMAL
+  zh: '...虽然内容不是很多。我们从`I32[R1 + 3]`（R1是一个标记指针，所以偏移量看起来有些奇怪）处获取分支情况的结果。然后检查它是否为零，如果是，则将`stg_INTLIKE_closure+137`（即字面值1）推入我们的寄存器，并跳转到我们的继续执行点；否则，我们在堆栈上设置参数以执行乘法`base_GHCziNum_zt_info`。同样进行字典传递的操作。就是这样！'
 - en: While we’re here, here is a brief shout-out to “Optimised Cmm”, which is just
     Cmm but with some minor optimisations applied to it. If you’re *really* interested
     in the correspondence to the underlying assembly, this is good to look at.
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我们在这里的时候，简要提一下“优化的Cmm”，这只是在Cmm上应用了一些轻微的优化。如果你真的对底层汇编的对应关系感兴趣，那么看看这个是很好的。
 - en: '[PRE15]'
+  id: totrans-69
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE15]'
 - en: Assembly
+  id: totrans-70
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 汇编语言
 - en: '[PRE16]'
+  id: totrans-71
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE16]'
 - en: 'Finally, we get to assembly. It’s mostly the same as the Cmm, minus some optimizations,
     instruction selection and register allocation. In particular, all of the names
     from Cmm are preserved, which is useful if you’re debugging compiled Haskell code
     with GDB and don’t feel like wading through assembly: you can peek at the Cmm
     to get an idea for what the function is doing.'
+  id: totrans-72
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，我们来看看汇编语言。它与Cmm几乎相同，除了一些优化、指令选择和寄存器分配。特别是，Cmm中的所有名称都被保留了下来，这在你用GDB调试编译后的Haskell代码时非常有用，如果你不想深入研究汇编语言：你可以查看Cmm，了解函数的大致操作。
 - en: 'Here is one excerpt, which displays some more salient aspects of Haskell on
     x86-32:'
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里有一个摘录，显示了Haskell在x86-32上的一些更为显著的方面：
 - en: '[PRE17]'
+  id: totrans-74
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE17]'
 - en: 'Some of the registers are pinned to registers we saw in Cmm. The first two
     lines are the stack check, and we can see that `%ebp` is always set to the value
     of `Sp`. `84(%ebx)` must be where `SpLim`; indeed, `%ebx` stores a pointer to
@@ -391,30 +568,45 @@
     to `R1`. In fact, once you’ve allocated all of these registers, there aren’t very
     many general purpose registers to actually do computation in: just `%eax` and
     `%edx`.'
+  id: totrans-75
   prefs: []
   type: TYPE_NORMAL
+  zh: 一些寄存器被固定在我们在 Cmm 中看到的寄存器上。前两行是栈检查，我们可以看到 `%ebp` 总是设置为 `Sp` 的值。`84(%ebx)` 应该是
+    `SpLim` 所在的地方；确实，`%ebx` 存储了指向 `BaseReg` 结构的指针，在程序执行过程中我们将各种“类似寄存器”的数据存储在其中（以及垃圾收集函数，见
+    `*-8(%ebx)`）。之后，大量代码将值移动到栈上，我们可以看到 `%esi` 对应于 `R1`。实际上，一旦你分配了所有这些寄存器，就没有多少通用寄存器可以用于实际计算了：只有
+    `%eax` 和 `%edx`。
 - en: Conclusion
+  id: totrans-76
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 结论
 - en: 'That’s it: factorial all the way down to the assembly level! You may be thinking
     several things:'
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: 就是这样：从阶乘一直到汇编级别！您可能会有几个想法：
 - en: '*Holy crap! The next time I need to enter an obfuscated C contest, I’ll just
     have GHC generate my code for me.* GHC’s internal operational model is indeed
     very different from any imperative language you may have seen, but it is very
     regular, and once you get the hang of it, rather easy to understand.'
+  id: totrans-78
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*天啊！下次我需要参加混淆 C 程序设计竞赛时，我只需要让 GHC 为我生成代码就好了。* GHC 的内部运行模型确实与您可能见过的任何命令式语言非常不同，但它非常规律，一旦掌握，就相当容易理解。'
 - en: '*Holy crap! I can’t believe that Haskell performs at all!* Remember we didn’t
     compile with optimizations at all. The same module compiled with `-O` is considerably
     smarter.'
+  id: totrans-79
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*天啊！我简直无法相信 Haskell 居然能运行！* 记住，我们完全没有进行优化编译。使用 `-O` 编译的同一模块要聪明得多。'
 - en: Thanks for reading all the way! Stay tuned for the near future, where I illustrate
     action on the Haskell heap in comic book format.
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 感谢您一路阅读！请继续关注不久的将来，我将以漫画形式展示 Haskell 堆上的操作。

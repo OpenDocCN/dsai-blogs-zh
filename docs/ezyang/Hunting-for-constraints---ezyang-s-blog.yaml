@@ -1,85 +1,127 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:18:27'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:18:27
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Hunting for constraints : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 寻找约束：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2010/02/hunting-for-constraints/](http://blog.ezyang.com/2010/02/hunting-for-constraints/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/02/hunting-for-constraints/](http://blog.ezyang.com/2010/02/hunting-for-constraints/)
 - en: '[PRE0]'
+  id: totrans-6
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'The following question appeared as part of a [numbers-based puzzle](http://www.mit.edu/~puzzle/10/puzzles/2010/fun_with_numbers/)
     in the [2010 MIT Mystery Hunt](http://www.mit.edu/~puzzle/10/):'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下问题作为[基于数字的谜题](http://www.mit.edu/~puzzle/10/puzzles/2010/fun_with_numbers/)的一部分出现在[2010年MIT神秘猎](http://www.mit.edu/~puzzle/10/)中：
 - en: His final level on [Wizard of Wor](http://hackage.haskell.org/package/dow) was
     equal to the smallest number that can be written as the sum of 4 non-zero squares
     in exactly 9 ways
+  id: totrans-8
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 他在[Wizard of Wor](http://hackage.haskell.org/package/dow)的最终级别等于以精确9种方式写成4个非零平方数之和的最小数。
 - en: I'd like to explore constraint search in Haskell to solve this problem. The
     hope is to find a (search) program that directly reflects the problem as posed,
     and also gives us an answer!
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 我想探索在Haskell中使用约束搜索来解决这个问题。希望能找到一个（搜索）程序，直接反映出所提出的问题，并给出一个答案！
 - en: Because we are looking for the smallest number, it makes sense to start testing
     from a small number and start counting up. We'll assume that the answer to this
     question won't overflow Int.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 因为我们正在寻找最小的数，所以从一个小数开始测试并逐渐计数是有意义的。我们假设这个问题的答案不会导致Int溢出。
 - en: Now, we need to test if it can be written as the sum of 4 non-zero squares in
     exactly 9 ways. This problem reduces to "how many ways can n be written as the
     sum of squares", which is another search problem.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，我们需要测试是否可以将其写成精确9种方式的4个非零平方数的和。这个问题归结为“n可以用多少种方式写成平方和”，这是另一个搜索问题。
 - en: 'We''ll assume that 4+1+1+1 and 1+4+1+1 don''t constitute distinct for the purposes
     of our nine squares. This results in the first piece of cleverness: if we impose
     a strict ordering on our squares, we once again get uniqueness.'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们假设 `4+1+1+1` 和 `1+4+1+1` 在我们的九宫格目的中不构成不同的格局。这带来了第一个巧妙之处：如果我们对我们的九宫格施加严格的顺序，我们再次得到唯一性。
 - en: We also need to bound our search space; while fair search can help to some degree
     with infinite failure, our implementation will be much simpler if we can do some
     early termination. A very simple condition to terminate on is if the sum of the
     squares exceeds the number we're looking for.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们还需要限定我们的搜索空间；虽然公平搜索可以在某种程度上帮助我们处理无限失败，但如果我们可以进行一些早期终止，那么我们的实现将会简单得多。一个非常简单的终止条件是如果平方和超过我们正在寻找的数字。
 - en: Considering the case where we are matching for x, and we have candidate roots
     a, b and c. Then, the maximum the remaining square can be is x - a^2 - b^2 - c^2,
     and the maximum value for d is the floor of the square root. Square roots are
     cheap, and we're using machine size integers, so things are good.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 考虑我们匹配x的情况，并且我们有候选根a、b和c。然后，剩余平方的最大值可以是x - a^2 - b^2 - c^2，d的最大值是平方根的底部。平方根很便宜，我们使用机器大小的整数，所以情况很好。
 - en: '[PRE1]'
+  id: totrans-15
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'From there, we just write out the search for distinct sums of squares of a
     number:'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 从那里开始，我们仅需列出搜索非重复的平方数和的方法：
 - en: '[PRE2]'
+  id: totrans-17
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'And from there, the solution falls out:'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 从那里，解决方案自然而然地得出：
 - en: '[PRE3]'
+  id: totrans-19
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: We cleverly use `[0..]` so that the index is the same as the number itself.
     Alternative methods might use tuples.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们巧妙地使用`[0..]`，这样索引就与数字本身相同。其他方法可能使用元组。

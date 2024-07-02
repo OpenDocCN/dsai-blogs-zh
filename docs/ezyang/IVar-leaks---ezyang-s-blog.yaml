@@ -1,91 +1,132 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:43'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:43'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'IVar leaks : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: IVar泄漏：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2011/07/ivar-leaks/](http://blog.ezyang.com/2011/07/ivar-leaks/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/07/ivar-leaks/](http://blog.ezyang.com/2011/07/ivar-leaks/)
 - en: IVar leaks
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: IVar泄漏
 - en: 'The first thing to convince yourself of is that there actually is a problem
     with [the code I posted last week.](http://blog.ezyang.com/2011/07/scheduling-ivar/)
     Since this is a memory leak, we need to keep track of *creations* and *accesses*
     of IVars. An IVar allocation occurs in the following cases for our example:'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先要说服自己的是，确实存在一个问题，即[我上周发布的代码。](http://blog.ezyang.com/2011/07/scheduling-ivar/)
+    由于这是一个内存泄漏，我们需要跟踪IVar的*创建*和*访问*。IVar分配发生在我们示例的以下情况中：
 - en: Invocation of `return`, which returns a full IVar,
+  id: totrans-8
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 对`return`的调用，返回一个完整的IVar，
 - en: Invocation of `tick`, which returns an empty IVar and schedules a thread to
     fill this IVar, and
+  id: totrans-9
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 对`tick`的调用，返回一个空的IVar并安排一个线程来填充此IVar，
 - en: Invocation of `>>=`, which returns an empty IVar and a reference to this IVar
     in the callback attached to the left-hand IVar.
+  id: totrans-10
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 对`>>=`的调用，返回一个空的IVar和一个附加到左IVar的回调的引用。
 - en: 'An IVar access occurs when we dereference an IORef, add a callback or fill
     the IVar. This occurs in these cases:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我们解引用IORef、添加回调或填充IVar时，发生IVar访问。这发生在以下情况下：
 - en: Invocation of `>>=`, which dereferences the left IVar and adds a callback,
+  id: totrans-12
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 对`>>=`的调用，解引用左IVar并添加一个回调，
 - en: Invocation of the callback on the left argument of `>>=`, which adds a callback
     to the result of `f x`,
+  id: totrans-13
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 对`>>=`左参数的回调调用，将一个回调添加到`f x`的结果中，
 - en: Invocation of the callback on the result of `f x` (from the above callback),
     which fills the original IVar allocated in (3), and
+  id: totrans-14
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 对`f x`的结果（从上述回调中）进行回调调用，填充在（3）中分配的原始IVar，
 - en: Invocation of the scheduled thread by `tick`, which fills the empty IVar it
     was scheduled with.
+  id: totrans-15
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 由`tick`调度的线程的回调调用，用于填充其调度的空IVar。
 - en: We can now trace the life-cycle of an IVar allocated by the `>>=` in the code
     `loop = tick >>= loop`.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们可以追踪代码`loop = tick >>= loop`中由`>>=`分配的IVar的生命周期。
 - en: 'IVar allocated by `>>=`. Two references are generated: one in the callback
     attached to `tick` and one returned.'
+  id: totrans-17
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 由`>>=`分配的IVar。生成两个引用：一个在附加到`tick`的回调中，一个返回的引用中。
 - en: Scheduler runs thread that fills in IVar from `tick`, its callback is run. IVar
     is reachable via the newly allocated callback attached to `f x`. Note that `f`
     in this case is `\() -> loop`, so at this point the recursive call occurs.
+  id: totrans-18
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 调度程序运行填充来自`tick`的IVar的线程，运行其回调。IVar可通过新分配给`f x`的回调访问。请注意，此处的`f`是`\() -> loop`，因此此时发生递归调用。
 - en: Scheduler runs thread that fills in IVar from `f x`, its callback is run. IVar
     is filled in, and the reference to it in the callback chain is now dead. Life
     of the IVar depends solely on the reference that we returned to the client.
+  id: totrans-19
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 调度程序运行填充来自`f x`的IVar的线程，运行其回调。IVar已填充，并且回调链中对其的引用现在已经失效。IVar的生命周期仅依赖于我们向客户端返回的引用。
 - en: 'Notice that across the first and second scheduler rounds, the bind-allocated
     IVar is kept alive by means other than the reference we returned to the client.
     In the first case it’s kept alive by the callback to tick (which is in turn kept
@@ -93,10 +134,15 @@
     by the callback to `f x`. If we can get to the third case, everything will manage
     to get GC''d, but that’s a big *if*: in our infinite loop, `f x` is never filled
     in.'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 请注意，在第一轮和第二轮调度器中，绑定分配的IVar通过非返回给客户端的引用保持活跃。在第一种情况下，它通过对tick的回调保持活跃（进而通过其在执行计划中的位置保持活跃）；在第二种情况下，它通过对`f
+    x`的回调保持活跃。如果我们能够进入第三种情况，所有内容都将设法被GC回收，但这是一个大*if*：在我们的无限循环中，`f x`永远不会被填充。
 - en: Even if it does eventually get filled in, we build up an `IVar` of depth the
     length of recursion, whereas if we had some sort of “tail call optimization”,
     we could immediately throw these IVars away.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 即使最终被填充，我们也会积累递归长度的`IVar`，而如果我们有某种“尾递归优化”，我们可以立即丢弃这些`IVars`。

@@ -1,119 +1,171 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 分类：未分类
 - en: 'date: 2024-07-01 18:18:09'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:18:09
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Keyword arguments in Haskell : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Haskell中的关键字参数：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2010/09/keyword-arguments-in-haskell/](http://blog.ezyang.com/2010/09/keyword-arguments-in-haskell/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/09/keyword-arguments-in-haskell/](http://blog.ezyang.com/2010/09/keyword-arguments-in-haskell/)
 - en: Keyword arguments in Haskell
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: Haskell中的关键字参数
 - en: 'Keyword arguments are generally considered a good thing by language designers:
     positional arguments are prone to errors of transposition, and it’s absolutely
     no fun trying to guess what the `37` that is the third argument of a function
     *actually* means. Python is one language that makes extensive use of keyword arguments;
     they have the following properties:'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 语言设计者通常认为关键字参数是一件好事：位置参数容易出错，试图猜测作为函数第三个参数的`37`究竟意味着什么真是令人头疼。Python是一种广泛使用关键字参数的语言；它们具有以下特性：
 - en: Functions are permitted to be a mix of positional and keyword arguments (a nod
     to the compactness of positional arguments),
+  id: totrans-8
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 函数可以混合使用位置参数和关键字参数（向位置参数的紧凑性致敬），
 - en: Keywords are local to any given function; you can reuse a named function argument
     for another function,
+  id: totrans-9
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 关键字局限于任何给定函数；你可以重复使用命名函数参数来调用另一个函数，
 - en: In Python 3.0, you can force certain arguments to *only* be specifiable with
     a keyword.
+  id: totrans-10
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在Python 3.0中，你可以强制某些参数只能通过关键字指定。
 - en: 'Does Haskell have keyword arguments? In many ways, they’re much less necessary
     due to the static type system: if you accidentally interpose an `Int` and `Bool`
     your compiler will let you know about it. The type signature guides you!'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: Haskell是否有关键字参数？在很多方面，由于静态类型系统，它们不太必要：如果你在参数中不小心交错了`Int`和`Bool`，编译器会提醒你。类型签名会指导你！
 - en: 'Still, if we were to insist (perhaps our function took many arguments of the
     same type), one possibility is to pass a record data type in as the sole argument,
     but this is a little different than Python keyword arguments in the following
     ways:'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 不过，如果我们坚持使用（也许我们的函数接受很多相同类型的参数），一种可能性是将记录数据类型作为唯一参数传入，但这与Python关键字参数有些不同：
 - en: 'There is a strict delineation between positional and keywords: either you can
     specify your record entirely with keywords or entirely with positional arguments,
     but you can’t do both,'
+  id: totrans-13
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 位置参数和关键字之间有严格的界定：要么完全使用关键字指定你的记录，要么完全使用位置参数，但不能两者兼而有之，
 - en: Record fields go into the global namespace, so you have to prefix/suffix them
     with some unique identifier, and
+  id: totrans-14
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 记录字段进入全局命名空间，因此你必须使用某些唯一标识符来前缀/后缀它们，并且
 - en: Even with named records, a user can still choose to construct the record without
     specifying keyword arguments. For large argument lists, this is not as much of
     an issue, but for short argument lists, the temptation is great.
+  id: totrans-15
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 即使使用命名记录，用户仍然可以选择在构造记录时不指定关键字参数。对于大型参数列表，这并不是问题，但对于短参数列表，这种诱惑是很大的。
 - en: I find issue two to be the reason why I don’t really employ this trick; I would
     find it quite annoying to have to make a data structure for every function that
     I wanted to use named arguments with.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 我发现第二个问题是我不真正使用这个技巧的原因；我觉得如果我想使用命名参数，为每个函数都创建数据结构会相当烦人。
 - en: 'I’d like to suggest another trick to simulate named arguments: use newtypes!
     Consider this undertyped function:'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 我想建议另一个技巧来模拟命名参数：使用新类型！考虑这个不够类型化的函数：
 - en: '[PRE0]'
+  id: totrans-18
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'We can convert it to use newtypes like this:'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以将其转换为使用新类型，例如：
 - en: '[PRE1]'
+  id: totrans-20
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'Unlike the usual use of newtypes, our newtypes are extremely short-lived: they
     last just long enough to get into the body of `renderBox` and then they are pattern
     matched to oblivion: the function body can rely on good local variable names to
     do the rest. But it still manages to achieve the goals of keyword arguments: any
     call to `renderBox` makes it crystal clear what each integer means. We also maintain
     the following good properties:'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 与通常使用新类型不同，我们的新类型生命周期极其短暂：它们只能在进入`renderBox`的函数体内部存在一段时间，然后它们就会被模式匹配到遗忘：函数体可以依赖良好的局部变量名来完成其余部分。但它仍然能够实现关键字参数的目标：调用`renderBox`时清楚地表明每个整数的含义。我们还保持以下良好的属性：
 - en: If the type already says all you need to say about an argument, there’s no need
     to newtype it again. Thus, you can have a mix of regular and newtype arguments.
+  id: totrans-22
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 如果类型已经包含了关于参数的所有信息，就不需要再次使用新类型。因此，你可以同时拥有常规参数和新类型参数的混合。
 - en: Newtypes can be reused. Even further, they are only to be reused when the semantic
     content of their insides is the same, which encourages good naming practices.
+  id: totrans-23
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 新类型可以被重复使用。更进一步，只有在其内部语义内容相同时才能重复使用，这鼓励良好的命名实践。
 - en: 'The user is forced to do the newtype wrapping: there’s no way around it. If
     you publish smart constructors instead of the usual constructors, you can factor
     out validation too.'
+  id: totrans-24
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 用户被迫进行新类型的包装：无法绕过这一点。如果您发布智能构造函数而不是通常的构造函数，则可以将验证内容分离出来。
 - en: Newtypes are so versatile!
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 新类型非常灵活！

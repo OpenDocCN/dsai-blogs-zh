@@ -1,30 +1,46 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:09'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:09'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Embracing Windows : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 拥抱 Windows：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2010/09/embracing-window/](http://blog.ezyang.com/2010/09/embracing-window/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/09/embracing-window/](http://blog.ezyang.com/2010/09/embracing-window/)
 - en: Embracing Windows
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 拥抱 Windows
 - en: '*Some things come round full circle.*'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '*有些事情终将循环回来。*'
 - en: As a high schooler, I was a real Windows enthusiast. A budding programmer, I
     accumulated a complete development environment out of necessity, a mix of Cygwin,
     handwritten batch scripts, PuTTY, LogMeIn, a homegrown set of PHP build scripts
@@ -34,26 +50,40 @@
     eye-to-eye with each other. When I discovered that Linux was able to offer me
     an unbelievably coherent development environment, I jumped ship and said goodbye
     to Windows.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 作为一个高中生，我是一个真正的 Windows 爱好者。作为一名初出茅庐的程序员，我出于必要积累了一个完整的开发环境，包括 Cygwin、手写批处理脚本、PuTTY、LogMeIn、一套自制的
+    PHP 构建脚本和 Notepad++。我对这个事业如此投入，甚至为 Git 贡献了 [一个补丁](http://repo.or.cz/w/git.git/commit/36ad53ffee6ed5b7c277cde660f526fd8ce3d68f)，以便让
+    Git 在 Windows 上与 plink 顺畅运行。这个设置虽然能工作，但总感觉是一个由不同组件拼凑而成的拼图，彼此之间不完全协调。当我发现 Linux
+    能为我提供一个非常一致的开发环境时，我果断放弃了 Windows。
 - en: '*Some things come round full circle.* Windows has a way of coming back to you
     eventually. The [product I worked on over the summer](http://www.galois.com/technology/communications_security/cryptol)
     at Galois had to support Windows, and I consequently devoted days of effort getting
     my changes to build properly on Windows. I then went on to [hacking GHC](http://blog.ezyang.com/2010/08/interrupting-ghc/),
     and Simon Marlow asked me to implement the equivalent feature in Windows.'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: '*有些事情终将循环回来。* Windows 最终总会回到你身边。我在 Galois 暑期工作时，需要支持 Windows 的产品，因此花费了好几天时间确保我的更改能在
+    Windows 上正确构建。接着，我转向了 [GHC 的修改](http://blog.ezyang.com/2010/08/interrupting-ghc/)，Simon
+    Marlow 要求我在 Windows 上实现相同的功能。'
 - en: I’ve decided that I should stop shunning Microsoft Windows as the developer’s
     black sheep of the operating systems. Like it or not, Windows is here to stay;
     even if I never boot my laptop into Windows, as a developer it is good practice
     to think about and test my code on Windows. It might even be the case that Windows
     is a *perfectly reasonable* underlying platform to develop on.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 我决定停止把 Microsoft Windows 视为开发者中不受欢迎的黑羊操作系统。不管喜欢与否，Windows 将会存在；即使我从未在笔记本电脑上启动过
+    Windows，作为开发者，考虑并在 Windows 上测试我的代码是一个良好的实践。甚至可能有这样的情况：Windows 是一个 *完全合理* 的底层开发平台。
 - en: 'There seem to be two reasons why developers might find targeting other platforms
     to be annoying:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 开发者可能觉得针对其他平台感到恼火的原因似乎有两个：
 - en: 'They don’t have access to a computer running that operating system, which makes
     debugging the problems extremely annoying—after all, this is why a reproduceable
     test-case is the gold standard of bug reporting. We should have easy to access
@@ -62,9 +92,11 @@
     authors might be reluctant to do: people at places with site licenses might be
     able to help by donating boxes for these people to play in (the same way companies
     and universities donate disk space and bandwidth for mirrors).'
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 他们无法访问运行该操作系统的计算机，这使得调试问题变得极为恼人——毕竟，这就是可重现测试案例成为 Bug 报告黄金标准的原因。我们应该建立易于访问和使用的构建服务器来让人们在这些不同环境中进行测试。这涉及到投入一些资金购买适当的许可证，而开源作者可能不愿意这样做：那些有站点许可证的地方的人们可以通过捐赠计算机来帮助这些人进行测试，就像公司和大学捐赠磁盘空间和带宽用于镜像一样。
 - en: 'They have to learn about another platform, with all of its intricacies and
     gotchas. On the one hand, this is annoying because “I already know how to do this
     in Unix, and now I have to spend N minutes to figure out how to do it on Windows,
@@ -73,12 +105,16 @@
     to do can be kind of fun: you get to see different design decisions and develop
     multiple perspectives on the same problem, which I have found has always helped
     me out for problem solving.'
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 他们必须学习另一个平台，包括其所有的复杂性和陷阱。一方面，这很烦人，因为“我已经知道如何在Unix上做这件事了，现在我必须花N分钟弄清楚如何在Windows上做，再花N分钟弄清楚为什么在某些边缘情况下它不起作用。”另一方面，学习一个已经知道如何做某事的平台可能会有点有趣：你可以看到不同的设计决策，并对同一个问题发展出多种视角，我发现这总是有助于我解决问题。
 - en: 'There remain parts of Windows programming that I continue to have no interest
     in: for example, I find the vagaries of manifest files to be fairly uninteresting.
     But then again, I find packaging in Linux distributions to be uninteresting. Stop
     blaming Windows!'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 在Windows编程中仍然有一些部分我继续不感兴趣：例如，我觉得清单文件的变化相当无聊。但另一方面，我觉得Linux发行版中的打包也很无聊。别再责怪Windows了！

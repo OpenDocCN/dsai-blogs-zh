@@ -1,43 +1,63 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:04'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:04'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'DP Zoo Tour : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 'DP Zoo Tour : ezyang’s blog'
 - en: 来源：[http://blog.ezyang.com/2010/11/dp-zoo-tour/](http://blog.ezyang.com/2010/11/dp-zoo-tour/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/11/dp-zoo-tour/](http://blog.ezyang.com/2010/11/dp-zoo-tour/)
 - en: '*Someone told me it’s all happening at the zoo...*'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: '*有人告诉我，这一切都发生在动物园里……*'
 - en: I’ve always thought *dynamic programming* was a pretty crummy name for the practice
     of storing sub-calculations to be used later. Why not call it *table-filling algorithms*,
     because indeed, thinking of a dynamic programming algorithm as one that fills
     in a table is a quite good way of thinking about it.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 我一直认为*动态规划*是一种对将来使用的子计算进行存储的实践，这个名字相当糟糕。为什么不叫它*填表算法*呢？因为实际上，把动态规划算法看作是填写表格的算法，是一个相当不错的思路。
 - en: In fact, you can almost completely characterize a dynamic programming algorithm
     by the shape of its table and how the data flows from one cell to another. And
     if you know what this looks like, you can often just read off the complexity without
     knowing anything about the problem.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 事实上，你几乎可以完全通过动态规划算法的表格形状及数据从一个单元格流向另一个单元格的方式来描述一个动态规划算法。如果你知道这个形状是什么样子的，通常你可以直接推断出复杂度，而不必知道问题的任何具体内容。
 - en: 'So what I did was collected up a bunch of dynamic programming problems from
     *Introduction to Algorithms* and drew up the tables and data flows. Here’s an
     easy one to start off with, which solves the Assembly-Line problem:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以我做的事情是收集了一堆来自*算法导论*的动态规划问题，并画出了表格和数据流。这里有一个简单的例子，解决装配线问题：
 - en: The blue indicates the cells we can fill in ‘for free’, since they have no dependencies
     on other cells. The red indicates cells that we want to figure out, in order to
     pick the optimal solution from them. And the grey indicates a representative cell
@@ -46,75 +66,110 @@
     (Because, if there was a more optimal route, than it would have shown in my previous
     two cells!) We also see there are a constant number of arrows out of any cell
     and *O(n)* cells in this table, so the algorithm clearly takes *O(n)* time total.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 蓝色表示我们可以免费填写的单元格，因为它们不依赖于其他单元格。红色表示我们想要找出的单元格，以便从中选择最优解决方案。灰色表示沿途的代表单元格及其数据依赖关系。在这种情况下，机器到给定单元格的最优路径仅取决于其前两个单元格的最优路径。（因为，如果有更优的路径，它早已显示在我的前两个单元格中！）我们还看到任何单元格都有恒定数量的箭头出口和*O(n)*个单元格在这个表中，因此该算法显然总共需要*O(n)*的时间。
 - en: '* * *'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: Here’s the next introduction example, optimal parenthesization of matrix multiplication.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里是下一个介绍示例，矩阵乘法的最佳括号化。
 - en: Each cell contains the optimal parenthesization of the subset i to j of matrixes.
     To figure this out the value for a cell, we have to consider all of the possible
     combos of existing parentheticals that could have lead to this (thus the multiple
     arrows). There are *O(n²)* boxes, and *O(n)* arrows, for *O(n³)* overall.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 每个单元格包含矩阵i到j的最佳括号化。为了计算单元格的值，我们必须考虑所有可能导致此结果的现有括号化组合（因此有多个箭头）。有*O(n²)*个框，和*O(n)*个箭头，总复杂度为*O(n³)*。
 - en: '* * *'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: Here’s a nice boxy one for finding the longest shared subsequence of two strings.
     Each cell represents the longest shared subsequence of the first string up to
     *x* and the second string up to *y*. I’ll let the reader count the cells and arrows
     and verify the complexity is correct.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里有一个很好的方框用于找到两个字符串的最长公共子序列。每个单元格表示第一个字符串到*x*和第二个字符串到*y*的最长公共子序列。我会让读者计算单元格和箭头，并验证复杂度是否正确。
 - en: '* * *'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: There aren’t that many ways to setup dynamic programming tables! Constructing
     optimal binary search trees acts a lot like optimal matrix parenthesization. But
     the indexes are a bit fiddly. (Oh, by the way, *Introduction to Algorithms* is
     1-indexed; I’ve switched to 0-indexing here for my examples.)
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 构建最佳二叉搜索树的方式与最佳矩阵括号化非常相似。但是索引有些复杂。（哦，顺便说一句，*算法导论*是以1为基础索引的；我在这里切换到了0索引来进行我的示例。）
 - en: '* * *'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: Here we get into exercise land! The bitonic Euclidean traveling salesman problem
     is pretty well-known on the web, and its tricky recurrence relation has to do
     with the bottom edge. Each cell represents the optimal open bitonic route between
     i and j.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们进入练习领域！欧几里德双调旅行推销员问题在网络上相当知名，其复杂的递归关系与底部边有关。每个单元格表示从i到j的最佳开放双调路径。
 - en: '* * *'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: The lovely word wrapping problem, a variant of which lies at the heart of the
     Knuth TeX word wrapping algorithm, takes advantage of some extra information to
     bound the number of cells one has to look back. (The TeX algorithm does a global
     optimization, so the complexity would be *O(n²)* instead.) Each cell represents
     the optimal word wrapping of all the words up to that point.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 美丽的换行问题，其变种是 Knuth TeX 换行算法的核心，利用一些额外信息来限制必须查找回的单元格数目。（TeX 算法进行全局优化，因此复杂度会是
+    *O(n²)*。）每个单元格代表了到目前为止所有单词的最佳换行方式。
 - en: '* * *'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: Finally, the edit problem, which seems like the authors decided to pile on as
     much complexity as they could muster, falls out nicely when you realize each string
     operation they order you to design corresponds to a single arrow to some earlier
     cell. Useful! Each cell is the optimal edit chain from that prefix of the source
     to that prefix of the destination.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后，编辑问题似乎就像作者决定尽可能增加的复杂性一样，当你意识到他们要求你设计的每个字符串操作对应于某个先前单元的单一箭头时，这个问题就会很好地解决。有用！每个单元都是从源的那个前缀到目的地的那个前缀的最优编辑链。
 - en: '* * *'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*And the zookeeper is very fond of rum.*'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: '*动物园管理员非常喜欢朗姆酒。*'
 - en: Squares, triangles, rectangles, those were the tables I usually found. I’m curious
     to know if there are more exotic tables that DP algorithms have filled out. Send
     them in and I’ll draw them!
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 方块、三角形、矩形，这些是我通常找到的桌子。我很好奇 DP 算法是否填补了更多奇异的桌子。发送它们给我，我会画出来！

@@ -1,64 +1,97 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:12'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:12'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Suggestion box : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 建议箱：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2010/07/suggestion-box/](http://blog.ezyang.com/2010/07/suggestion-box/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/07/suggestion-box/](http://blog.ezyang.com/2010/07/suggestion-box/)
 - en: Suggestion box
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 建议箱
 - en: 'Taking a page from [Raymond Chen’s blog](http://blogs.msdn.com/b/oldnewthing/archive/2004/06/25/166545.aspx),
     please post suggestions for future blog posts by me. What would you like to see
     me explain? What do you think would be amusing if I attempted to write a post
     about it? Topics I am inclined to cover:'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 借鉴[Raymond Chen 的博客](http://blogs.msdn.com/b/oldnewthing/archive/2004/06/25/166545.aspx)，请提出关于我未来博客文章的建议。你希望我解释什么？如果我尝试写一篇关于什么的文章会觉得有趣？我倾向于涵盖的主题：
 - en: Almost anything about Haskell, GHC and closely related maths.
+  id: totrans-8
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 几乎关于 Haskell、GHC 和密切相关的数学的任何事情。
 - en: General programming topics.
+  id: totrans-9
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 一般编程主题。
 - en: Educating, teaching, lecturing.
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 教育、教学、讲课。
 - en: Computer science topics of general interest.
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 计算机科学中一般感兴趣的主题。
 - en: Stories about my internship experiences (at this point, I've interned at [OmniTI](http://omniti.com/),
     [ITA Software](http://www.itasoftware.com/), [Ksplice](http://www.ksplice.com/)
     and [Galois](http://www.galois.com/).)
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我实习经历的故事（目前，我曾在 [OmniTI](http://omniti.com/)、[ITA Software](http://www.itasoftware.com/)、[Ksplice](http://www.ksplice.com/)
+    和 [Galois](http://www.galois.com/) 实习过。）
 - en: SIPB.
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: SIPB。
 - en: Music.
+  id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 音乐。
 - en: Since Raymond is famous and I’m not, I will be much less choosy about which
     suggestions I will post about.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于 Raymond 很出名而我不是，我会对我将发布的建议文章要求不那么严格。

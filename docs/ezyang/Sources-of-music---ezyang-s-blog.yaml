@@ -1,33 +1,50 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:27'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:27'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Sources of music : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 音乐来源：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2010/02/sources-of-music/](http://blog.ezyang.com/2010/02/sources-of-music/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/02/sources-of-music/](http://blog.ezyang.com/2010/02/sources-of-music/)
 - en: Sources of music
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 音乐来源
 - en: I *love* listening to music, especially new and interesting pieces that I've
     never heard before. Unfortunately, being a somewhat frugal spender my own personal
     collection of music grows very slowly; perhaps a bit too slowly for my own tastes.
     When I need *new* music, where do I turn?
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 我 *喜欢* 听音乐，尤其是那些我从未听过的新奇作品。不幸的是，作为一个有点节俭的花钱者，我个人的音乐收藏增长得非常缓慢；也许对我自己的口味来说有点太慢了。当我需要
+    *新* 音乐时，我会去哪里？
 - en: '[MixApp](http://mixapp.com/) is a collaborative music listening application.
     At its worst, it can be simply used as an extension to your current music library;
     anyone who is your friend and who is online, you can search for music and queue
@@ -37,24 +54,34 @@
     artists you''ve never heard of and a genre you''ve just discovered and *wham*:
     you just got MixApp''ed. **Update:** MixApp is dead (the founders went on to build
     Meteor), though there are replacements popping up like turntable.fm'
+  id: totrans-8
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[MixApp](http://mixapp.com/) 是一个协作音乐收听应用程序。在最糟糕的情况下，它只是你当前音乐库的一个扩展；任何是你的朋友并在线的人，你都可以搜索音乐并为自己排队。然而，MixApp
+    的意外之处在于当你进入一个你不认识的人和你不认识的音乐的房间时，但是，声音很好，突然间你被带上了声音冒险之旅，穿越你从未听说过的艺术家和你刚刚发现的音乐类型，*嘭*：你刚刚被
+    MixApp 化了。**更新：** MixApp 已经停止运营（创始人们开始建造Meteor），尽管像 turntable.fm 这样的替代品正不断涌现。'
 - en: '[Pandora](http://www.pandora.com/) and [last.fm](http://www.last.fm/) are both
     pretty reliable methods to get a stream of genre appropriate singles, one after
     another. The serendipity level is not as nice as MixApp, though, so I don''t find
     myself turning to these much.'
+  id: totrans-9
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '[Pandora](http://www.pandora.com/) 和 [last.fm](http://www.last.fm/) 都是获取适合流派单曲流的可靠方法，一个接一个地播放。尽管如此，它们的偶然性水平不及
+    MixApp 那么好，所以我不常求助于它们。'
 - en: There's not really much that can beat a good radio host. People like David Garland
     and John Schaefer have such a diverse and deep palette of musical knowledge, and
     they've had every evening for who knows how many years to hone the craft of sharing
     this with the listeners of public radio. I was very pleased when WQXR finally
     managed to get a high-quality [internet stream](http://www.wqxr.org/) back online.
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 没有什么能够超越一个优秀的电台主持人。像大卫·加兰和约翰·舍费尔这样的人拥有如此丰富和深刻的音乐知识板块，他们每晚都有机会在公共广播中与听众分享这一技艺。当
+    WQXR 终于成功将高质量的[网络流](http://www.wqxr.org/)重新上线时，我感到非常高兴。
 - en: 'I was room-skipping on MixApp one evening, and was caught by the Kleptone''s
     latest album [Uptime/Downtime](http://www.kleptones.com/pages/downloads_ud.html).
     I have nothing against mix artists: the whole tradition of music has been founded
@@ -64,18 +91,25 @@
     to in its own right: one of the most interesting musical adventures I''ve had
     recently was taking the [samples list](http://en.wikipedia.org/wiki/Uptime_/_Downtime)
     for Uptime/Downtime and listening to each source piece in turn.'
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 有一天晚上，我在 MixApp 上随意切换音乐，被 Kleptone 最新专辑[Uptime/Downtime](http://www.kleptones.com/pages/downloads_ud.html)吸引住了。我对混搭艺术家并无偏见：整个音乐传统建立在对早期作品的借鉴、窃取和再创作之上，而在许多情况下，一个熟练的混搭艺术家可以改进它所基于的“流行音乐”材料。或者有时候，源材料本身就非常棒，应该独立听取：我最近最有趣的音乐冒险之一是按照[Uptime/Downtime
+    的样本列表](http://en.wikipedia.org/wiki/Uptime_/_Downtime)逐个聆听每一个源作品。
 - en: Orchestra, wind ensemble, small ensemble, or really any type of ensemble, rehearsal,
     affords time several months to get intimately familiar with a particular piece
     of music. I would have never have gotten the chance to fully appreciate contemporary
     works such as Bells for Stokowski or Persichetti's Masquerade for Band without
     this really in-depth exploration into a piece.
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 管弦乐队、管风琴合奏、小型合奏或者任何类型的合奏，排练时间长达数月，使人对特定音乐作品有了深入了解的机会。如果没有这种对音乐作品的深入探索，我可能永远无法完全欣赏到像《为斯托科夫斯基的钟声》或者佩尔希切蒂的《舞会面具》这样的当代作品。
 - en: I should consider myself extremely lucky to be living in an era where new music
     is constantly at my fingertips. How do you seek out new and interesting music?
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 我应该认为自己非常幸运，生活在一个新音乐随时可得的时代。你是如何寻找新鲜有趣的音乐的？

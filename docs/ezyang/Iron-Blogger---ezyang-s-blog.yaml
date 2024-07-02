@@ -1,34 +1,50 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:32'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:32'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--
 - en: 'Iron Blogger : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 铁博客：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2009/12/iron-blogger/](http://blog.ezyang.com/2009/12/iron-blogger/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2009/12/iron-blogger/](http://blog.ezyang.com/2009/12/iron-blogger/)
 - en: This social experiment has already hit [number four Google spot](http://www.google.com/search?q=iron+blogger)
     for "Iron Blogger," and there's no reason it shouldn't rise any higher. [Iron
     Blogger](http://web.mit.edu/nelhage/www/iron-blogger.html) is an experiment in
     beer (well, not quite for me), blogging, and peer pressure.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个社会实验已经在[Google的第四位](http://www.google.com/search?q=iron+blogger)搜索结果中名列前茅，“铁博客”的排名还会更高。[铁博客](http://web.mit.edu/nelhage/www/iron-blogger.html)是一个关于啤酒（对我来说并非如此）、博客和同行压力的实验。
 - en: Since we're on the topic of blogging, and why people (including myself) can't
     seem to do it, we might as well look over the aborted attempts at blogging that
     I've had over the years.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 既然我们谈论博客及其为何人们（包括我自己）似乎无法做到的原因，我们不妨回顾一下我多年来曾经尝试但未能成功的博客。
 - en: The very first blog I made was done when Blogger was still a shiny new service,
     and blogs were just hitting mainstream in 2004\. The blog was named [Library of
     Murmurs](http://blog.thewritingpot.com/) and in its initial incarnation was very
@@ -36,8 +52,10 @@
     Pot." I think during this time period was dying for feedback and communication,
     and when a semi-regular posting schedule failed to elicit any comments, the blog
     fell into disrepair.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 我做的第一个博客是在Blogger还是一个闪亮的新服务、博客刚刚在2004年成为主流的时候。这个博客被命名为[低语图书馆](http://blog.thewritingpot.com/)，最初的版本非常像是一个疯子的胡言乱语。糟糕的双关语层出不穷。那是“写作锅”的时代。我想在这段时间里渴望得到反馈和交流，但是当半规律的发布时间未能引起任何评论时，这个博客逐渐荒废了。
 - en: In 2007, I repurposed the blog into an [HTML Purifier](http://htmlpurifier.org/)
     development log, in hopes that the many users of HTML Purifier might find an insight
     into its development process of interest. *Those* were the heady days of architecture
@@ -45,19 +63,26 @@
     also occasionally wrote bad poetry. Once again, a lack of feedback and response
     made the blog fall into disrepair. Also, I had learned to absolutely hate Blogger's
     interface and total incompetence at line-breaking HTML.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 2007年，我将博客重新用作[HTML净化器](http://htmlpurifier.org/)的开发日志，希望HTML净化器的众多用户能从中获得开发过程的一些见解。*那*是建筑宇航员的繁荣时代，是在PHP中编写Java和设计模式大行其道的时期。我还偶尔写些糟糕的诗。同样，缺乏反馈和回应使得博客逐渐荒废。此外，我已经学会非常厌恶Blogger的界面及其对换行HTML的无能。
 - en: 'Over summer 2009, I had charted for myself the ambitious goal of writing a
     substantial blog post every week; each post would have been meticulously written
     and revised, content would be king, and as an MIT student, surely I had something
     to say that the world would care about. The opening post was to be thus:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 在2009年夏天，我为自己定下了一个宏伟的目标，每周写一篇实质性的博客文章；每篇文章都将被精心撰写和修订，内容为王，作为一名麻省理工学院的学生，我肯定有些话是世界关心的。开篇文章将如下所述：
 - en: To write is to articulate.
+  id: totrans-11
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 写作即表达。
 - en: ''
+  id: totrans-12
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
@@ -65,10 +90,13 @@
     structure of letters, words, sentences, paragraphs, chapters. It is to lock down
     the meaning of what you want to say, and yet open up the possibilities of what
     you could say, but haven't said yet.
+  id: totrans-13
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 它是将你脑海中边缘的东西结合到字母、单词、句子、段落、章节的结构中去。它是锁定你想说的意义，但同时打开你还可以说但尚未说出口的可能性。
 - en: ''
+  id: totrans-14
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
@@ -76,18 +104,24 @@
     regularly go back to the ledgers and rewrite the scritch scratch of history to
     make it pretty. Think of it as a collection of essays, each an encapsulation of
     something I wanted to say.
+  id: totrans-15
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 因此，请不要将这看作一个网络日志，因为如果它是一个日志，船长会定期回到分类账并重写历史的涂鸦以使其变得漂亮。把它看作是一本文章集，每篇文章都是我想说的东西的概述。
 - en: But the plan was derailed by the fact that it's really hard to write essays,
     it's not actually quite an appropriate medium for blogs (if you are writing an
     expository piece, you would very much like to keep it up to date), and WordPress
     code is, quite frankly, kind of horrifying.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 但计划被写作难度极大的事实所搁置，事实上，博客并不是一个很合适的媒介（如果你在写一篇阐述性文章，你很希望能保持更新），而且WordPress的代码，坦率地说，相当令人毛骨悚然。
 - en: 'Iron Blogger, more than a "threat" of financial burden due to lameness, is
     helpful because it is an observation function: it cannot work unless someone is
     at least vaguely paying attention to your blog. And thus I am proud to embark
     upon this grand experiment. Let the lameness begin!'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: Iron Blogger，不仅仅是由于无聊而带来的“威胁”经济负担，还因为它具有观察功能：除非至少有人模糊地关注你的博客，否则它是不能发挥作用的。因此，我很自豪地开始了这个宏大的实验。让无聊开始吧！

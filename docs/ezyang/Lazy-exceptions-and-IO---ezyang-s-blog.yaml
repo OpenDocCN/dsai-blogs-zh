@@ -1,88 +1,132 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:19'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:19'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Lazy exceptions and IO : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '懒惰异常与 IO : ezyang 的博客'
 - en: 来源：[http://blog.ezyang.com/2010/05/imprecise-exceptions-and-io/](http://blog.ezyang.com/2010/05/imprecise-exceptions-and-io/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/05/imprecise-exceptions-and-io/](http://blog.ezyang.com/2010/05/imprecise-exceptions-and-io/)
 - en: Lazy exceptions and IO
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 懒惰异常与 IO
 - en: 'Consider the following piece of code:'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 考虑下面的代码片段：
 - en: '[PRE0]'
+  id: totrans-8
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'What might you expect the output to be? A straightforward transcription to
     Python might look like:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可能期望的输出是什么？直接转录到 Python 可能看起来像：
 - en: '[PRE1]'
+  id: totrans-10
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: and anyone with a passing familiarity with the any strict language will say,
     "Of course, it will output:"
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 任何对任何严格语言有一定了解的人都会说：“当然，它会输出：”
 - en: '[PRE2]'
+  id: totrans-12
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'Of course, lazy exceptions (which is what `error` emits) aren''t called lazy
     for no reason; the Haskell code outputs:'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 当然，懒惰异常（`error`发出的就是这种）并非无缘无故地被称为懒惰；Haskell 代码输出：
 - en: '[PRE3]'
+  id: totrans-14
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: What happened? Haskell was lazy, and didn't bother evaluating the pure insides
     of the IO `return alwaysFails` until it needed it for unsafeCall, at which point
     there was no more `catch` call guarding the code. If you don't believe me, you
     can add a trace around `alwaysFails`. You can also try installing `errorHandler_`
     on `unsafeCall`.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 发生了什么？Haskell 是懒惰的，直到它需要为 unsafeCall 评估 IO `return alwaysFails` 的纯内部代码时，它才会这样做。在那时，没有更多的`catch`调用保护代码了。如果你不相信我，可以在`alwaysFails`周围添加一个追踪。您也可以尝试在`unsafeCall`上安装`errorHandler_`。
 - en: What is the moral of the story? Well, one is that `error` is evil, but we already
     knew that...
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个故事的寓意是什么？嗯，其中一个是`错误`是邪恶的，但我们早已知道这一点…
 - en: You may install exception handlers for most IO-based errors the obvious way.
     (If we had replaced `return alwaysFails` with `alwaysFails`, the result would
     have been the strict one.) You may not install exception handlers for errors originating
     from pure code, since GHC reserves the right to schedule arbitrarily the time
     when your code is executed.
+  id: totrans-17
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 对于大多数基于 IO 的错误，您可以以显而易见的方式安装异常处理程序。（如果我们用`return alwaysFails`替换了`alwaysFails`，结果就会是严格的。）对于源自纯代码的错误，您不能安装异常处理程序，因为
+    GHC 保留在执行代码的时间上任意调度的权利。
 - en: If pure code is emitting exceptions and you would like it to stop doing that,
     you'll probably need to force strictness with `$!` `deepseq` or `rnf`, which will
     force GHC to perform the computation inside your guarded area. As my readers point
     out, a good way to think about this is that the *call* is not what is exceptional,
     the *structure* is.
+  id: totrans-18
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如果纯代码正在抛出异常，而您希望它停止这样做，您可能需要使用`$!` `deepseq`或`rnf`来强制严格性，这将迫使 GHC 在受保护区域内执行计算。正如我的读者指出的那样，一个很好的思考方式是，*调用*不是异常的，*结构*才是。
 - en: If you are getting an imprecise exception from pure code, but can't figure out
     where, good luck! I don't have a good recipe for figuring this out yet. (Nudge
     to my blog readers.)
+  id: totrans-19
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 如果您从纯代码中获得不精确的异常，但是无法弄清楚原因，祝您好运！我还没有找到解决这个问题的好办法。（给我的博客读者的一个小提示。）
 - en: '*Postscript.* Note that we needed to use `Control.Exception.catch`. `Prelude.catch`,
     as per Haskell98, only catches IO-based errors.'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: '*附言.* 请注意，我们需要使用`Control.Exception.catch`。`Prelude.catch`，按照 Haskell98 的定义，仅捕获基于
+    IO 的错误。'

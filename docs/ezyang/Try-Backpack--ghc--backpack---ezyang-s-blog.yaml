@@ -1,56 +1,85 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:05'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:05'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Try Backpack: ghc –backpack : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 尝试 Backpack：ghc –backpack：ezyang's 博客
 - en: 来源：[http://blog.ezyang.com/2016/10/try-backpack-ghc-backpack/](http://blog.ezyang.com/2016/10/try-backpack-ghc-backpack/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2016/10/try-backpack-ghc-backpack/](http://blog.ezyang.com/2016/10/try-backpack-ghc-backpack/)
 - en: '[Backpack](https://ghc.haskell.org/trac/ghc/wiki/Backpack), a new system for
     mix-in packages in Haskell, has been released with GHC 8.2\. Although Backpack
     is closely integrated with the Cabal package system, it''s still possible to play
     around with toy examples using a new command `ghc --backpack`. Before you get
     started, make sure you have a [recent enough version of GHC](https://ghc.haskell.org/trac/ghc/blog/ghc-8.2.11-released):'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: '[Backpack](https://ghc.haskell.org/trac/ghc/wiki/Backpack)，一个用于 Haskell 中混合包的新系统，已经随着
+    GHC 8.2 发布。虽然 Backpack 与 Cabal 包系统紧密集成，但仍然可以使用一个新命令 `ghc --backpack` 玩耍。在开始之前，请确保你有一个足够新的
+    [GHC 版本](https://ghc.haskell.org/trac/ghc/blog/ghc-8.2.11-released)：'
 - en: '[PRE0]'
+  id: totrans-7
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'By the way, if you want to jump straight into Backpack for real (with Cabal
     packages and everything), skip this tutorial and jump to [Try Backpack: Cabal
     packages](http://blog.ezyang.com/2017/01/try-backpack-cabal-packages/).'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: '顺便说一句，如果你想真正地开始使用 Backpack（包括 Cabal 包等），跳过本教程直接参阅 [Try Backpack: Cabal packages](http://blog.ezyang.com/2017/01/try-backpack-cabal-packages/)。'
 - en: Hello World
+  id: totrans-9
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: Hello World
 - en: GHC supports a new file format, `bkp` files, which let you easily define multiple
     modules and packages in a single source file, making it easy to experiment with
     Backpack. This format is not suitable for large scale programming (there isn't
     any integration of `bkp` files with Cabal, nor do we plan to add an such integration),
     but we will use it for our tutorial because it makes it very easy to play around
     with Backpack without mucking about with lots of Cabal packages.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: GHC 支持一种新的文件格式，`bkp` 文件，允许你在单个源文件中轻松定义多个模块和包，这样就可以轻松地使用 Backpack 进行实验。这种格式不适合大规模编程（`bkp`
+    文件与 Cabal 没有集成，我们也不打算添加这样的集成），但我们会在教程中使用它，因为它非常方便在不与大量 Cabal 包混淆的情况下玩转 Backpack。
 - en: 'Here is a simple "Hello World" program:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是一个简单的 "Hello World" 程序：
 - en: '[PRE1]'
+  id: totrans-12
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: We define a unit (think package) with the special name `main`, and in it define
     a `Main` module (also specially named) which contains our `main` function. Place
     this in a file named `hello.bkp`, and then run `ghc --backpack hello.bkp` (using
@@ -59,153 +88,224 @@
     Note that by default, `ghc --backpack` creates a directory with the same name
     as every unit, so `-o main` won't work (it'll give you a linker error; use a different
     name!)
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们定义了一个单元（类似于包），具有特殊名称 `main`，在其中定义了一个 `Main` 模块（同样是特殊名称），包含我们的 `main` 函数。将其放入名为
+    `hello.bkp` 的文件中，然后运行 `ghc --backpack hello.bkp`（使用您的 GHC nightly）。这将在 `main/Main`
+    处生成一个可执行文件，您可以运行它；您还可以使用 `-o filename` 显式指定所需的输出文件名。请注意，默认情况下，`ghc --backpack`
+    创建一个与每个单元同名的目录，因此 `-o main` 不起作用（它会给出链接器错误；请使用其他名称！）
 - en: A Play on Regular Expressions
+  id: totrans-14
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: A Play on Regular Expressions
 - en: Let's write some nontrivial code that actually uses Backpack. For this tutorial,
     we will write a simple matcher for regular expressions as described in [A Play
     on Regular Expressions](https://sebfisch.github.io/haskell-regexp/regexp-play.pdf)
     (Sebastian Fischer, Frank Huch, Thomas Wilke). The matcher itself is inefficient
     (it checks for a match by testing all exponentially many decompositions of a string),
     but it will be sufficient to illustrate many key concepts of Backpack.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们写一些真正使用 Backpack 的非平凡代码。在本教程中，我们将按照 [A Play on Regular Expressions](https://sebfisch.github.io/haskell-regexp/regexp-play.pdf)（Sebastian
+    Fischer, Frank Huch, Thomas Wilke）中描述的简单正则表达式匹配器写一个简单的示例。匹配器本身效率低下（通过测试所有指数级字符串分解来检查匹配），但足以说明
+    Backpack 的许多关键概念。
 - en: 'To start things off, let''s go ahead and write a traditional implementation
     of the matcher by copy-pasting the code from this Functional Pearl into a `Regex`
     module in the Backpack file and writing a little test program to run it:'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 要开始，让我们复制粘贴功能珍珠中的代码到 Backpack 文件的 `Regex` 模块中，并写一个小测试程序来运行它：
 - en: '[PRE2]'
+  id: totrans-17
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: If you put this in `regex.bkp`, you can once again compile it using `ghc --backpack
     regex.bkp` and invoke the resulting executable at `main/Main`. It should print
     `True`.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你将这段代码放在 `regex.bkp` 中，可以再次使用 `ghc --backpack regex.bkp` 编译它，并在 `main/Main`
+    处调用生成的可执行文件。它应该会打印出 `True`。
 - en: Functorizing the matcher
+  id: totrans-19
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: Functorizing the matcher
 - en: The previously shown code isn't great because it hardcodes `String` as the type
     to do regular expression matching over. A reasonable generalization (which you
     can see in the original paper) is to match over arbitrary lists of symbols; however,
     we might also reasonably want to match over non-list types like `ByteString`.
     To support all of these cases, we will instead use Backpack to "functorize" (in
     ML parlance) our matcher.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 先前显示的代码并不好，因为它将`String`硬编码为用于正则表达式匹配的类型。一个合理的泛化（你可以在原始论文中看到）是在任意符号列表上进行匹配；然而，我们可能也希望在非列表类型（如`ByteString`）上进行匹配。为了支持所有这些情况，我们将使用Backpack来“泛型化”（在ML术语中）我们的匹配器。
 - en: 'We''ll do this by creating a new unit, `regex-indef`, and writing a signature
     which provides a string type (we''ve decided to call it `Str`, to avoid confusion
     with `String`) and all of the operations which need to be supported on it. Here
     are the steps I took:'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将通过创建一个新单元`regex-indef`并编写一个提供字符串类型的签名（我们决定称其为`Str`，以避免与`String`混淆）来完成这个任务。以下是我所采取的步骤：
 - en: 'First, I copy-pasted the old `Regex` implementation into the new unit. I replaced
     all occurrences of `String` with `Str`, and deleted `splits` and `parts`: we will
     require these to be implemented in our signature.'
+  id: totrans-22
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 首先，我将旧的`Regex`实现复制粘贴到新的单元中。我用`Str`替换了所有`String`的出现，并删除了`splits`和`parts`：我们需要在签名中实现这些。
 - en: 'Next, we create a new `Str` signature, which is imported by `Regex`, and defines
     our type and operations (`splits` and `parts`) which it needs to support:'
+  id: totrans-23
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 接下来，我们创建一个新的`Str`签名，它由`Regex`引入，并定义了我们需要支持的类型和操作（`splits`和`parts`）：
 - en: '[PRE3]'
+  id: totrans-24
   prefs:
   - PREF_IND
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: At this point, I ran `ghc --backpack` to typecheck the new unit. But I got two
     errors!
+  id: totrans-25
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在这一点上，我运行了`ghc --backpack`来对新单元进行类型检查。但我得到了两个错误！
 - en: '[PRE4]'
+  id: totrans-26
   prefs:
   - PREF_IND
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: 'Traversable `null` nonsense aside, the errors are quite clear: `Str` is a completely
     abstract data type: we cannot assume that it is a list, nor do we know what instances
     it has. To solve these type errors, I introduced the combinators `null` and `singleton`,
     an `instance Eq Str`, and rewrote `Regex` to use these combinators (a very modest
     change.) (Notice we can''t write `instance Traversable Str`; it''s a kind mismatch.)'
+  id: totrans-27
   prefs:
   - PREF_IND
   type: TYPE_NORMAL
+  zh: 除了遍历`null`的无意义外，这些错误非常明显：`Str`是一个完全抽象的数据类型：我们不能假设它是一个列表，也不知道它有什么实例。为了解决这些类型错误，我引入了组合子`null`和`singleton`，一个`instance
+    Eq Str`，并重写了`Regex`以使用这些组合子（这是一个非常谨慎的改变）。 （注意，我们不能写`instance Traversable Str`；这是一种类型不匹配。）
 - en: 'Here is our final indefinite version of the regex unit:'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是我们最终的正则表达式单元的不定版本：
 - en: '[PRE5]'
+  id: totrans-29
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: (To keep things simple for now, I haven't parametrized `Char`.)
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: （为了简单起见，现在我还没有将`Char`参数化。）
 - en: Instantiating the functor (String)
+  id: totrans-31
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 实例化这个函数（String）
 - en: 'This is all very nice but we can''t actually run this code, since there is
     no implementation of `Str`. Let''s write a new unit which provides a module which
     implements all of these types and functions with `String`, copy pasting in the
     old implementations of `splits` and `parts`:'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 这一切都很好，但我们实际上不能运行这段代码，因为没有`Str`的实现。让我们写一个新单元，提供一个模块，其中包含所有这些类型和函数的实现，使用`String`，将旧的`splits`和`parts`实现复制粘贴进来：
 - en: '[PRE6]'
+  id: totrans-33
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: One quirk when writing Backpack implementations for functions is that Backpack
     does *no* subtype matching on polymorphic functions, so you can't implement `Str
     -> Bool` with a polymorphic function `Traversable t => t a -> Bool` (adding this
     would be an interesting extension, and not altogether trivial). So we have to
     write a little impedance matching binding which monomorphizes `null` to the expected
     type.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 当为函数编写Backpack实现时，一个怪癖是Backpack在多态函数上不执行子类型匹配，因此你不能使用多态函数`Traversable t => t
+    a -> Bool`实现`Str -> Bool`（添加这个将是一个有趣的扩展，但并不是完全平凡的）。所以我们必须写一个稍微增加阻抗匹配的绑定，将`null`单态化到预期的类型。
 - en: 'To instantiate `regex-indef` with `str-string:Str`, we modify the dependency
     in `main`:'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了用`str-string:Str`实例化`regex-indef`，我们在`main`中修改了依赖项：
 - en: '[PRE7]'
+  id: totrans-36
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: Backpack files require instantiations to be explicitly specified (this is as
     opposed to Cabal files, which do mix-in linking to determine instantiations).
     In this case, the instantiation specifies that `regex-indef`'s signature named
     `Str` should be filled with the `Str` module from `str-string`.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: Backpack文件要求显式指定实例化（这与Cabal文件不同，后者使用混合链接来确定实例化）。在这种情况下，实例化指定`regex-indef`的名为`Str`的签名应由`str-string`中的`Str`模块填充。
 - en: After making these changes, give `ghc --backpack` a run; you should get out
     an identical looking result.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 进行这些更改后，运行`ghc --backpack`；你应该会得到一个完全相同的结果。
 - en: Instantiating the functor (ByteString)
+  id: totrans-39
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 实例化这个函数（ByteString）
 - en: 'The whole point of parametrizing `regex` was to enable us to have a second
     implementation of `Str`. So let''s go ahead and write a `bytestring` implementation.
     After a little bit of work, you might end up with this:'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 参数化 `regex` 的整个目的是使我们能够有第二个 `Str` 的实现。所以让我们继续编写一个 `bytestring` 实现。经过一点工作，你可能最终得到这个：
 - en: '[PRE8]'
+  id: totrans-41
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: 'There are two things to note about this implementation:'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 关于这个实现，有两点需要注意：
 - en: Unlike `str-string`, which explicitly defined every needed method in its module
     body, `str-bytestring` provides `null` and `singleton` simply by reexporting all
     of the entities from `Data.ByteString.Char8` (which are appropriately monomorphic).
     We've cleverly picked our names to abide by the existing naming conventions of
     existing string packages!
+  id: totrans-43
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 与 `str-string` 不同，它在其模块体中显式定义了每个所需的方法，`str-bytestring` 通过重新导出来自 `Data.ByteString.Char8`
+    的所有实体（适当地单态化）来提供 `null` 和 `singleton`。我们聪明地选择了我们的命名，以符合现有字符串包的命名约定！
 - en: Our implementations of `splits` and `parts` are substantially more optimized
     than if we had done a straight up transcription of the consing and unconsing from
     the original `String` implementation. I often hear people say that `String` and
@@ -214,36 +314,53 @@
     as you have sufficiently high-level operations on your strings, these performance
     changes smooth out in the end; and there is still a decent chunk of code that
     can be reused across implementations.
+  id: totrans-44
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 我们的 `splits` 和 `parts` 的实现比原始的 `String` 实现中的 consing 和 unconsing 要优化得多。我经常听到人们说
+    `String` 和 `ByteString` 的性能特性非常不同，因此你不应该在同一个实现中混合它们。我认为这个例子表明，只要你对字符串有足够高级的操作，这些性能差异最终会平滑化；并且仍然有相当大的代码块可以在不同的实现之间重用。
 - en: 'To instantiate `regex-indef` with `bytestring-string:Str`, we once again modify
     the dependency in `main`:'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 要使用 `bytestring-string:Str` 实例化 `regex-indef`，我们再次修改 `main` 中的依赖项：
 - en: '[PRE9]'
+  id: totrans-46
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: 'We also need to stick an `{-# LANGUAGE OverloadedStrings #-}` pragma so that
     `"acc"` gets interpreted as a `ByteString` (unfortunately, the `bkp` file format
     only supports language pragmas that get applied to all modules defined; so put
     this pragma at the top of the file). But otherwise, everything works as it should!'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: '我们还需要粘贴 `{-# LANGUAGE OverloadedStrings #-}` 命令，以便将 `"acc"` 解释为 `ByteString`（不幸的是，`bkp`
+    文件格式仅支持适用于所有定义的模块的语言命令，因此将此命令放在文件顶部）。但除此之外，一切都按预期工作！'
 - en: Using both instantiations at once
+  id: totrans-48
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 同时使用两个实例
 - en: 'There is nothing stopping us from using both instantiations of `regex-indef`
     at the same time, simply by uncommenting both `dependency` declarations, except
     that the module names provided by each dependency conflict with each other and
     are thus ambiguous. Backpack files thus provide a *renaming* syntax for modules
     which let you give each exported module a different name:'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 没有任何阻碍我们同时使用 `regex-indef` 的两个实例，只需取消注释两个 `dependency` 声明，除了每个依赖项提供的模块名称之间冲突且不明确外。因此，Backpack
+    文件为模块提供了*重命名*语法，让你为每个导出的模块指定一个不同的名称：
 - en: '[PRE10]'
+  id: totrans-50
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: 'How should we modify `Main` to run our regex on both a `String` and a `ByteString`?
     But is `Regex.String.Reg` the same as `Regex.ByteString.Reg`? A quick query to
     the compiler will reveal that they are *not* the same. The reason for this is
@@ -251,23 +368,36 @@
     on how *all* signatures are instantiated, even if the type doesn''t actually depend
     on any types from the signature. If we want there to be only one `Reg` type, we
     will have to extract it from `reg-indef` and give it its own unit, with *no* signatures.'
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们应该如何修改 `Main` 来在 `String` 和 `ByteString` 上运行我们的正则表达式？但是 `Regex.String.Reg`
+    和 `Regex.ByteString.Reg` 是一样的吗？编译器的快速查询将揭示它们*不*是一样的。这是因为 Backpack 的类型标识规则：所有在一个单元中定义的类型的标识都取决于*所有*签名的实例化方式，即使该类型实际上并不依赖于来自签名的任何类型。如果我们希望只有一个
+    `Reg` 类型，我们将不得不从 `reg-indef` 中提取它，并为它单独创建一个单元，*没有*签名。
 - en: 'After the refactoring, here is the full final program:'
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 重构后，这是最终的完整程序：
 - en: '[PRE11]'
+  id: totrans-53
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: And beyond!
+  id: totrans-54
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 还有更多！
 - en: 'Read on to the next blog post, [Try Backpack: Cabal packages](http://blog.ezyang.com/2017/01/try-backpack-cabal-packages/),
     where I tell you how to take this prototype in a `bkp` file, and scale it up into
     a set of Cabal packages.'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: 继续阅读下一篇博客文章，[尝试 Backpack：Cabal packages](http://blog.ezyang.com/2017/01/try-backpack-cabal-packages/)，我将告诉你如何将这个原型转化为一组
+    Cabal packages 中的 `bkp` 文件。
 - en: '**Postscript.** If you are feeling adventurous, try further parametrizing `regex-types`
     so that it no longer hard-codes `Char` as the element type, but some arbitrary
     element type `Elem`. It may be useful to know that you can instantiate multiple
@@ -276,5 +406,9 @@
     through using the syntax `dependency regex-types[Elem=<Elem>]`. If this sounds
     user-unfriendly, it is! That is why in the Cabal package universe, instantiation
     is done *implicitly*, using mix-in linking.'
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: '**后记。** 如果你感到冒险的话，尝试进一步参数化`regex-types`，使其不再将`Char`硬编码为元素类型，而是某种任意的元素类型`Elem`。了解到，你可以使用语法`dependency
+    regex-indef[Str=str-string:Str,Elem=str-string:Elem]`来实例化多个签名，而且如果你依赖一个带有签名的包，你必须通过使用语法`dependency
+    regex-types[Elem=<Elem>]`来传递该签名。如果这听起来用户不友好，那就是真的！这就是为什么在 Cabal 包的宇宙中，实例化是*隐式*完成的，使用混合链接。'

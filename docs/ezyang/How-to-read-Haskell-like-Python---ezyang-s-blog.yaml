@@ -1,65 +1,97 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: '类别: 未分类'
 - en: 'date: 2024-07-01 18:17:40'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:40'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'How to read Haskell like Python : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '如何像 Pythonista 一样阅读 Haskell 代码 : ezyang’s blog'
 - en: 来源：[http://blog.ezyang.com/2011/11/how-to-read-haskell/](http://blog.ezyang.com/2011/11/how-to-read-haskell/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/11/how-to-read-haskell/](http://blog.ezyang.com/2011/11/how-to-read-haskell/)
 - en: '**tl;dr** — Save this page for future reference.'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: '**tl;dr** — 保存此页面以供将来参考。'
 - en: Have you ever been in the situation where you need to quickly understand what
     a piece of code in some unfamiliar language does? If the language looks a lot
     like what you’re comfortable with, you can usually guess what large amounts of
     the code does; even if you may not be completely familiar how all the language
     features work.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 你是否曾经处于需要快速理解某种陌生语言代码功能的情况？如果该语言看起来很像你熟悉的语言，通常你可以猜出大部分代码的作用；即使你可能不完全熟悉所有语言特性的工作方式。
 - en: 'For Haskell, this is a little more difficult, since Haskell syntax looks very
     different from traditional languages. But there''s no really deep difference here;
     you just have to squint at it just right. Here is a fast, mostly incorrect, and
     hopefully useful guide for interpreting Haskell code like a Pythonista. By the
     end, you should be able to interpret this fragment of Haskell (some code elided
     with `...`):'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于 Haskell 来说，这有点困难，因为 Haskell 语法看起来与传统语言非常不同。但这里没有真正的深层区别；你只需要适当地看待它。以下是一个快速的、大部分不正确但希望对解释
+    Haskell 代码有用的指南，就像一个 Python 程序员一样。最后，你应该能够解释这段 Haskell 代码片段（某些代码被省略为`...`）：
 - en: '[PRE0]'
+  id: totrans-9
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: '* * *'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Types.* Ignore everything you see after `::` (similarly, you can ignore `type`,
     `class`, `instance` and `newtype`. Some people claim that types help them understand
     code; if you''re a complete beginner, things like `Int` and `String` will probably
     help, and things like `LayoutClass` and `MonadError` won''t. Don''t worry too
     much about it.)'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: '*类型.* 忽略`::`后的所有内容（同样，你可以忽略`type`, `class`, `instance`和`newtype`）。有些人声称类型帮助他们理解代码；如果你是完全的初学者，像`Int`和`String`可能会有所帮助，而像`LayoutClass`和`MonadError`则不会。不要太担心这些。'
 - en: '* * *'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Arguments.* `f a b c` translates into `f(a, b, c)`. Haskell code omits parentheses
     and commas. One consequence of this is we sometimes need parentheses for arguments:
     `f a (b1 + b2) c` translates into `f(a, b1 + b2, c)`.'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: '*参数.* `f a b c` 翻译成 `f(a, b, c)`。Haskell 代码省略括号和逗号。这导致我们有时需要用括号来表示参数：`f a (b1
+    + b2) c` 翻译成 `f(a, b1 + b2, c)`。'
 - en: '* * *'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Dollar sign.* Since complex statements like `a + b` are pretty common and
     Haskellers don''t really like parentheses, the dollar sign is used to avoid parentheses:
     `f $ a + b` is equivalent to the Haskell code `f (a + b)` and translates into
@@ -68,114 +100,180 @@
     if you stack them up, each one creates a deeper nesting: `f $ g x $ h y $ a +
     b` is equivalent to `f (g x (h y (a + b)))` and translates into `f(g(x,h(y,a +
     b))` (though some consider this bad practice).'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: '*美元符号.* 因为像`a + b`这样的复杂语句很常见，而 Haskell 程序员不太喜欢括号，所以美元符号用于避免括号：`f $ a + b` 等同于
+    Haskell 代码 `f (a + b)`，翻译成 `f(a + b)`。你可以把它想象成一个大的左括号，自动在行尾关闭（不再需要写`))))))`！特别是，如果你堆叠它们，每一个都会创建更深的嵌套：`f
+    $ g x $ h y $ a + b` 等同于 `f (g x (h y (a + b)))`，翻译成 `f(g(x,h(y,a + b))`（尽管有些人认为这是不良实践）。'
 - en: 'In some code, you may see a variant of `$`: `<$>` (with angled brackets). You
     can treat `<$>` the same way as you treat `$`. (You might also see `<*>`; pretend
     that it''s a comma, so `f <$> a <*> b` translates to `f(a, b)`. There''s not really
     an equivalent for regular `$`)'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 在某些代码中，你可能会看到 `<$>` 的变体（带有尖括号）。你可以将 `<$>` 看作与 `$` 同样的方式处理。（你可能还会看到 `<*>`；假装它是一个逗号，所以
+    `f <$> a <*> b` 翻译成 `f(a, b)`。对于普通的 `$`，没有真正的等价物）
 - en: '* * *'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Backticks.* ``x `f` y`` translates into `f(x,y)`. The thing in the backticks
     is a function, usually binary, and the things to the left and right are the arguments.'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: '*反引号.* ``x `f` y`` 翻译成 `f(x,y)`。反引号中的内容通常是一个函数，通常是二元的，左右两边是参数。'
 - en: '* * *'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Equals sign.* Two possible meanings. If it''s at the beginning of a code block,
     it just means you''re defining a function:'
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: '*等号.* 有两种可能的含义。如果它在代码块的开头，它只是表示你正在定义一个函数：'
 - en: '[PRE1]'
+  id: totrans-21
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'Or if you see it to near a `let` keyword, it’s acting like an assignment operator:'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 或者如果你看到它靠近`let`关键字，它就像一个赋值操作符：
 - en: '[PRE2]'
+  id: totrans-23
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: '* * *'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Left arrow.* Also acts like an assignment operator:'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: '*左箭头.* 也起到了赋值操作符的作用：'
 - en: '[PRE3]'
+  id: totrans-26
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: Why don't we use an equals sign? Shenanigans. (More precisely, `createEntry
     x` has side effects. More accurately, it means that the expression is monadic.
     But that’s just shenanigans. Ignore it for now.)
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 为什么不使用等号？骗局。（更准确地说，`createEntry x` 有副作用。更确切地说，这意味着表达式是单子的。但这只是小把戏。现在先忽略它。）
 - en: '* * *'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Right arrow.* It''s complicated. We''ll get back to them later.'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: '*右箭头。* 它很复杂。我们稍后会回头再说。'
 - en: '* * *'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Do keyword.* Line noise. You can ignore it. (It does give some information,
     namely that there are side effects below, but you never see this distinction in
     Python.)'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: '*Do 关键字。* 线噪声。你可以忽略它。（它确实提供一些信息，即下面存在副作用，但你在 Python 中看不到这种区别。）'
 - en: '* * *'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Return.* Line-noise. Also ignore. (You’ll never see it used for control flow.)'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: '*返回。* 线噪声。也可以忽略。（你永远不会看到它用于控制流。）'
 - en: '* * *'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Dot.* `f . g $ a + b` translates to `f(g(a + b))`. Actually, in a Python program
     you''d probably have been more likely to see:'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: '*点。* `f . g $ a + b` 翻译成 `f(g(a + b))`。实际上，在 Python 程序中，你可能更容易看到：'
 - en: '[PRE4]'
+  id: totrans-36
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: But Haskell programmers are allergic to extra variables.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 但 Haskell 程序员对额外的变量过敏。
 - en: '* * *'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Bind and fish operators.* You might see things like `=<<`, `>>=`, `<=<` and
     `>=>`. These are basically just more ways of getting rid of intermediate variables:'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: '*绑定和鱼操作符。* 你可能会看到类似 `=<<`, `>>=`, `<=<` 和 `>=>` 的东西。这些基本上只是更多摆脱中间变量的方法：'
 - en: '[PRE5]'
+  id: totrans-40
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 'Sometimes a Haskell programmer decides that it''s prettier if you do it in
     the other direction, especially if the variable is getting assigned somewhere:'
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 有时，Haskell 程序员决定如果变量在某处被赋值，将其在另一方向中进行可能更漂亮：
 - en: '[PRE6]'
+  id: totrans-42
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'The most important thing to do is to reverse engineer what''s actually happening
     by looking at the definitions of `doSomething`, `doSomethingElse` and `finishItUp`:
     it will give you a clue what''s “flowing” across the fish operator. If you do
     that, you can read `<=<` and `>=>` the same way (they actually do function composition,
     like the dot operator). Read `>>` like a semicolon (e.g. no assignment involved):'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 最重要的是通过查看 `doSomething`、`doSomethingElse` 和 `finishItUp` 的定义来反向工程实际发生的事情：这将给你一个线索，指出鱼操作符“流动”的方式。如果你这样做，你可以以相同的方式读取
+    `<=<` 和 `>=>`（它们实际上执行函数组合，就像点操作符一样）。将 `>>` 看作分号（例如，没有赋值涉及）：
 - en: '[PRE7]'
+  id: totrans-44
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: '* * *'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Partial application.* Sometimes, Haskell programmers will call a function,
     but they *won''t pass enough arguments.* Never fear; they''ve probably arranged
     for the rest of the arguments to be given to the function somewhere else. Ignore
@@ -183,202 +281,314 @@
     the usual culprits include `map`, `fold` (and variants), `filter`, the composition
     operator `.`, the fish operators (`=<<`, etc). This happens a lot to the numeric
     operators: `(+3)` translates into `lambda x: x + 3`.'
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: '*部分应用。* 有时，Haskell 程序员会调用一个函数，但是他们*没有传足够的参数*。不要担心；他们可能已经在别处安排了剩余的参数给函数。忽略它，或者寻找接受匿名函数作为参数的函数。一些常见的罪魁祸首包括
+    `map`、`fold`（及其变体）、`filter`、组合操作符`.`、鱼操作符（`=<<` 等）。这在数值操作符上经常发生：`(+3)`翻译成`lambda
+    x: x + 3`。'
 - en: '* * *'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Control operators.* Use your instinct on these: they do what you think they
     do! (Even if you think they shouldn''t act that way.) So if you see: `when (x
     == y) $ doSomething x`, it reads like “When x equals y, call doSomething with
     x as an argument.”'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: '*控制操作符。* 凭直觉使用它们：它们做你想要的事情！（即使你认为它们不应该那样做。）所以如果你看到：`when (x == y) $ doSomething
+    x`，它读起来像是“当 x 等于 y 时，调用带有 x 作为参数的 doSomething。”'
 - en: 'Ignore the fact that you couldn’t actually translate that into `when(x == y,
     doSomething(x))` (Since, that would result in `doSomething` always being called.)
     In fact, `when(x == y, lambda: doSomething x)` is more accurate, but it might
     be more comfortable to just pretend that `when` is also a language construct.'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: '忽略你无法真正将其翻译成 `when(x == y, doSomething(x))`（因为那样会导致 `doSomething` 总是被调用）。事实上，`when(x
+    == y, lambda: doSomething x)` 更准确，但也许假装 `when` 也是一种语言构造更舒服。'
 - en: '`if` and `case` are built-in keywords. They work the way you’d expect them
     to.'
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: '`if` 和 `case` 是内置关键字。它们的工作方式符合你的预期。'
 - en: '* * *'
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Right arrows (for real!)* Right arrows have nothing to do with left arrows.
     Think of them as colons: they''re always nearby the `case` keyword and the backslash
     symbol, the latter of which is lambda: `\x -> x` translates into `lambda x: x`.'
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: '*右箭头（真的！）* 右箭头与左箭头无关。把它们看作冒号：它们总是靠近`case`关键字和反斜杠符号，后者是lambda函数：`\x -> x`翻译成`lambda
+    x: x`。'
 - en: 'Pattern matching using `case` is a pretty nice feature, but a bit hard to explain
     in this blog post. Probably the easiest approximation is an `if..elif..else` chain
     with some variable binding:'
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 使用 `case` 进行模式匹配是一个非常好的功能，但在这篇博文中有点难以解释。可能最容易的近似是带有一些变量绑定的 `if..elif..else`
+    链：
 - en: '[PRE8]'
+  id: totrans-54
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: '* * *'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Bracketing.* You can tell something is a bracketing function if it starts
     with `with`. They work like contexts do in Python:'
+  id: totrans-56
   prefs: []
   type: TYPE_NORMAL
+  zh: '*括号。* 如果一个函数以 `with` 开头，你可以知道它是一个括号函数。它们的工作方式类似于 Python 中的上下文：'
 - en: '[PRE9]'
+  id: totrans-57
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: (You may recall the backslash from earlier. Yes, that's a lambda. Yes, `withFile`
     is a function. Yes, you can define your own.)
+  id: totrans-58
   prefs: []
   type: TYPE_NORMAL
+  zh: （你可能还记得前面的反斜杠。是的，那是一个 lambda 表达式。是的，`withFile` 是一个函数。是的，你可以定义你自己的。）
 - en: '* * *'
+  id: totrans-59
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Exceptions.* `throw`, `catch`, `catches`, `throwIO`, `finally`, `handle` and
     all the other functions that look like this work essentially the way you expect
     them to. They may look a little funny, however, because none of these are keywords:
     they’re all functions, and follow all those rules. So, for example:'
+  id: totrans-60
   prefs: []
   type: TYPE_NORMAL
+  zh: '*异常。* `throw`、`catch`、`catches`、`throwIO`、`finally`、`handle` 等看起来像这样的函数实际上都按你预期的方式工作。然而它们看起来可能有点奇怪，因为这些都不是关键字：它们都是函数，并遵循所有这些规则。例如：'
 - en: '[PRE10]'
+  id: totrans-61
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: '* * *'
+  id: totrans-62
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Maybe.* If you see Nothing, it can be thought of as `None`. So `isNothing
     x` tests if `x is None`. What''s the opposite of it? `Just`. For example, `isJust
     x` tests if `x is not None`.'
+  id: totrans-63
   prefs: []
   type: TYPE_NORMAL
+  zh: '*也许吧。* 如果你看到 Nothing，可以将其视为 `None`。因此 `isNothing x` 用于测试 `x` 是否为 `None`。它的反义词是什么？`Just`。例如，`isJust
+    x` 用于测试 `x` 是否不为 `None`。'
 - en: 'You might see a lot of line noise associated with keeping `Just` and `None`
     in order. Here''s one of the most common ones:'
+  id: totrans-64
   prefs: []
   type: TYPE_NORMAL
+  zh: 你可能会看到很多与保持 `Just` 和 `None` 有关的噪音。这是其中一个最常见的：
 - en: '[PRE11]'
+  id: totrans-65
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE11]'
 - en: 'Here''s one specific variant, for when a null is an error condition:'
+  id: totrans-66
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里有一个特定的变体，用于当 null 是一个错误条件时：
 - en: '[PRE12]'
+  id: totrans-67
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE12]'
 - en: '* * *'
+  id: totrans-68
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Records.* The work they way you''d expect them too, although Haskell lets
     you create fields that have no names:'
+  id: totrans-69
   prefs: []
   type: TYPE_NORMAL
+  zh: '*记录。* 它们的工作方式符合你的预期，尽管 Haskell 允许你创建没有名称的字段：'
 - en: '[PRE13]'
+  id: totrans-70
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE13]'
 - en: 'So `NoNames` would probably be represented as a tuple `(1, 2)` in Python, and
     `WithNames` a class:'
+  id: totrans-71
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以 `NoNames` 在 Python 中可能被表示为元组 `(1, 2)`，而 `WithNames` 则是一个类：
 - en: '[PRE14]'
+  id: totrans-72
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE14]'
 - en: Then creation is pretty simple `NoNames 2 3` translates into `(2, 3)`, and `WithNames
     2 3` or `WithNames { firstField = 2, secondField = 3 }` translates into `WithNames(2,3)`.
+  id: totrans-73
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后创建是非常简单的 `NoNames 2 3` 翻译为 `(2, 3)`，而 `WithNames 2 3` 或 `WithNames { firstField
+    = 2, secondField = 3 }` 翻译为 `WithNames(2,3)`。
 - en: 'Accessors are a little more different. The most important thing to remember
     is Haskellers put their accessors before the variable, whereas you might be most
     familiar with them being after. So `field x` translates to `x.field`. How do you
     spell `x.field = 2`? Well, you can’t really do that. You can copy one with modifications
     though:'
+  id: totrans-74
   prefs: []
   type: TYPE_NORMAL
+  zh: 访问器有点不同。最重要的记住的是 Haskeller 把他们的访问器放在变量之前，而你可能更熟悉它们放在之后。所以 `field x` 翻译为 `x.field`。如何拼写
+    `x.field = 2`？嗯，你真的做不到。不过你可以复制一个并进行修改：
 - en: '[PRE15]'
+  id: totrans-75
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE15]'
 - en: Or you can make one from scratch if you replace `x` with the name of the data
     structure (it starts with a capital letter). Why do we only let you copy data
     structures? This is because Haskell is a *pure* language; but don't let that worry
     you too much. It's just another one of Haskell’s quirks.
+  id: totrans-76
   prefs: []
   type: TYPE_NORMAL
+  zh: 或者，如果你用数据结构的名称（以大写字母开头）替换 `x`，你也可以从头开始创建一个。为什么我们只允许你复制数据结构？这是因为 Haskell 是一种
+    *纯* 函数语言；但不要让这太让你担心。这只是 Haskell 的另一个怪癖。
 - en: '* * *'
+  id: totrans-77
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*List comprehensions.* They originally came from the Miranda-Haskell lineage!
     There are just more symbols.'
+  id: totrans-78
   prefs: []
   type: TYPE_NORMAL
+  zh: '*列表推导式。* 它们最初来自 Miranda-Haskell 衍生！只是符号更多。'
 - en: '[PRE16]'
+  id: totrans-79
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE16]'
 - en: 'It also turns out Haskellers often prefer list comprehensions written in multi-line
     form (perhaps they find it easier to read). They look something like:'
+  id: totrans-80
   prefs: []
   type: TYPE_NORMAL
+  zh: 原来 Haskeller 经常更喜欢以多行形式书写列表推导式（也许他们觉得更容易阅读）。它们看起来像这样：
 - en: '[PRE17]'
+  id: totrans-81
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE17]'
 - en: So if you see a left arrow and it doesn't really look like it's doing side effects,
     maybe it's a list comprehension.
+  id: totrans-82
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，如果你看到一个左箭头，它看起来并不像在执行副作用，也许它是一个列表推导式。
 - en: '* * *'
+  id: totrans-83
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*More symbols.* Lists work the way you would expect them to in Python; `[1,
     2, 3]` is in fact a list of three elements. A colon, like `x:xs` means construct
     a list with `x` at the front and `xs` at the back (`cons`, for you Lisp fans.)
     `++` is list concatenation. `!!` means indexing. Backslash means lambda. If you
     see a symbol you don''t understand, try looking for it on [Hoogle](http://haskell.org/hoogle/)
     (yes, it works on symbols!).'
+  id: totrans-84
   prefs: []
   type: TYPE_NORMAL
+  zh: '*更多的符号*。列表在Python中的工作方式与您期望的相同；`[1, 2, 3]`实际上是一个包含三个元素的列表。冒号，如`x:xs`表示构造一个以`x`开头、`xs`结尾的列表（对于Lisp爱好者来说是`cons`）。`++`是列表连接操作。`!!`表示索引。反斜杠表示lambda。如果您看到一个您不理解的符号，请尝试在[Hoogle](http://haskell.org/hoogle/)上查找它（是的，它适用于符号！）。'
 - en: '* * *'
+  id: totrans-85
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*More line noise.* The following functions are probably line noise, and can
     probably be ignored. `liftIO`, `lift`, `runX` (e.g. `runState`), `unX` (e.g. `unConstructor`),
     `fromJust`, `fmap`, `const`, `evaluate`, an exclamation mark before an argument
     (`f !x`), `seq`, a hash sign (e.g. `I# x`).'
+  id: totrans-86
   prefs: []
   type: TYPE_NORMAL
+  zh: '*更多的行噪声*。以下函数可能是行噪声，可以忽略不计。`liftIO`、`lift`、`runX`（例如`runState`）、`unX`（例如`unConstructor`）、`fromJust`、`fmap`、`const`、`evaluate`、参数前的感叹号（`f
+    !x`）、`seq`、井号（例如`I# x`）。'
 - en: '* * *'
+  id: totrans-87
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Bringing it all together.* Let’s return to the original code fragment:'
+  id: totrans-88
   prefs: []
   type: TYPE_NORMAL
+  zh: '*汇总所有信息*。让我们回到原始代码片段：'
 - en: '[PRE18]'
+  id: totrans-89
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE18]'
 - en: 'With some guessing, we can pop out this translation:'
+  id: totrans-90
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过一些猜测，我们可以得出这个翻译：
 - en: '[PRE19]'
+  id: totrans-91
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE19]'
 - en: This is not bad, for a very superficial understanding of Haskell syntax (there's
     only one obviously untranslatable bit, which requires knowing what a fold is.
     Not all Haskell code is folds; I’ll repeat, don’t worry about it too much!)
+  id: totrans-92
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于对Haskell语法的非常肤浅的理解来说，这并不差（只有一个明显无法翻译的部分，需要知道fold是什么。并非所有的Haskell代码都是折叠；我会再次重申，请不要过多担心它！）
 - en: Most of the things I have called “line noise” actually have very deep reasons
     behind them, and if you’re curious behind the actual reasons behind these distinctions,
     I recommend learning how to *write* Haskell. But if you’re just reading Haskell,
     I think these rules should be more than adequate.
+  id: totrans-93
   prefs: []
   type: TYPE_NORMAL
+  zh: 我称之为“行噪声”的大多数东西实际上都有深刻的原因，如果您对这些区别背后的真正原因感到好奇，我建议您学习如何*编写*Haskell。但如果您只是阅读Haskell，我认为这些规则应该已经足够了。
 - en: '*Thanks* to Keegan McAllister, Mats Ahlgren, Nelson Elhage, Patrick Hurst,
     Richard Tibbetts, Andrew Farrell and Geoffrey Thomas for comments. Also thanks
     to two kind denizens of `#python`, `` asdf` `` and `talljosh`, for acting as Python-using
     guinea pigs.'
+  id: totrans-94
   prefs: []
   type: TYPE_NORMAL
+  zh: '*感谢*Keegan McAllister、Mats Ahlgren、Nelson Elhage、Patrick Hurst、Richard Tibbetts、Andrew
+    Farrell和Geoffrey Thomas的评论。还要感谢两位Python使用者`#python`的友好居民，`asdf`和`talljosh`，因为他们是Python使用的试验品。'
 - en: '*Postscript.* If you''re really curious what `foldl (>>=) (return startOptions)
     actions` does, it implements the [chain of responsibility](http://en.wikipedia.org/wiki/Chain-of-responsibility_pattern)
     pattern. Hell yeah.'
+  id: totrans-95
   prefs: []
   type: TYPE_NORMAL
+  zh: '*附言*。如果您真的好奇`foldl (>>=) (return startOptions) actions`做了什么，它实现了[责任链](http://en.wikipedia.org/wiki/Chain-of-responsibility_pattern)模式。当然。'

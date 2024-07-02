@@ -1,151 +1,221 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:17:47'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:17:47
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Anatomy of a thunk leak : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: Thunk 泄漏的解剖：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2011/05/anatomy-of-a-thunk-leak/](http://blog.ezyang.com/2011/05/anatomy-of-a-thunk-leak/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/05/anatomy-of-a-thunk-leak/](http://blog.ezyang.com/2011/05/anatomy-of-a-thunk-leak/)
 - en: In this post, we discuss the characteristics of a thunk leak, the leak that
     has come to symbolize the difficulties of “reasoning about space usage” in Haskell.
     I’ll consider a few examples of this type of leak and argue that these leaks are
     actually *trivial* to fix. Rather, the difficulty is when a thunk leak gets confused
     with other types of leaks (which we will cover in later posts).
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本文中，我们讨论了 thunk 泄漏的特征，这种泄漏已经成为“推理空间使用难题”在 Haskell 中的象征。我将考虑几个此类泄漏的例子，并认为这些泄漏实际上是*微不足道*的修复。相反，困难在于当一个
+    thunk 泄漏被混淆与其他类型的泄漏时（我们将在后续文章中讨论）。
 - en: Description
+  id: totrans-7
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 描述
 - en: 'I’ll be describing the various leaks in two ways: I will first give an informal,
     concrete description using [the metaphor I developed in the Haskell Heap series](http://blog.ezyang.com/2011/04/the-haskell-heap/),
     and then I will give a more direct, clinical treatment at the end. If you can’t
     stand one form of explanation or the other, feel free to skip around.'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 我将以两种方式描述各种泄漏：首先我将使用我在 Haskell 堆系列中开发的隐喻给出一个非正式的具体描述，然后我将在最后给出更直接、临床的处理。如果你无法忍受一种形式的解释或另一种形式的解释，请随意跳过。
 - en: Thunk leaks occur when too many wrapped presents (thunks) are lying around at
     the same time.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 当太多包裹好的礼物（thunk）同时存在时，就会发生 thunk 泄漏。
 - en: 'The creation of thunks is not necessarily a bad thing: indeed, most Haskell
     programs generate lots of thunks. Sometimes the presence of thunks on the heap
     is unavoidable. The problem is when they do not get evaluated in due course: like
     socks in the room of a lazy college student, they start piling up.'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 创造 thunk 并不一定是一件坏事：事实上，大多数 Haskell 程序生成大量的 thunk。有时候堆上存在 thunk 是不可避免的。问题是当它们没有及时评估：就像懒惰的大学生房间里的袜子一样，它们开始堆积起来。
 - en: There is a precise sense by which the thunks “pile” up, which can be observed
     by looking at the presents the ghosts care about.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 有一个明确的意义，即 thunk “堆积”起来，这可以通过观察幽灵关心的礼物来观察到。
 - en: Each ghost cares about the next present in the pile (so the Grinch can’t steal
     them away), and we (the user) care about the present at the very bottom of the
     pile. Thus, when we open that present, the whole chain of presents comes toppling
     down (assuming there are not other references pointed to the pile).
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 每个幽灵都关心堆叠中的下一个礼物（这样格林奇就不能将它们带走），而我们（用户）关心的是堆叠最底部的礼物。因此，当我们打开那份礼物时，整个礼物链就会倾覆下来（假设没有其他引用指向堆积）。
 - en: The chain of thunks could really be any shape you want, though linear is the
     usual case.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: Thunk 的链条可以是任何你想要的形状，虽然线性是通常情况。
 - en: 'What would fixing the problem look like? It’s certainly not waiting until the
     presents get piled up and then cleaning them up in one go (as our college student
     might do): the damage (big memory usage) has already been done!'
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 解决问题的方式是什么？显然不是等到礼物堆积起来然后一次清理（就像我们的大学生可能会做的那样）：伤害（大内存使用）已经造成了！
 - en: Rather, we should be a bit more eager and open up our presents as we get them.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 相反，我们应该更加渴望并在收到礼物时立即打开它们。
 - en: This strategy can fail, however. If opening the presents results in something
     even bigger than we started off with or if we might not need to open all the presents,
     we might be better off just being lazy about it.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，这种策略可能会失败。如果打开礼物导致比起始状态更大的东西，或者如果我们可能不需要打开所有礼物，我们最好还是懒得去做。
 - en: There’s also the question of where all these presents came from in the first
     place. Maybe we were too eager about getting the presents in the first place...
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 此外，还有一个问题，即这些礼物最初是从哪里来的。也许我们最初对于得到这些礼物太急切了...
 - en: 'In summary, a thunk leak is when a Haskell program builds up a large number
     of thunks that, if evaluated, would result in much smaller memory usage. This
     requires such thunks to have several properties:'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 总之，Thunk 泄漏是指当一个 Haskell 程序积累大量的 thunk 时，如果评估的话，将会导致更小的内存使用。这要求这些 thunk 具有几个属性：
 - en: They must not have external references to them (since the idea is as the thunks
     are evaluated, their results can get garbage collected),
+  id: totrans-19
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 它们不得有外部引用（因为 thunk 被评估时，它们的结果可以被垃圾回收），
 - en: They must perform some sort of reduction, rather than create a bigger data structure,
     and
+  id: totrans-20
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 它们必须执行某种减少，而不是创建一个更大的数据结构，而
 - en: They should be necessary.
+  id: totrans-21
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 它们应该是必需的。
 - en: If (1) fails, it is much more probable that these thunks are legitimate and
     only incur a small overhead (and the real difficulty is an algorithmic one). If
     (2) fails, evaluating all of the thunks can exacerbate the memory situation. And
     if (3) fails, you might be looking at a failure of streaming, since thunks are
     being eagerly created but lazily evaluated (they should be lazily created as well).
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果（1）失败，这些未求值表达式很可能是合法的，并且只会产生很小的开销（真正困难的是算法问题）。如果（2）失败，评估所有未求值表达式可能会加剧内存情况。如果（3）失败，您可能正在看到流失败，因为未求值表达式正在急切地创建但懒惰地评估（它们应该也是懒惰地创建）。
 - en: Examples
+  id: totrans-23
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 举例
 - en: I’ve distilled some examples in order to help illustrate the phenomenon in question,
     as well as give direct, source-level indications on all the possible ways you
     can go about fixing the leak. I’ll also give some examples of things that could
     have leaked, but didn’t because GHC was sufficiently clever (hooray for optimizations!)
     Runnable code can be found in the [GitHub repository](https://github.com/ezyang/hsleak),
     which I will try to keep up-to-date.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 我提炼了一些例子来帮助说明所讨论的现象，并直接提供源码级的所有可能修复泄漏的方法。我还将提供一些未泄漏但因为GHC足够聪明（为优化欢呼！）而没有泄漏的示例。可运行的代码可以在[GitHub
+    仓库](https://github.com/ezyang/hsleak)找到，我会尽量保持更新。
 - en: 'We’ll first start with the classic space leak from naive iterative code:'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先我们来看看来自简单迭代代码的经典空间泄漏：
 - en: '[PRE0]'
+  id: totrans-26
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'It should be obvious who is accumulating the thunks: it’s `c + 1`. What is
     less obvious, is that this code does *not* leak when you compile GHC with optimizations.
     Why is this the case? A quick look at the Core will tell us why:'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 显而易见的是谁在累积未求值表达式：是 `c + 1`。不那么明显的是，当您使用优化编译GHC时，此代码实际上并*不*泄漏。为什么会这样？快速查看 Core
+    将告诉我们为什么：
 - en: '[PRE1]'
+  id: totrans-28
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'Notice that the type of `c` (renamed to `ww_s1P0`) is `GHC.Prim.Int#`, rather
     than `Int`. As this is a primitive type, it is *unlifted*: it is impossible to
     create thunks of this type. So GHC manages to avoid thunks by not creating them
     at all in the first place. Fixing the unoptimized case is as simple as making
     `c` strict, since addition of integers is a strict function.'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 请注意，`c` 的类型（重命名为 `ww_s1P0`）是 `GHC.Prim.Int#`，而不是 `Int`。由于这是一个原始类型，它是 *非懒惰的*：无法创建这种类型的未求值表达式。因此，GHC通过根本不创建它们来避免未求值表达式。修复未优化的情况就像使
+    `c` 严格化一样简单，因为整数的加法是一个严格函数。
 - en: 'It is not, in general, possible for GHC to do this kind of unboxing optimization
     without violating the semantics of our code. Our next piece of code looks at precisely
     such a case:'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: GHC 通常无法执行此类拆箱优化，因为这可能违反代码的语义。我们的下一段代码正是在研究这样的情况：
 - en: '[PRE2]'
+  id: totrans-31
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: This space leaks both with and without optimizations. It also stack overflows.
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个空间泄漏在有优化和无优化的情况下都会发生。它也会导致栈溢出。
 - en: 'It is not possible for GHC to optimize this code in such a way that the elements
     of the pair are eagerly evaluated without changing the semantics of the function
     `f`. Why is this the case? We consider an alternate call to `f`: `f [1..4000000]
@@ -155,98 +225,144 @@
     If we only ever evaluate the tuple to whnf (as the call to `evaluate` does) or
     if we only ever use the first result, then no exception should be thrown. This
     is indeed the case if we replace `1 :: Int` with `undefined` and run the program.'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 'GHC无法通过优化此代码以使得元组的元素被急切地求值，而不改变函数 `f` 的语义。为什么会这样？我们考虑对 `f` 的另一种调用：`f [1..4000000]
+    (0, undefined)`。函数当前的语义要求结果是 `(2000000, undefined)`（因为对 `undefined` 添加任何东西仍然是
+    `undefined`），这意味着在强制内部元组之前我们无法进行任何求值。如果我们只在需要的时候对元组进行弱标准形式的求值（如 `evaluate` 调用所做的），或者如果我们只使用第一个结果，那么不应抛出任何异常。如果我们用
+    `undefined` 替换 `1 :: Int` 并运行程序，这确实是情况。'
 - en: OK, that’s enough theory, how do we fix this bug? I could just give you a single
     answer, but I think it will be more informative if we consider a range of possible
     fixes and analyze their effect on the program. Hopefully, this will make space
     leaks less like casting the runes, and much more methodical.
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 好吧，这就够理论的了，我们如何修复这个错误呢？我可以直接给出一个答案，但如果我们考虑一系列可能的修复方法并分析它们对程序的影响，这可能会更有信息性。希望这将使空间泄漏不再像符文预测那样难以捉摸，而更加有方法论。
 - en: '*Add a bang-pattern to c in f.* This doesn’t work:'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: '*在 `f` 函数中为 `c` 添加一个严格模式*。这个方法行不通：'
 - en: '[PRE3]'
+  id: totrans-36
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'The insight is that we’ve not changed the semantics of the function at all:
     `f l (undefined, undefined)` still should result in `(undefined, undefined)`,
     since `seq` doesn’t “look inside the tuple”. However, adding this bang-pattern
     may help in the construction of other solutions, if evaluating the tuple itself
     has other side-effects (as we might say, that ghost might open some presents for
     us).'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们   这个洞见在于我们并没有改变函数的语义：`f l (undefined, undefined)` 仍然应该返回 `(undefined, undefined)`，因为
+    `seq` 并不会“查看元组内部”。然而，添加这个叹号模式可能有助于构建其他解决方案，如果评估元组本身有其他副作用（如我们可能会说，那只鬼会为我们打开一些礼物）。
 - en: '*Make the tuple in tick irrefutable.* This is just confused:'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: '*使元组在 tick 中不可反驳*。这只是混乱的：'
 - en: '[PRE4]'
+  id: totrans-39
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: Irrefutable patterns add *laziness*, not strictness, so it’s not surprising
     that the problem has gotten worse (note the memory usage is now up to 80M, rather
     than 40M).
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 不可反驳模式增加了 *惰性*，而不是严格性，因此问题变得更糟并不令人惊讶（注意内存使用量现在达到了 80M，而不是 40M）。
 - en: '*Make tick strict.* Notice that the `x` is already forced immediately by `even
     x`, so there’s no need to add a bang pattern there. So we just add bang patterns
     to `c0` and `c1`:'
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: '*使 tick 严格*。注意 `x` 已经通过 `even x` 立即被强制，所以无需在这里添加叹号模式。我们只是在 `c0` 和 `c1` 上添加叹号模式：'
 - en: '[PRE5]'
+  id: totrans-42
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: These might look like a terrible graph, but look at the scale. 1.2 *kilobytes*.
     In general, if after you make a change to a Haskell program and you start seeing
     lots of bands again, it means you’ve fixed the leak. So we’ve fixed it!
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些看起来像是一个糟糕的图，但看看比例。1.2 *千字节*。一般来说，如果在你修改 Haskell 程序后，开始再次看到很多带状数据，说明你已经修复了泄漏。所以我们已经修复了它！
 - en: 'Well, not quite. The unoptimized code still has a leak:'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 好吧，不完全是。未经优化的代码仍然有内存泄漏：
 - en: 'We fixed our space leak by enabling a GHC optimization, similar to the one
     that fixed our original space leak. Once again, the Core makes this clear:'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 通过启用一个 GHC 优化，我们修复了内存泄漏，类似于修复原始内存泄漏的方式。再一次，Core 让这一点变得清楚：
 - en: '[PRE6]'
+  id: totrans-46
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: GHC has optimized the tuple away into an unboxed return and inlined the call
     to `tick`, as a result we don’t have any tuple thunks floating around. We could
     have manually performed this optimization, but it’s better to the let the compiler
     do it for us (and keep our code clean.)
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: GHC 已经将元组优化为一个无框返回，并内联了对 `tick` 的调用，因此我们没有任何元组惰性求值浮动在四周。我们本可以手动进行这个优化，但让编译器为我们做更好（并保持代码整洁）。
 - en: '*Strictify tick and f.* In analogy with the first example, now that `tick`
     is strict, if we strictify both places, the unoptimized code will also be fine.
     And indeed, it is.'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: '*严格化 tick 和 f*。与第一个例子类比，现在 `tick` 是严格的，如果我们将两个地方都严格化，未经优化的代码也会没问题。果然，没问题。'
 - en: It doesn’t help us much for the optimized case though! (There is essentially
     no change to the heap profile.)
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于优化后的情况，这并没有太大帮助！（堆内存剖面基本上没有变化。）
 - en: '*Make the pair strict.* Using a strict pair instead of the default lazy pair
     is equivalent to inserting bang patterns every where we pattern match on a tuple.
     It is thus equivalent to strictifying `tick`, and if you do this you will still
     need a little extra to get it working in the unoptimized case. This tends to work
     better when you control the data structure that is going into the loop, since
     you don’t need to change all of your data declarations.'
+  id: totrans-50
   prefs: []
   type: TYPE_NORMAL
+  zh: '*使对偶严格*。使用严格对偶而不是默认的惰性对偶，相当于在我们对元组进行模式匹配时插入叹号模式。因此，它相当于将 `tick` 严格化，如果你这样做，在未经优化的情况下你仍然需要一些额外的工作才能让它正常工作。当你控制进入循环的数据结构时，这通常更有效，因为你不需要更改所有的数据声明。'
 - en: '*Deep seq c.* If a simple bang pattern for c doesn’t work, a deep bang pattern
     will:'
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: '*深度 seq c.* 如果对 c 的简单叹号模式不起作用，深度叹号模式会起作用：'
 - en: '[PRE7]'
+  id: totrans-52
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: Alternatively, you could have used `rnf` from the deep seq package. While this
     does work, I personally think that it’s better policy to just use a strict data
     type, if you’re going to be rnf'ing willy-nilly, you might as well keep things
     fully evaluated all the time.
+  id: totrans-53
   prefs: []
   type: TYPE_NORMAL
+  zh: 或者，你可以使用深度 seq 包中的 `rnf`。虽然这确实有效，但我个人认为最好还是使用严格的数据类型，如果你要随便地使用 `rnf`，那么最好保持所有东西始终被完全评估。
 - en: 'I had another example, but I’m out of time for today! As some parting words,
     note that tuples aren’t the only lifted types floating around: everything from
     records to single data constructors (`data I a = I a`) to mutable references have
@@ -254,11 +370,16 @@
     this particular problem is really easy: the heap profile is distinctive, the fix
     is easy and non-invasive, and you even have denotational semantics to aid your
     analysis of the code! All you need is a little extra knowledge.'
+  id: totrans-54
   prefs: []
   type: TYPE_NORMAL
+  zh: 我还有另一个例子，但今天时间不够了！作为告别的话，注意到元组并不是唯一的提升类型：从记录到单数据构造器（`data I a = I a`）再到可变引用，都具有额外的语义，可能带来额外的空间成本。但识别和修复这个特定问题非常容易：堆配置文件非常独特，修复方法简单且非侵入性，甚至可以使用指称语义来帮助分析代码！你所需的只是一点额外的知识。
 - en: '*Postscript.* Apologies for the wildly varying graph axes and shifty colors.
     Try to focus on the shape and labeling. I’m still wrangling `hp2pretty` to get
     it to generate the right kinds of heap profiles, and I need a more consistent
     scaling mechanism and more consistent coloring. Experiments were done on GHC 6.12.3.'
+  id: totrans-55
   prefs: []
   type: TYPE_NORMAL
+  zh: '*附言.* 对于图表轴线和颜色的变化很抱歉。尽量关注形状和标签。我仍在努力使用`hp2pretty`生成正确类型的堆配置文件，并需要更一致的缩放机制和更一致的着色方案。这些实验是在
+    GHC 6.12.3 上进行的。'

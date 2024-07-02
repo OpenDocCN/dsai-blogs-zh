@@ -1,52 +1,78 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:18'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:18'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Upgrading to Ubuntu Lucid : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 'Upgrading to Ubuntu Lucid : ezyang’s blog'
 - en: 来源：[http://blog.ezyang.com/2010/05/upgrading-to-ubuntu-lucid/](http://blog.ezyang.com/2010/05/upgrading-to-ubuntu-lucid/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/05/upgrading-to-ubuntu-lucid/](http://blog.ezyang.com/2010/05/upgrading-to-ubuntu-lucid/)
 - en: Now that term is over, I finally went an upgraded my laptop to Ubuntu 10.04
     LTS, Lucid Lynx. The process went substantially more smoothly than [Karmic went](http://ezyang.com/karmic.html),
     but there were still a few hiccups.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在学期结束了，我终于升级了我的笔记本电脑到Ubuntu 10.04 LTS，即Lucid Lynx。这个过程比[Karmic的情况](http://ezyang.com/karmic.html)要顺利得多，但仍然有一些小问题。
 - en: '*Etckeeper.* As always, you should set `AVOID_COMMIT_BEFORE_INSTALL` to 0 before
     attempting a release upgrade, since etckeeper hooks will be invoked multiple times
     and there''s nothing more annoying than getting the notice "etckeeper aborted
     the install due to uncommited changes, please commit them yourselves" because
     there is no way that''s going to work.'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '*Etckeeper.* 一如既往，您在尝试升级发布之前应将`AVOID_COMMIT_BEFORE_INSTALL`设置为0，因为etckeeper钩子将被多次调用，而最令人恼火的莫过于收到通知：“etckeeper中止安装因为存在未提交的更改，请您自行提交它们”，因为那根本行不通。'
 - en: 'Well, this time round there was a different, hilarious bug:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 这一次，出现了一个不同但又搞笑的错误：
 - en: '[PRE0]'
+  id: totrans-9
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'This has been [reported as Bug #574244](https://bugs.launchpad.net/ubuntu/+source/etckeeper/+bug/574244).
     Despite being an ominous warning, it is actually quite harmless, and you can complete
     the upgrade with:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: '这已被[报告为Bug #574244](https://bugs.launchpad.net/ubuntu/+source/etckeeper/+bug/574244)。尽管这是一个不祥的警告，但实际上相当无害，您可以使用以下方式完成升级：'
 - en: '[PRE1]'
+  id: totrans-11
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: I had to kick the network due to broken DNS; your mileage may vary.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 我因为破碎的DNS而不得不重新启动网络；效果因人而异。
 - en: '*Wireless key management.* I have not resolved this issue yet, but the basic
     symptom is that Ubuntu network-manager fails to remember WEP keys you have provided
     for secured networks. (I know you MIT students still on campus aren''t too bothered
@@ -56,20 +82,30 @@
     occurred a long time ago. (In classic terrible bug reporting style, users are
     attaching themselves to old bug reports when they really should be filing a new
     regression for Lucid.)'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: '*无线密钥管理.* 我还没有解决这个问题，但基本症状是Ubuntu网络管理器无法记住您为受保护网络提供的WEP密钥。（我知道您还在校园的麻省理工学院的学生们可能对此并不太关心。）这似乎是一个相当普遍的问题，因为有人在复活早期的[这个](https://bugs.launchpad.net/ubuntu/+source/network-manager/+bug/271097)
+    [bug](https://bugs.launchpad.net/ubuntu/+source/network-manager/+bug/36651)，虽然这些问题早就存在了。
+    （典型的糟糕bug报告风格，用户们附加在旧的bug报告上，而他们实际上应该为Lucid提出新的回归。）'
 - en: From what I've investigated, I have been able to verify that [connections to
     the keyring daemon are not working](http://ubuntuforums.org/showthread.php?t=1459804).
     There is [a fix circulating](https://bugs.launchpad.net/ubuntu/+source/seahorse/+bug/553032/comments/8)
     in which you change your startup command from "gnome-keyring-daemon --start --components=pkcs11"
     to just "gnome-keyring-daemon", although I suspect this isn't really the "right"
     thing, and it doesn't work for me anyway.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 从我的调查中，我已经验证了[与密钥环守护程序的连接无法正常工作](http://ubuntuforums.org/showthread.php?t=1459804)。有[一种解决方法正在流传](https://bugs.launchpad.net/ubuntu/+source/seahorse/+bug/553032/comments/8)，其中您可以将启动命令从“gnome-keyring-daemon
+    --start --components=pkcs11”更改为只是“gnome-keyring-daemon”，尽管我怀疑这并不是真正的“正确”方法，而且在我这里也不起作用。
 - en: '*PHP.* Ubuntu Lucid most notably has upgraded PHP 5.3.2, but they''ve also
     fiddled with some of the default settings. In my case, `log_errors` was causing
     quite interesting behavior for my scripts, and I have since coded my scripts to
     explicitly turn this ini setting off. You should save a copy of the output of
     `php -i` prior to the upgrade and compare it with the output afterwards.'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: '*PHP.* Ubuntu Lucid 最显著地升级了PHP 5.3.2，但他们还调整了一些默认设置。在我的情况下，`log_errors`为我的脚本引起了相当有趣的行为，因此我已经将我的脚本编码为显式关闭此ini设置。您应该在升级前保存`php
+    -i`的输出副本，并与升级后的输出进行比较。'

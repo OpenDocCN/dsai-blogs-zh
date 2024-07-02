@@ -1,32 +1,50 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 分类：未分类
 - en: 'date: 2024-07-01 18:17:13'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:17:13
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'New theme! : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 新主题！：ezyang 的博客
 - en: 来源：[http://blog.ezyang.com/2014/07/new-theme/](http://blog.ezyang.com/2014/07/new-theme/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2014/07/new-theme/](http://blog.ezyang.com/2014/07/new-theme/)
 - en: New theme!
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 新主题！
 - en: 'Hello loyal readers: Inside 206-105 has a new theme! I’m retiring [Manifest](http://themes.jimbarraud.com/manifest/),
     which was a pretty nice theme but (1) the text size was too small and (2) I decided
     I didn’t really like the fonts, I’ve reskinned my blog with a theme based on Brent
     Jackson’s [Ashley](http://jxnblk.com/ashley/), but ported to work on WordPress.
     I hope you like it, and please report any rendering snafus you might notice on
     older pages. Thanks!'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 亲爱的忠实读者们：《Inside 206-105》有了新的主题！我要退休 [Manifest](http://themes.jimbarraud.com/manifest/)
+    这个主题了，虽然它相当不错，但是（1）字体太小了，（2）我决定我实际上并不喜欢这些字体，所以我重新设计了我的博客主题，基于 Brent Jackson 的
+    [Ashley](http://jxnblk.com/ashley/)，并移植到了 WordPress 上。希望你们喜欢这个新主题，请告诉我如果你们在老页面上发现了任何渲染问题。谢谢！

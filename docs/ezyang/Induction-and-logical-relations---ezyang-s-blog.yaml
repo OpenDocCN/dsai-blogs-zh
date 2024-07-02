@@ -1,23 +1,35 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:17:18'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:17:18
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Induction and logical relations : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 归纳和逻辑关系：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2013/09/induction-and-logical-relations/](http://blog.ezyang.com/2013/09/induction-and-logical-relations/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2013/09/induction-and-logical-relations/](http://blog.ezyang.com/2013/09/induction-and-logical-relations/)
 - en: 'Logical relations are a proof technique which allow you to prove things such
     as normalization (*all programs terminate*) and program equivalence (*these two
     programs are observationally equivalent under all program contexts*). If you haven''t
@@ -27,56 +39,81 @@
     talk about [a formalization of two logical relations proofs in Agda](https://github.com/ezyang/lr-agda/blob/master/STLC-CBV.agda)
     I worked on during OPLSS and the weeks afterwards. I''m not going to walk through
     the code, but I do want expand on two points about logical relations:'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 逻辑关系是一种证明技术，允许您证明归一化（*所有程序终止*）和程序等价性（*这两个程序在所有程序上下文下观察上等价*）。如果你以前从未遇到过这些内容，我强烈推荐Amal
+    Ahmed在OPLSS讲座中的内容；您可以从这里找到我的视频和笔记。 （您还可以访问她以前年份的讲座。）本文是讨论我在OPLSS期间和之后几周内在Agda上进行的两个逻辑关系证明的形式化的借口。我不打算逐行解释代码，但我确实想扩展关于逻辑关系的两个观点：
 - en: They work when simple induction would not, and
+  id: totrans-7
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 当简单归纳无法工作时它们会起作用，
 - en: The logical relation is not an inductive definition.
+  id: totrans-8
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 逻辑关系不是一个归纳定义。
 - en: The full development is in the [lr-agda repository on GitHub](https://github.com/ezyang/lr-agda/).
     Many thanks to Dan Licata for providing the initial development as a homework
     assignment for his OPLSS Agda course and for bushwhacking the substitution lemmas
     which are often the greatest impediment to doing proofs about the lambda calculus.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 全部的发展在[Github上的lr-agda仓库](https://github.com/ezyang/lr-agda/)中。非常感谢Dan Licata为他的OPLSS
+    Agda课程提供了初始发展和为解决关于lambda演算的证明而努力的替换引理。
 - en: '* * *'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'If you didn''t know any better, you might try to prove normalization inductively,
     as follows:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你不知道更好的办法，你可能会尝试通过归纳来证明归一化，如下所示：
 - en: 'To show that all programs normalize to a value, let us proceed inductively
     on the typing derivations. For example, in the application case, we need to show
     `e1 e2` normalizes to some value `v`, given that `e1` normalizes to `v1` and `e2`
     normalizes to `v2`. Well, the type of `v1` is `t1 -> t2`, which means `v1 = λx.
     e''`. Uh oh: this should step to `e''[v2/x]`, but I don’t know anything about
     this expression (`e''` could be anything). Stuck!'
+  id: totrans-12
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 为了显示所有程序都归一化到一个值，让我们按照类型推导进行归纳。例如，在应用案例中，我们需要展示`e1 e2`归一化到某个值`v`，假设`e1`归一化到`v1`，`e2`归一化到`v2`。好吧，`v1`的类型是`t1
+    -> t2`，这意味着`v1 = λx. e'`。哎呀：这应该步进到`e'[v2/x]`，但我对这个表达式一无所知（`e'`可以是任何东西）。卡住了！
 - en: 'What is the extra *oomph* that logical relations gives you, that allows you
     to prove what was previously unprovable by usual induction? Let''s think about
     our second proof sketch: the problem was that we didn''t know anything `e''`.
     If we knew something extra about it, say, "Well, for some appropriate v, e''[v/x]
     will normalize," then we''d be able to make the proof go through. So if this definition
     of `WN` was our old proof goal:'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 逻辑关系提供了额外的*威力*，使您能够证明通常无法证明的东西。让我们考虑一下我们的第二个证明草图：问题在于我们对`e'`一无所知。如果我们对它有额外的了解，比如说，“嗯，对于一些合适的v，e'[v/x]将会归一化”，那么我们就能够完成证明。因此，如果这个`WN`的定义是我们旧的证明目标：
 - en: '[PRE0]'
+  id: totrans-14
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'then what we''d like to do is extend this definition to include that "extra
     stuff":'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后我们想要做的是扩展这个定义来包括那些“额外的东西”：
 - en: '[PRE1]'
+  id: totrans-16
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: At this point, it would be good to make some remarks about how to read the Agda
     code here. WN is a *type family*, that is, `WN τ e` is the unary logical relation
     of type `τ` for expression `e`. The type of a type is `Tp`, which is a simple
@@ -88,33 +125,50 @@
     this case the typing derivation.) `e ⇓` is another mixfix operator, which is defined
     to be a traditional normalization (there exists some value v such that e reduces
     to v, e.g. `Σ (λ v → value v × e ↦* v)`).
+  id: totrans-17
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 在这一点上，现在应该好好讨论一下如何阅读这里的 Agda 代码。WN 是*类型族*，即 `WN τ e` 是表达式 `e` 的类型 `τ` 的一元逻辑关系。类型的类型是
+    `Tp`，这是一个简单的归纳定义；术语的类型是更复杂的 `[] ⊢ τ`（利用 Agda 的混合操作符；如果没有它们，你可能会写成 `Expr [] τ`），它不仅告诉我们
+    `e` 是一个表达式，而且是*良类型*，在空上下文 `[]` 下具有类型 `τ`。（这是一个一般模式的实例，其中归纳定义与良形性推导相一致，在这种情况下是类型推导。）`e
+    ⇓` 是另一个混合操作符，它被定义为传统的规范化（存在某个值 `v`，使得 `e` 缩减到 `v`，例如 `Σ (λ v → value v × e ↦*
+    v)`）。
 - en: 'But what is this extra stuff? In the case of simple types, e.g. booleans, we
     don''t actually need anything extra, since we''re never going to try to apply
     it like a function:'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 但是这额外的内容是什么呢？在简单类型的情况下，例如布尔类型，我们实际上不需要任何额外的东西，因为我们永远不会尝试像函数一样应用它们：
 - en: '[PRE2]'
+  id: totrans-19
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: For a function type, let us say that a function is WN (i.e. in the logical relation)
     if, when given a WN argument, it produces a WN result. (Because we refer to WN,
     this is in fact a mutually recursive definition.) This statement is in fact the
     key proof idea!
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于函数类型，我们可以说一个函数是 WN 的（即在逻辑关系中），如果给定一个 WN 参数，它产生一个 WN 结果。（因为我们涉及 WN，这实际上是一个相互递归的定义。）这个陈述实际上是关键的证明思路！
 - en: '[PRE3]'
+  id: totrans-21
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: There are a number of further details, but essentially, when you redo the proof,
     proving WN instead of plain old normalization, you no longer get stuck on the
     application case. Great! The flip-side, however, is that the proof in the lambda
     case is no longer trivial; you have to do a bit of work to show that the extra
     stuff (WN') holds. This was described to me as the "balloon" principle.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 还有一些细节，但基本上，当你重做证明时，证明 WN 而不是普通的规范化时，你不会再卡在应用案例上。太棒了！然而，反过来，λ案例的证明不再是微不足道的；你需要做一些工作来展示额外的内容（WN'
+    的成立）。有人将这描述为"气球"原理。
 - en: The two sides of the balloon are the "use of the inductive hypothesis" and the
     "proof obligation". When you have a weak inductive hypothesis, it doesn't give
     you very much, but you don't have to work as hard to prove it either. When you
@@ -126,61 +180,85 @@
     weak that the application case is impossible. In the logical relations proof,
     the application case falls out easily from the induction hypothesis, but you have
     to do more work in the lambda case.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 气球的两侧是"归纳假设的使用"和"证明义务"。当你有一个较弱的归纳假设时，它并没有提供很多信息，但你也不必费太多力气来证明它。当你加强归纳假设时，你可以用它证明更多的东西；然而，相应地，你的证明义务也会增加。在规范化证明的背景下，"归纳假设的使用"出现在应用案例中，而"证明义务"则出现在λ案例中。当你尝试直接的归纳证明时，λ案例是微不足道的，但归纳假设非常薄弱，所以应用案例是不可能的。在逻辑关系证明中，应用案例很容易从归纳假设中得出，但在λ案例中，你需要做更多的工作。
 - en: '* * *'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'We now briefly take a step back, to remark about the way we have defined the
     WN'' type family, on our way to the discussion of why WN'' is not an *inductive
     definition*. In Agda, there are often two ways of defining a type family: it can
     be done as a recursive function, or it can be done as an inductive definitions.
     A simple example of this is in the definition of a length indexed list. The standard
     inductive definition goes like this:'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在让我们稍微退一步，谈谈我们如何定义 WN' 类型族的方式，以便讨论为什么 WN' 不是一个*归纳定义*。在 Agda 中，通常有两种定义类型族的方式：可以作为递归函数进行定义，也可以作为归纳定义进行定义。一个简单的例子是长度索引列表的定义。标准的归纳定义如下：
 - en: '[PRE4]'
+  id: totrans-26
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: 'But I could also build the list out of regular old products, using a recursive
     function on the index:'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 但我也可以用普通的产品建立列表，使用索引上的递归函数：
 - en: '[PRE5]'
+  id: totrans-28
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 'The two different encodings have their own strengths and weaknesses: using
     a recursive function often means that certain equalities are definitional (whereas
     you''d have to prove a lemma with the inductive definition), but an inductive
     definition lets you do case-analysis on the different possibilities.'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 这两种不同的编码各有优缺点：使用递归函数通常意味着某些相等性是定义性的（而你必须使用归纳定义证明引理），但归纳定义允许你对不同可能性进行案例分析。
 - en: 'Sometimes, it is simply not possible to do the inductive definition, and this
     is the case for a logical relation. This strengthening of the inductive hypothesis
     is to blame:'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 有时，简单地无法使用归纳定义，逻辑关系就是这种情况。这加强了归纳假设的负担：
 - en: '[PRE6]'
+  id: totrans-31
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: 'Agda doesn''t complain about inductive-recursive definitions (though one should
     beware: they are not too well metatheoretically grounded at the moment), but it
     will complain about this definition. The problem is [a familiar one](http://blog.ezyang.com/2012/09/y-combinator-and-strict-positivity/):
     WN does not occur in strictly positive positions; in particular, it shows up as
     an argument to a function contained by the WN/⇒ constructor. So we can''t use
     this!'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: Agda对归纳-递归定义并不抱怨（尽管应注意：它们在元理论上并不是太好地基础），但它会对这个定义抱怨。问题是[一个熟悉的问题](http://blog.ezyang.com/2012/09/y-combinator-and-strict-positivity/)：WN不出现在严格正位置；特别是，它作为WN/⇒构造子的参数出现。因此我们不能使用它！
 - en: 'As it turns out, the inability to define the logical relation inductively is
     not a big deal for normalization. However, it causes a bit more headaches for
     more complicated logical relations proofs, e.g. for equivalence of programs. When
     considering program equivalence, you need a binary relation relating values to
     values, saying when two values are equal. This can be stated very naturally inductively:'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 事实证明，无法归纳地定义逻辑关系对于规范化并不是什么大问题。然而，对于更复杂的逻辑关系证明，例如程序等价性，它会带来更多头痛。在考虑程序等价性时，你需要一个二元关系来关联值与值，表明两个值何时相等。这可以非常自然地用归纳方式表述：
 - en: '[PRE7]'
+  id: totrans-34
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: 'We define the relation by type. If a value is a boolean, then we say that `#t`
     (true) is related to itself, and `#f` is related to itself. If the value is a
     function, then we say that a lambda term is related to another lambda term if,
@@ -189,11 +267,16 @@
     (If you like, you can mentally replace "related" with "equal", but this is misleading
     since it doesn''t capture what is going on in the function case). But this fails
     the strict positivity check, so we have to define it recursively instead:'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们通过类型定义关系。如果一个值是布尔值，那么我们说`#t`（真）与其自身相关联，`#f`与其自身相关联。如果该值是一个函数，那么我们说一个lambda项与另一个lambda项相关联，如果应用于两个相关联的值，则结果也是相关联的。这个“函数”与我们为规范化证明添加的额外内容直接类似。
+    （如果你愿意，你可以在心理上用“相等”替换“相关”，但这是误导的，因为它并不捕捉到函数情况中发生的情况）。但这不通过严格正性检查，因此我们必须递归地定义它：
 - en: '[PRE8]'
+  id: totrans-36
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE8]'
 - en: 'Notice that the definition here is much less nice than the inductive definition:
     we need two fall through cases which assert a contradiction when two things could
     not possibly be equal, e.g. `#t` could not possibly be equal to `#f`. Furthermore,
@@ -202,32 +285,46 @@
     we have to laboriously first case split over the type and expression, at which
     point the function reduces. To give you a sense of how horrible this is, consider
     this function which converts from a inductive definition to the recursive definitions:'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 注意，这里的定义远不如归纳定义那么美好：我们需要两个穿越情况，当两个东西不可能相等时断言矛盾，例如`#t`不可能等于`#f`。此外，假设我们在进行证明时将V作为一个假设给出，我们不能再仅仅在其上分情况以找出我们所拥有的信息；我们必须费力地首先对类型和表达式进行情况分割，此时函数会减少。为了让你感受到这有多糟糕，考虑一下这个函数，它将从归纳定义转换为递归定义：
 - en: '[PRE9]'
+  id: totrans-38
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE9]'
 - en: Good grief! Perhaps the situation could be improved by improving how Agda handles
     wildcards in pattern matching, but at the moment, all of this is necessary.
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 天哪！也许通过改进Agda处理模式匹配中的通配符的方式可以改善这种情况，但目前来看，所有这些都是必需的。
 - en: '"But wait, Edward!" you might say, "Didn''t you just say you couldn''t define
     it inductively?" Indeed, this function does not operate on the inductive definition
     I presented previously, but a slightly modified one, which banishes the non-strictly-positive
     occurrence by replacing it with V, the recursive definition:'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: “但等等，爱德华！”你可能会说，“你不是刚刚说你不能归纳定义它吗？”确实，这个函数不是基于我之前提出的归纳定义运行的，而是稍微修改了一个，通过用 V 替换非严格正出现的情况，这是递归定义：
 - en: '[PRE10]'
+  id: totrans-41
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE10]'
 - en: This conversion function helps a lot, because agda-mode interacts a lot more
     nicely with inductive definitions (`C-c C-c` works!) than with recursive definitions
     in cases like this.
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个转换函数非常有帮助，因为在像这样的情况中，agda-mode与归纳定义（`C-c C-c`有效！）的互动要比与递归定义更加顺畅。
 - en: '* * *'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'Why do logical relations in Agda? (or any proof assistant, for that matter?)
     Proofs using logical relations often follow the pattern of defining an appropriate
     logical relation for your problem, and then a lot of book-keeping to actually
@@ -237,5 +334,7 @@
     to a non-terminating language (adding step-indexes to the relation: the very pinnacle
     of book-keeping) or extending the lambda calculus with polymorphism (which requires
     some other interesting techniques for logical relations).'
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 为什么在Agda中使用逻辑关系？（或者任何证明助手，无论如何？）使用逻辑关系的证明通常遵循以下模式：为你的问题定义一个适当的逻辑关系，然后进行大量的簿记以实际推动关系通过证明。计算机在做簿记方面非常出色，我认为通过证明助手逐步进行逻辑关系证明是极具信息价值的。一个有趣的挑战将是将这个框架扩展到非终止语言（在关系中添加步骤索引：簿记的顶峰）或将lambda演算扩展为多态（这需要一些其他有趣的逻辑关系技术）。

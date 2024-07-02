@@ -1,23 +1,35 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:28'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:28'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Workflows in Git: Single-user style : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 'Git中的工作流：单用户风格 : ezyang’s 博客'
 - en: 来源：[http://blog.ezyang.com/2010/01/single-user-git-workflow/](http://blog.ezyang.com/2010/01/single-user-git-workflow/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/01/single-user-git-workflow/](http://blog.ezyang.com/2010/01/single-user-git-workflow/)
 - en: 'Nelson Elhage wrote a post about [Git and usability](http://blog.nelhage.com/archives/64),
     in which he discussed one of the reasons why Git seems to be so confusing to users
     who have come in straight from a Subversion-style workflow. When discussing this
@@ -26,25 +38,33 @@
     any sort of workflow. This is terrible for a user placed in a shop that uses Git:
     when they go Google for how to use Git, they''ll get any multitude of tutorials,
     each of which is for a *different workflow.*'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: Nelson Elhage写了一篇关于[Git和可用性](http://blog.nelhage.com/archives/64)的文章，在其中他讨论了Git看起来如此令人困惑的原因之一，这对于直接从Subversion风格工作流转入的用户来说。在讨论这个问题时，有一件事被提出来，那就是，虽然Subversion对其用户施加了相当严格的工作流程，但Git足够灵活，可以执行几乎任何类型的工作流。这对于一个使用Git的公司来说对用户来说是个噩梦：当他们在Google上搜索如何使用Git时，他们会得到多种多样的教程，每一个教程都是针对*不同的工作流程*。
 - en: In this multipart series, I'd like to discuss several different types of workflows
     that I've seen or experienced while using Git. This first post will look at a
     very simple example of a Git workflow, namely that of a single user, which will
     establish some basic idioms of Git that you might see in the other workflows.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这个多部分系列中，我想讨论几种我见过或经历过的Git工作流类型。本文首先将简要介绍一个非常简单的Git工作流示例，即单用户工作流，这将建立一些你可能在其他工作流中看到的Git基本习语。
 - en: A single-user workflow is, well, kind of simple. At it's simplest, it's not
     much more than a glorified backup system; you have lots of versions of your code.
     You can go back in time. Since I am assuming a general knowledge of version control
     systems, I don't think I need to convince you why this is useful. This article
     also assumes that you're comfortable enough to make commits in a repository (though
     we will *not* assume you know how to use the index; `-a` is a wondrous flag).
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 单用户工作流本质上很简单。在其最简单的形式下，它不过是一个略显高级的备份系统；你可以有很多版本的代码。你可以回到过去。因为我假设你对版本控制系统有一般的了解，所以我认为我不需要说服你这是有用的。本文还假设你足够熟悉在代码库中进行提交（虽然我们不会*假设*你知道如何使用索引；`-a`是一个神奇的标志）。
 - en: '*Backups*'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: '*备份*'
 - en: 'The very first thing you may notice when you move from a centralized VCS to
     a *decentralized* VCS is that your data never leaves your computer unless you
     explicitly say so. This is great if you are on an airplane and don''t have Internet
@@ -55,50 +75,72 @@
     have a server that you have SSH access, private offsite backups are also easy:
     create a bare git repository on another server using `git init --bare` and then
     setup a remote that you can push to... but I''m getting ahead of myself!'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 当你从集中式VCS转向*分布式*VCS时可能会注意到的第一件事是，除非你明确说出来，否则你的数据永远不会离开你的计算机。如果你在飞机上没有互联网访问，这很棒；你不需要堆积一堆变更而不能登入服务器。然而，这意味着你必须稍加考虑你将把变更`push`到哪里。一个简单的方法是利用多种[免费公共托管](http://git.or.cz/gitwiki/GitHosting)。如果你有一个具有SSH访问权限的服务器，私人的离线备份也很容易：在另一台服务器上使用
+    `git init --bare` 创建一个裸Git仓库，然后设置一个远程仓库，你可以向其推送……但我已经过于详细了！
 - en: 'If you created a Git repository and working copy on your own computer with
     `git init`, you''ll now have to wrangle with Git remotes. I personally find this
     quite annoying, and thus always arrange to have my bare Git repository (i.e. the
     server) setup before I `git clone` my working copy (i.e. the client), which sets
     up the configuration that makes pushing easy. My steps are then:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你在自己的电脑上使用 `git init` 创建了一个Git仓库和工作副本，现在你将不得不处理Git远程。我个人觉得这相当烦人，因此总是安排在 `git
+    clone` 我的工作副本之前设置好我的裸Git仓库（即服务器），这样可以轻松进行推送。我的步骤是：
 - en: 'On my server, make a directory (I like `/srv/git/project.git`) and in it run
     `git init --bare` # On my client, run `git clone ssh://servername/srv/git/project.git`'
+  id: totrans-12
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '在我的服务器上，创建一个目录（我喜欢`/srv/git/project.git`），然后在其中运行`git init --bare` # 在我的客户端上，运行`git
+    clone ssh://servername/srv/git/project.git`'
 - en: 'If you must setup the remotes on an existing repository, the following commands
     will do the trick:'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你必须在一个现有的仓库上设置远程仓库，可以使用以下命令来完成：
 - en: '[PRE0]'
+  id: totrans-14
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'For the curious, the first line adds a remote named "origin" (which, by convention,
     is the remote setup from the repository you may have cloned) associated with `$REPO_URL`.
     The second and third lines setup default behavior for when you pull changes from
     the repository, to simulate the configuration that normally gets setup when you
     do a clone. (Note: this kind of sucks. Git 1.7.0 introduces the `--set-upstream`
     flag which fixes these problems.)'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 对于那些好奇的人，第一行添加了一个名为“origin”的远程仓库（按照约定，这是从你可能克隆的仓库设置的远程仓库），关联到`$REPO_URL`。第二和第三行设置了从仓库拉取更改时的默认行为，以模拟通常在克隆时设置的配置。（注意：这有点糟糕。Git
+    1.7.0引入了`--set-upstream`标志来解决这些问题。）
 - en: From there, all you need to do is make commits with `git commit`, and then push
     them to the remote repository with `git push`.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，你只需要使用`git commit`提交更改，然后用`git push`将它们推送到远程仓库。
 - en: '*Topic branches*'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: '*主题分支*'
 - en: As a single user, most of your work in your repository will play nicely together;
     you don't have to worry about someone else coming in and trampling on your commits.
     However, every once in a while you may find yourself in the midst of a large refactoring,
     and you find yourself having to leave things off for the day, or take an interrupt
     to work on a more pressing, albeit smaller, bugfix. Here, cheap commits and branching
     make this very simple on Git.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 作为单个用户，在你的仓库中大部分的工作都可以很好地一起进行；你不必担心别人会进来破坏你的提交。然而，偶尔你可能会发现自己在进行一次大的重构时，你不得不结束今天的工作，或者中断来处理一个更紧迫但更小的bug修复。在这里，Git的廉价提交和分支使得这一切变得非常简单。
 - en: If you think the changes you are currently working on are big but you'll be
     able to get back immediately to them, use `git stash` to temporarily pop your
     changes into a stash. You can then perform your minor changes, and once done,
@@ -106,8 +148,11 @@
     scratch place for you to store changes, and should be immediately emptied out
     when possible; you don't want to be looking at multiple stashed changes and trying
     to figure out which one contains the ones you care about.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你认为你目前正在进行的更改很大，但是你很快就能回来处理它们，可以使用`git stash`命令将你的更改暂时保存到一个暂存区。然后你可以进行你的小改动，完成后使用`git
+    stash pop`来恢复你的旧更改。暂存区最适合作为一个临时的存储空间，当可能时应立即清空；你不想看到多个被暂存的更改，并试图弄清楚哪一个包含了你关心的更改。
 - en: If your changes are a smidge bigger than that, or you think that you're not
     going to be able to work on whatever large change you're making for a while, you
     can make what's called a topic branch. First, change your working copy over to
@@ -115,12 +160,17 @@
     Then, make a commit to save your changes. If you pop open `gitk`, you'll now notice
     that you have a commit hanging off of `master`. You can checkout master again
     using `git checkout master` and work on whatever other changes you need.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你的更改比那还要大一点，或者你认为你暂时无法继续进行任何大的更改，你可以创建一个所谓的主题分支。首先，使用`git checkout -b 新分支名`切换到一个新分支（选择一个描述性的名字）。然后，进行一次提交以保存你的更改。如果你打开`gitk`，你会注意到你现在有一个附加在`master`上的提交。你可以再次切换到master分支使用`git
+    checkout master`，并进行你需要的其他更改。
 - en: 'When you finally decide that your topic branch is done, you need to stick back
     into master. There are two ways to do this:'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 当你最终确定你的主题分支完成时，你需要将它重新合并到master分支中。有两种方法可以做到这一点：
 - en: You can pretend that your topic branch, as a whole, is just a big patch, and
     as such, this patch should reasonably apply to the most recent version of `master`.
     In that case, running `git rebase master` while on the topic branch (you can check
@@ -128,28 +178,42 @@
     checkout master and `git pull topic-branch` to fast-forward master to the topic
     branch. Since getting rid of old branches is a good thing, I recommend running
     `git branch -d topic-branch` afterwards.
+  id: totrans-22
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 你可以假装你的主题分支作为一个整体只是一个大补丁，因此，这个补丁应该合理地适用于最新版本的 `master`。在主题分支上运行 `git rebase
+    master`（你可以用 `git status` 检查），这将把这个“补丁”应用到 `master` 上。然后你可以切换到 master 并 `git pull
+    topic-branch` 来快进 master 到主题分支。由于清理旧分支是件好事，我建议之后运行 `git branch -d topic-branch`。
 - en: You can take a stance that history is important, and perform a merge. On the
     master branch, run `git merge topic-branch`. Just as in the first case, you can
     then cleanup the topic branch with `git branch -d topic-branch`.
+  id: totrans-23
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 你可以认为历史很重要，并执行一次合并。在主分支上，运行 `git merge topic-branch`。就像第一种情况一样，你可以用 `git branch
+    -d topic-branch` 清理主题分支。
 - en: Cleaning up after old topic branches is a good habit to get into, because it
     means you can use `git branch` to remind yourself quickly which topic branches
     might need your attention.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 清理旧主题分支是一个良好的习惯，因为这意味着你可以使用 `git branch` 快速提醒自己哪些主题分支可能需要你的关注。
 - en: Additionally, if you care about backing up your topic branches, you should run
     `git push origin topic-branch`. You can delete topic branches from your remote
     using `git push origin :topic-branch` (note the colon).
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 另外，如果你关心备份你的主题分支，你应该运行 `git push origin topic-branch`。你可以使用 `git push origin
+    :topic-branch` 从远程删除主题分支（注意冒号）。
 - en: '*Clean history*'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: '*清理历史*'
 - en: Many people pay a lot of attention to documentation inside a source file in
     order to puzzle out what a particular piece of code does. However, another excellent
     source of code documentation is looking at the *history* of a piece of code; when
@@ -157,69 +221,98 @@
     for it when making that change? `git blame` will give you a blow-by-blow description
     of when every particular line in a Git file was changed, and `git log` will show
     you the conglomeration of changes made to a particular file.
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 许多人在源文件内部的文档中投入了很多注意力，以便解释某段代码的作用。然而，代码文档的另一个优秀来源是查看代码的*历史*；特定片段是何时引入的，作者在进行更改时对此作了什么解释？`git
+    blame` 将为你提供每个 Git 文件中每行何时更改的详细描述，而 `git log` 将展示对特定文件所做的更改的综合情况。
 - en: Unfortunately, the usefulness of this mechanism highly depends on the quality
     of the messages you're making in your commits, and if you're using Git properly
     and committing often, you might have skimped a little on some of the messages.
     No worries; it happens to the best of us. You just have to remember to *clean
     things up* (i.e. rewrite history) when you're done.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 不幸的是，这种机制的有用性高度依赖于你在提交中做出的消息质量，如果你正确使用 Git 并经常提交，可能在某些消息上会有所疏忽。别担心；这种情况发生在我们每个人身上。你只需记住在完成时*整理一下*（即重写历史）。
 - en: 'In this case, `git rebase -i` is your friend. Specify as an argument how far
     back you want to rewrite history (`HEAD~N` where N is a number is probably a good
     bet), and then rewrite history to your hearts content. You have three primary
     tools:'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这种情况下，`git rebase -i` 是你的好朋友。指定一个参数来指定你想要重写历史的距离（`HEAD~N`，其中 N 是一个数字可能是个不错的选择），然后根据你的心情重写历史。你有三个主要的工具：
 - en: '`edit`, and when Git gets to that commit, just run `git commit --amend`: This
     is fairly simple: you have a self-contained commit that you didn''t really write
     a good commit message for, well amend will let you change that commit message
     into something that is useful.'
+  id: totrans-30
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`edit`，当 Git 到达该提交时，只需运行 `git commit --amend`：这很简单：你有一个独立的提交，但没有写一个好的提交消息，那么
+    amend 允许你把提交消息改成有用的内容。'
 - en: '`squash`: If you made a bunch of very small commits, and now you look at them
     and decide, no, they really logically go together, you can squash them together.'
+  id: totrans-31
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`squash`：如果你做了一堆非常小的提交，现在你看着它们并决定，不，它们实际上逻辑上是一致的，那么你可以把它们合并在一起。'
 - en: '`edit` with `git checkout HEAD~`: What this will do is give you a working tree
     with the changes of that commit, but without any of them actually part of a commit.
     You can then break a "too big" commit into bite-sized pieces using `git add -p`
     (which will selectively add hunks of your changes to the index) and then using
     `git commit` *without* the `-a` flag).'
+  id: totrans-32
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`edit` with `git checkout HEAD~`: 这个操作会给你一个带有该提交更改的工作树，但这些更改实际上并不属于一个提交的一部分。你可以使用`git
+    add -p`（它会选择性地将你的更改块添加到索引中）然后使用`git commit` *不带* `-a` 标志，把一个“太大”的提交分解成易处理的小块。'
 - en: 'This strategy interacts particularly well with topic branches, which lend themselves
     to the following workflow:'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种策略与专题分支特别配合，适合以下工作流程：
 - en: Create the topic branch with `git checkout -b topic-name`,
+  id: totrans-34
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用 `git checkout -b 主题名称` 创建专题分支，
 - en: Hack a lot on the branch, making tiny commits with incomprehensible summaries,
+  id: totrans-35
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在分支上进行大量修改，使用难以理解的总结进行小提交，
 - en: Review your changes with `git log -u master..HEAD`,
+  id: totrans-36
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用 `git log -u master..HEAD` 检查你的更改，
 - en: Edit your changes with `git rebase -i master`,
+  id: totrans-37
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 使用 `git rebase -i master` 编辑你的更改，
 - en: Checkout master and `git pull topic-name`.
+  id: totrans-38
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 切换到主分支并使用 `git pull 主题名称`。
 - en: 'And that''s it for part one! You may have noticed that all of these strategies
     seem to feed into each other: this unusual integration between all aspects is
     one of the benefits of Git''s simple internal model. If people would like to see
     some examples of these techniques in action, I''d be more than happy to blog about
     them some more. Thanks for reading.'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 部分一就到这里了！你可能已经注意到，所有这些策略似乎互为补充：这种不寻常的整合是Git简单内部模型的一个优点之一。如果大家想看一些这些技术在实际中的例子，我很乐意再多写一些博客。感谢阅读。

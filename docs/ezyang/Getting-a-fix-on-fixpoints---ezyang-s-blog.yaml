@@ -1,23 +1,35 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:01'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:01'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Getting a fix on fixpoints : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 'Getting a fix on fixpoints : ezyang’s blog'
 - en: 来源：[http://blog.ezyang.com/2010/12/getting-a-fix-on-fixpoints/](http://blog.ezyang.com/2010/12/getting-a-fix-on-fixpoints/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/12/getting-a-fix-on-fixpoints/](http://blog.ezyang.com/2010/12/getting-a-fix-on-fixpoints/)
 - en: 'Previously, we’ve [drawn Hasse diagrams of all sorts of Haskell types](http://blog.ezyang.com/2010/12/hussling-haskell-types-into-hasse-diagrams/),
     from data types to function types, and looked at [the relationship between computability
     and monotonicity](http://blog.ezyang.com/2010/12/gin-and-monotonic/). In fact,
@@ -27,15 +39,23 @@
     to define *continuity*. In particular, we will look at least upper bounds, chains,
     chain-complete partial orders (CPOs) and domains. We also look at fixpoints, which
     arise naturally from continuous functions.'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 以前，我们已经 [绘制了各种 Haskell 类型的哈斯图](http://blog.ezyang.com/2010/12/hussling-haskell-types-into-hasse-diagrams/)，从数据类型到函数类型，并查看了
+    [可计算性和单调性之间的关系](http://blog.ezyang.com/2010/12/gin-and-monotonic/)。事实上，所有可计算函数都是单调的，但并非所有单调函数都是可计算的。是否有某些函数描述涉及可计算性？是的：*Scott
+    连续函数*。在这篇文章中，我们将探讨定义*连续性*所需的数学机制。特别地，我们将研究最小上界、链、链完备偏序集（CPOs）和域。我们还将研究连续函数自然产生的不动点。
 - en: '* * *'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: In our previous diagrams of types with infinitely many values, we let the values
     trail off into infinity with an ellipsis.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 在我们之前的类型图中，我们让值以省略号一直延伸到无穷远。
 - en: 'As several commentors have pointed out, this is not quite right: all Haskell
     data types also have a one or more top values, values that are not less than any
     other value. (Note that this is distinct from values that are greater than or
@@ -43,196 +63,288 @@
     orders* we’re talking about.) In the case of Nat, there are a number of top values:
     Z, S Z, S (S Z), and so on are the most defined you can get. However, there is
     one more: `fix S`, aka infinity.'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如几位评论者所指出的，这并不完全正确：所有的 Haskell 数据类型都有一个或多个顶值，即不小于任何其他值的值。（注意，这与大于或等于所有其他值的值不同：某些值是不可比较的，因为我们讨论的是*偏序*。）在
+    Nat 的情况下，有许多顶值：Z、S Z、S (S Z)，等等是你可以得到的最明确的。然而，还有一个更多：`fix S`，又名无穷大。
 - en: 'There are no bottoms lurking in this value, but it does seem a bit odd: if
     we peel off an S constructor (decrement the natural number), we get back `fix
     S` again: infinity minus one is apparently infinity.'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 在这个值中没有潜伏的底部，但它似乎有点奇怪：如果我们去掉一个 S 构造子（减少自然数），我们又回到了 `fix S`：显然，无限减一还是无限。
 - en: In fact, `fix S` is a least upper bound for the chain ⊥, S ⊥, S (S ⊥)... A chain
     is simply a sequence of values for which d_1 ≤ d_2 ≤ d_3 ...; they are lines moving
     upwards on the diagrams we’ve drawn.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 实际上，`fix S` 是链 ⊥, S ⊥, S (S ⊥)... 的最小上界。链只是一个值序列，其中 d_1 ≤ d_2 ≤ d_3 ...；它们是我们绘制的图表中向上移动的线条。
 - en: 'The least upper bound of a chain is just a value d which is bigger than all
     the members of the chain: it “sits at the top.” (For all n > 0, d_n ≤ d.) It is
     notated with a `|_|`, which is frequently called the “lub” operator. If the chain
     is strictly increasing, the least upper bound cannot be in the chain, because
     if it were, the next element in the chain would be greater than it.'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 自然数的链 0 ≤ 1 ≤ 2 ≤ ... 尽管没有 0 ≤ 1 ≤ 2 ≤ ... 的上界，但自然数有许多最小上界，因为每个元素 n 形成平凡链 n
+    ≤ n ≤ n...
 - en: A chain in a poset may not necessarily have a least upper bound. Consider the
     natural numbers with the usual partial ordering.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 在偏序集中，链不一定有最小上界。考虑具有通常偏序关系的自然数。
 - en: The chain 0 ≤ 1 ≤ 2 ≤ ... does not have an upper bound, because the set of natural
     numbers doesn’t contain an infinity. We have to instead turn to Ω, which is the
     natural numbers and the smallest possible infinity, the ordinal ω.
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 链 0 ≤ 1 ≤ 2 ≤ ... 没有上界，因为自然数集合不包含无穷大。我们必须转向 Ω，这是自然数和最小可能的无穷大，序数 ω。
 - en: Here the chain has a least upper bound.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里链有一个最小上界。
 - en: Despite not having a lub for 0 ≤ 1 ≤ 2 ≤ ..., the natural numbers have many
     least upper bounds, since every element n forms the trivial chain n ≤ n ≤ n...
+  id: totrans-16
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 尽管 0 ≤ 1 ≤ 2 ≤ ... 没有 0 ≤ 1 ≤ 2 ≤ ... 的上确界，自然数有许多最小上界，因为每个元素 n 形成平凡链 n ≤ n ≤
+    n...
 - en: '* * *'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: Here are pictorial representatios of some properties of lubs.
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里是一些上界的图形表示。
 - en: If one chain is always less than or equal to another chain, that chain’s lub
     is less than or equal to the other chain’s lub.
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果一个链始终小于或等于另一个链，那么该链的上界小于或等于另一个链的上界。
 - en: A double chain of lubs works the way you expect it to; furthermore, we can diagonalize
     this chain to get the upper bound in both directions.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 双上界链的工作方式与您预期的方式相同；此外，我们可以对这条链进行对角线处理，以获取两个方向的上界。
 - en: '* * *'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'So, if we think back to any of the diagrams we drew previously, anywhere there
     was a “...’, in fact we could have placed an upper bound on the top of, courtesy
     of Haskell’s laziness. Here is one chain in the list type that has a least upper
     bound:'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以，如果我们回想起先前绘制的任何图表，在任何地方有一个“...”，实际上我们可以在顶部放置一个上界，这归功于Haskell的惰性。以下是列表类型中具有最小上界的一个链：
 - en: 'As we saw earlier, this is not always true for all partial orders, so we have
     a special name for posets that always have least upper bounds: *chain-complete
     posets*, or CPOs.'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 正如我们前面看到的，对于所有偏序来说，这并不总是成立，因此我们为总是具有最小上界的偏序赋予了一个特殊的名称：*链完备偏序*或CPO。
 - en: You may have also noticed that in every diagram, ⊥ was at the bottom. This too
     is not necessarily true of partial orders. We will call a CPO that has a bottom
     element a *domain.*
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 您可能还注意到在每个图表中，⊥位于底部。这也不一定适用于偏序。我们将称具有底部元素的CPO为*域*。
 - en: (The term *domain* is actually used quite loosely within the denotational semantics
     literature, many times having extra properties beyond the definition given here.
     I’m using this minimal definition from Marcelo Fiore’s denotational semantics
     lectures, and I believe that this is the Scott conception of a domain, although
     I haven’t verified this.)
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: （术语*域*实际上在指示语义文献中被相当宽松地使用，许多时候具有超出此处给出的定义的额外属性。我从Marcelo Fiore的指示语义讲座中使用了这个最小定义，并且我相信这是域的Scott构思，尽管我尚未验证。）
 - en: So we’ve been in fact dealing with domains all this time, although we’ve been
     ignoring the least upper bounds. What we will find is that once we consider upper
     bounds we will find a stronger condition than monotonicity that entails computability.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，实际上我们一直在处理域，尽管我们一直忽略最小上界。我们将发现，一旦考虑了上界，我们将找到一个比单调性更强的条件，即可计算性。
 - en: '* * *'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: Consider the following Haskell data type, which represents the vertical natural
     numbers Omega.
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: 考虑以下Haskell数据类型，它表示垂直自然数Omega。
 - en: Here is a monotonic function that is not computable.
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 这是一个不可计算的单调函数。
 - en: 'Why is it not computable? It requires us to treat arbitrarily large numbers
     and infinity different: there is a discontinuity between what happens on finite
     natural numbers and what happens at infinity. Computationally, there is no way
     for us to check in finite time that any given value we have is actually infinity:
     we can only continually keep peeling off Ws and hope we don’t reach bottom.'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 为什么它不可计算？这要求我们对任意大的数和无穷大有不同的处理方式：在有限自然数和无穷大之间存在不连续性。从计算的角度来看，我们无法在有限时间内检查任何给定值是否实际上是无穷大：我们只能不断剥离Ws，并希望我们不会达到底部。
 - en: 'We can formalize this as follows: a function `D -> D`, where D is a domain,
     is *continuous* if it is monotonic and it preserves least upper bounds. This is
     not to say that the upper bounds all stay the same, but rather that if the upper
     bound of e_1 ≤ e_2 ≤ e_3 ... is lub(e), then the upper bound of f(e_1) ≤ f(e_2)
     ≤ f(e_3) ... is f(lub(e)). Symbolically:'
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以如下形式地正式化：一个函数`D -> D`，其中D是一个域，如果它是单调的并且保留最小上界，则称为*连续*。这并不是说所有上界都保持不变，而是说如果e_1
+    ≤ e_2 ≤ e_3 ...的上界是lub(e)，那么f(e_1) ≤ f(e_2) ≤ f(e_3) ...的上界是f(lub(e))。符号化地：
 - en: 'Pictorially:'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 图形化地表示：
 - en: '* * *'
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'Now it’s time to look at fixpoints! We’ll jump straight to the punchline: Tarski’s
     fixpoint theorem states that the least fixed point of a continuous function is
     the least upper bound of the sequence ⊥ ≤ f(⊥) ≤ f(f(⊥)) ...'
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在是查看不动点的时候了！我们直接跳到要点：Tarski的不动点定理声明，连续函数的最小不动点是序列⊥ ≤ f(⊥) ≤ f(f(⊥)) ...的最小上界。
 - en: Because the function is continuous, it is compelled to preserve this least upper
     bound, automatically making it a fixed point. We can think of the sequence as
     giving us better and better approximations of the fixpoint. In fact, for finite
     domains, we can use this fact to mechanically calculate the precise fixpoint of
     a function.
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 因为函数是连续的，它被迫保持这个最小上界，自动使其成为一个固定点。我们可以将这个序列看作是给我们提供固定点的越来越好的逼近值。事实上，在有限的定义域内，我们可以利用这个事实来机械地计算函数的精确固定点。
 - en: The first function we’ll look at doesn’t have a very interesting fixpoint.
+  id: totrans-36
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们将首先查看的函数并没有非常有趣的固定点。
 - en: If we pass bottom to it, we get bottom.
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我们将底部传递给它，我们得到底部。
 - en: Here’s a slightly more interesting function.
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里有一个稍微有趣的函数。
 - en: 'It’s not obvious from the definition (although it’s more obvious looking at
     the Hasse diagrams) what the fixpoint of this function is. However, by repeatedly
     iterating f on ⊥, we can see what happens to our values:'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 从定义上并不明显（尽管在哈斯图上看起来更明显），这个函数的固定点是什么。然而，通过重复在 ⊥ 上迭代f，我们可以看到我们的值发生了什么变化：
 - en: 'Eventually we hit the fixpoint! And even more importantly, we’ve hit the least
     fixpoint: this particular function has another fixpoint, since f (C ()) = C ().'
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 最终我们会达到固定点！更重要的是，我们已经达到了最小的固定点：这个特定函数有另一个固定点，因为f (C ()) = C ()。
 - en: Here’s one more set for completeness.
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了完整起见，这里还有一个集合。
 - en: '* * *'
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'We can see from this diagrams a sort of vague sense why Tarski’s fixpoint theorem
     might work: we gradually move up and up the domain until we stop moving up, which
     is by definition the fixpoint, and since we start from the bottom, we end up with
     the least fixed point.'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们可以从这些图表中看到为什么塔斯基的固定点定理可能有效：我们逐渐向上移动定义域，直到我们停止向上移动，这就是固定点的定义，并且由于我们从底部开始，我们最终得到最小的固定点。
 - en: There are a few questions to answer. What if the function moved the value down?
     Then we might get stuck in an infinite loop.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 有几个问题需要回答。如果函数将值向下移动会怎样？那么我们可能会陷入无限循环。
 - en: 'We’re safe, however, because any such function would violate monotonicity:
     a loop on e₁ ≤ e₂ would result in f(e₁) ≥ f(e₂).'
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，我们是安全的，因为任何这样的函数都会违反单调性：对于e₁ ≤ e₂的循环将导致f(e₁) ≥ f(e₂)。
 - en: 'Our finite examples were also total orders: there was no branching of our diagrams.
     What if our function mapped a from one branch to another (a perfectly legal operation:
     think `not`)?'
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们的有限例子也是全序的：我们的图表没有分支。如果我们的函数将一个分支映射到另一个分支（这是完全合法的操作：考虑`not`）会怎样？
 - en: 'Fortunately, in order to *get* to such a cycle, we’d have to break monotonicity:
     a jump from one branch to another implies some degree of strictness. A special
     case of this is that the fixpoints of strict functions are bottom.'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 幸运的是，要*达到*这样的循环，我们必须打破单调性：从一个分支跳到另一个分支意味着某种程度的严格性。这种情况的特例是，严格函数的固定点是底部。
 - en: '* * *'
+  id: totrans-48
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'The *tour de force* example of fixpoints is the “Hello world” of recursive
     functions: factorial. Unlike our previous examples, the domain here is infinite,
     so fix needs to apply f “infinitely” many times to get the true factorial. Fortunately,
     any given call to calculuate the factorial `n!` will only need `n` applications.
     Recall that the fixpoint style definition of factorial is as follows:'
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 固定点的**典范**示例是递归函数的“Hello world”：阶乘。与我们之前的例子不同，这里的定义域是无限的，因此需要无限次地应用f才能得到真正的阶乘。幸运的是，计算阶乘`n!`只需要`n`次应用。请记住，阶乘的固定点风格定义如下：
 - en: '[PRE0]'
+  id: totrans-50
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'Here is how the domain of the factorial function grows with successive applications:'
+  id: totrans-51
   prefs: []
   type: TYPE_NORMAL
+  zh: 下面是阶乘函数的定义域随着连续应用的增长方式：
 - en: The reader is encouraged to verify this is the case. [Next time](http://blog.ezyang.com/2010/12/omega-i-m-lubbin-it/),
     we’ll look at this example not on the flat domain of natural numbers, but the
     vertical domain of natural numbers, which will nicely tie to together a lot of
     the material we’ve covered so far.
+  id: totrans-52
   prefs: []
   type: TYPE_NORMAL
+  zh: 鼓励读者验证这是否为真。[下次](http://blog.ezyang.com/2010/12/omega-i-m-lubbin-it/)，我们将不再看自然数的平面域，而是看垂直域的自然数，这将很好地将我们迄今为止涵盖的许多内容联系在一起。

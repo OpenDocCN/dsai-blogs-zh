@@ -1,23 +1,35 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:16:50'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:16:50'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Let’s talk about the PyTorch dispatcher : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 让我们谈谈 PyTorch 调度器：ezyang's 博客
 - en: 来源：[http://blog.ezyang.com/2020/09/lets-talk-about-the-pytorch-dispatcher/](http://blog.ezyang.com/2020/09/lets-talk-about-the-pytorch-dispatcher/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2020/09/lets-talk-about-the-pytorch-dispatcher/](http://blog.ezyang.com/2020/09/lets-talk-about-the-pytorch-dispatcher/)
 - en: 'If this is your first time reading about PyTorch internals, you might want
     to check out my [PyTorch internals](http://blog.ezyang.com/2019/05/pytorch-internals/)
     post first. In this post, I want to talk about one particular part of PyTorch''s
@@ -25,8 +37,12 @@
     At a first glance, the dispatcher is just a glorified if statement: based on some
     information about the tensor inputs, decide what piece of code should be called.
     So why should we care about the dispatcher?'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果这是你第一次了解 PyTorch 内部工作原理，你可能想先看看我的[PyTorch internals](http://blog.ezyang.com/2019/05/pytorch-internals/)文章。在这篇文章中，我想谈谈
+    PyTorch 内部的一个特定部分：[调度器](https://pytorch.org/tutorials/advanced/dispatcher.html)。乍一看，调度器只是一个被美化的
+    if 语句：基于一些关于张量输入的信息，决定调用哪段代码。那么我们为什么要关注调度器呢？
 - en: 'Well, in PyTorch, a lot of things go into making an operator work. There is
     the kernel that does the actual work, of course; but then there is support for
     reverse mode automatic differentiation, e.g., the bits that make `loss.backward()`
@@ -39,23 +55,33 @@
     just an if statement: it is a really important abstraction for how we structure
     our code internally PyTorch... and it has to do so without degrading the performance
     of PyTorch (too much, anyway).'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 嗯，在 PyTorch 中，让一个操作符起作用需要很多东西。当然，有实际工作的内核；但还有对反向模式自动微分的支持，例如使`loss.backward()`工作的位。哦，如果你的代码在`torch.jit.trace`下，你可以获得运行的所有操作的跟踪。我提到了如果你在`vmap`调用内部运行这些操作，操作符的批处理行为会有所不同吗？有很多不同的方式来解释
+    PyTorch 操作符的不同，如果我们试图在一个名为`add`的单个函数内处理它们所有，我们的实现代码很快就会变得难以维护。调度器不仅仅是一个 if 语句：它是我们在
+    PyTorch 内部结构化代码的一个非常重要的抽象...而且它必须在不太降低 PyTorch 性能的情况下做到这一点。
 - en: At the end of this post, our goal will be to understand all the different parts
     of this picture fit together. This post will proceed in three parts.
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 在本文末尾，我们的目标是理解这幅图中的所有不同部分是如何组合在一起的。本文将分为三个部分进行。
 - en: First, we'll talk about the dispatcher itself. What is the dispatcher, how does
     it decide what kernel to call? Second, we'll talk about the operator registration
     API, which is the interface by which we register kernels into the dispatcher.
     Finally, we'll talk about boxing and unboxing, which are a cross-cutting feature
     in the dispatcher that let you write code once, and then have it work on all kernels.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，我们将讨论调度器本身。什么是调度器，它如何决定调用哪个内核？其次，我们将讨论操作符注册 API，这是我们将内核注册到调度器的接口。最后，我们将讨论装箱和解箱，这是调度器中的一个横切特性，让您可以一次编写代码，然后使其在所有内核上工作。
 - en: What is the dispatcher?
+  id: totrans-10
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 什么是调度器？
 - en: OK, so what is the dispatcher? For every operator, the dispatcher maintains
     a table of function pointers which provide implementations for each *dispatch
     key*, which corresponds roughly to one of the cross-cutting concerns in PyTorch.
@@ -64,15 +90,21 @@
     The dispatcher's job is to compute a dispatch key, based on the input tensors
     and some other stuff (more on this shortly), and then do an indirect jump to the
     function pointed to by the table.
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 好的，那么什么是调度器？对于每个操作符，调度器维护一个函数指针表，该表为每个*调度键*提供实现，这些键大致对应于 PyTorch 中的一些横切关注点。在上面的图表中，您可以看到该表中有针对后端（CPU、CUDA、XLA）以及像
+    autograd 和追踪等更高级别概念的调度条目。调度器的工作是根据输入张量和其他一些内容（稍后详述）计算调度键，然后对表中指向的函数进行间接跳转。
 - en: 'Those of you who are familiar with C++ may observe that this table of function
     pointers is very similar to virtual tables in C++. In C++, virtual methods on
     objects are implemented by associating every object with a pointer to a virtual
     table that contains implementations for each virtual method on the object in question.
     In PyTorch, we essentially reimplemented virtual tables, but with some differences:'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果你熟悉 C++ 的话，你可能会注意到函数指针表在某种程度上和 C++ 中的虚函数表很相似。在 C++ 中，对象的虚方法是通过将每个对象关联到一个虚函数表的指针来实现的，该表包含了该对象的每个虚方法的具体实现。在
+    PyTorch 中，我们本质上重新实现了虚函数表，但存在一些区别：
 - en: Dispatch tables are allocated per operator, whereas vtables are allocated per
     class. This means that we can extend the set of supported operators simply by
     allocating a new dispatch table, in contrast to regular objects where you can
@@ -82,26 +114,36 @@
     not openly extensible, and we generally expect extensions who want to allocate
     themselves a new dispatch key to submit a patch to PyTorch core to add their dispatch
     key.
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 分派表是按操作员分配的，而虚函数表是按类分配的。这意味着我们可以通过简单地分配新的分派表来扩展支持的操作员集合，这与常规对象不同，常规对象可以从类扩展，但不能轻松添加虚方法。与正常的面向对象系统不同，在
+    PyTorch 中，大部分的可扩展性在于定义新操作员（而不是新子类），因此这种权衡是有道理的。分派键不是公开可扩展的，我们通常期望希望分配新分派键的扩展，向
+    PyTorch 核心提交补丁以添加它们的分派键。
 - en: More on this in the next slide, but the computation of our dispatch key considers
     all arguments to the operator (multiple dispatch) as well as thread-local state
     (TLS). This is different from virtual tables, where only the first object (`this`)
     matters.
+  id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 关于这一点，在下一张幻灯片中会有更多信息，但我们计算分派键的过程考虑了操作员的所有参数（多分派）以及线程本地状态（TLS）。这与虚函数表不同，后者只考虑第一个对象（`this`）的内容。
 - en: Finally, the dispatcher supports boxing and unboxing as part of the calling
     convention for operators. More on this in the last part of the talk!
+  id: totrans-15
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 最后，分派程序支持封装和解封装作为操作员调用约定的一部分。关于这一点，在演讲的最后部分会有更多解释！
 - en: 'Fun historical note: we used to use virtual methods to implement dynamic dispatch,
     and reimplemented them when we realized we needed more juice than virtual tables
     could give us.'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 有趣的历史注解：我们曾经使用虚方法来实现动态分派，当我们意识到我们需要更多功能而虚函数表无法提供时，我们重新实现了它们。
 - en: So how exactly do we compute the dispatch key which we use to index into the
     dispatch table? The basic abstraction we use for computing what dispatch key to
     use is a dispatch key set, which is a bitset over dispatch keys. The general concept
@@ -109,40 +151,55 @@
     case mask out some dispatch keys), giving us a final dispatch key set. Then, we
     pick the first dispatch key in the set (dispatch keys are implicitly ordered by
     some priority) and that is where we should dispatch to. What are these sources?
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 那么我们究竟如何计算用于索引到分派表的分派键呢？我们用于计算要使用的分派键的基本抽象是分派键集，它是对分派键的位集合。总体概念是，我们从各种来源联合分派键集（有时排除某些分派键），得到最终的分派键集。然后，我们选择集合中的第一个分派键（分派键按某种优先级隐式排序），这就是我们应该分派到的地方。这些来源是什么？
 - en: Each tensor input contributes a dispatch key set of all dispatch keys that were
     on the tensor (intuitively, these dispatch keys will be things like CPU, telling
     us that the tensor in question is a CPU tensor and should be handled by the CPU
     handler on the dispatch table)
+  id: totrans-18
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 每个张量输入都会贡献一个分派键集，其中包含了张量上的所有分派键（直观上，这些分派键可能是诸如 CPU 的内容，告诉我们相关张量是 CPU 张量，并应由分派表上的
+    CPU 处理器处理）
 - en: We also have a local include set, which is used for "modal" functionality, such
     as tracing, which isn't associate with any tensors, but instead is some sort of
     thread local mode that a user can turn on and off within some scope.
+  id: totrans-19
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 我们还有一个本地包含集，用于“模态”功能，例如追踪，它与任何张量无关联，而是某种用户可以在某些范围内开启和关闭的线程本地模式。
 - en: Finally, we have a global set, which are dispatch keys that are always considered.
     (Since the time this slide was written, Autograd has moved off the global set
     and onto tensor. However, the high level structure of the system hasn't changed).
+  id: totrans-20
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 最后，我们有一个全局集合，其中包含始终考虑的分派键。（自撰写本幻灯片以来，Autograd 已经从全局集合移至张量。然而，系统的高层结构并未改变。）
 - en: There is also a local exclude set, which is used to exclude dispatch keys from
     dispatch. A common pattern is for some handler to handle a dispatch key, and then
     mask itself off via the local exclude set, so we don't try reprocessing this dispatch
     key later.
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 还有一个本地排除集合，用于在调度中排除调度键。一个常见模式是某些处理程序处理一个调度键，然后通过本地排除集合将自身屏蔽，这样我们就不会尝试在稍后重新处理此调度键。
 - en: Let's walk through the evolution of dispatch key through some examples.
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: 让我们通过一些示例来逐步了解调度键的演变。
 - en: '(Warning: This description is out-of-date for PyTorch master. Instead of Autograd
     being in global, it is instead on the Tensor. Everything else proceeds as before.)'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: （警告：此描述对于PyTorch主版本已过时。Autograd不再全局存在，而是存在于张量上。其余一切如前所述。）
 - en: The most canonical example of the dispatch machinery in operation is how it
     handles autograd. Read the diagram from the top to the bottom. At the very top,
     Autograd is in the global set, and the local exclude set is empty. When we do
@@ -157,16 +214,20 @@
     Finally, in the end, we return from our function, and the RAII guard removes Autograd
     from the local exclude set so subsequent operator calls once again trigger autograd
     handlers.
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 调度机制运行的最典型例子是它如何处理自动求导。从顶部到底部阅读图表。在最顶部，Autograd位于全局集合中，并且本地排除集为空。当我们进行调度时，我们发现自动求导是最高优先级的键（比CPU优先级更高），我们将操作符的调度分派给自动求导处理程序。在自动求导处理程序内部，我们进行一些自动求导操作，但更重要的是，我们创建RAII保护`AutoNonVariableTypeMode`，将Autograd添加到本地排除集合中，防止在此操作符内部的所有操作中处理自动求导。当我们重新调度时，我们现在跳过自动求导键（因为它被排除），并将操作分派给下一个调度键，例如CPU。由于在调用树的其余部分维护本地TLS，所有后续的调度也都会绕过自动求导。最后，在函数结束时，RAII保护从本地排除集合中移除Autograd，因此后续的操作符调用再次触发自动求导处理程序。
 - en: 'Another similar example is tracing, which is similar to autograd where when
     we enter the tracing handler, we disable tracing for nested calls with `ExcludeDispatchKeyGuard`.
     However, it differs from autograd in how tracing is initially triggered: tracing
     is toggled by a dispatch key that is added to the local include set when you turn
     on tracing (with `IncludeDispatchKeyGuard`), as opposed to the global dispatch
     key from Autograd (Update: now a dispatch key on tensors).'
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一个类似的例子是**追踪**，它类似于自动求导，当我们进入追踪处理程序时，会使用`ExcludeDispatchKeyGuard`来禁用嵌套调用的追踪。然而，它与自动求导的不同之处在于追踪如何最初被触发：追踪是通过将调度键添加到本地包含集合来切换的，当你启用追踪时（使用`IncludeDispatchKeyGuard`），而不是像自动求导那样使用全局调度键（更新：现在是张量上的调度键）。
 - en: One final example is the BackendSelect key, which operates a little differently
     from normal keys. The problem backend select solves is that sometimes, the default
     dispatch key set calculation algorithm doesn't know how to work out what the correct
@@ -176,8 +237,10 @@
     few operators (for the rest, it is a fallthrough key). The BackendSelect handler
     inspects the arguments and decides what the final dispatch key should be, and
     then does a direct dispatch to that key, bypassing dispatch key calculation.
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 最后一个例子是**BackendSelect**键，它与普通键的操作有些不同。BackendSelect解决的问题是有时，默认的调度键集合计算算法不知道如何确定正确的调度键应该是什么。这种情况的一个显著案例是工厂函数，它们没有任何张量参数（因此，天真地说，不会分配到任何东西）。BackendSelect在全局调度键集中，但仅为少数操作员注册（对于其余操作员，它是一个回退键）。BackendSelect处理程序检查参数并决定最终的调度键应该是什么，然后直接分派到该键，绕过调度键计算。
 - en: 'The slide summarizes some of the most common sequences of handlers that get
     processed when dispatching some operation in PyTorch. Most of the time, it''s
     autograd, and then the backend (with a backend select in-between if you are a
@@ -186,12 +249,18 @@
     Autograd key. And of course, if you turn on every feature in PyTorch all at once,
     you can end up stopping at a lot of handlers. Notice that the order in which these
     handlers are processed matters, since handlers aren''t necessarily commutative.'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: 该幻灯片总结了在 PyTorch 中分发某些操作时处理的一些最常见的处理程序序列。大多数情况下，它是 autograd，然后是后端（如果是工厂函数，则在中间有一个后端选择）。对于
+    XLA，还有一个 XLAPreAutograd 键（更新：此键现在简称为 AutogradXLA），它可以用来覆盖 Autograd 键的行为。当然，如果你同时打开
+    PyTorch 中的每个功能，你可能会停在很多处理程序上。请注意，处理程序处理的顺序很重要，因为处理程序不一定是可交换的。
 - en: Operator registration
+  id: totrans-28
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 操作符注册
 - en: 'So we talked a lot about how we decide what function pointers in the dispatch
     table to call, but how do these pointers get in the dispatch table in the first
     place? This is via the operator registration API. If you have never seen this
@@ -202,47 +271,68 @@
     operator registration API: you define schemas for operators and then register
     implementations at dispatch keys; finally, there is a `fallback` method which
     you can use to define a handler for *all* operators at some dispatch key.'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: 因此，我们谈论了如何决定调用调度表中的函数指针，但这些指针首先如何进入调度表呢？这是通过操作符注册 API。如果你以前从未见过这个 API，请查看 [C++
+    中的调度器](https://pytorch.org/tutorials/advanced/dispatcher.html) 教程，它在高层次上描述了 API
+    的工作原理。在本节中，我们将更详细地探讨注册 API 如何精确映射到调度表。下面，您可以看到与操作符注册 API 交互的三种主要方式：您定义操作符的模式，然后在调度键上注册实现；最后，还有一种
+    `fallback` 方法，您可以使用它来为*所有*操作符在某些调度键下定义一个处理程序。
 - en: 'To visualize the impact of these registration operators, let us imagine that
     the dispatch tables for all operators collectively form a grid, like this:'
+  id: totrans-30
   prefs: []
   type: TYPE_NORMAL
+  zh: 为了可视化这些注册操作符的影响，让我们想象所有操作符的调度表集体形成一个网格，如下所示：
 - en: On one axis, we have each operator supported in PyTorch. On the other axis,
     we have each dispatch key we support in our system. The act of operator registration
     involves filling in cells with implementations under these two axes.
+  id: totrans-31
   prefs: []
   type: TYPE_NORMAL
+  zh: 在一个轴上，我们有 PyTorch 支持的每个操作符。在另一个轴上，我们有系统中支持的每个调度键。操作符注册的行为涉及在这两个轴下填充实现的单元格。
 - en: 'When we register a kernel for a single operator at a specific dispatch key,
     we fill in a single cell (blue below):'
+  id: totrans-32
   prefs: []
   type: TYPE_NORMAL
+  zh: 当我们为特定调度键上的单个操作符注册一个内核时，我们会填充一个单元格（下面显示为蓝色）：
 - en: When you register a kernel as a "catch-all" kernel for all dispatch keys in
     an operator, you fill in an entire row for the operator with one kernel (red below).
     By the way, if this seems like a strange thing to want to do, it is! And we're
     working to remove this capability in favor of more specific fills for a subset
     of keys.
+  id: totrans-33
   prefs: []
   type: TYPE_NORMAL
+  zh: 当你将一个内核注册为操作符中所有调度键的“通用”内核时，你会用一个内核填充操作符的整行（下面显示为红色）。顺便说一句，如果这看起来像是一个奇怪的想法，那是因为确实如此！我们正在努力取消这种能力，而是更倾向于为一部分键填充更具体的值。
 - en: When you register a kernel as a fallback for kernel for a single dispatch key,
     you fill in the column for that dispatch key (green).
+  id: totrans-34
   prefs: []
   type: TYPE_NORMAL
+  zh: 当您将一个内核注册为单个调度键的后备内核时，您会填充该调度键的列（绿色）。
 - en: 'There''s a precedence to these registrations: exact kernel registrations have
     the highest precedence, and catch all kernels take precedence over fallback.'
+  id: totrans-35
   prefs: []
   type: TYPE_NORMAL
+  zh: 这些注册有一个优先顺序：精确的内核注册具有最高优先级，并且通用内核优先于后备。
 - en: Boxing and unboxing
+  id: totrans-36
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 包装和取消包装
 - en: 'I want to spend the last part of this post talking about the boxing and unboxing
     facilities in our dispatcher, which turn out to be pretty important for enabling
     backend fallback. When you are a programming language designer, there is a classic
     tradeoff you have to make in deciding whether or not you want to use a boxed or
     unboxed representation for data:'
+  id: totrans-37
   prefs: []
   type: TYPE_NORMAL
+  zh: 我想在这篇文章的最后部分谈论我们调度器中的包装和取消包装功能，这些功能在启用后端后备时非常重要。当你是一个程序设计语言设计者时，你必须做一个经典的权衡决策，即决定是否使用数据的包装或非包装表示：
 - en: 'A boxed or homogenous representation is a data representation where every type
     of object in your system has the same layout. Typically, this means you have some
     representation that has a header describing what the object in question is, and
@@ -252,8 +342,10 @@
     of a function in Java that takes in an arbitrary Object, for example). Most garbage-collected
     languages have some boxed representation for heap objects, because the garbage
     collector needs to be able to work over *any* type of heap object.'
+  id: totrans-38
   prefs: []
   type: TYPE_NORMAL
+  zh: 装箱或同构表示是一种数据表示，其中系统中每种类型的对象具有相同的布局。通常，这意味着你有一些表示，其中包含描述所讨论对象的头部，然后是一些常规载荷。同构表示在代码中很容易处理：因为你总是可以假设数据有某种常规布局，所以可以编写可以在任何类型数据上多态工作的函数（例如，在Java中接受任意对象的函数）。大多数垃圾收集语言都有堆对象的某种装箱表示，因为垃圾收集器需要能够处理*任何*类型的堆对象。
 - en: 'In contrast, an unboxed or heterogenous representation allows objects to have
     a different layout depending on the data in question. This is more efficient than
     a homogenous representation, as each object can tailor its internal representation
@@ -262,37 +354,49 @@
     types of objects. In C++, this problem is worked around using templates: if you
     need a function to work on multiple types, the C++ compiler will literally create
     a new copy of the function specialized to each type it is used with.'
+  id: totrans-39
   prefs: []
   type: TYPE_NORMAL
+  zh: 相比之下，未装箱或异构表示允许对象根据问题的数据有不同的布局。这比同构表示更有效，因为每个对象可以根据需要的任务调整其内部表示。然而，缺点是我们不能再轻松地编写单个函数，使其在许多类型的对象上多态工作。在C++中，通过使用模板来解决这个问题：如果需要一个函数能够处理多种类型，C++编译器会为每种使用的类型专门创建函数的新副本。
 - en: By default, C++ defaults heterogenous layout, but we have implemented homogenous
     layout in PyTorch by way of the IValue struct (short for interpreter value), which
     implements a boxed representation that we can use in our interpreter. An IValue
     is a two word structure consisting of a payload word (usually a pointer, but it
     could also be an integer or float directly packed into the field) and a tag word
     which tells us what kind of value the IValue is.
+  id: totrans-40
   prefs: []
   type: TYPE_NORMAL
+  zh: 默认情况下，C++采用异构布局，但我们通过IValue结构（解释器值的缩写）在PyTorch中实现了同构布局，该结构实现了一个装箱表示，我们可以在解释器中使用。一个IValue是一个两个字长的结构，由一个载荷字（通常是指针，但也可以是直接打包到字段中的整数或浮点数）和一个标签字组成，告诉我们IValue是什么类型的值。
 - en: 'This means we have two calling conventions for functions in PyTorch: the usual,
     C++, unboxed convention, and a boxed convention using IValues on a stack. Calls
     (from end users) can come from unboxed API (direct C++ call) or boxed API (from
     the JIT interpreter); similarly, kernels can be implemented as direct C++ functions
     (unboxed convention), or can be implemented as a boxed fallback (which by necessity
     is boxed, as they are polymorphic over all operators).'
+  id: totrans-41
   prefs: []
   type: TYPE_NORMAL
+  zh: 这意味着在PyTorch中函数有两种调用约定：通常的、C++的、未装箱约定，以及使用堆栈上的IValues的装箱约定。调用（来自最终用户）可以来自未装箱API（直接C++调用）或装箱API（来自JIT解释器）；同样，内核可以作为直接的C++函数（未装箱约定）实现，也可以作为装箱回退（由于它们在所有操作符上是多态的，因此必须装箱）实现。
 - en: If I call from boxed API to a boxed fallback, it's easy to see how to plug the
     two components together...
+  id: totrans-42
   prefs: []
   type: TYPE_NORMAL
+  zh: 如果我从装箱API调用到装箱回退，很容易看出如何将这两个组件连接在一起...
 - en: '...but how do I get from the unboxed API to the boxed fallback?'
+  id: totrans-43
   prefs: []
   type: TYPE_NORMAL
+  zh: '...但是我如何从未装箱API到装箱回退？'
 - en: We need some sort of adapter to take the unboxed inputs and turn them into IValues
     so that they can be passed via the boxed calling convention. This is done via
     a boxing adapter, which is automatically generated using C++ templates working
     off of the unboxed C++ types in the outward facing API.
+  id: totrans-44
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们需要某种适配器来将未装箱的输入转换为IValues，以便可以通过装箱的调用约定传递它们。这是通过装箱适配器完成的，该适配器是通过C++模板自动生成的，基于外部API中的未装箱C++类型。
 - en: There is also an inverse problem, which is what to do if we have inputs from
     an boxed API and need to call into an unboxed kernel. Similarly, we have an unboxing
     adapter, which performs this translation. Unlike the boxing adapter, this adapter
@@ -301,28 +405,38 @@
     not known, so you literally cannot implement this.) Note that we always keep the
     unboxed API around, so that if a user calls in from the unboxed API, we can fastpath
     straight to the unboxed kernel.
+  id: totrans-45
   prefs: []
   type: TYPE_NORMAL
+  zh: 还有一个反向的问题，即如果我们有来自装箱API的输入，并且需要调用未装箱内核，该怎么办。类似地，我们有一个拆箱适配器，负责执行这种转换。与装箱适配器不同的是，这个适配器应用于内核本身，因为C++模板只能在未装箱类型静态可用的地方工作（在装箱API站点，这些类型是未知的，因此你实际上无法实现这个。）请注意，我们始终保留未装箱API，以便如果用户从未装箱API调用，我们可以直接快速通往未装箱内核。
 - en: 'So here is what boxing and unboxing looks overall:'
+  id: totrans-46
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以这就是整体上看待装箱和拆箱的方式：
 - en: 'Boxing and unboxing are a key feature in the implementation of boxed fallback:
     without them, we could not let people write single kernels which would work everywhere
     (and indeed, in the past, people would write code generators to generate repetitive
     kernels for every function). With template-based boxing and unboxing, you can
     write a single boxed kernel, and then have it work for operators, even if those
     operators are defined externally from the library.'
+  id: totrans-47
   prefs: []
   type: TYPE_NORMAL
+  zh: 装箱和拆箱是实现装箱回退的关键特性：没有它们，我们无法让人们编写可以在任何地方运行的单个内核（事实上，在过去，人们会编写代码生成器来为每个函数生成重复的内核）。通过基于模板的装箱和拆箱，您可以编写一个单一的装箱内核，然后使其适用于操作符，即使这些操作符是从库外定义的也是如此。
 - en: Conclusion
+  id: totrans-48
   prefs:
   - PREF_H3
   type: TYPE_NORMAL
+  zh: 结论
 - en: So that's PyTorch's dispatcher in a nutshell! The dispatcher is still being
     continuously worked on; for example, Ailing Zhang recently landed a rework of
     how autograd dispatch keys are handled, which means that we actually no longer
     have a single Autograd key but have split autograd keys for AutogradCPU/AutogradCUDA/...
     We're generally interested in improving the user experience for people who register
     kernels to the dispatcher. Let us know if you have any questions or comments!
+  id: totrans-49
   prefs: []
   type: TYPE_NORMAL
+  zh: 这就是PyTorch调度程序的要点！调度程序仍在不断地进行工作；例如，Ailing Zhang最近重新设计了如何处理自动求导调度键，这意味着我们实际上不再具有单一的自动求导键，而是为AutogradCPU/AutogradCUDA等分拆了自动求导键。我们通常对改进为调度程序注册内核的用户体验感兴趣。如果您有任何问题或意见，请告诉我们！

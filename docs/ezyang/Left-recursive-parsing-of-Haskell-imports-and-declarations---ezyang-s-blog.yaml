@@ -1,48 +1,74 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: '类别: 未分类'
 - en: 'date: 2024-07-01 18:17:03'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: '日期: 2024-07-01 18:17:03'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Left-recursive parsing of Haskell imports and declarations : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: '[Haskell 导入和声明的左递归解析](http://blog.ezyang.com/2016/12/left-recursive-parsing-of-haskell-imports-and-declarations/)'
 - en: 来源：[http://blog.ezyang.com/2016/12/left-recursive-parsing-of-haskell-imports-and-declarations/](http://blog.ezyang.com/2016/12/left-recursive-parsing-of-haskell-imports-and-declarations/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2016/12/left-recursive-parsing-of-haskell-imports-and-declarations/](http://blog.ezyang.com/2016/12/left-recursive-parsing-of-haskell-imports-and-declarations/)
 - en: 'Suppose that you want to parse a list separated by newlines, but you want to
     automatically ignore extra newlines (just in the same way that `import` declarations
     in a Haskell file can be separated by one or more newlines.) Historically, GHC
     has used a curious grammar to perform this parse (here, semicolons represent newlines):'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 假设您想解析一个由换行符分隔的列表，但希望自动忽略额外的换行符（就像 Haskell 文件中的 `import` 声明可以由一个或多个换行符分隔一样）。从历史上看，GHC
+    使用了一种奇怪的语法来执行这种解析（这里，分号表示换行符）：
 - en: '[PRE0]'
+  id: totrans-7
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'It takes a bit of squinting, but what this grammar does is accept a list of
     decls, interspersed with one or more semicolons, with zero or more leading/trailing
     semicolons. For example, `;decl;;decl;` parses as:'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 需要一点努力才能理解，但这个语法的要点是接受一个由 decls 组成的列表，其中夹杂着一个或多个分号，并且可以有零个或多个前导/尾随分号。例如，`;decl;;decl;`
+    解析为：
 - en: '[PRE1]'
+  id: totrans-9
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: (Rule 3 gets exercised if there is no leading semicolon.)
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: （如果没有前导分号，则执行规则 3。）
 - en: 'This grammar has two virtues: first, it only requires a single state, which
     reduces the size of the parser; second, it is left-recursive, which means that
     an LALR parser (like Happy) can parse it in constant stack space.'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 此语法有两个优点：首先，它只需要一个单一状态，这减少了解析器的大小；其次，它是左递归的，这意味着 LALR 解析器（如 Happy）可以在恒定的堆栈空间中解析它。
 - en: This code worked quite well for a long time, but it finally fell over in complexity
     when we added annotations to GHC. Annotations are a feature which track the locations
     of all keywords/punctuation/whitespace in source code, so that we byte-for-byte
@@ -51,77 +77,111 @@
     to save information about each semicolon; for reasons that I don't quite understand,
     we were expending considerable effort to associate each semicolon with preceding
     declaration (leading semicolons were propagated up to the enclosing element.)
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 这段代码很长时间以来运行得很好，但当我们向 GHC 添加注释时，它最终变得复杂起来。注释是一种跟踪源代码中所有关键字/标点符号/空白位置的功能，因此我们可以逐字节地从抽象语法树重建源代码（通常情况下，格式信息在抽象语法中丢失）。有了注释，我们需要保存关于每个分号的信息；出于我不太理解的原因，我们花了很大力气将每个分号与前面的声明关联起来（前导分号传播到封闭元素）。
 - en: 'This lead to some very disgusting parser code:'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 这导致了一些非常恶心的解析器代码：
 - en: '[PRE2]'
+  id: totrans-14
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'Can you tell what this does?! It took me a while to understand what the code
     is doing: the null test is to check if there is a *preceding* element we can attach
     the semicolon annotation to: if there is none, we propagate the semicolons up
     to the top level.'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 你能说出这段代码做了什么吗？我花了一段时间才明白代码在做什么：空测试是为了检查是否有*前面的*元素可以附加分号注释：如果没有，则将分号传播到顶层。
 - en: 'The crux of the issue was that, once annotations were added, **the grammar
     did not match the logical structure of the syntax tree.** That''s bad. Let''s
     make them match up. Here are a few constraints:'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 问题的关键在于，一旦添加了注释，**语法就不再与语法树的逻辑结构匹配了。**这很糟糕。让我们让它们匹配起来。以下是一些约束条件：
 - en: 'The leading semicolons are associated with the *enclosing* AST element. So
     we want to parse them once at the very beginning, and then not bother with them
     in the recursive rule. Call the rule to parse zero or more semicolons `semis`:'
+  id: totrans-17
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 前导分号与*封闭的* AST 元素相关联。因此，我们希望在开始时解析它们一次，然后在递归规则中不再处理它们。称解析零个或多个分号的规则为 `semis`：
 - en: '[PRE3]'
+  id: totrans-18
   prefs:
   - PREF_IND
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: 'If there are duplicate semicolons, we want to parse them all at once, and then
     associate them with the preceding declarations. So we also need a rule to parse
     one or more semicolons, which we will call `semis1`; then when we parse a single
     declaration, we want to parse it as `decl semis1`:'
+  id: totrans-19
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 如果有重复的分号，我们希望一次解析它们全部，然后将它们与前面的声明关联起来。因此，我们还需要一条规则来解析一个或多个分号，我们将其称为 `semis1`；然后当我们解析单个声明时，我们想将其解析为
+    `decl semis1`：
 - en: '[PRE4]'
+  id: totrans-20
   prefs:
   - PREF_IND
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: 'Then, we can build up our parser in the following way:'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后，我们可以以下列方式建立我们的解析器：
 - en: '[PRE5]'
+  id: totrans-22
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: 'We''ve taken care not to introduce any shift-reduce conflicts. It was actually
     a bit non-obvious how to make this happen, because in Haskell source files, we
     need to parse a list of import declarations (`importdecl`), followed by a list
     of top-level declarations (`topdecl`). It''s a bit difficult to define the grammar
     for these two lists without introducing a shift-reduce conflict, but this seems
     to work:'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们特别注意不引入任何移位-归约冲突。实际上，如何做到这一点有点不明显，因为在Haskell源文件中，我们需要解析一系列导入声明（`importdecl`），然后是一系列顶层声明（`topdecl`）。在不引入移位-归约冲突的情况下定义这两个列表的语法有些困难，但似乎这样做是有效的：
 - en: '[PRE6]'
+  id: totrans-24
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: It looks so simple, but there are a lot of plausible looking alternatives which
     introduce shift/reduce conflicts. There's an important meta-lesson here, which
     is that when trying to work out how to do something like this, it is best to experiment
     with on a smaller grammar, where re-checking is instantaneous (happy takes quite
     a bit of time to process all of GHC, which made the edit-recompile cycle a bit
     miserable.)
+  id: totrans-25
   prefs: []
   type: TYPE_NORMAL
+  zh: 看起来很简单，但有很多看似合理的替代方案，这些方案会引入移位/归约冲突。这里有一个重要的元教训，就是在尝试像这样做某事时，最好先在一个较小的语法上进行实验，这样重新检查是即时的（happy花费了相当长的时间来处理所有的GHC，这使得编辑-重新编译周期有点痛苦。）
 - en: I'd love to know if there's an even simpler way to do this, or if I've made
     a mistake and changed the set of languages I accept. Let me know in the comments.
     I've attached below a simple Happy grammar that you can play around with (build
     with `happy filename.y; ghc --make filename.hs`).
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: 我很想知道是否有更简单的方法来做到这一点，或者是否我犯了错误并改变了我接受的语言集。在评论中告诉我。我附上了一个简单的Happy语法供你玩耍（使用`happy
+    filename.y; ghc --make filename.hs`构建）。
 - en: '[PRE7]'
+  id: totrans-27
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'

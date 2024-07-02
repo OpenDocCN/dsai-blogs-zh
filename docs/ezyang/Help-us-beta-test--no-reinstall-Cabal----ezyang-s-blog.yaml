@@ -1,75 +1,115 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:06'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:06'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Help us beta test “no-reinstall Cabal” : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 帮助我们进行“无需重新安装 Cabal”的 Beta 测试：ezyang 博客
 - en: 来源：[http://blog.ezyang.com/2015/08/help-us-beta-test-no-reinstall-cabal/](http://blog.ezyang.com/2015/08/help-us-beta-test-no-reinstall-cabal/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2015/08/help-us-beta-test-no-reinstall-cabal/](http://blog.ezyang.com/2015/08/help-us-beta-test-no-reinstall-cabal/)
 - en: Help us beta test “no-reinstall Cabal”
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 帮助我们进行“无需重新安装 Cabal”的 Beta 测试
 - en: 'Over this summer, Vishal Agrawal has been working on a GSoC project to [move
     Cabal to more Nix-like package management system](https://ghc.haskell.org/trac/ghc/wiki/Commentary/GSoC_Cabal_nix).
     More simply, he is working to make it so that you''ll never get one of these errors
     from cabal-install again:'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 在今年夏天，Vishal Agrawal 正在进行一个 GSoC 项目，将 Cabal 移动到更类似 Nix 的包管理系统中。更简单地说，他正在努力确保您将不会再从
+    cabal-install 中遇到这类错误：
 - en: '[PRE0]'
+  id: totrans-8
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'However, these patches change a nontrivial number of moving parts in Cabal
     and cabal-install, so it would be very helpful to have willing guinea pigs to
     help us iron out some bugs before we merge it into Cabal HEAD. As your prize,
     you''ll get to run "no-reinstall Cabal": Cabal should **never** tell you it can''t
     install a package because some reinstalls would be necessary.'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 但是，这些补丁改变了 Cabal 和 cabal-install 中许多复杂的部分，因此在将其合并到 Cabal HEAD 之前，有意愿的小白鼠帮助我们消除一些错误将非常有帮助。作为奖励，您将能够运行“无需重新安装
+    Cabal”：Cabal **永远** 不会告诉您无法安装包，因为需要一些重新安装。
 - en: 'Here''s how you can help:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 以下是您可以提供帮助的方式：
 - en: Make sure you're running GHC 7.10\. Earlier versions of GHC have a hard limitation
     that doesn't allow you to reinstall a package multiple times against different
     dependencies. (Actually, it would be useful if you test with older versions of
     GHC 7.8, but only mostly to make sure we haven't introduced any regressions here.)
+  id: totrans-11
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 确保你正在运行 GHC 7.10。早期版本的 GHC 存在一个严格的限制，不允许你针对不同的依赖多次重新安装同一个包。（实际上，如果你能测试旧版本的 GHC
+    7.8，这将非常有用，主要是为了确保我们在这方面没有引入任何退化。）
 - en: '`git clone https://github.com/ezyang/cabal.git` (I''ve added some extra corrective
     patches on top of Vishal''s version in the course of my testing) and `git checkout
     cabal-no-pks`.'
+  id: totrans-12
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: '`git clone https://github.com/ezyang/cabal.git`（在我的测试中，我已经在 Vishal 的版本基础上添加了一些额外的修正补丁），然后
+    `git checkout cabal-no-pks`。'
 - en: In the `Cabal` and `cabal-install` directories, run `cabal install`.
+  id: totrans-13
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 在 `Cabal` 和 `cabal-install` 目录中，运行 `cabal install`。
 - en: Try building things without a sandbox and see what happens! (When I test, I've
     tried installing multiple version of Yesod at the same time.)
+  id: totrans-14
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 尝试在没有沙盒的情况下构建项目，看看会发生什么！（在我的测试中，我曾尝试同时安装多个版本的 Yesod。）
 - en: It is NOT necessary to clear your package database before testing. If you completely
     break your Haskell installation (unlikely, but could happen), you can do the old
     trick of clearing out your `.ghc` and `.cabal` directories (don't forget to save
     your `.cabal/config` file) and rebootstrapping with an old `cabal-install`.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 在测试之前不需要清除您的包数据库。如果您完全破坏了您的 Haskell 安装（可能性不大，但确实可能发生），您可以使用旧版的 `cabal-install`
+    清理掉您的 `.ghc` 和 `.cabal` 目录（不要忘记保存您的 `.cabal/config` 文件），然后重新引导安装。
 - en: Please report problems here, or to [this PR in the Cabal tracker](https://github.com/haskell/cabal/pull/2752).
     Or chat with me in person next week at ICFP. :)
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 请在此处报告问题，或者在 [Cabal 跟踪器中的此 PR](https://github.com/haskell/cabal/pull/2752) 中报告。或者下周在
+    ICFP 会议上与我面对面交流。 :)

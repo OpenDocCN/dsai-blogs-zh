@@ -1,46 +1,66 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 分类：未分类
 - en: 'date: 2024-07-01 18:17:47'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:17:47
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Space leak zoo : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 空间泄漏动物园：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2011/05/space-leak-zoo/](http://blog.ezyang.com/2011/05/space-leak-zoo/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/05/space-leak-zoo/](http://blog.ezyang.com/2011/05/space-leak-zoo/)
 - en: Space leak zoo
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 空间泄漏动物园
 - en: A big thanks to everyone who everyone who [sent in space leak specimens](http://blog.ezyang.com/2011/05/calling-all-space-leaks/).
     All of the leaks have been inspected and cataloged by our experts, and we are
     quite pleased to open the doors of the space leak zoo to the public!
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 感谢所有向我们提供了空间泄漏样本的人！我们的专家已经检查并分类了所有的泄漏，我们很高兴向公众开放空间泄漏动物园的大门！
 - en: There are a few different types of space leak here, but they are quite different
     and a visitor would do well not to confuse them (the methods for handling them
     if encountered in the wild vary, and using the wrong technique could exacerbate
     the situation).
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 这里存在几种不同类型的空间泄漏，但它们非常不同，访客最好不要混淆它们（如果在实际应用中遇到，处理它们的方法各不相同，使用错误的技术可能会加剧情况）。
 - en: A *memory leak* is when a program is unable to release memory back to the operating
     system. It's a rare beast, since it has been mostly eliminated by modern garbage
     collection. We won’t see any examples of it in this series, though it is strictly
     possible for Haskell programs to exhibit this type of leak if they use non-bracketed
     low-level FFI allocation functions.
+  id: totrans-9
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*内存泄漏*是指程序无法将内存释放回操作系统。这是一种罕见的情况，因为现代垃圾收集基本上已经消除了这种情况。在本系列中我们不会看到任何例子，尽管Haskell程序在使用非括号化的低级FFI分配函数时可能会表现出这种类型的泄漏。'
 - en: 'A *strong reference leak* is when a program keeps around a reference to memory
     that in principle could be used but actually will never be used anymore. A confluence
     of purity and laziness make these types of leaks uncommon in idiomatic Haskell
@@ -53,18 +73,22 @@
     the name, “strong reference” leak), and live variable leaks (described below)
     are a type of strong reference leak that catch people unfamiliar with closures
     by surprise.'
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*强引用泄漏*是指程序保留了一个实际上永远不会再被使用的内存引用。纯度和惰性的结合使得这类泄漏在习惯用法的Haskell程序中并不常见。纯度通过不鼓励使用可变引用来避免这些泄漏，如果在适当时未清除，可变引用可能会泄漏内存。惰性通过使得在只需要部分数据结构时，无意中生成过多数据结构变得困难来避免这些泄漏：我们从一开始就使用更少的内存。当然，在Haskell中使用可变引用或严格性可能会重新引入这些错误（有时可以通过弱引用修复前者——这就是“强引用”泄漏的名称），而存活变量泄漏（后文有描述）是一种让对闭包不熟悉的人感到惊讶的强引用泄漏类型。'
 - en: A *thunk leak* is when a program builds up a lot of unevaluated thunks in memory
     which intrinsically take up a lot of space. It can be observed when a heap profile
     shows a large number of `THUNK` objects, or when you stack overflow from evaluating
     a chain of these thunks. These leaks thrive on lazy evaluation, and as such are
     relatively rare in the imperative world. You can fix them by introducing appropriate
     strictness.
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*thunk泄漏*是指程序在内存中建立了大量未评估的thunk，这些thunk本质上占据了大量空间。当堆剖析显示大量`THUNK`对象，或者在评估这些thunk链时导致栈溢出时，可以观察到这种情况。这些泄漏依赖于惰性评估，因此在命令式世界中相对罕见。通过引入适当的严格性，可以修复这些问题。'
 - en: A *live variable leak* is when some closure (either a thunk or a lambda) contains
     a reference to memory that a programmer expects to have been freed already. They
     arise because references to memory in thunks and functions tend to be implicit
@@ -74,18 +98,22 @@
     fix as thunk leaks, as you must ensure *all* of the references are dropped. Furthermore,
     the presence of a large chunk of evaluated memory may not necessarily indicate
     a live variable leak; rather, it may mean that streaming has failed. See below.
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*活变量泄漏*是指某个闭包（无论是thunk还是lambda）包含对程序员预期已经释放的内存的引用。它们的产生是因为thunk和函数中的内存引用往往是隐式的（通过活变量），而不是显式的（如数据记录的情况）。在函数结果显著较小的情况下，引入严格性可以修复这些泄漏。然而，这些不像thunk泄漏那么容易修复，因为您必须确保*所有*的引用都已丢弃。此外，评估内存大块的存在可能并不一定表示有活变量泄漏；相反，这可能意味着流处理失败。见下文。'
 - en: A *streaming leak* is when a program should only need a small amount of the
     input to produce a small amount of output, thus using only a small amount of memory,
     but it doesn’t. Instead, large amounts of the input are forced and kept in memory.
     These leaks thrive on laziness and intermediate data structures, but, unlike the
     case of thunk leaks, introducing strictness can exacerbate the situation. You
     can fix them by duplicating work and carefully tracking data dependencies.
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*流泄漏*是指程序应该只需少量输入来生成少量输出，因此只使用少量内存，但事实并非如此。相反，大量输入被强制并保留在内存中。这些泄漏依赖于惰性和中间数据结构，但与thunk泄漏不同，引入严格性可能会加剧情况。您可以通过复制工作并仔细跟踪数据依赖关系来修复它们。'
 - en: A *stack overflow* is when a program builds up a lot of pending operations that
     need to performed after the current execution. It can be observed when your program
     runs out of stack space. It is, strictly speaking, not a space leak, but an improper
@@ -95,39 +123,53 @@
     fix them by converting recursive code to iterative style, which can be tail-call
     optimized, or using a better data structure. Turning on optimization also tends
     to help.
+  id: totrans-14
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*堆栈溢出*是指程序积累了许多需要在当前执行之后执行的挂起操作。当您的程序耗尽堆栈空间时，可以观察到这种情况。严格来说，这不是空间泄漏，而是由于修复不当的thunk泄漏或流泄漏可能导致堆栈溢出，因此我们在此包括它。
+    （我们还强调这与thunk泄漏不同，尽管有时它们看起来相同。）这些泄漏依赖于递归。您可以通过将递归代码转换为迭代风格（可以进行尾调用优化）或使用更好的数据结构来修复它们。通常也会打开优化以帮助解决问题。'
 - en: A *selector leak* is a sub-species of a *thunk leak* when a thunk that only
     uses a subset of a record, but because it hasn't been evaluated it causes the
     entire record to be retained. These have mostly been killed off by the treatment
     of GHC’s *selector thunks* by the RTS, but they also occasionally show due to
     optimizations. (See below.)
+  id: totrans-15
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*选择器泄漏*是*thunk泄漏*的一个子类，当一个thunk仅使用记录的一个子集时，但由于尚未评估，导致整个记录被保留。这些泄漏大多已被GHC的*选择器thunks*的处理杀死，但它们有时也由于优化而偶尔显示。见下文。'
 - en: An *optimization induced leak* is a camouflaged version of any of the leaks
     here, where the source code claims there is no leak, but an optimization by the
     compiler introduces the space leak. These are very tricky to identify; we would
     not put these in a petting zoo! (You can fix them by posting a bug to GHC Trac.)
+  id: totrans-16
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*优化诱导泄漏*是这里任何泄漏的伪装版本，源代码声称没有泄漏，但编译器的优化引入了空间泄漏。这些非常难以识别；我们不会将它们放在宠物园中！（您可以通过向GHC
+    Trac提交bug来修复它们。）'
 - en: 'A *thread leak* is when too many Haskell threads are lying around. You can
     identify this by a contingent of TSO on the heap profile: TSO stands for thread-state
     object. These are interesting to debug, because there are a variety of reasons
     why a thread may not dying.'
+  id: totrans-17
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '*线程泄漏*是指太多的Haskell线程还未终止。您可以通过堆分析的TSO（线程状态对象）来识别这一点：TSO代表线程状态对象。这些很有趣，因为线程可能不终止的原因有各种各样。'
 - en: In the next post, we’ll draw some pictures and give examples of each of these
     leaks. As an exercise, I invite interested readers to categorize the [leaks we
     saw last time](http://blog.ezyang.com/2011/05/calling-all-space-leaks/).
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 在接下来的文章中，我们将画一些图片，并且给出每种泄漏的例子。作为练习，我邀请感兴趣的读者对[上次我们看到的泄漏](http://blog.ezyang.com/2011/05/calling-all-space-leaks/)进行分类。
 - en: '*Update.* I’ve separated thunk leaks from what I will now call “live variable
     leaks,” and re-clarified some other points, especially with respect to strong
     references. I’ll expand on what I think is the crucial conceptual difference between
     them in later posts.'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: '*更新.* 我已经将“thunk泄漏”与我现在称之为“活变量泄漏”分开，并重新澄清了一些其他要点，特别是关于强引用。我将在后续文章中详细展开我认为它们之间关键概念差异的讨论。'

@@ -1,34 +1,52 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:41'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:41'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Changes to IntMap : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: IntMap 的更改：ezyang's 博客
 - en: 来源：[http://blog.ezyang.com/2011/08/changes-to-intmap/](http://blog.ezyang.com/2011/08/changes-to-intmap/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/08/changes-to-intmap/](http://blog.ezyang.com/2011/08/changes-to-intmap/)
 - en: Changes to IntMap
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: IntMap 的更改
 - en: 'As it stands, it is impossible to define certain value-strict operations on
     [IntMaps](http://hackage.haskell.org/packages/archive/containers/0.4.0.0/doc/html/Data-IntMap.html)
     with the current containers API. The reader is invited, for example, to try efficiently
     implementing `map :: (a -> b) -> IntMap a -> IntMap b`, in such a way that for
     a non-bottom and non-empty map `m`, `Data.IntMap.map (\_ -> undefined) m == undefined`.'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '目前，使用当前 containers API 无法对 [IntMaps](http://hackage.haskell.org/packages/archive/containers/0.4.0.0/doc/html/Data-IntMap.html)
+    定义某些严格值操作。例如，读者可以尝试高效地实现 `map :: (a -> b) -> IntMap a -> IntMap b`，使得对于非底部和非空映射
+    `m`，`Data.IntMap.map (\_ -> undefined) m == undefined`。'
 - en: 'Now, we could have just added a lot of apostrophe suffixed operations to the
     existing API, which would have greatly blown it up in size, but [following conversation
     on libraries@haskell.org](http://www.haskell.org/pipermail/libraries/2011-May/016362.html),
@@ -36,40 +54,56 @@
     and `Data.IntMap.Lazy`. For backwards compatibility, `Data.IntMap` will be the
     lazy version of the module, and the current value-strict functions residing in
     this module will be deprecated.'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，我们本可以简单地在现有的 API 上添加大量带有撇号后缀的操作，这样会大大增加其大小，但根据[libraries@haskell.org 上的讨论](http://www.haskell.org/pipermail/libraries/2011-May/016362.html)，我们决定将模块拆分为两个模块：`Data.IntMap.Strict`
+    和 `Data.IntMap.Lazy`。为了向后兼容，`Data.IntMap` 将成为模块的惰性版本，而当前存放在此模块中的值严格函数将被弃用。
 - en: 'The details of what happened are a little subtle. Here is the reader’s digest
     version:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 发生的细节有点微妙。这是读者文摘版本：
 - en: The `IntMap` in `Data.IntMap.Strict` and the `IntMap` in `Data.IntMap.Lazy`
     are exactly the same map; there is no runtime or type level difference between
     the two. The user can swap between “implementations” by importing one module or
     another, but we won’t prevent you from using lazy functions on strict maps. You
     can convert lazy maps to strict ones using `seqFoldable`.
+  id: totrans-10
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: '`Data.IntMap.Strict` 中的 `IntMap` 和 `Data.IntMap.Lazy` 中的 `IntMap` 是完全相同的映射；在两者之间没有运行时或类型级别的差异。用户可以通过导入一个模块或另一个模块来在“实现”之间切换，但我们不会阻止您在严格映射上使用惰性函数。您可以使用
+    `seqFoldable` 将惰性映射转换为严格映射。'
 - en: Similarly, if you pass a map with lazy values to a strict function, the function
     will do the maximally lazy operation on the map that would still result in correct
     operation in the strict case. Usually, this means that the lazy value probably
     won’t get evaluated... unless it is.
+  id: totrans-11
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 类似地，如果将具有惰性值的映射传递给严格函数，则该函数将在映射上执行最大惰性操作，以确保在严格情况下仍然正确操作。通常情况下，这意味着惰性值可能不会被评估……除非它是。
 - en: Most type class instances remain valid for both strict and lazy maps, however,
     `Functor` and `Traversable` do *not* have valid “strict” versions which obey the
     appropriate laws, so we’ve selected the lazy implementation for them.
+  id: totrans-12
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 大多数类型类实例对严格和惰性映射都有效，但 `Functor` 和 `Traversable` 没有遵守适当法律的有效“严格”版本，因此我们选择了它们的惰性实现。
 - en: The lazy and strict folds remain, because whether or not a fold is strict is
     independent of whether or not the data structure is value strict or spine strict.
+  id: totrans-13
   prefs:
   - PREF_UL
   type: TYPE_NORMAL
+  zh: 惰性和严格折叠保持不变，因为折叠是否严格独立于数据结构是值严格还是脊椎严格。
 - en: I hacked up a first version for the strict module at Hac Phi on Sunday, you
     can [see it here.](http://hpaste.org/49733) The full implementation can be [found
     here.](https://github.com/ezyang/packages-containers)
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 我在 Hac Phi 上星期日为严格模块编写了第一个版本，您可以[在此处查看](http://hpaste.org/49733)。完整实现可以[在此处找到](https://github.com/ezyang/packages-containers)

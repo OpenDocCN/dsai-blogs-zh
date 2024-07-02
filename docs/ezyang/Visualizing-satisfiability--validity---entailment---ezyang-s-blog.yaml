@@ -1,42 +1,62 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:26'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:26'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Visualizing satisfiability, validity & entailment : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 可视化可满足性、有效性和蕴涵性：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2012/10/visualizing-satisfiability-validity-and-entailment/](http://blog.ezyang.com/2012/10/visualizing-satisfiability-validity-and-entailment/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2012/10/visualizing-satisfiability-validity-and-entailment/](http://blog.ezyang.com/2012/10/visualizing-satisfiability-validity-and-entailment/)
 - en: 'So you’re half bored to death working on your propositional logic problem set
     (after all, you know what AND and OR are, being a computer scientist), and suddenly
     the problem set gives you a real stinker of a question:'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 你正在半枯燥地处理命题逻辑问题集（毕竟，作为一名计算机科学家，你知道AND和OR是什么），突然问题集给出一个真正难解的问题：
 - en: Is it true that Γ ⊢ A implies that Γ ⊢ ¬A is false?
+  id: totrans-7
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 是否真的有Γ ⊢ A意味着Γ ⊢ ¬A是假的？
 - en: 'and you think, “Double negation, no problem!” and say “Of course!” Which, of
     course, is wrong: right after you turn it in, you think, “Aw crap, if Γ contains
     a contradiction, then I can prove both A and ¬A.” And then you wonder, “Well crap,
     I have no intuition for this shit at all.”'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后你想，“双重否定，没问题！”并说，“当然！”当然，这是错误的：在你交卷后，你会想，“哎呀，如果Γ包含矛盾，那么我可以证明A和¬A。”然后你会想，“嘿，该死，我对这个东西一点直觉都没有。”
 - en: Actually, you probably already have a fine intuition for this sort of question,
     you just don’t know it yet.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 实际上，你可能已经对这类问题有了很好的直觉，只是你还不知道。
 - en: 'The first thing we want to do is establish a visual language for sentences
     of propositional logic. When we talk about a propositional sentence such as A
     ∨ B, there are some number of propositional variables which need assignments given
@@ -44,69 +64,97 @@
     a set of size `2^n`, where `n` is the number of propositional variables being
     considered. If `n` were small, we could simply draw a Venn diagram, but since
     `n` could be quite big we’ll just visualize it as a circle:'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们要做的第一件事是为命题逻辑句子建立一个视觉语言。当我们讨论命题句子如A ∨ B时，有一些需要赋值的命题变量，例如A为真，B为假。我们可以将这些赋值看作是形成大小为`2^n`的集合，其中`n`是正在考虑的命题变量的数量。如果`n`很小，我们可以简单地画一个Venn图，但由于`n`可能相当大，我们将其可视化为一个圆形：
 - en: 'We’re interested in subsets of assignments. There are lots of ways to define
     these subsets; for example, we might consider the set of assignments where A is
     assigned to be true. But we’ll be interested in one particular type of subset:
     in particular, the subset of assignments which make some propositional sentence
     true. For example, “A ∨ B” corresponds to the set `{A=true B=true, A=true B=false,
     A=false B=true}`. We’ll draw a subset graphically like this:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们感兴趣的是分配的子集。有很多方法来定义这些子集；例如，我们可以考虑将A分配为真的分配集。但我们将对一种特定类型的子集感兴趣：特别是，使某个命题句子为真的分配子集。例如，“A
+    ∨ B”对应于集合`{A=true B=true, A=true B=false, A=false B=true}`。我们将像这样图形化地绘制一个子集：
 - en: 'Logical connectives correspond directly to set operations: in particular, conjunction
     (AND ∧) corresponds to set intersection (∩) and disjunction (OR ∨) corresponds
     to set union (∪). Notice how the corresponding operators look very similar: this
     is not by accident! (When I was first learning my logical operators, this is how
     I kept them straight: U is for union, and it all falls out from there.)'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 逻辑连接词直接对应于集合操作：特别是，合取（AND ∧）对应于集合交（∩），析取（OR ∨）对应于集合并（∪）。注意对应的运算符看起来非常相似：这不是偶然的！（当我首次学习我的逻辑运算符时，就是这样使它们清晰明了的：U代表并集，从而一切就水到渠成。）
 - en: 'Now we can get to the meat of the matter: statements such as *unsatisfiability*,
     *satisfiability* and *validity* (or tautology) are simply statements about the
     shape of these subsets. We can represent each of these visually: they correspond
     to empty, non-empty and complete subsets respectively:'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在我们可以开始进入问题的核心了：比如“不可满足性”、“可满足性”和“有效性”（或者说是重言式）这样的陈述，实际上只是关于这些子集形状的陈述。我们可以通过视觉表达每一个：它们分别对应于空集、非空集和完整集：
 - en: This is all quite nice, but we haven’t talked about how the turnstile (⊢) aka
     logical entailment fits into the picture. In fact, when I say something like “B
     ∨ ¬B is valid”, what I’m actually saying is “⊢ B ∨ ¬B is true”; that is to say,
     I can always prove “B ∨ ¬B”, no matter what hypothesis I am permitted.”
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 这一切听起来很好，但我们还没有讨论“⊢”（即逻辑蕴涵）如何融入其中。实际上，当我说“B ∨ ¬B是有效的”时，我实际上是在说“⊢ B ∨ ¬B是真实的”；也就是说，无论我被允许使用什么假设，我总是能证明“B
+    ∨ ¬B”。
 - en: 'So the big question is this: what happens when I add some hypotheses to the
     mix? If we think about what is happening here, when I add a hypothesis, I make
     life “easier” for myself in some sense: the more hypotheses I add, the more propositional
     sentences are true. To flip it on its head, the more hypotheses I add, the smaller
     the space of assignments I have to worry about:'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 所以大问题是：当我添加一些假设时会发生什么？如果我们考虑这里正在发生的事情，当我添加一个假设时，在某种意义上我使自己的生活变得“更容易”：我添加的假设越多，更多的命题句就是真实的。反过来说，我添加的假设越多，我需要担心的分配空间就越小：
 - en: All I need for Γ ⊢ φ to be true is for all of the assignments in Γ to cause
     φ to be true, i.e. Γ must be contained within φ.
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: Γ ⊢ φ为真所需的一切是Γ中的所有分配引起φ为真，即Γ必须包含在φ中。
 - en: 'Sweet! So let’s look at this question again:'
+  id: totrans-17
   prefs: []
   type: TYPE_NORMAL
+  zh: 太好了！所以让我们再次看看这个问题：
 - en: Is it true that Γ ⊢ A implies that Γ ⊢ ¬A is false?
+  id: totrans-18
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: Γ ⊢ A是否意味着Γ ⊢ ¬A为假？
 - en: 'Recast as a set theory question, this is:'
+  id: totrans-19
   prefs: []
   type: TYPE_NORMAL
+  zh: 重新表述为一个集合论问题，即：
 - en: For all Γ and A, is it true that Γ ⊂ A implies that Γ ⊄ A^c? (set complement)
+  id: totrans-20
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 对于所有的Γ和A，Γ ⊂ A是否意味着Γ ⊄ A^c（集合的补集）是真的？
 - en: 'We consider this for a little bit, and realize: “No! For it is true that the
     empty set is a subset of all sets!” And of course, the empty set is precisely
     a contradiction: subset of everything (ex falso), and superset of nothing but
     itself (only contradiction implies contradiction).'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们考虑了一会儿，意识到：“不！因为空集是所有集合的子集是真的！”当然，空集恰好是一个矛盾：在所有事情的子集中（ex falso），而且仅仅是它自己的超集（只有矛盾暗示矛盾）。
 - en: '* * *'
+  id: totrans-22
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: 'It turns out that Γ is a set as well, and one may be tempted to ask whether
     or not set operations on Γ have any relationship to the set operations in our
     set-theoretic model. It is quite tempting, because unioning together Γ seems to
@@ -117,5 +165,10 @@
     clearly `A ∧ A = A`. Really, the right thing to do here is to perform a disjunction,
     but this requires us to say `{A} ∩ {B} = {A ∨ B}`, which is confusing and better
     left out of sight and out of mind.'
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 结果证明，Γ也是一个集合，并且人们可能会想问Γ上的集合运算是否与我们的集合论模型中的集合运算有任何关系。这是非常诱人的，因为合并Γ似乎非常有效：`Γ ∪
+    Δ`似乎给我们Γ和Δ的合取（如果我们通过AND操作它们的所有元素来解释集合）。但最终，给出的最佳答案是“不”。特别是，Γ上的集合交是不连贯的：`{A} ∩
+    {A ∧ A}`应该是什么？一个严格的语法比较会说`{}`，即使明显`A ∧ A = A`。真正正确的做法是进行一个析取，但这要求我们说`{A} ∩ {B}
+    = {A ∨ B}`，这是令人困惑的，最好放在一边不予理会。

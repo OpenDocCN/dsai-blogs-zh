@@ -1,36 +1,52 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:09'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024-07-01 18:18:09
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Tension of patch and tree version control : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 补丁和树版本控制的张力：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2010/09/tension-of-patch-and-tree-version-control/](http://blog.ezyang.com/2010/09/tension-of-patch-and-tree-version-control/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/09/tension-of-patch-and-tree-version-control/](http://blog.ezyang.com/2010/09/tension-of-patch-and-tree-version-control/)
 - en: '*This post is not meant as a rag on Darcs, just a observation of the difference
     between two philosophies of version control. Also, I’m a bit new to Darcs, so
     there might be some factual inaccuracies. Please let me know about them!*'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: '*本文并非对Darcs的抨击，而是对两种版本控制哲学差异的观察。另外，我对Darcs还有些陌生，因此可能存在一些事实不准确的地方。请指出来！*'
 - en: 'At some point, I would like to write a *Darcs for Git users* guide, distilling
     my experiences as an advanced Git user wrangling with Darcs. But perhaps the most
     important take away point is this: *don’t try to superimpose Git’s underlying
     storage model on Darcs!* Once I realized this point, I found Darcs fit rather
     nicely with my preferred Git development style—constant rebasing of local patches
     until they hit the official repository.'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 我希望有一天能写一篇*给Git用户的Darcs指南*，总结我作为一个高级Git用户在与Darcs搏斗时的经验。但或许最重要的一点是：*不要试图把Git的底层存储模型套用在Darcs上！*一旦我意识到这一点，我发现Darcs与我偏爱的Git开发风格——持续变基本地补丁直到它们被提交到官方仓库——非常契合。
 - en: 'How does this rebasing workflow work? Despite the funny name, it’s a universal
     workflow that predates version control: the core operation is *submit a patch.*
     That is, after you''re done hacking and recompiling and you''ve cleaned up your
@@ -38,23 +54,30 @@
     and send it off to the official mailing list. If the unified diff doesn’t apply
     cleanly to whatever the official development version is, upstream will ask you
     to make the patch apply to the newer version of the software.'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 这种变基工作流是如何运作的？尽管名字有些滑稽，但它是一个早于版本控制的通用工作流：核心操作是*提交一个补丁*。也就是说，在完成编码、重新编译并清理完你的修改后，你会拉取仓库的原始副本，生成一个统一的
+    diff，并将其发送到官方邮件列表。如果统一的 diff 不能干净地应用于官方开发版本，上游会要求你将补丁应用到软件的新版本上。
 - en: Git streamlines this workflow with *rebases.* As the name suggests, you are
     changing the base commit that your patches are applied to. The identity of the
     patch is more important than the actual “history” of the repository. Interactive
     rebases allow you to reorder patches, and slice and dice history into something
     pretty for upstream to read.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: Git通过*变基*优化了这一工作流。顾名思义，你正在改变应用补丁的基准提交。补丁的身份比仓库的“历史”更重要。交互式变基允许你重新排序补丁，并将历史切割成供上游阅读的漂亮形式。
 - en: Because Git supports both tree-based and patch-based workflows, the tension
     between the two schools of thought is fairly evident. Old commit objects become
     unreachable when you rebase, and you have to rely on mechanisms like the reflog
     to retrieve your old trees. Good practice is to never rebase published repositories,
     because once you’ve published a consistent history is more important than a pretty
     one.
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于Git同时支持基于树和基于补丁的工作流，两种思想之间的张力是显而易见的。在衍合时，旧的提交对象变得无法访问，你必须依赖像 reflog 这样的机制来检索旧树。良好的实践是永远不要对已发布的仓库进行衍合，因为一旦发布，一致的历史比漂亮的历史更重要。
 - en: 'Darcs *only* supports the patch-based workflow. It’s hard to keep your patches
     nicely ordered like you must do when you rebase, but there’s no need to: `darcs
     send --dry-run` will let you know what local patches that haven’t been put into
@@ -62,8 +85,11 @@
     command asks you to explicitly specify what patch you are referring to with `-p`.
     Darcs makes it easy to merge and split patches, and edit old patches even if they’re
     deep within your `darcs changes` log.'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: Darcs *仅支持* 基于补丁的工作流。像在衍合时必须保持补丁的良好排序那样，这很难做到，但也没必要：`darcs send --dry-run` 会让你知道本地的哪些补丁还没放入上游仓库，在进行任何有趣的命令时，都需要用
+    `-p` 明确指定你所引用的补丁。Darcs 可以轻松合并和拆分补丁，即使它们深埋在你的 `darcs changes` 日志中也可以编辑旧补丁。
 - en: 'However, there are times when I really do miss the tree-based model: in particular,
     while it’s easy to get close, there’s no easy way to get precisely the makeup
     of the repository as it was two days ago (when, say, your build was still working).
@@ -78,9 +104,16 @@
     with tags, but my experience with fast moving repositories like GHC indicates
     to me that you also want a timeline of tags tracking the latest “official” repository
     HEAD.'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 不过，有时我确实会想念基于树的模型：特别是，虽然接近很容易，但却没有简单的方法来准确获取仓库两天前的结构（比如说，你的构建仍在工作时）。Git 显式地将仓库的任何给定状态实现为一个树对象，这使得补丁抽象变得不那么流畅，但意味着你将*永远不会丢失提交的数据*。不幸的是，对于
+    Darcs，没有“特定仓库状态”的简写；你可能会注意到 `darcs send` 必须明确列出你要发送的特定补丁之前的*每一个*补丁。从这个角度看，我认为
+    Darcs 做了太多的工作：虽然最近的 N 次更改应该被视为补丁而不是树的快照，但我可能不太关心项目的古老历史。Darcs 已经通过标签支持了这一点，但我在像
+    GHC 这样快速移动的仓库上的经验告诉我，你也希望有一个标签时间线来跟踪最新的“官方”仓库 HEAD。
 - en: There is also the subject of conflict resolution, but as I have not run into
     any of the complicated cases, I have little to say here.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 关于冲突解决的主题也有，但由于我还没有遇到任何复杂的情况，这里我就少说几句。

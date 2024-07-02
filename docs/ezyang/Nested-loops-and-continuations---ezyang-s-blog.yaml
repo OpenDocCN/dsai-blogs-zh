@@ -1,23 +1,35 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:27'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:27'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Nested loops and continuations : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 嵌套循环和延续：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2010/02/nested-loops-and-continuation/](http://blog.ezyang.com/2010/02/nested-loops-and-continuation/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/02/nested-loops-and-continuation/](http://blog.ezyang.com/2010/02/nested-loops-and-continuation/)
 - en: The bread and butter of an imperative programmer is the loop. Coming from a
     C/assembly perspective, a loop is simply a structured goto which jumps back to
     a set location if some condition is not met. Frequently, this loop ranges over
@@ -28,98 +40,147 @@
     have access to the flow control operators `break` and `continue`, which are also
     highly structured gotos. An even more compact form of loops and nested loops are
     list comprehensions, which don't permit those flow operators.
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 一位命令式程序员的主要技能是循环。从C/汇编的角度来看，循环只是一个结构化的跳转，如果某些条件不满足，则跳回到指定位置。通常，这种循环遍历某些列表数据结构的元素。在C语言中，你可能会对数组的元素进行指针算术运算，或者沿着链表的指针进行操作，直到获得`NULL`；在Python和其他高级语言中，你会用到`for
+    x in xs`的结构，它巧妙地抽象了这种功能。在循环内部，你还可以使用流程控制操作符`break`和`continue`，它们也是高度结构化的跳转。更紧凑的循环形式和嵌套循环是列表推导式，它们不允许使用这些流程控制操作符。
 - en: 'Haskell encourages you to use the higher order forms such as `map` and `fold`,
     which even further restrict what may happen to the data. You''ll certainly not
     see a `for` loop anywhere in Haskell... However, as a pernicious little exercise,
     and also a way to get a little more insight into what `callCC` might be good for,
     I decided to implement `for...in` loops with both the `continue` and `break` keywords.
     The end hope is to be able to write code such as:'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: Haskell鼓励您使用诸如`map`和`fold`之类的高阶形式，这进一步限制了数据的操作。在Haskell中，您肯定不会看到`for`循环... 然而，作为一个有害的小练习，同时也是更深入了解`callCC`可能有用的一种方式，我决定使用`continue`和`break`关键字来实现`for...in`循环。最终的希望是能够编写如下代码：
 - en: '[PRE0]'
+  id: totrans-8
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE0]'
 - en: 'as well as:'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 以及：
 - en: '[PRE1]'
+  id: totrans-10
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE1]'
 - en: 'the latter solving the classic "nested loops" problem by explicitly labeling
     each loop. We might run these pieces of code using:'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 后者通过显式标记每个循环来解决经典的“嵌套循环”问题。我们可以使用以下代码运行这些片段：
 - en: '[PRE2]'
+  id: totrans-12
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE2]'
 - en: 'Since continuations represent, well, "continuations" to the program flow, we
     should have some notion of a continuation that functions as `break`, as well as
     a continuation that functions as `continue`. We will store the continuations that
     correspond to breaking and continuing inside a loop "label", which is the first
     argument of our hanging lambda:'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 由于延续表示程序流的“延续”，我们应该有某种作为`break`的延续的概念，以及作为`continue`的延续的概念。我们将存储与在循环“标签”内部跳出和继续相对应的延续，这是我们悬挂的lambda函数的第一个参数：
 - en: '[PRE3]'
+  id: totrans-14
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE3]'
 - en: It's sufficient then to call `continue label` or `break label` inside the monad
     to extract and follow the continuation.
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 然后只需在单子内部调用`continue label`或`break label`来提取和跟随继续。
 - en: 'The next bit is to implement the actual `for_in` construct. If we didn''t have
     to supply any of the continuations, this is actually just a flipped `mapM_`:'
+  id: totrans-16
   prefs: []
   type: TYPE_NORMAL
+  zh: 接下来要做的是实现实际的`for_in`构造。如果我们不必提供任何继续，这实际上只是一个反转的`mapM_`：
 - en: '[PRE4]'
+  id: totrans-17
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE4]'
 - en: 'Of course, sample code, `f` has the type `Label m -> a -> m ()`, so this won''t
     do! Consider this first transformation:'
+  id: totrans-18
   prefs: []
   type: TYPE_NORMAL
+  zh: 当然，示例代码中，`f`的类型是`Label m -> a -> m ()`，所以这行不通！考虑这第一种转换：
 - en: '[PRE5]'
+  id: totrans-19
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE5]'
 - en: This function does the same thing as `for_in'`, but we placed it inside the
     continuation monad and made explicit a variable `c`. What does the current continuation
     `c` correspond to in this context? Well, it's in the very outer context, which
     means the "current continuation" is completely out of the loop. That must mean
     it's the `break` continuation. Cool.
+  id: totrans-20
   prefs: []
   type: TYPE_NORMAL
+  zh: 这个函数与`for_in'`做了同样的事情，但我们把它放在了延续单子内部，并明确了一个变量`c`。在这种情况下，当前的延续`c`对应的是什么呢？嗯，它位于非常外部的上下文中，这意味着“当前的延续”完全不在循环内部。这必须意味着它是`break`的延续。酷！
 - en: 'Consider this second alternative transformation:'
+  id: totrans-21
   prefs: []
   type: TYPE_NORMAL
+  zh: 考虑这第二种替代转换：
 - en: '[PRE6]'
+  id: totrans-22
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE6]'
 - en: This time, we've replaced `f` with a wrapper lambda that uses `callCC` before
     actually calling `f`, and the current continuation results in the next step of
     `mapM_` being called. This is the `continue` continuation.
+  id: totrans-23
   prefs: []
   type: TYPE_NORMAL
+  zh: 这一次，我们用一个包装器lambda替换了`f`，在实际调用`f`之前使用了`callCC`，当前的延续结果是调用`mapM_`的下一步。这是`continue`的延续。
 - en: 'All that remains is to stick them together, and package them into the `Label`
     datatype:'
+  id: totrans-24
   prefs: []
   type: TYPE_NORMAL
+  zh: 只剩下把它们粘在一起，并将它们打包到`Label`数据类型中。
 - en: '[PRE7]'
+  id: totrans-25
   prefs: []
   type: TYPE_PRE
+  zh: '[PRE7]'
 - en: '*Et voila!* Imperative looping constructs in Haskell. (Not that you''d ever
     want to use them, nudge nudge wink wink.)'
+  id: totrans-26
   prefs: []
   type: TYPE_NORMAL
+  zh: '*Et voila!* Haskell 中的命令式循环结构。（尽管你可能永远不想使用它们，挤眼、眨眼）'
 - en: '*Addendum.* Thanks to Nelson Elhage and Anders Kaseorg for pointing out a stylistic
     mistake: storing the continuations as `() -> m ()` is unnecessary because Haskell
     is a lazy language (in my defense, the imperative paradigm was leaking in!)'
+  id: totrans-27
   prefs: []
   type: TYPE_NORMAL
+  zh: '*附录.* 感谢Nelson Elhage和Anders Kaseorg指出一个风格上的错误：将延续作为`() -> m ()`存储是不必要的，因为Haskell是惰性语言（我为此辩护，命令式范式正在泄漏！）'
 - en: '*Addendum 2.* Added type signatures and code for running the initial two examples.'
+  id: totrans-28
   prefs: []
   type: TYPE_NORMAL
+  zh: '*附录 2.* 添加了类型签名和运行最初两个示例的代码。'
 - en: '*Addendum 3.* Sebastian Fischer points out a mistake introduced by addendum
     1\. That''s what I get for not testing my edits!'
+  id: totrans-29
   prefs: []
   type: TYPE_NORMAL
+  zh: '*附录 3.* Sebastian Fischer指出附录1引入的错误。这就是我因未测试我的修改而遭遇的后果！'

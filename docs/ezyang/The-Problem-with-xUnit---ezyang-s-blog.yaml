@@ -1,26 +1,40 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:18:23'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:18:23'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'The Problem with xUnit : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: xUnit的问题：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2010/04/the-problem-with-xunit/](http://blog.ezyang.com/2010/04/the-problem-with-xunit/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/04/the-problem-with-xunit/](http://blog.ezyang.com/2010/04/the-problem-with-xunit/)
 - en: 'Tagline: *Assertions considered not ideal.*'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 标语：*断言被认为不理想*。
 - en: I think automated tests are great. I used two particular flavors of test, the
     unit test and the integration test, extensively in [HTML Purifier](http://htmlpurifier.org)
     and they're the only reason why I feel comfortable making changes to code that
@@ -29,8 +43,10 @@
     shove a few inputs in and see if they "look alright." They're also an informal
     specification of "what I wanted the code to do" when I originally wrote it, by
     the fine tradition of an example.
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 我认为自动化测试非常棒。我在[HTML Purifier](http://htmlpurifier.org)中广泛使用了两种特定的测试类型，单元测试和集成测试，这些测试是我能够在修改我在高中时编写的代码时感到放心的唯一原因。自动化测试让我可以轻松进行编码，并通过按下一个按钮来找出我是否破坏了任何东西，而不是手动输入几个输入然后查看它们是否“看起来正常”。它们也是我最初编写代码时“我想让代码做什么”的非正式规范的例子。
 - en: Both unit tests and integration tests were built on top of the [SimpleTest](http://simpletest.org/)
     "unit testing" library. I place the "unit testing" in quotes because, while SimpleTest
     is great for unit testing (the testing of individual components), it also can
@@ -38,15 +54,19 @@
     and system testing (the entire system, for web applications this commonly involves
     writing scripts to navigate the website); in fact, it has facilities in place
     to make the latter two easier to do!
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 单元测试和集成测试都是建立在[SimpleTest](http://simpletest.org/)“单元测试”库之上。我将“单元测试”用引号括起来，因为虽然SimpleTest非常适合单元测试（测试单个组件），但它也可以用于集成测试（测试多个组件一起）和系统测试（整个系统，对于Web应用程序，通常涉及编写脚本来浏览网站）；事实上，它已经提供了便利设施来更轻松地执行后两者！
 - en: Perhaps a more accurate description of SimpleTest as a whole is that it is a
     descendant of the xUnit testing framework. You know, the "make a test function
     that sets some stuff up, runs some code, and makes some asserts" style of testing.
     The idea of an assertion is essential; sans exception handling, that's your single
     portal into whether or not the test code failed or succeeded.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: 或许对于SimpleTest的更准确描述是，它作为xUnit测试框架的后代。你知道，那种“编写一个设置一些东西的测试函数，运行一些代码并进行一些断言”的测试风格。断言的概念是至关重要的；没有异常处理，这是你了解测试代码是失败还是成功的唯一途径。
 - en: I was writing some tests in JUnit the other day, and it reminded me a little
     bit why, even though automated tests are great, I'm somewhat reluctant to roll
     them out in the first place. They're so verbose! Every test method I have to instantiate
@@ -60,15 +80,19 @@
     of boilerplate for creating inputs and verifying results remain, and you are terrified
     of abstracting over them because adding more code means there's more chance for
     your test to be wrong!
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 前些天我在JUnit中写了一些测试，这让我有点想起为什么虽然自动化测试很棒，我还是有些不情愿去首先推广它们。它们太冗长了！每个测试方法我都必须实例化我想要的任何类，做任何我需要的初始化，创建我的输入数据（如果我直接用`new`来构建，这可能需要几行），运行函数，然后测试输出数据是否符合预期（无论是通过耐心地查看各个字段和方法，还是如果我有远见去实现相等性，构造预期输出结果并比较它们）。"等等，"你说，"这正是`setUp`和`tearDown`的用途！"然后你将这些代码块移动到那些方法中，但用于创建输入和验证结果的大量样板代码仍然存在，并且你害怕将它们抽象化，因为增加更多代码意味着你的测试可能出错的机会增加了！
 - en: But there's not a good way out of this mess, because the list of function calls
     to the unit under test is truly the "input" to your test suite, and then list
     of expressions passed into the assertions is truly the "output" of your test suite.
     The particular assertion you choose to use is the "expected value" of your test
     suite. So why does it feel like boilerplate?
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 但没有好的方法摆脱这一困境，因为对单元测试的单元测试调用列表真正是你的测试套件的“输入”，然后传递给断言的表达式列表真正是你的测试套件的“输出”。你选择使用的特定断言是你的测试套件的“预期值”。那么为什么感觉像是模板呢？
 - en: 'Maybe because the model of setUp and tearDown methods and test methods and
     assertions is the wrong one for many types of code: the correct model is the input
     value, output value and expected value model! And for pure code, the code that
@@ -76,8 +100,10 @@
     and "the global state of the application after you ran the code listing"; maybe
     it truly is just "two integers" and "an integer." And then, the test code you
     write should *actually reflect that!*'
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 或许是因为setUp和tearDown方法以及测试方法和断言的模型对许多类型的代码来说都是错误的：正确的模型是输入值、输出值和预期值模型！对于纯净的代码来说，实际上比“代码清单”和“运行代码清单后应用程序的全局状态”有更精细的输入和输出的概念；也许它真的只是“两个整数”和“一个整数”。然后，你编写的测试代码应该*真正反映出这一点！*
 - en: So how do we make this happen? You want a DSL. Some languages are strong enough
     that you can get away with an embedded DSL of sorts. But many languages make this
     too cumbersome, so they invent their own test format and write the necessary boilerplate
@@ -87,8 +113,10 @@
     But by doing this, you've obscured the shape of your test, and since "quick and
     dirty" never means "ephemeral", your test suite grows and grows and you never
     end up cutting over to the right way. Ever.
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 那么，我们如何实现这一点呢？你需要一个DSL。有些语言足够强大，可以使用一种嵌入式DSL。但许多语言使这一过程变得太繁琐，因此它们会发明自己的测试格式，并编写必要的模板代码来解析和操纵它。显然，需要有足够多的这种形式的测试，以使编写所有这些基础设施都值得，因此当这不成立时，人们就会回到快速而肮脏的xUnit风格测试中。但通过这样做，你已经模糊了你的测试形状，并且由于“快速而肮脏”从未意味着“短暂”，你的测试套件会越来越大，你永远也不会切换到正确的方式。永远。
 - en: At this point, it's about time for a little Haskell advocacy. How can you make
     your tests lest cumbersome from the get go? Use a language that encourages the
     construction mini-DSLs. *Haskell has flexible syntax and type facilities to make
@@ -99,13 +127,19 @@
     Use a language that, once you've gotten tired of writing input and output values
     over and over again, and *not* the boilerplate of an entire xUnit test case, gives
     you the rope to automate that process too! *QuickCheck and Haskell, check.*
+  id: totrans-14
   prefs: []
   type: TYPE_NORMAL
+  zh: 此刻，是时候进行一点Haskell的倡导了。你如何让你的测试从一开始就不那么繁琐呢？使用一种鼓励构建小型DSL的语言。*Haskell拥有灵活的语法和类型设施，使这一切成为可能，请查看。*
+    使用一种鼓励你仔细思考函数的语言，函数具有清晰的输入和输出，而不是类和方法以及可变状态。*Haskell是一种函数式编程语言，请查看。* 使用一种抽象成本低廉、炉火纯青的语言。*Haskell，请查看。*
+    使用一种语言，一旦你厌倦了一遍又一遍地编写输入和输出值，而不是整个xUnit测试用例的模板，它可以给你绳子来自动化这个过程！*QuickCheck和Haskell，请查看。*
 - en: 'It''s also time for a little call to action: don''t conflate the unit/acceptance/system
     testing hierarchy with the xUnit framework/boilerplate. There''s xUnit testing
     and then there''s fully randomized input generation ala QuickCheck, but there''s
     still room in-between these two distinct places in abstraction for people and
     tests to live. And of course, the xUnit style test can be useful when a code listing
     truly is the right paradigm for the input representation.'
+  id: totrans-15
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在是小小的号召行动的时候了：不要将单元/验收/系统测试层次结构与xUnit框架/模板混为一谈。有xUnit测试，还有完全随机生成输入的QuickCheck，但在这两个不同的抽象层次之间仍然有足够的空间供人们和测试居住。当然，当代码清单确实是输入表示的正确范式时，xUnit风格的测试也是有用的。

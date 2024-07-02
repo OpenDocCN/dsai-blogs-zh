@@ -1,30 +1,46 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 'category: 未分类'
 - en: 'date: 2024-07-01 18:17:57'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 'date: 2024-07-01 18:17:57'
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'On cargo culting and hacking : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 关于模仿与黑客技术：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2011/02/on-cargo-culting-and-hacking/](http://blog.ezyang.com/2011/02/on-cargo-culting-and-hacking/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2011/02/on-cargo-culting-and-hacking/](http://blog.ezyang.com/2011/02/on-cargo-culting-and-hacking/)
 - en: On cargo culting and hacking
+  id: totrans-6
   prefs:
   - PREF_H2
   type: TYPE_NORMAL
+  zh: 关于模仿与黑客技术
 - en: '*two inflammatory vignettes*'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: '*两个激进的小插曲*'
 - en: 'The term *to cargo cult* is one with derogatory connotations: it indicates
     the act of imitating the superficial exterior without actually understanding the
     underlying causal structure of the situation. The implication is that one should
@@ -37,11 +53,15 @@
     up airstrips in hopes of attracting planes—understanding what conditions are applicable
     for this treatment is often the mark of experience: the novice ignores conditions
     that should be preserved and does not know how to probe deeper.'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: '*模仿*这个术语带有贬义：它表明了在不理解背后因果结构的情况下，仅仅模仿表面的外观。暗示是在做某事之前应该理解正在做的事情。然而，模仿的做法中确实有一分真理：当你处于一个你确实不知道发生什么事情的情境中（例如实验的背景），最安全的做法是尽可能保留许多表面特征，以防一个“表面”特征实际上与正在研究的系统有深刻而不明显的联系。但在这方面，有益的“模仿”与岛民们建造飞机跑道以吸引飞机的做法完全不同——了解哪些条件适用于这种处理往往是经验的标志：新手会忽略应该保留的条件，并不知道如何深入探索。'
 - en: '* * *'
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: '* * *'
 - en: '*Hacking* is the art of accidental generalization. It is developing a program
     under a single set of conditions (a hard-coded test input, a particular directory
     structure, a single URL) and (perhaps) hoping it will work in the more general
@@ -53,5 +73,7 @@
     continually pipe up with mental flags where you need to give a little extra to
     make the generalization work. Novices are recommended to bring their check-lists
     along.'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: '*黑客*是偶然泛化的艺术。它是在一组特定条件下（一个硬编码的测试输入，一个特定的目录结构，一个单一的URL）开发程序，并（也许）希望它在更一般的情况下也能工作。任何妨碍特异性的东西——证明，类型，安全性，冗长，边缘情况，思考——对于纯粹的创作来说都是敌人。它是当下的艺术，从中可以获得很多利润和乐趣。它是激光精度的艺术，每个问题都是随着其到来而处理。这是一门随着经验而变得更为可接受的工程实践的艺术：一个人会培养出一些小的内部审查员，他们会不断地提出心理标志，指出你需要额外付出一点努力才能使泛化工作。建议新手们带上他们的检查表。'

@@ -1,23 +1,35 @@
 - en: <!--yml
+  id: totrans-0
   prefs: []
   type: TYPE_NORMAL
+  zh: <!--yml
 - en: 'category: 未分类'
+  id: totrans-1
   prefs: []
   type: TYPE_NORMAL
+  zh: 类别：未分类
 - en: 'date: 2024-07-01 18:18:33'
+  id: totrans-2
   prefs: []
   type: TYPE_NORMAL
+  zh: 日期：2024年07月01日 18:18:33
 - en: -->
+  id: totrans-3
   prefs: []
   type: TYPE_NORMAL
+  zh: -->
 - en: 'Audio connectors and radios : ezyang’s blog'
+  id: totrans-4
   prefs:
   - PREF_H1
   type: TYPE_NORMAL
+  zh: 音频连接器与无线电：ezyang的博客
 - en: 来源：[http://blog.ezyang.com/2010/01/audio-connectors/](http://blog.ezyang.com/2010/01/audio-connectors/)
+  id: totrans-5
   prefs:
   - PREF_BQ
   type: TYPE_NORMAL
+  zh: 来源：[http://blog.ezyang.com/2010/01/audio-connectors/](http://blog.ezyang.com/2010/01/audio-connectors/)
 - en: 'Over winter break, I purchased a [Yaesu VX-8R](http://www.yaesu.com/indexVS.cfm?cmd=DisplayProducts&ProdCatID=111&encProdID=64C913CDBC183621AAA39980149EA8C6),
     the newest model from Yaesu and the successor to the [VX-7R](http://www.yaesu.com/indexVS.cfm?cmd=DisplayProducts&ProdCatID=111&encProdID=8D3254BFC69FB172D78647DC56EFB0E9&DivisionID=65&isArchived=0),
     which is favored by many in the MIT community. Deciding that this was the particular
@@ -25,8 +37,10 @@
     could tap into the immense pool of knowledge that has already rallied itself around
     this particular model. But my father was willing to put down the extra $50 for
     the newer version, and so I decided to be experimental.'
+  id: totrans-6
   prefs: []
   type: TYPE_NORMAL
+  zh: 寒假期间，我购买了一台[Yaesu VX-8R](http://www.yaesu.com/indexVS.cfm?cmd=DisplayProducts&ProdCatID=111&encProdID=64C913CDBC183621AAA39980149EA8C6)，这是Yaesu最新的型号，也是[VX-7R](http://www.yaesu.com/indexVS.cfm?cmd=DisplayProducts&ProdCatID=111&encProdID=8D3254BFC69FB172D78647DC56EFB0E9&DivisionID=65&isArchived=0)的后继者，受到MIT社区许多人的青睐。决定购买这台特定的收音机并不容易：购买（更便宜的）VX-7R意味着我可以利用已经围绕这一特定型号形成的庞大知识库。但是我父亲愿意多出50美元购买更新版本，因此我决定尝试一下。
 - en: 'That''s, however, not the point of this post (a review of the VX-8R will have
     to wait until I actually get my hands on it): the real puzzling part of the exercise
     was figuring out what accessories to purchase in order to get a microphone headset.
@@ -34,8 +48,10 @@
     were strongly Bluetooth oriented—were devoid of a standard, wired headset. After
     some investigation, and a very informative conversation with Kelsey, here is what
     I found.'
+  id: totrans-7
   prefs: []
   type: TYPE_NORMAL
+  zh: 然而，这并不是本文的重点（对VX-8R的评论将等到我真正亲自使用它才能发表）：这项练习真正令人困惑的部分是弄清楚购买哪些配件以获得麦克风耳机。如果听起来有些模糊，那是因为确实如此。Yaesu的官方配件——强调蓝牙的——缺乏标准的有线耳机。经过一番调查，并与Kelsey进行了非常信息丰富的交谈后，这是我找到的情况。
 - en: 'First, some vocabulary. If you''ve ever plugged in headphones to your computer,
     you are familiar with the [TRS connector](http://en.wikipedia.org/wiki/TRS_connector),
     also known as an audio or headphone jack. It is the exposed, tapered jack, and
@@ -46,15 +62,19 @@
     that can utilize a push-to-talk (PTT) headset), we are interested in TRS connectors
     of 3.5mm (1/8in) diameter with four conductors: one ground, one audio, one microphone,
     and one PTT.'
+  id: totrans-8
   prefs: []
   type: TYPE_NORMAL
+  zh: 首先，一些词汇。如果你曾经将耳机插入计算机，你一定熟悉[TRS连接器](http://en.wikipedia.org/wiki/TRS_connector)，也被称为音频或耳机插孔。这是外露的锥形插孔，并包含多个导体（黑色环分隔它们）。你所拥有的立体声扬声器的连接器可能有三个导体：一个接地，一个左声道，一个右声道。TRS连接器在尺寸和导体数量上有各种各样的类型。对于无线电（以及更普遍地可以使用按键式（PTT）耳机的设备），我们对直径为3.5毫米（1/8英寸）且具有四个导体的TRS连接器感兴趣：一个接地，一个音频，一个麦克风和一个PTT。
 - en: A [DIN connector](http://en.wikipedia.org/wiki/DIN_connector) has a number of
     pins protected by metal shielding. The pins in a DIN connector correspond to conductors,
     and it is not unusual for there to be three to eight pins (greater than four conductor
     TRS connectors are quite rare.) DIN connectors have standard size (13.2mm), but
     the assignment of pins varies from application to application.
+  id: totrans-9
   prefs: []
   type: TYPE_NORMAL
+  zh: '[DIN连接器](http://en.wikipedia.org/wiki/DIN_connector)有多个由金属屏蔽保护的引脚。DIN连接器的引脚对应导体，并且引脚分配因应用而异常见有三到八个引脚（超过四个导体TRS连接器非常罕见）。DIN连接器具有标准尺寸（13.2毫米），但引脚分配因应用而异。'
 - en: 'Now, for the actual radios. We''ll start with the VX-7R, since the VX-8R jack
     is strictly more powerful than the 7R''s. The VX-7R sports a four conductor 3.5mm
     TRS connector, but with a twist: it''s specially designed to be waterproof, so
@@ -65,8 +85,10 @@
     of headsets as well as individual earbuds and ptt microphones for them. (Note:
     I didn''t have any lying around the house, and didn''t get a chance to head out
     to a radio store, so this is strictly hearsay.)'
+  id: totrans-10
   prefs: []
   type: TYPE_NORMAL
+  zh: 现在，说到实际的无线电设备。我们先从VX-7R开始，因为VX-8R的插孔比7R的更强大。VX-7R采用四导体3.5mm TRS连接器，但有一个小变化：它特别设计为防水，因此为了更紧密地连接，你需要一个带有插孔后螺丝的特殊TRS连接器。CT-91就是这样一款TRS连接器，它将连接分成一个三导体3.5mm耳机TRS插头和一个三导体2.5mm麦克风TRS插头；这些显然是标准插孔，因此你可以找到各种耳机以及单独的耳塞和PTT麦克风。（注：我家里没有任何闲置的，也没机会去无线电店，所以这些只是听说。）
 - en: 'The VX-8R, on the other hand, has support for GPS, so it can''t get away with
     just four conductors: instead, it sports an 8-pin DNS plug, which for all intents
     and purposes is proprietary. You can hook up the GPS unit (CT-136 and FGPS-2),
@@ -75,35 +97,49 @@
     plug on the VX-7R, but without the waterproof screwy bit. To split it, you can
     use CT-91, but the screw bit will show and for a more snug fit you''ll have to
     buy their suggested CT-44.'
+  id: totrans-11
   prefs: []
   type: TYPE_NORMAL
+  zh: 另一方面，VX-8R支持GPS，因此不能仅仅使用四导体：相反，它采用8引脚DNS插头，这在实质上是专有的。你可以连接GPS单元（CT-136和FGPS-2），但通常需要$30的连接器CT-131，将其转换为四导体3.5mm
+    TRS插孔。这与VX-7R上的TRS插头相同，但没有防水螺旋部分。要拆分它，你可以使用CT-91，但螺丝部分会显示出来，为了更紧密的连接，你将不得不购买他们建议的CT-44。
 - en: We were able to find a four-conductor headset lying around the house, but it
     didn't work; like the miscellaneous three-conductor stereo headsets I tried, plugging
     it in resulted in a working sound signal, but caused PTT to be persistently activated.
     The current theory is that stereo was messing with things.
+  id: totrans-12
   prefs: []
   type: TYPE_NORMAL
+  zh: 我们找到了一个四导体耳机插头，但它不起作用；就像我尝试的杂乱的三导体立体声耳机一样，插入后能听到声音信号，但会导致PTT持续激活。目前的理论是立体声可能干扰了一些东西。
 - en: 'Here are the things I''d like to know:'
+  id: totrans-13
   prefs: []
   type: TYPE_NORMAL
+  zh: 我想了解以下几点：
 - en: The VX-8R has a separate stereo-headphone jack, so I'm a bit curious what would
     happen if I stuck a PTT microphone into the four-conductor plug. If by some miracle
     the two were compatible, it would mean that a secondary adapter is not necessary.
     Given that the splitter suggests a 2.5mm mic, and the 4-conductor plug is 3.5mm,
     this seems unlikely.
+  id: totrans-14
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: VX-8R有一个独立的立体声耳机插孔，所以我很好奇如果我将PTT麦克风插入四导体插孔会发生什么。如果两者奇迹般兼容，这意味着不需要额外的适配器。考虑到分线器建议使用2.5mm麦克风，而四导体插头是3.5mm，这似乎不太可能。
 - en: The CT-131 and CT-91 form a kind of sketchy-looking connection, and I'm not
     sure if this would actually prove to be a problem in practice, or if I'd want
     to electrical tape the two together. Some field-testing is required here, and
     I'd also be curious to know how difficult it would be to purchase or make a 4-conductor
     to 2.5mm PTT mic adapter.
+  id: totrans-15
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: CT-131和CT-91组成了一种看起来有点不靠谱的连接，我不确定在实际操作中这是否会成为问题，或者我是否需要用电子胶带把它们粘在一起。这里需要一些现场测试，我也很好奇购买或制作四导体到2.5mm
+    PTT麦克风适配器有多难。
 - en: I need to find a store close by Cambridge/Boston where I can test various push-to-talk
     microphones. Any suggestions here would be greatly appreciated!
+  id: totrans-16
   prefs:
   - PREF_OL
   type: TYPE_NORMAL
+  zh: 我需要找到剑桥/波士顿附近的商店，可以测试各种按键对讲麦克风。任何建议将不胜感激！
