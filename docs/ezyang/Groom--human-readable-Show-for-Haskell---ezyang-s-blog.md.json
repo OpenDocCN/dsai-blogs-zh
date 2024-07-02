@@ -1,1 +1,0 @@
-["```\ncabal install groom\n\n```", "```\nimport Text.Groom\nmain = putStrLn . groom $ yourDataStructureHere\n\n```"]

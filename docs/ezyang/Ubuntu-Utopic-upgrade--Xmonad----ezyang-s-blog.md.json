@@ -1,1 +1,0 @@
-["```\n------------------------------------------------------------\nrevno: 4015 [merge]\nauthor: William Hua <william.hua@canonical.com>\ncommitter: Tarmac\nbranch nick: trunk\ntimestamp: Tue 2014-02-18 18:22:53 +0000\nmessage:\n  Revert the legacy key grabber. Fixes: https://bugs.launchpad.net/bugs/1226962.\n\n```"]

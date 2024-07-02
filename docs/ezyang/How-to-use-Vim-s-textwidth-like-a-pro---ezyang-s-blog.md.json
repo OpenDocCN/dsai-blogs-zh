@@ -1,1 +1,0 @@
-["```\nset statusline=...[%{&fo}]...\n\n```", "```\naugroup vimrc_autocmds\n  autocmd BufEnter * highlight OverLength ctermbg=darkgrey guibg=#592929\n  autocmd BufEnter * match OverLength /\\%74v.*/\naugroup END\n\n```"]

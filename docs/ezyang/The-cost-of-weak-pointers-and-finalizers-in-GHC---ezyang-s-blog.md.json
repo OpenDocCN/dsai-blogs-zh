@@ -1,1 +1,0 @@
-["```\ntypedef struct _StgWeak {   /* Weak v */\n  StgHeader header;\n  StgClosure *cfinalizers;\n  StgClosure *key;\n  StgClosure *value;                /* v */\n  StgClosure *finalizer;\n  struct _StgWeak *link;\n} StgWeak;\n\n```"]

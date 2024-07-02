@@ -1,1 +1,0 @@
-["```\nselect\n  sum( length(replace(post_content, '  ', '')) - length(replace(post_content, ' ', ''))+1)\nfrom wp_posts\nwhere post_status = 'publish';\n\n```"]

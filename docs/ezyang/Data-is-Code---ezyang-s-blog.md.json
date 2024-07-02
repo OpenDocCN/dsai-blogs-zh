@@ -1,1 +1,0 @@
-["```\na <- dist [(.5, red), (.5, blue)]\nb <- dist [(.5, red), (.5, blue)]\nif a != red && b != red\n  then fail\n  else a == red\n\n```", "```\n     O               O\n    / \\             / \\\n   /   \\           /   \\\n  R     B        .5    .5\n / \\   / \\       / \\   / \\\nRR RB BR BB    .25.25.25\n                #t #t #f\n\n```"]

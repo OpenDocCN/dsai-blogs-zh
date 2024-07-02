@@ -1,1 +1,0 @@
-["```\nsignature Data.ByteString where\n    data ByteString\n    empty :: ByteString\n    null :: ByteString -> Bool\n\n```", "```\nsignature Data.ByteString (ByteString, empty) where\n\n```"]

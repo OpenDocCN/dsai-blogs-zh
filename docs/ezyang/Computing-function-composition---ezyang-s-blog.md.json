@@ -1,1 +1,0 @@
-["```\nf l (x0, x1) = go l (0, 0)\n    where go [] (!c0, !c1) = (c0 + x0, c1 + x1)\n          go (x:xs) !c     = go xs (tick x c)\n\ntick x (!c0, !c1) | even x    = (c0, c1 + 1)\n                  | otherwise = (c0 + 1, c1)\n\n```"]

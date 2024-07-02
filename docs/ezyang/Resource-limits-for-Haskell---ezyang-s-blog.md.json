@@ -1,1 +1,0 @@
-["```\nf x = scc \"f\" (Just (x * x))\ng x = let Just y = f x in scc \"g\" y\n\n```", "```\nf = scc \"f\" (\\x -> x * x)\ng = \\x -> scc \"g\" (x * x)\n\n```"]

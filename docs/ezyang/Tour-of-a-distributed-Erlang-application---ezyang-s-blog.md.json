@@ -1,1 +1,0 @@
-["```\nWQ : list of state // work queue\nV : set of state   // visited states\n\nWQ := initial_states()\nwhile !empty(WQ) {\n  s = dequeue(WQ)\n  foreach s' in successors(s) {\n    if !member(s', V) {\n      check_invariants(s')\n      enqueue(s', WQ)\n      add_element(s', V)\n    }\n  }\n}\n\n```"]

@@ -1,1 +1,0 @@
-["```\ny = 1\nmaxDiameter = 100\n\n```", "```\nf x = x + 3\npred = \\x -> x == 2\n\n```", "```\n> fv(x) = {x}\n> fv(e1 e2) = fv(e1) `union` fv(e2)\n> fv(\\x -> e1) = fv(e1) - {x}\n> \n> ```"]

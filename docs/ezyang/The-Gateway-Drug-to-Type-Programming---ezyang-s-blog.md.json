@@ -1,1 +1,0 @@
-["```\nFILE *fh = fopen(\"foobar.txt\", \"r\");\nfread(buf, sizeof(char), 100, fh);\nfclose(fh);\n// ...\nfread(buf, sizeof(char), 2, fh); // oops\n\n```"]

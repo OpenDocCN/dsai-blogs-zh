@@ -1,1 +1,0 @@
-["```\nimport Control.Concurrent\nimport Control.Monad\nimport Foreign.StablePtr\n\nn = 400000\nmain = do\n    ms <- replicateM n (newEmptyMVar >>= \\m -> (forkIO (putMVar m ()) >>= newStablePtr) >> return m)\n    mapM_ takeMVar ms\n\n```"]

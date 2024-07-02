@@ -1,1 +1,0 @@
-["```\n#!/bin/sh\nCURRENT=\"$1\"\nANCESTOR=\"$2\"\nOTHER=\"$3\"\ndos2unix \"$CURRENT\"\ndos2unix \"$ANCESTOR\"\ndos2unix \"$OTHER\"\nexec git merge-file \"$CURRENT\" \"$ANCESTOR\" \"$OTHER\"\n\n```", "```\n[merge.nl]\n        name = Newline driver\n        driver = /home/ezyang/merge-fixnewline.sh %A %O %B\n\n```", "```\n*.txt merge=nl\n\n```"]

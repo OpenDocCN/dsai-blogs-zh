@@ -1,1 +1,0 @@
-["```\ndata List a = Cons a (List a) | Nil\nfoldr :: (a -> r -> r) -> r -> List a -> r\n\n```", "```\ng (Just (x, xs)) = f x xs\ng Nothing = z\n\n```", "```\nin :: ListF a (List a) -> List a\nin (ConsF x xs) = Cons x xs\nin NilF = Nil\n\n```"]

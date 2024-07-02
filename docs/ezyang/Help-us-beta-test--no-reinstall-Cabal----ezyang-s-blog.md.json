@@ -1,1 +1,0 @@
-["```\nResolving dependencies...\nIn order, the following would be installed:\ndirectory-1.2.1.0 (reinstall) changes: time-1.4.2 -> 1.5\nprocess-1.2.1.0 (reinstall)\nextra-1.0 (new package)\ncabal: The following packages are likely to be broken by the reinstalls:\nprocess-1.2.0.0\nhoogle-4.2.35\nhaskell98-2.0.0.3\nghc-7.8.3\nCabal-1.22.0.0\n...\n\n```"]

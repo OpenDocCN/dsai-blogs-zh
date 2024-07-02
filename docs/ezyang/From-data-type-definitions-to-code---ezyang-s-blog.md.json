@@ -1,1 +1,0 @@
-["```\ntype t = bar | baz of int * int\n  with sexp\n\n```"]

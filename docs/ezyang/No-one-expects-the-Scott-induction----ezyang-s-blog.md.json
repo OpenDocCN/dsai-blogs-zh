@@ -1,1 +1,0 @@
-["```\nfact :: Int -> Int\nfact 0 = 1 -- base case\nfact n = n * fact (pred n) -- recursive case\n\n```"]

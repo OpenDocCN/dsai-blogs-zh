@@ -1,1 +1,0 @@
-["```\nOrigin: Ksplice\nLabel: Ksplice\nSuite: karmic\nCodename: karmic\nVersion: 9.10\nDate: Sun, 07 Feb 2010 20:51:12 +0000\nArchitectures: amd64 i386\nComponents: ksplice\nDescription: Ksplice packages for Ubuntu 9.10 karmic\n\n```", "```\nUnattended-Upgrade::Allowed-Origins {\n       \"Ksplice karmic\";\n};\n\n```"]

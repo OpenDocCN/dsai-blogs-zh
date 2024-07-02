@@ -1,1 +1,0 @@
-["```\nrightOr x = \\y -> if y then True else x\n\n```"]

@@ -1,1 +1,0 @@
-["```\nObject o, Field f; // defined elsewhere\nf.setAccessible(true);\nf.get(o);\n\n```"]
